@@ -1,0 +1,6 @@
+com\junlenet\mongodb\demo\service\UserService.class
+com\junlenet\mongodb\demo\MongoDBJDBC.class
+com\junlenet\mongodb\demo\bo\UserBo.class
+com\junlenet\mongodb\demo\bo\Pager.class
+com\junlenet\mongodb\demo\dao\UserDao.class
+com\junlenet\mongodb\demo\controller\IndexController.class
