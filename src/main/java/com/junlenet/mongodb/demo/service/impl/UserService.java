@@ -1,4 +1,4 @@
-package com.junlenet.mongodb.demo.service;
+package com.junlenet.mongodb.demo.service.impl;
 
 import java.util.Set;
 
@@ -8,14 +8,16 @@ import org.springframework.stereotype.Service;
 import com.junlenet.mongodb.demo.bo.Pager;
 import com.junlenet.mongodb.demo.bo.UserBo;
 import com.junlenet.mongodb.demo.dao.UserDao;
+import com.junlenet.mongodb.demo.service.IRegistService;
+import com.junlenet.mongodb.demo.service.IUserService;
 
 /**
  * 用户service
  * @author huweijun
  * @date 2016年7月7日 下午8:48:32
  */
-@Service
-public class UserService {
+@Service("userService")
+public class UserService implements IUserService{
 
 		@Autowired
 		private UserDao userDao;

@@ -78,9 +78,9 @@ public class UserDao {
 			return pager;
 		}
 		
-		public UserBo findById(String id){
+		public UserBo findById(String integer){
 			Query query = new Query();
-			query.addCriteria(new Criteria("_id").is(id));
+			query.addCriteria(new Criteria("_id").is(integer));
 			UserBo userBo = mongoTemplate.findOne(query, UserBo.class);
 			return userBo;
 		}

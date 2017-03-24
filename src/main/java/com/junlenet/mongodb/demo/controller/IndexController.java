@@ -19,7 +19,7 @@ import com.junlenet.mongodb.demo.bo.Pager;
 import com.junlenet.mongodb.demo.bo.TagBo;
 import com.junlenet.mongodb.demo.bo.UserBo;
 import com.junlenet.mongodb.demo.service.BlogService;
-import com.junlenet.mongodb.demo.service.UserService;
+import com.junlenet.mongodb.demo.service.impl.UserService;
 /**
  * demo 控制器
  * @author huweijun
@@ -71,7 +71,6 @@ public class IndexController {
 			userBo.setPhone("130279814XX");
 			userBo.setSex("NV");
 			userBo.setUserName("www.junlenet.com");
-			userBo.setUserNo("NO"+time);
 			userBo = userService.save(userBo);
 			Set<String> collections = userService.getCollectionNames();
 			for (String str : collections) {

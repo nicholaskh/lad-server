@@ -6,18 +6,9 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection="t_user")
-public class UserBo implements Serializable{
+public class UserBo extends BaseBo implements Serializable{
 
-		/**
-	 * 
-	 */
 	private static final long serialVersionUID = 2928923917001675021L;
-
-	
-		@Id
-		private String id; //对应文档里面的 _id 
-	
-		private String userNo;
 		
 		private String userName;
 		
@@ -26,14 +17,6 @@ public class UserBo implements Serializable{
 		private String sex;
 		
 		private String password;
-
-		public String getUserNo() {
-			return userNo;
-		}
-
-		public void setUserNo(String userNo) {
-			this.userNo = userNo;
-		}
 
 		public String getUserName() {
 			return userName;
@@ -66,15 +49,5 @@ public class UserBo implements Serializable{
 		public void setPassword(String password) {
 			this.password = password;
 		}
-
-		public String getId() {
-			return id;
-		}
-
-		public void setId(String id) {
-			this.id = id;
-		}
-		
-		
 		
 }
