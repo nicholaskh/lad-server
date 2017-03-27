@@ -23,7 +23,7 @@ public class RegistDaoImpl implements IRegistDao {
 		query.addCriteria(criteria);
 		UserBo user = mongoTemplate.findOne(query, UserBo.class);
 		if (user != null) {
-			return Integer.valueOf(user.getId());
+			return 0;
 		}
 		return -1;
 	}
