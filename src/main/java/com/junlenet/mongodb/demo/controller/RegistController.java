@@ -29,7 +29,7 @@ public class RegistController extends BaseContorller {
 	@Autowired
 	private IUserService userService;
 
-	@RequestMapping("/verification_send")
+	@RequestMapping("/verification-send")
 	@ResponseBody
 	public String verification_send(String phone, HttpServletRequest request, HttpServletResponse response) {
 		if (!StringUtils.hasLength(phone)) {
@@ -42,7 +42,7 @@ public class RegistController extends BaseContorller {
 			session.setAttribute("phone", phone);
 			session.setAttribute("verification", "111111");
 			MySessionContext.AddSession(session);
-			map.put("sesssionId", session.getId());
+			response= MySessionContext.putSessionIdToResponse(response, session);
 			map.put("verification", "111111");
 			map.put("ret", 0);
 			break;
@@ -54,17 +54,18 @@ public class RegistController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	@RequestMapping("/is_verification_right")
+	@RequestMapping("/is_verification-right")
 	@ResponseBody
-	public String is_verification_right(String sesssionId, String verification, HttpServletRequest request,
+	public String is_verification_right(String verification, HttpServletRequest request,
 			HttpServletResponse response) {
-		if (!StringUtils.hasLength(sesssionId)) {
+		String sessionId = MySessionContext.getSessionIdFromRequest(request);
+		if (!StringUtils.hasLength(sessionId)) {
 			return "{\"ret\":-1,\"error\":\"sesssionId is null\"}";
 		}
 		if (!StringUtils.hasLength(verification)) {
 			return "{\"ret\":-1,\"error\":\"verification is null\"}";
 		}
-		HttpSession session = MySessionContext.getSession(sesssionId);
+		HttpSession session = MySessionContext.getSession(sessionId);
 		if (session == null) {
 			return "{\"ret\":-1,\"error\":\"sesssionId is null\"}";
 		}
@@ -72,7 +73,7 @@ public class RegistController extends BaseContorller {
 		Map<String, Object> map = new HashMap<String, Object>();
 		if (verification_session.equals(verification)) {
 			map.put("ret", 0);
-			map.put("sesssionId", session.getId());
+			response = MySessionContext.putSessionIdToResponse(response, session);
 		} else{
 			map.put("ret", -1);
 			map.put("error", "verification error");
@@ -80,17 +81,18 @@ public class RegistController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	@RequestMapping("/password_set")
+	@RequestMapping("/password-set")
 	@ResponseBody
-	public String password_set(String sesssionId, String password1, String password2, HttpServletRequest request,
+	public String password_set(String password1, String password2, HttpServletRequest request,
 			HttpServletResponse response) {
-		if (!StringUtils.hasLength(sesssionId)) {
+		String sessionId = MySessionContext.getSessionIdFromRequest(request);
+		if (!StringUtils.hasLength(sessionId)) {
 			return "{\"ret\":-1,\"error\":\"sesssionId is null\"}";
 		}
 		if (!StringUtils.hasLength(password1) || !StringUtils.hasLength(password2) || !(password1.equals(password2))) {
 			return "{\"ret\":-1,\"error\":\"password is error\"}";
 		}
-		HttpSession session = MySessionContext.getSession(sesssionId);
+		HttpSession session = MySessionContext.getSession(sessionId);
 		if (session == null) {
 			return "{\"ret\":-1,\"error\":\"sesssionId is null\"}";
 		}

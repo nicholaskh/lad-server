@@ -22,7 +22,7 @@ public class RegistServiceImpl implements IRegistService {
 		}
 	}
 
-	private boolean is_phone_repeat(String phone) {
+	public boolean is_phone_repeat(String phone) {
 		Integer id = registDao.searchPhone(phone);
 		if (id == -1)
 			return false;

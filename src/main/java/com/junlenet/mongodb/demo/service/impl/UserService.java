@@ -26,6 +26,11 @@ public class UserService implements IUserService{
 			userBo = userDao.save(userBo);
 			return userBo;
 		}
+		
+		public UserBo updatePassword(UserBo userBo){
+			userBo = userDao.updatePassword(userBo);
+			return userBo;
+		}
 	
 		public Set<String> getCollectionNames() {
 			return userDao.getCollectionNames();

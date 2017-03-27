@@ -12,6 +12,7 @@ import org.springframework.data.domain.Sort.Order;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 import com.junlenet.mongodb.demo.bo.Pager;
@@ -45,6 +46,22 @@ public class UserDao {
 			return userBo;
 		}
 
+		/**
+		 * 修改用户信息
+		 * @param userBo
+		 * @return
+		 * @author huweijun
+		 * @date 2016年7月7日 下午8:27:37
+		 */
+		public UserBo updatePassword(UserBo userBo) {
+			Query query = new Query();
+			query.addCriteria(new Criteria("phone").is(userBo.getPhone()));
+			Update update = new Update();
+			update.set("password", userBo.getPassword());
+			mongoTemplate.updateFirst(query, update, UserBo.class);	
+			return userBo;
+		}
+		
 		/**
 		 * 获取所有集合的名称
 		 * @return
@@ -85,12 +102,6 @@ public class UserDao {
 			return userBo;
 		}
 		
-		
-		public UserBo saveOrUpdate(UserBo userBo){
-			mongoTemplate.save(userBo);
-			userBo = findById(userBo.getId());
-			return userBo;
-		}
 		
 		
 		

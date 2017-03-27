@@ -3,6 +3,7 @@ package com.junlenet.mongodb.demo.controller;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -25,7 +26,7 @@ public class LoginController extends BaseContorller {
 	@Autowired
 	private ILoginService loginService;
 
-	@RequestMapping("/verification_send")
+	@RequestMapping("/verification-send")
 	@ResponseBody
 	public String verification_send(String phone, HttpServletRequest request, HttpServletResponse response) {
 		if (!StringUtils.hasLength(phone)) {
@@ -35,32 +36,35 @@ public class LoginController extends BaseContorller {
 		HttpSession session = request.getSession();
 		session.setAttribute("phone", phone);
 		session.setAttribute("verification", "111111");
+		response = MySessionContext.putSessionIdToResponse(response, session);
 		MySessionContext.AddSession(session);
-		map.put("session", session.getId());
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();
 	}
 
-	@RequestMapping("/login_quick")
+	@RequestMapping("/login-quick")
 	@ResponseBody
-	public String login_quick(String phone, String verification, String sesssionId, HttpServletRequest request,
+	public String login_quick(String phone, String verification, HttpServletRequest request,
 			HttpServletResponse response) {
 		if (!StringUtils.hasLength(phone)) {
 			return "{\"ret\":-1,\"error\":\"error phone\"}";
 		}
-		if (!StringUtils.hasLength(sesssionId)) {
-			return "{\"ret\":-1,\"error\":\"sesssionId is null\"}";
-		}
 		if (!StringUtils.hasLength(verification)) {
 			return "{\"ret\":-1,\"error\":\"verification is null\"}";
 		}
-		HttpSession session = MySessionContext.getSession(sesssionId);
+		String sessionId = MySessionContext.getSessionIdFromRequest(request);
+		if (!StringUtils.hasLength(sessionId)) {
+			return "{\"ret\":-1,\"error\":\"sesssionId is null\"}";
+		}
+		HttpSession session = MySessionContext.getSession(sessionId);
+		if(session == null){
+			return "{\"ret\":-1,\"error\":\"session is null\"}";
+		}
 		String verification_session = (String) session.getAttribute("verification");
 		String phone_session = (String) session.getAttribute("phone");
 		Map<String, Object> map = new HashMap<String, Object>();
 		if (verification_session.equals(verification) && phone_session.equals(phone)) {
 			map.put("ret", 0);
-			map.put("sesssionId", session.getId());
 		} else {
 			map.put("ret", -1);
 			map.put("error", "verification error");
@@ -82,7 +86,7 @@ public class LoginController extends BaseContorller {
 			map.put("ret", 0);
 			HttpSession session = request.getSession();
 			MySessionContext.AddSession(session);
-			map.put("sessionId", session.getId());
+			response = MySessionContext.putSessionIdToResponse(response, session);
 		} else {
 			map.put("ret", -1);
 			map.put("error", "username or password is wrong");
@@ -90,4 +94,5 @@ public class LoginController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
+	
 }
