@@ -54,7 +54,7 @@ public class RegistController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	@RequestMapping("/is_verification-right")
+	@RequestMapping("/is-verification-right")
 	@ResponseBody
 	public String is_verification_right(String verification, HttpServletRequest request,
 			HttpServletResponse response) {
@@ -103,5 +103,4 @@ public class RegistController extends BaseContorller {
 		userService.save(userBo);
 		return "{\"ret\":0}";
 	}
-
 }
