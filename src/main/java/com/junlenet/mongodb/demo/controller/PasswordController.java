@@ -36,7 +36,7 @@ public class PasswordController extends BaseContorller {
 		HttpSession session = request.getSession();
 		session.setAttribute("verification_img", "fshg");
 		MySessionContext.AddSession(session);
-		Cookie cookie = new Cookie("sessionId", session.getId());
+		Cookie cookie = new Cookie("session_id", session.getId());
 		response.addCookie(cookie);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
