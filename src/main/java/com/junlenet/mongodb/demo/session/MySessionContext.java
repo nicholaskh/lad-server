@@ -22,17 +22,17 @@ public class MySessionContext {
 		}
 	}
 
-	public static synchronized HttpSession getSession(String session_id) {
-		if (session_id == null)
+	public static synchronized HttpSession getSession(String sessionId) {
+		if (sessionId == null)
 			return null;
-		return (HttpSession) mymap.get(session_id);
+		return (HttpSession) mymap.get(sessionId);
 	}
 
 	public static synchronized String getSessionIdFromRequest(HttpServletRequest request) {
 		Cookie[] cookies = request.getCookies();
 		String sessionId = "";
 		for (Cookie cookie : cookies) {
-			if (cookie.getName().equals("session_id")) {
+			if (cookie.getName().equals("sessionId")) {
 				sessionId = cookie.getValue();
 			}
 		}
@@ -40,7 +40,7 @@ public class MySessionContext {
 	}
 	
 	public static synchronized HttpServletResponse putSessionIdToResponse(HttpServletResponse response, HttpSession session) {
-		Cookie cookie = new Cookie("session_id", session.getId());
+		Cookie cookie = new Cookie("sessionId", session.getId());
 		response.addCookie(cookie);
 		return response;
 	}
