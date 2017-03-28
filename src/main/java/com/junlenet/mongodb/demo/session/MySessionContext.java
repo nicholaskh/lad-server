@@ -32,7 +32,7 @@ public class MySessionContext {
 		Cookie[] cookies = request.getCookies();
 		String sessionId = "";
 		for (Cookie cookie : cookies) {
-			if (cookie.getName().equals("sessionId")) {
+			if (cookie.getName().equals("session_id")) {
 				sessionId = cookie.getValue();
 			}
 		}
