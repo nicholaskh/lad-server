@@ -18,6 +18,8 @@ public class UserBo extends BaseBo implements Serializable{
 		
 		private String password;
 
+		private String headPictureName;
+		
 		public String getUserName() {
 			return userName;
 		}
@@ -48,6 +50,14 @@ public class UserBo extends BaseBo implements Serializable{
 
 		public void setPassword(String password) {
 			this.password = password;
+		}
+
+		public String getHeadPictureName() {
+			return headPictureName;
+		}
+
+		public void setHeadPictureName(String headPictureName) {
+			this.headPictureName = headPictureName;
 		}
 		
 }

@@ -32,6 +32,11 @@ public class UserService implements IUserService{
 			return userBo;
 		}
 	
+		public UserBo updateHeadPictureName(UserBo userBo){
+			userBo = userDao.updateHeadPictureName(userBo);
+			return userBo;
+		}
+		
 		public Set<String> getCollectionNames() {
 			return userDao.getCollectionNames();
 		}

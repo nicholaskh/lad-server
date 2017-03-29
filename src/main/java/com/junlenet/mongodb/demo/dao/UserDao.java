@@ -62,6 +62,14 @@ public class UserDao {
 			return userBo;
 		}
 		
+		public UserBo updateHeadPictureName(UserBo userBo) {
+			Query query = new Query();
+			query.addCriteria(new Criteria("phone").is(userBo.getPhone()));
+			Update update = new Update();
+			update.set("headPictureName", userBo.getHeadPictureName());
+			mongoTemplate.updateFirst(query, update, UserBo.class);	
+			return userBo;
+		}
 		/**
 		 * 获取所有集合的名称
 		 * @return

@@ -7,4 +7,6 @@ public interface IUserService extends IBaseService {
 	public UserBo save(UserBo userBo);
 	
 	public UserBo updatePassword(UserBo userBo);
+	
+	public UserBo updateHeadPictureName(UserBo userBo);
 }

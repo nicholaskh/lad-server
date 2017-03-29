@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.junlenet.mongodb.demo.bo.UserBo;
 import com.junlenet.mongodb.demo.service.IRegistService;
 import com.junlenet.mongodb.demo.service.IUserService;
-import com.junlenet.mongodb.demo.session.MySessionContext;
 
 import net.sf.json.JSONObject;
 
@@ -41,8 +40,6 @@ public class RegistController extends BaseContorller {
 			HttpSession session = request.getSession();
 			session.setAttribute("phone", phone);
 			session.setAttribute("verification", "111111");
-			MySessionContext.AddSession(session);
-			response= MySessionContext.putSessionIdToResponse(response, session);
 			map.put("verification", "111111");
 			map.put("ret", 0);
 			break;
@@ -58,25 +55,25 @@ public class RegistController extends BaseContorller {
 	@ResponseBody
 	public String is_verification_right(String verification, HttpServletRequest request,
 			HttpServletResponse response) {
-		String sessionId = MySessionContext.getSessionIdFromRequest(request);
-		if (!StringUtils.hasLength(sessionId)) {
-			return "{\"ret\":-1,\"error\":\"sesssionId is null\"}";
+		HttpSession session = request.getSession();
+		if(session.isNew()){
+			return "{\"ret\":-1,\"error\":\"sesssion is null\"}";
 		}
 		if (!StringUtils.hasLength(verification)) {
 			return "{\"ret\":-1,\"error\":\"verification is null\"}";
 		}
-		HttpSession session = MySessionContext.getSession(sessionId);
-		if (session == null) {
-			return "{\"ret\":-1,\"error\":\"sesssionId is null\"}";
+		if(session.getAttribute("verification") == null){
+			return "{\"ret\":-1,\"error\":\"sesssion is null\"}";
 		}
 		String verification_session = (String) session.getAttribute("verification");
 		Map<String, Object> map = new HashMap<String, Object>();
 		if (verification_session.equals(verification)) {
 			map.put("ret", 0);
-			response = MySessionContext.putSessionIdToResponse(response, session);
+			session.setAttribute("isVerificationRight", true);
 		} else{
 			map.put("ret", -1);
 			map.put("error", "verification error");
+			session.setAttribute("isVerificationRight", false);
 		}
 		return JSONObject.fromObject(map).toString();
 	}
@@ -85,22 +82,26 @@ public class RegistController extends BaseContorller {
 	@ResponseBody
 	public String password_set(String password1, String password2, HttpServletRequest request,
 			HttpServletResponse response) {
-		String sessionId = MySessionContext.getSessionIdFromRequest(request);
-		if (!StringUtils.hasLength(sessionId)) {
-			return "{\"ret\":-1,\"error\":\"sesssionId is null\"}";
+		HttpSession session = request.getSession();
+		if(session.isNew()){
+			return "{\"ret\":-1,\"error\":\"sesssion is null\"}";
+		}
+		if(session.getAttribute("isVerificationRight") == null){
+			return "{\"ret\":-1,\"error\":\"isVerificationRight is null\"}";
+		}
+		if(!(Boolean) session.getAttribute("isVerificationRight")){
+			return "{\"ret\":-1,\"error\":\"verification is null\"}";
 		}
 		if (!StringUtils.hasLength(password1) || !StringUtils.hasLength(password2) || !(password1.equals(password2))) {
 			return "{\"ret\":-1,\"error\":\"password is error\"}";
 		}
-		HttpSession session = MySessionContext.getSession(sessionId);
-		if (session == null) {
-			return "{\"ret\":-1,\"error\":\"sesssionId is null\"}";
-		}
+
 		String phone = (String) session.getAttribute("phone");
 		UserBo userBo = new UserBo();
 		userBo.setPhone(phone);
 		userBo.setPassword(password1);
 		userService.save(userBo);
+		session.invalidate();
 		return "{\"ret\":0}";
 	}
 }
