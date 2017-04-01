@@ -26,7 +26,7 @@ public class PersonSet extends BaseContorller {
 
 	@RequestMapping("/username")
 	@ResponseBody
-	public String head_picture(String username, HttpServletRequest request,
+	public String username(String username, HttpServletRequest request,
 			HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
