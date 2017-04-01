@@ -1,30 +1,9 @@
 package com.junlenet.mongodb.demo.controller;
 
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.springframework.ui.ModelMap;
 
 public abstract class BaseContorller {
-	protected HttpServletRequest request;
-	protected HttpServletResponse response;
-	public HttpServletRequest getRequest() {
-		return request;
-	}
-
-	public void setRequest(HttpServletRequest request) {
-		this.request = request;
-	}
-
-	public HttpServletResponse getResponse() {
-		return response;
-	}
-
-	public void setResponse(HttpServletResponse response) {
-		this.response = response;
-	}
-
 	/**
 	 * 定向到错误页面
 	 * 

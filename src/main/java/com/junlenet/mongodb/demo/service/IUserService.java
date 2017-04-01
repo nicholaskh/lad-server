@@ -9,4 +9,10 @@ public interface IUserService extends IBaseService {
 	public UserBo updatePassword(UserBo userBo);
 	
 	public UserBo updateHeadPictureName(UserBo userBo);
+
+	public UserBo updateUserName(UserBo userBo);
+	
+	public UserBo updatePersonalizedSignature(UserBo userBo);
+
+	public UserBo updateBirthDay(UserBo userBo);
 }

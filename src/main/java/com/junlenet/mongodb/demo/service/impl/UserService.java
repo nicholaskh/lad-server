@@ -37,6 +37,21 @@ public class UserService implements IUserService{
 			return userBo;
 		}
 		
+		public UserBo updateUserName(UserBo userBo){
+			userBo = userDao.updateUserName(userBo);
+			return userBo;
+		}
+		
+		public UserBo updateBirthDay(UserBo userBo){
+			userBo = userDao.updateBirthDay(userBo);
+			return userBo;
+		}
+		
+		public UserBo updatePersonalizedSignature(UserBo userBo){
+			userBo = userDao.updatePersonalizedSignature(userBo);
+			return userBo;
+		}
+		
 		public Set<String> getCollectionNames() {
 			return userDao.getCollectionNames();
 		}

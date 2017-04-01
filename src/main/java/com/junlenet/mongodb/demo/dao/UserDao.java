@@ -70,6 +70,33 @@ public class UserDao {
 			mongoTemplate.updateFirst(query, update, UserBo.class);	
 			return userBo;
 		}
+		
+		public UserBo updateUserName(UserBo userBo) {
+			Query query = new Query();
+			query.addCriteria(new Criteria("phone").is(userBo.getPhone()));
+			Update update = new Update();
+			update.set("userName", userBo.getUserName());
+			mongoTemplate.updateFirst(query, update, UserBo.class);	
+			return userBo;
+		}
+		
+		public UserBo updatePersonalizedSignature(UserBo userBo) {
+			Query query = new Query();
+			query.addCriteria(new Criteria("phone").is(userBo.getPhone()));
+			Update update = new Update();
+			update.set("personalizedSignature", userBo.getPersonalizedSignature());
+			mongoTemplate.updateFirst(query, update, UserBo.class);	
+			return userBo;
+		}
+		
+		public UserBo updateBirthDay(UserBo userBo) {
+			Query query = new Query();
+			query.addCriteria(new Criteria("phone").is(userBo.getPhone()));
+			Update update = new Update();
+			update.set("birthDay", userBo.getBirthDay());
+			mongoTemplate.updateFirst(query, update, UserBo.class);	
+			return userBo;
+		}
 		/**
 		 * 获取所有集合的名称
 		 * @return

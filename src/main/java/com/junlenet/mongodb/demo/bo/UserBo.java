@@ -20,6 +20,10 @@ public class UserBo extends BaseBo implements Serializable{
 
 		private String headPictureName;
 		
+		private String birthDay;
+		
+		private String personalizedSignature;
+		
 		public String getUserName() {
 			return userName;
 		}
@@ -58,6 +62,22 @@ public class UserBo extends BaseBo implements Serializable{
 
 		public void setHeadPictureName(String headPictureName) {
 			this.headPictureName = headPictureName;
+		}
+
+		public String getBirthDay() {
+			return birthDay;
+		}
+
+		public void setBirthDay(String birthDay) {
+			this.birthDay = birthDay;
+		}
+
+		public String getPersonalizedSignature() {
+			return personalizedSignature;
+		}
+
+		public void setPersonalizedSignature(String personalizedSignature) {
+			this.personalizedSignature = personalizedSignature;
 		}
 		
 }
