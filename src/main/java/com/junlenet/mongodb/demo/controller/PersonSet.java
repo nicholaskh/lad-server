@@ -46,9 +46,9 @@ public class PersonSet extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 	
-	@RequestMapping("/birth-day")
+	@RequestMapping("/birthday")
 	@ResponseBody
-	public String birth_day(String birth_day, HttpServletRequest request,
+	public String birth_day(String birthday, HttpServletRequest request,
 			HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
@@ -61,7 +61,7 @@ public class PersonSet extends BaseContorller {
 		if (userBo == null) {
 			return "{\"ret\":-1,\"error\":\"error session\"}";
 		}
-		userBo.setBirthDay(birth_day);
+		userBo.setBirthDay(birthday);
 		userService.updateBirthDay(userBo);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
