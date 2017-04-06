@@ -28,17 +28,6 @@ public class PasswordController extends BaseContorller {
 	private IRegistService registService;
 	@Autowired
 	private IUserService userService;
-	
-	@RequestMapping("/verification-generator")
-	@ResponseBody
-	public String verification_generator(HttpServletRequest request, HttpServletResponse response) {
-		HttpSession session = request.getSession();
-		session.setAttribute("verification_img", "fshg");
-		Map<String, Object> map = new HashMap<String, Object>();
-		map.put("ret", 0);
-		map.put("verification_img", "fshg");
-		return JSONObject.fromObject(map).toString();
-	}
 
 	@RequestMapping("/verification-send")
 	@ResponseBody

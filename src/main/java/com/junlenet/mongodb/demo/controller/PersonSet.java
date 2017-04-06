@@ -18,7 +18,7 @@ import com.junlenet.mongodb.demo.service.IUserService;
 import net.sf.json.JSONObject;
 
 @Controller
-@RequestMapping("personSet")
+@RequestMapping("person-set")
 public class PersonSet extends BaseContorller {
 
 	@Autowired
@@ -48,7 +48,7 @@ public class PersonSet extends BaseContorller {
 	
 	@RequestMapping("/birth-day")
 	@ResponseBody
-	public String birth_day(String birthDay, HttpServletRequest request,
+	public String birth_day(String birth_day, HttpServletRequest request,
 			HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
@@ -61,7 +61,7 @@ public class PersonSet extends BaseContorller {
 		if (userBo == null) {
 			return "{\"ret\":-1,\"error\":\"error session\"}";
 		}
-		userBo.setBirthDay(birthDay);
+		userBo.setBirthDay(birth_day);
 		userService.updateBirthDay(userBo);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
@@ -70,7 +70,7 @@ public class PersonSet extends BaseContorller {
 	
 	@RequestMapping("/personalized-signature")
 	@ResponseBody
-	public String personalized_signature(String personalizedSignature, HttpServletRequest request,
+	public String personalized_signature(String personalized_signature, HttpServletRequest request,
 			HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
@@ -83,7 +83,7 @@ public class PersonSet extends BaseContorller {
 		if (userBo == null) {
 			return "{\"ret\":-1,\"error\":\"error session\"}";
 		}
-		userBo.setPersonalizedSignature(personalizedSignature);
+		userBo.setPersonalizedSignature(personalized_signature);
 		userService.updatePersonalizedSignature(userBo);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
