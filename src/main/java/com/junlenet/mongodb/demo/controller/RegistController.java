@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.junlenet.mongodb.demo.bo.UserBo;
 import com.junlenet.mongodb.demo.service.IRegistService;
 import com.junlenet.mongodb.demo.service.IUserService;
+import com.junlenet.mongodb.demo.util.CommonUtil;
 
 import net.sf.json.JSONObject;
 
@@ -32,6 +33,9 @@ public class RegistController extends BaseContorller {
 	@ResponseBody
 	public String verification_send(String phone, HttpServletRequest request, HttpServletResponse response) {
 		if (!StringUtils.hasLength(phone)) {
+			return "{\"ret\":-1,\"error\":\"error phone\"}";
+		}
+		if (!CommonUtil.isRightPhone(phone)) {
 			return "{\"ret\":-1,\"error\":\"error phone\"}";
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -104,4 +108,5 @@ public class RegistController extends BaseContorller {
 		session.invalidate();
 		return "{\"ret\":0}";
 	}
+	
 }
