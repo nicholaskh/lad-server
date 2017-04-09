@@ -34,7 +34,7 @@ public class PasswordController extends BaseContorller {
 	public String verification_send(String phone, String verification_img, HttpServletRequest request,
 			HttpServletResponse response) {
 		HttpSession session = request.getSession();
-		if(session.isNew()){
+		if (session.isNew()) {
 			return "{\"ret\":-1,\"error\":\"error session\"}";
 		}
 		if (!StringUtils.hasLength(phone)) {
@@ -46,7 +46,7 @@ public class PasswordController extends BaseContorller {
 		if (!registService.is_phone_repeat(phone)) {
 			return "{\"ret\":-1,\"error\":\"error phone\"}";
 		}
-		if(session.getAttribute("verification_img") == null){
+		if (session.getAttribute("verification_img") == null) {
 			return "{\"ret\":-1,\"error\":\"error session\"}";
 		}
 		String verification_img_session = (String) session.getAttribute("verification_img");
@@ -66,13 +66,13 @@ public class PasswordController extends BaseContorller {
 	@ResponseBody
 	public String verification_check(String verification, HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession();
-		if(session.isNew()){
+		if (session.isNew()) {
 			return "{\"ret\":-1,\"error\":\"error session\"}";
 		}
 		if (!StringUtils.hasLength(verification)) {
 			return "{\"ret\":-1,\"error\":\"verification is null\"}";
 		}
-		if(session.getAttribute("verification") == null){
+		if (session.getAttribute("verification") == null) {
 			return "{\"ret\":-1,\"error\":\"error session\"}";
 		}
 		String verification_session = (String) session.getAttribute("verification");
@@ -84,30 +84,65 @@ public class PasswordController extends BaseContorller {
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();
 	}
-	
+
 	@RequestMapping("/password-set")
 	@ResponseBody
-	public String password_set(String password1, String password2, HttpServletRequest request, HttpServletResponse response) {
+	public String password_set(String password1, String password2, HttpServletRequest request,
+			HttpServletResponse response) {
 		HttpSession session = request.getSession();
-		if(session.isNew()){
+		if (session.isNew()) {
 			return "{\"ret\":-1,\"error\":\"error session\"}";
 		}
 		if (!StringUtils.hasLength(password1) || !StringUtils.hasLength(password2)) {
 			return "{\"ret\":-1,\"error\":\"password is null\"}";
 		}
-		if(session.getAttribute("isVerification") == null){
+		if (session.getAttribute("isVerification") == null) {
 			return "{\"ret\":-1,\"error\":\"error session\"}";
 		}
 		if (!(Boolean) session.getAttribute("isVerification")) {
 			return "{\"ret\":-1,\"error\":\"error isVerification\"}";
 		}
 		String phone = (String) session.getAttribute("phone");
-		UserBo userBo  = new UserBo();
+		UserBo userBo = new UserBo();
 		userBo.setPassword(password1);
 		userBo.setPhone(phone);
 		userService.updatePassword(userBo);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
+		session.invalidate();
+		return JSONObject.fromObject(map).toString();
+	}
+
+	@RequestMapping("/password-change")
+	@ResponseBody
+	public String password_change(String old_password, String password1, String password2, HttpServletRequest request,
+			HttpServletResponse response) {
+		HttpSession session = request.getSession();
+		if (session.isNew()) {
+			return "{\"ret\":-1,\"error\":\"error session\"}";
+		}
+		if (session.getAttribute("isLogin") == null) {
+			return "{\"ret\":-1,\"error\":\"error session\"}";
+		}
+		if (!StringUtils.hasLength(password1) || !StringUtils.hasLength(password2)
+				|| !StringUtils.hasLength(old_password)) {
+			return "{\"ret\":-1,\"error\":\"password is error\"}";
+		}
+		if (!password1.equals(password2)) {
+			return "{\"ret\":-1,\"error\":\"password is error\"}";
+		}
+		if (session.getAttribute("userBo") == null) {
+			return "{\"ret\":-1,\"error\":\"error session\"}";
+		}
+		UserBo userBo = (UserBo) session.getAttribute("userBo");
+		if(!old_password.equals(userBo.getPassword())){
+			return "{\"ret\":-1,\"error\":\"password is error\"}";
+		}
+		userBo.setPassword(password1);
+		userService.updatePassword(userBo);
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		session.invalidate();
 		return JSONObject.fromObject(map).toString();
 	}
 }

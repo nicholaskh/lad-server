@@ -31,6 +31,11 @@ public class UserService implements IUserService{
 			userBo = userDao.updatePassword(userBo);
 			return userBo;
 		}
+		
+		public UserBo updatePhone(UserBo userBo){
+			userBo = userDao.updatePhone(userBo);
+			return userBo;
+		}
 	
 		public UserBo updateHeadPictureName(UserBo userBo){
 			userBo = userDao.updateHeadPictureName(userBo);

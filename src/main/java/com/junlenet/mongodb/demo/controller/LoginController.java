@@ -64,7 +64,6 @@ public class LoginController extends BaseContorller {
 		} else {
 			map.put("ret", -1);
 			map.put("error", "verification error");
-			session.setAttribute("isLogin", false);
 		}
 		return JSONObject.fromObject(map).toString();
 	}
@@ -87,7 +86,6 @@ public class LoginController extends BaseContorller {
 		} else {
 			map.put("ret", -1);
 			map.put("error", "username or password is wrong");
-			session.setAttribute("isLogin", true);
 		}
 		return JSONObject.fromObject(map).toString();
 	}
