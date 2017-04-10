@@ -23,8 +23,6 @@ public class BaseBo implements Serializable{
 	
 	private Integer updateuid;
 	
-	private String sessionId;
-
 	public String getId() {
 		return id;
 	}
@@ -63,14 +61,6 @@ public class BaseBo implements Serializable{
 
 	public void setUpdateuid(Integer updateuid) {
 		this.updateuid = updateuid;
-	}
-
-	public String getSessionId() {
-		return sessionId;
-	}
-
-	public void setSessionId(String sessionId) {
-		this.sessionId = sessionId;
 	}
 
 }
