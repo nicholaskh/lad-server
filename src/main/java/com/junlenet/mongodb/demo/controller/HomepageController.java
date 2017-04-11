@@ -50,7 +50,7 @@ public class HomepageController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	@RequestMapping("/visit_my_homepage")
+	@RequestMapping("/visit-my-homepage")
 	@ResponseBody
 	public String visit_my_homepage(String visitor_id, HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession();
@@ -100,7 +100,7 @@ public class HomepageController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 	
-	@RequestMapping("/new_visitors_count")
+	@RequestMapping("/new-visitors-count")
 	@ResponseBody
 	public String new_visitors_count(HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession();
