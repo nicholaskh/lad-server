@@ -17,7 +17,7 @@ import com.junlenet.mongodb.demo.service.IUserService;
  * @date 2016年7月7日 下午8:48:32
  */
 @Service("userService")
-public class UserService implements IUserService{
+public class UserServiceImpl implements IUserService{
 
 		@Autowired
 		private UserDao userDao;

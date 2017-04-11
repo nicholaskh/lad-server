@@ -30,4 +30,9 @@ public class MessageDaoImpl implements IMessageDao {
 		return messageBo;
 	}
 
+	public MessageBo selectById(String messageId) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("_id").is(messageId));
+		return mongoTemplate.findOne(query, MessageBo.class);
+	}
 }

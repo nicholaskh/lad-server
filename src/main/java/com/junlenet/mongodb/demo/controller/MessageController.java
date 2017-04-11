@@ -71,9 +71,19 @@ public class MessageController extends BaseContorller {
 			return "{\"ret\":-1,\"error\":\"error session\"}";
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
-		MessageBo messageBo = new MessageBo();
+		MessageBo messageBo = messageService.selectById(messageId);
+		if(messageBo == null ){
+			return "{\"ret\":-1,\"error\":\"error messageId\"}";
+		}
 		LinkedList<String> thumbsup_ids = messageBo.getThumbsup_ids();
+		if(thumbsup_ids == null){
+			thumbsup_ids = new LinkedList<String>();
+		}
+		if(thumbsup_ids.contains(userBo.getId())){
+			return "{\"ret\":-1,\"error\":\"duplicate id\"}";
+		}
 		thumbsup_ids.add(userBo.getId());
+		messageBo.setThumbsup_ids(thumbsup_ids);
 		messageService.update_thumbsup_ids(messageBo);
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();
