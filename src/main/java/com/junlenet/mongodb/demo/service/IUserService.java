@@ -17,4 +17,6 @@ public interface IUserService extends IBaseService {
 	public UserBo updatePersonalizedSignature(UserBo userBo);
 
 	public UserBo updateBirthDay(UserBo userBo);
+	
+	public UserBo updateSex(UserBo userBo);
 }

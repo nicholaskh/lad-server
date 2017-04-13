@@ -63,6 +63,15 @@ public class UserDao {
 			return userBo;
 		}
 		
+		public UserBo updateSex(UserBo userBo) {
+			Query query = new Query();
+			query.addCriteria(new Criteria("phone").is(userBo.getPhone()));
+			Update update = new Update();
+			update.set("sex", userBo.getSex());
+			mongoTemplate.updateFirst(query, update, UserBo.class);	
+			return userBo;
+		}
+		
 		public UserBo updatePersonalizedSignature(UserBo userBo) {
 			Query query = new Query();
 			query.addCriteria(new Criteria("phone").is(userBo.getPhone()));

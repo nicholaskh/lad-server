@@ -52,6 +52,11 @@ public class UserServiceImpl implements IUserService{
 			return userBo;
 		}
 		
+		public UserBo updateSex(UserBo userBo){
+			userBo = userDao.updateBirthDay(userBo);
+			return userBo;
+		}
+		
 		public UserBo updatePersonalizedSignature(UserBo userBo){
 			userBo = userDao.updatePersonalizedSignature(userBo);
 			return userBo;
