@@ -8,7 +8,6 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 import com.junlenet.mongodb.demo.bo.HomepageBo;
-import com.junlenet.mongodb.demo.bo.UserBo;
 import com.junlenet.mongodb.demo.dao.IHomepageDao;
 
 @Repository("homepageDao")
