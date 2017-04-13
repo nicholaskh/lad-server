@@ -45,7 +45,7 @@ public class MessageController extends BaseContorller {
 		if (session.isNew()) {
 			return "{\"ret\":-1,\"error\":\"error session\"}";
 		}
-		if (!(Boolean) session.getAttribute("isLogin")) {
+		if (session.getAttribute("isLogin") == null) {
 			return "{\"ret\":-1,\"error\":\"error session\"}";
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
@@ -71,7 +71,7 @@ public class MessageController extends BaseContorller {
 		if (session.isNew()) {
 			return "{\"ret\":-1,\"error\":\"error session\"}";
 		}
-		if (!(Boolean) session.getAttribute("isLogin")) {
+		if (session.getAttribute("isLogin") == null) {
 			return "{\"ret\":-1,\"error\":\"error session\"}";
 		}
 		if (!StringUtils.hasLength(message_id)) {
@@ -112,7 +112,7 @@ public class MessageController extends BaseContorller {
 		if (session.isNew()) {
 			return "{\"ret\":-1,\"error\":\"error session\"}";
 		}
-		if (!(Boolean) session.getAttribute("isLogin")) {
+		if (session.getAttribute("isLogin") == null) {
 			return "{\"ret\":-1,\"error\":\"error session\"}";
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
@@ -143,7 +143,7 @@ public class MessageController extends BaseContorller {
 		if (session.isNew()) {
 			return "{\"ret\":-1,\"error\":\"error session\"}";
 		}
-		if (!(Boolean) session.getAttribute("isLogin")) {
+		if (session.getAttribute("isLogin") == null) {
 			return "{\"ret\":-1,\"error\":\"error session\"}";
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");

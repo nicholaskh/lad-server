@@ -35,7 +35,7 @@ public class HomepageController extends BaseContorller {
 		if (session.isNew()) {
 			return "{\"ret\":-1,\"error\":\"error session\"}";
 		}
-		if (!(Boolean) session.getAttribute("isLogin")) {
+		if (session.getAttribute("isLogin") == null) {
 			return "{\"ret\":-1,\"error\":\"error session\"}";
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
@@ -57,7 +57,7 @@ public class HomepageController extends BaseContorller {
 		if (session.isNew()) {
 			return "{\"ret\":-1,\"error\":\"error session\"}";
 		}
-		if (!(Boolean) session.getAttribute("isLogin")) {
+		if (session.getAttribute("isLogin") == null) {
 			return "{\"ret\":-1,\"error\":\"error session\"}";
 		}
 		if (!StringUtils.hasLength(visitor_id)) {
@@ -107,7 +107,7 @@ public class HomepageController extends BaseContorller {
 		if (session.isNew()) {
 			return "{\"ret\":-1,\"error\":\"error session\"}";
 		}
-		if (!(Boolean) session.getAttribute("isLogin")) {
+		if (session.getAttribute("isLogin") == null) {
 			return "{\"ret\":-1,\"error\":\"error session\"}";
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");

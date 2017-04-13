@@ -89,6 +89,22 @@ public class LoginController extends BaseContorller {
 		}
 		return JSONObject.fromObject(map).toString();
 	}
+	
+	@RequestMapping("/logout")
+	@ResponseBody
+	public String loginout(HttpServletRequest request, HttpServletResponse response) {
+		HttpSession session = request.getSession();
+		if(session.isNew()){
+			return "{\"ret\":-1,\"error\":\"session is null\"}";
+		}
+		if (session.getAttribute("isLogin") == null) {
+			return "{\"ret\":-1,\"error\":\"error session\"}";
+		}
+		session.invalidate();
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		return JSONObject.fromObject(map).toString();
+	}
 
 	
 }
