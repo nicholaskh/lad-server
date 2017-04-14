@@ -73,20 +73,20 @@ public class HomepageController extends BaseContorller {
 			return "{\"ret\":-1,\"error\":\"error user\"}";
 		}
 		LinkedList<String> visitor_ids = homepageBo.getVisitor_ids();
-		if(visitor_ids == null){
+		if (visitor_ids == null) {
 			visitor_ids = new LinkedList<String>();
 		}
-		if(visitor_ids.contains(visitor_id)){
+		if (visitor_ids.contains(visitor_id)) {
 			return "{\"ret\":-1,\"error\":\"duplicate visitor_id\"}";
 		}
 		visitor_ids.add(visitor_id);
 		Integer new_visitors_count = homepageBo.getNew_visitors_count();
-		if(new_visitors_count == null){
+		if (new_visitors_count == null) {
 			new_visitors_count = 0;
 		}
 		new_visitors_count++;
 		Integer total_visitors_count = homepageBo.getNew_visitors_count();
-		if(total_visitors_count == null){
+		if (total_visitors_count == null) {
 			total_visitors_count = 0;
 		}
 		total_visitors_count++;
@@ -99,7 +99,7 @@ public class HomepageController extends BaseContorller {
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();
 	}
-	
+
 	@RequestMapping("/new-visitors-count")
 	@ResponseBody
 	public String new_visitors_count(HttpServletRequest request, HttpServletResponse response) {
@@ -120,7 +120,7 @@ public class HomepageController extends BaseContorller {
 			return "{\"ret\":-1,\"error\":\"error user\"}";
 		}
 		Integer new_visitors_count = homepageBo.getNew_visitors_count();
-		if(new_visitors_count == null){
+		if (new_visitors_count == null) {
 			new_visitors_count = 0;
 		}
 		map.put("ret", 0);

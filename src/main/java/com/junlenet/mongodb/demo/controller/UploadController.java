@@ -1,6 +1,5 @@
 package com.junlenet.mongodb.demo.controller;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -50,9 +49,34 @@ public class UploadController extends BaseContorller {
 		userService.updateHeadPictureName(userBo);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
-		map.put("headPicturePath", Constant.HEAD_PICTURE_PATH + fileName);
+		map.put("path", Constant.HEAD_PICTURE_PATH + fileName);
 		return JSONObject.fromObject(map).toString();
 	}
-	
+
+	@RequestMapping("/feedback-picture")
+	@ResponseBody
+	public String feedback_picture(@RequestParam("feedback_picture") MultipartFile file, HttpServletRequest request,
+			HttpServletResponse response) {
+		HttpSession session = request.getSession();
+		if (session.isNew()) {
+			return "{\"ret\":-1,\"error\":\"error session\"}";
+		}
+		if (session.getAttribute("isLogin") == null) {
+			return "{\"ret\":-1,\"error\":\"error session\"}";
+		}
+		UserBo userBo = (UserBo) session.getAttribute("userBo");
+		if (userBo == null) {
+			return "{\"ret\":-1,\"error\":\"error session\"}";
+		}
+		String userId = userBo.getId();
+		String fileName = userId + file.getOriginalFilename();
+		CommonUtil.upload(file, Constant.FEEDBACK_PICTURE_PATH, fileName);
+		userBo.setHeadPictureName(fileName);
+		userService.updateHeadPictureName(userBo);
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("path", Constant.FEEDBACK_PICTURE_PATH + fileName);
+		return JSONObject.fromObject(map).toString();
+	}
 
 }
