@@ -53,7 +53,7 @@ public class UserServiceImpl implements IUserService{
 		}
 		
 		public UserBo updateSex(UserBo userBo){
-			userBo = userDao.updateBirthDay(userBo);
+			userBo = userDao.updateSex(userBo);
 			return userBo;
 		}
 		

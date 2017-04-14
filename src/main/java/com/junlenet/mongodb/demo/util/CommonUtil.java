@@ -2,11 +2,13 @@ package com.junlenet.mongodb.demo.util;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 import org.apache.commons.codec.binary.Hex;
+import org.springframework.web.multipart.MultipartFile;
 
 public class CommonUtil {
 	public static boolean isRightPhone(String phone) {
@@ -29,6 +31,18 @@ public class CommonUtil {
 			e.printStackTrace();
 		}
 		return output;
+	}
+
+	public static void upload(MultipartFile file, String path, String filename) {
+		File targetFile = new File(path, filename);
+		if (!targetFile.exists()) {
+			targetFile.mkdirs();
+		}
+		try {
+			file.transferTo(targetFile);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 }

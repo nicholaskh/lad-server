@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.junlenet.mongodb.demo.bo.UserBo;
 import com.junlenet.mongodb.demo.service.IUserService;
+import com.junlenet.mongodb.demo.util.CommonUtil;
 import com.junlenet.mongodb.demo.util.Constant;
 
 import net.sf.json.JSONObject;
@@ -44,15 +45,7 @@ public class UploadController extends BaseContorller {
 		}
 		String userId = userBo.getId();
 		String fileName = userId + file.getOriginalFilename();
-		File targetFile = new File(Constant.HEAD_PICTURE_PATH, fileName);
-		if (!targetFile.exists()) {
-			targetFile.mkdirs();
-		}
-		try {
-			file.transferTo(targetFile);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		CommonUtil.upload(file, Constant.HEAD_PICTURE_PATH, fileName);
 		userBo.setHeadPictureName(fileName);
 		userService.updateHeadPictureName(userBo);
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -60,5 +53,6 @@ public class UploadController extends BaseContorller {
 		map.put("headPicturePath", Constant.HEAD_PICTURE_PATH + fileName);
 		return JSONObject.fromObject(map).toString();
 	}
+	
 
 }
