@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.junlenet.mongodb.demo.service.ILoginService;
+import com.junlenet.mongodb.demo.util.CommonUtil;
 
 import net.sf.json.JSONObject;
 
@@ -78,6 +79,7 @@ public class LoginController extends BaseContorller {
 		if (!StringUtils.hasLength(password)) {
 			return "{\"ret\":-1,\"error\":\"error password\"}";
 		}
+		password = CommonUtil.getSHA256(password);
 		Map<String, Object> map = new HashMap<String, Object>();
 		if (loginService.getUser(phone, password) != null) {
 			map.put("ret", 0);
@@ -105,6 +107,5 @@ public class LoginController extends BaseContorller {
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();
 	}
-
 	
 }

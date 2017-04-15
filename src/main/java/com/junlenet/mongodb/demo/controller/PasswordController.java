@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.junlenet.mongodb.demo.bo.UserBo;
 import com.junlenet.mongodb.demo.service.IRegistService;
 import com.junlenet.mongodb.demo.service.IUserService;
+import com.junlenet.mongodb.demo.util.CommonUtil;
 
 import net.sf.json.JSONObject;
 
@@ -104,7 +105,7 @@ public class PasswordController extends BaseContorller {
 		}
 		String phone = (String) session.getAttribute("phone");
 		UserBo userBo = new UserBo();
-		userBo.setPassword(password1);
+		userBo.setPassword(CommonUtil.getSHA256(password1));
 		userBo.setPhone(phone);
 		userService.updatePassword(userBo);
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -138,7 +139,7 @@ public class PasswordController extends BaseContorller {
 		if(!old_password.equals(userBo.getPassword())){
 			return "{\"ret\":-1,\"error\":\"password is error\"}";
 		}
-		userBo.setPassword(password1);
+		userBo.setPassword(CommonUtil.getSHA256(password1));
 		userService.updatePassword(userBo);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);

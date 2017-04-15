@@ -44,7 +44,6 @@ public class RegistController extends BaseContorller {
 			HttpSession session = request.getSession();
 			session.setAttribute("phone", phone);
 			session.setAttribute("verification", "111111");
-			map.put("verification", "111111");
 			map.put("ret", 0);
 			break;
 		case -1:
@@ -77,7 +76,6 @@ public class RegistController extends BaseContorller {
 		} else{
 			map.put("ret", -1);
 			map.put("error", "verification error");
-			session.setAttribute("isVerificationRight", false);
 		}
 		return JSONObject.fromObject(map).toString();
 	}
@@ -93,7 +91,7 @@ public class RegistController extends BaseContorller {
 		if(session.getAttribute("isVerificationRight") == null){
 			return "{\"ret\":-1,\"error\":\"isVerificationRight is null\"}";
 		}
-		if(!(Boolean) session.getAttribute("isVerificationRight")){
+		if(session.getAttribute("isVerificationRight") == null){
 			return "{\"ret\":-1,\"error\":\"verification is null\"}";
 		}
 		if (!StringUtils.hasLength(password1) || !StringUtils.hasLength(password2) || !(password1.equals(password2))) {
@@ -103,7 +101,7 @@ public class RegistController extends BaseContorller {
 		String phone = (String) session.getAttribute("phone");
 		UserBo userBo = new UserBo();
 		userBo.setPhone(phone);
-		userBo.setPassword(password1);
+		userBo.setPassword(CommonUtil.getSHA256(password1));
 		userService.save(userBo);
 		session.invalidate();
 		return "{\"ret\":0}";
