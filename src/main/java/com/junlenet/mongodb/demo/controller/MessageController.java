@@ -1,6 +1,5 @@
 package com.junlenet.mongodb.demo.controller;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
