@@ -136,7 +136,7 @@ public class PasswordController extends BaseContorller {
 			return "{\"ret\":-1,\"error\":\"error session\"}";
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
-		if(!old_password.equals(userBo.getPassword())){
+		if(!CommonUtil.getSHA256(old_password).equals(userBo.getPassword())){
 			return "{\"ret\":-1,\"error\":\"password is error\"}";
 		}
 		userBo.setPassword(CommonUtil.getSHA256(password1));
