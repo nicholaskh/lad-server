@@ -12,4 +12,5 @@ public interface IHomepageDao extends IBaseDao {
 	public HomepageBo update_visitor_ids(HomepageBo homepageBo);
 
 	public HomepageBo selectByUserId(String userId);
+	
 }

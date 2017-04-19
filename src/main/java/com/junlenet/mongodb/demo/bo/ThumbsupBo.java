@@ -6,14 +6,14 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class ThumbsupBo extends BaseBo {
 
 	private static final long serialVersionUID = 1L;
-	private String message_id;
+	private String homepage_id;
 	private String owner_id;
 	private String visitor_id;
-	public String getMessage_id() {
-		return message_id;
+	public String getHomepage_id() {
+		return homepage_id;
 	}
-	public void setMessage_id(String message_id) {
-		this.message_id = message_id;
+	public void setHomepage_id(String homepage_id) {
+		this.homepage_id = homepage_id;
 	}
 	public String getOwner_id() {
 		return owner_id;

@@ -31,17 +31,17 @@ public class PersonSet extends BaseContorller {
 			HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return "{\"ret\":-1,\"error\":\"error session\"}";
+			return "{\"ret\":20002,\"error\":\":未登录\"}";
 		}
 		if (session.getAttribute("isLogin") == null) {
-			return "{\"ret\":-1,\"error\":\"error session\"}";
+			return "{\"ret\":20002,\"error\":\":未登录\"}";
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
 		if (userBo == null) {
-			return "{\"ret\":-1,\"error\":\"error session\"}";
+			return "{\"ret\":20002,\"error\":\":未登录\"}";
 		}
 		if(StringUtils.isEmpty(username)){
-			return "{\"ret\":-1,\"error\":\"error username\"}";
+			return "{\"ret\":20003,\"error\":\":用户名为空\"}";
 		}
 		userBo.setUserName(username);
 		userService.updateUserName(userBo);
@@ -56,17 +56,17 @@ public class PersonSet extends BaseContorller {
 			HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return "{\"ret\":-1,\"error\":\"error session\"}";
+			return "{\"ret\":20002,\"error\":\":未登录\"}";
 		}
 		if (session.getAttribute("isLogin") == null) {
-			return "{\"ret\":-1,\"error\":\"error session\"}";
+			return "{\"ret\":20002,\"error\":\":未登录\"}";
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
 		if (userBo == null) {
-			return "{\"ret\":-1,\"error\":\"error session\"}";
+			return "{\"ret\":20002,\"error\":\":未登录\"}";
 		}
 		if(StringUtils.isEmpty(birthday)){
-			return "{\"ret\":-1,\"error\":\"error birthday\"}";
+			return "{\"ret\":20003,\"error\":\":生日为空\"}";
 		}
 		userBo.setBirthDay(birthday);
 		userService.updateBirthDay(userBo);
@@ -81,17 +81,17 @@ public class PersonSet extends BaseContorller {
 			HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return "{\"ret\":-1,\"error\":\"error session\"}";
+			return "{\"ret\":20002,\"error\":\":未登录\"}";
 		}
 		if (session.getAttribute("isLogin") == null) {
-			return "{\"ret\":-1,\"error\":\"error session\"}";
+			return "{\"ret\":20002,\"error\":\":未登录\"}";
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
 		if (userBo == null) {
-			return "{\"ret\":-1,\"error\":\"error session\"}";
+			return "{\"ret\":20002,\"error\":\":未登录\"}";
 		}
 		if(StringUtils.isEmpty(sex)){
-			return "{\"ret\":-1,\"error\":\"error sex\"}";
+			return "{\"ret\":20003,\"error\":\":性别为空\"}";
 		}
 		userBo.setSex(sex);
 		userService.updateSex(userBo);
@@ -106,17 +106,17 @@ public class PersonSet extends BaseContorller {
 			HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return "{\"ret\":-1,\"error\":\"error session\"}";
+			return "{\"ret\":20002,\"error\":\":未登录\"}";
 		}
 		if (session.getAttribute("isLogin") == null) {
-			return "{\"ret\":-1,\"error\":\"error session\"}";
+			return "{\"ret\":20002,\"error\":\":未登录\"}";
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
 		if (userBo == null) {
-			return "{\"ret\":-1,\"error\":\"error session\"}";
+			return "{\"ret\":20002,\"error\":\":未登录\"}";
 		}
 		if(StringUtils.isEmpty(personalized_signature)){
-			return "{\"ret\":-1,\"error\":\"error personalized_signature\"}";
+			return "{\"ret\":20003,\"error\":\":个性签名为空\"}";
 		}
 		userBo.setPersonalizedSignature(personalized_signature);
 		userService.updatePersonalizedSignature(userBo);

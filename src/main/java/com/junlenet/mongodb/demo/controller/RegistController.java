@@ -33,10 +33,10 @@ public class RegistController extends BaseContorller {
 	@ResponseBody
 	public String verification_send(String phone, HttpServletRequest request, HttpServletResponse response) {
 		if (!StringUtils.hasLength(phone)) {
-			return "{\"ret\":-1,\"error\":\"error phone\"}";
+			return "{\"ret\":10003,\"error\":\"手机号码错误\"}";
 		}
 		if (!CommonUtil.isRightPhone(phone)) {
-			return "{\"ret\":-1,\"error\":\"error phone\"}";
+			return "{\"ret\":10003,\"error\":\"手机号码错误\"}";
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		switch (registService.verification_send(phone)) {
@@ -47,8 +47,8 @@ public class RegistController extends BaseContorller {
 			map.put("ret", 0);
 			break;
 		case -1:
-			map.put("ret", -1);
-			map.put("error", "phone repeat");
+			map.put("ret", 10005);
+			map.put("error", "手机号码重复");
 			break;
 		}
 		return JSONObject.fromObject(map).toString();
@@ -60,13 +60,13 @@ public class RegistController extends BaseContorller {
 			HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if(session.isNew()){
-			return "{\"ret\":-1,\"error\":\"sesssion is null\"}";
+			return "{\"ret\":10009,\"error\":\"验证码错误\"}";
 		}
 		if (!StringUtils.hasLength(verification)) {
-			return "{\"ret\":-1,\"error\":\"verification is null\"}";
+			return "{\"ret\":10009,\"error\":\"验证码错误\"}";
 		}
 		if(session.getAttribute("verification") == null){
-			return "{\"ret\":-1,\"error\":\"sesssion is null\"}";
+			return "{\"ret\":10009,\"error\":\"验证码错误\"}";
 		}
 		String verification_session = (String) session.getAttribute("verification");
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -74,8 +74,8 @@ public class RegistController extends BaseContorller {
 			map.put("ret", 0);
 			session.setAttribute("isVerificationRight", true);
 		} else{
-			map.put("ret", -1);
-			map.put("error", "verification error");
+			map.put("ret", 10009);
+			map.put("error", "验证码错误");
 		}
 		return JSONObject.fromObject(map).toString();
 	}
@@ -86,16 +86,16 @@ public class RegistController extends BaseContorller {
 			HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if(session.isNew()){
-			return "{\"ret\":-1,\"error\":\"sesssion is null\"}";
+			return "{\"ret\":10009,\"error\":\"验证码错误\"}";
 		}
 		if(session.getAttribute("isVerificationRight") == null){
-			return "{\"ret\":-1,\"error\":\"isVerificationRight is null\"}";
+			return "{\"ret\":10009,\"error\":\"验证码错误\"}";
 		}
 		if(session.getAttribute("isVerificationRight") == null){
-			return "{\"ret\":-1,\"error\":\"verification is null\"}";
+			return "{\"ret\":10009,\"error\":\"验证码错误\"}";
 		}
 		if (!StringUtils.hasLength(password1) || !StringUtils.hasLength(password2) || !(password1.equals(password2))) {
-			return "{\"ret\":-1,\"error\":\"password is error\"}";
+			return "{\"ret\":-10003,\"error\":\"输入密码错误\"}";
 		}
 
 		String phone = (String) session.getAttribute("phone");

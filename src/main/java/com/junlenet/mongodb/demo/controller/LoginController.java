@@ -29,7 +29,7 @@ public class LoginController extends BaseContorller {
 	@ResponseBody
 	public String verification_send(String phone, HttpServletRequest request, HttpServletResponse response) {
 		if (!StringUtils.hasLength(phone)) {
-			return "{\"ret\":-1,\"error\":\"error phone\"}";
+			return "{\"ret\":10003,\"error\":\"手机号码错误\"}";
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		HttpSession session = request.getSession();
@@ -45,17 +45,17 @@ public class LoginController extends BaseContorller {
 			HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if(session.isNew()){
-			return "{\"ret\":-1,\"error\":\"session is null\"}";
+			return "{\"ret\":10009,\"error\":\"验证码错误\"}";
 		}
 		if (!StringUtils.hasLength(phone)) {
-			return "{\"ret\":-1,\"error\":\"error phone\"}";
+			return "{\"ret\":10003,\"error\":\"手机号码错误\"}";
 		}
 		if (!StringUtils.hasLength(verification)) {
-			return "{\"ret\":-1,\"error\":\"verification is null\"}";
+			return "{\"ret\":10009,\"error\":\"验证码错误\"}";
 		}
 		String verification_session = (String) session.getAttribute("verification");
 		if(session.getAttribute("phone") == null){
-			return "{\"ret\":-1,\"error\":\"error session\"}";
+			return "{\"ret\":10009,\"error\":\"验证码错误\"}";
 		}
 		String phone_session = (String) session.getAttribute("phone");
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -63,8 +63,8 @@ public class LoginController extends BaseContorller {
 			map.put("ret", 0);
 			session.setAttribute("isLogin", true);
 		} else {
-			map.put("ret", -1);
-			map.put("error", "verification error");
+			map.put("ret", 10009);
+			map.put("error", "验证码错误");
 		}
 		return JSONObject.fromObject(map).toString();
 	}
@@ -74,10 +74,10 @@ public class LoginController extends BaseContorller {
 	public String login(String phone, String password, HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (!StringUtils.hasLength(phone)) {
-			return "{\"ret\":-1,\"error\":\"error userName\"}";
+			return "{\"ret\":10003,\"error\":\"手机号码为空\"}";
 		}
 		if (!StringUtils.hasLength(password)) {
-			return "{\"ret\":-1,\"error\":\"error password\"}";
+			return "{\"ret\":10003,\"error\":\"密码为空\"}";
 		}
 		password = CommonUtil.getSHA256(password);
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -86,8 +86,8 @@ public class LoginController extends BaseContorller {
 			session.setAttribute("isLogin", true);
 			session.setAttribute("userBo", loginService.getUser(phone, password));
 		} else {
-			map.put("ret", -1);
-			map.put("error", "username or password is wrong");
+			map.put("ret", 10004);
+			map.put("error", "用户名或者密码错误");
 		}
 		return JSONObject.fromObject(map).toString();
 	}
@@ -97,10 +97,10 @@ public class LoginController extends BaseContorller {
 	public String loginout(HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if(session.isNew()){
-			return "{\"ret\":-1,\"error\":\"session is null\"}";
+			return "{\"ret\":10002,\"error\":\":未登录\"}";
 		}
 		if (session.getAttribute("isLogin") == null) {
-			return "{\"ret\":-1,\"error\":\"error session\"}";
+			return "{\"ret\":10002,\"error\":\":未登录\"}";
 		}
 		session.invalidate();
 		Map<String, Object> map = new HashMap<String, Object>();

@@ -1,5 +1,7 @@
 package com.junlenet.mongodb.demo.dao.impl;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -21,18 +23,15 @@ public class MessageDaoImpl implements IMessageDao {
 		return messageBo;
 	}
 
-	public MessageBo update_thumbsup_ids(MessageBo messageBo) {
-		Query query = new Query();
-		query.addCriteria(new Criteria("_id").is(messageBo.getId()));
-		Update update = new Update();
-		update.set("thumbsup_ids", messageBo.getThumbsup_ids());
-		mongoTemplate.updateFirst(query, update, MessageBo.class);
-		return messageBo;
-	}
-
 	public MessageBo selectById(String messageId) {
 		Query query = new Query();
 		query.addCriteria(new Criteria("_id").is(messageId));
 		return mongoTemplate.findOne(query, MessageBo.class);
+	}
+
+	public List<MessageBo> selectByUserId(String userId) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("ownerId").is(userId));
+		return mongoTemplate.find(query, MessageBo.class);
 	}
 }

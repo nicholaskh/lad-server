@@ -1,10 +1,6 @@
-package com.junlenet.mongodb.demo.bo;
+package com.junlenet.mongodb.demo.vo;
 
-import org.springframework.data.mongodb.core.mapping.Document;
-
-@Document(collection = "info")
-public class InfoBo extends BaseBo {
-
+public class MessageVo extends BaseVo {
 	private String ownerId;
 	private String content;
 	private String source;

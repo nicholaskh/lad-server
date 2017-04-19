@@ -1,23 +1,21 @@
 package com.junlenet.mongodb.demo.bo;
 
-import java.io.Serializable;
-import java.util.LinkedList;
-
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document(collection="message")
-public class MessageBo extends BaseBo implements Serializable{
+@Document(collection = "message")
+public class MessageBo extends BaseBo {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	
+	private String ownerId;
 	private String content;
-	
-	private LinkedList<String> thumbsup_ids;
-	
-	private String owner_id;
+	private String source;
+
+	public String getOwnerId() {
+		return ownerId;
+	}
+
+	public void setOwnerId(String ownerId) {
+		this.ownerId = ownerId;
+	}
 
 	public String getContent() {
 		return content;
@@ -27,19 +25,11 @@ public class MessageBo extends BaseBo implements Serializable{
 		this.content = content;
 	}
 
-	public LinkedList<String> getThumbsup_ids() {
-		return thumbsup_ids;
+	public String getSource() {
+		return source;
 	}
 
-	public void setThumbsup_ids(LinkedList<String> thumbsup_ids) {
-		this.thumbsup_ids = thumbsup_ids;
-	}
-
-	public String getOwner_id() {
-		return owner_id;
-	}
-
-	public void setOwner_id(String owner_id) {
-		this.owner_id = owner_id;
+	public void setSource(String source) {
+		this.source = source;
 	}
 }

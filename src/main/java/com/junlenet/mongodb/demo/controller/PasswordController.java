@@ -36,23 +36,23 @@ public class PasswordController extends BaseContorller {
 			HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return "{\"ret\":-1,\"error\":\"error session\"}";
+			return "{\"ret\":30002,\"error\":\":未登录\"}";
 		}
 		if (!StringUtils.hasLength(phone)) {
-			return "{\"ret\":-1,\"error\":\"error phone\"}";
+			return "{\"ret\":30003,\"error\":\"手机号码错误\"}";
 		}
 		if (!StringUtils.hasLength(verification_img)) {
-			return "{\"ret\":-1,\"error\":\"error verification\"}";
+			return "{\"ret\":30003,\"error\":\"图片验证码为空\"}";
 		}
 		if (!registService.is_phone_repeat(phone)) {
-			return "{\"ret\":-1,\"error\":\"error phone\"}";
+			return "{\"ret\":30003,\"error\":\"手机号码错误\"}";
 		}
 		if (session.getAttribute("verification_img") == null) {
-			return "{\"ret\":-1,\"error\":\"error session\"}";
+			return "{\"ret\":30003,\"error\":\"图片验证码为空\"}";
 		}
 		String verification_img_session = (String) session.getAttribute("verification_img");
 		if (!verification_img_session.equals(verification_img)) {
-			return "{\"ret\":-1,\"error\":\"error verification_img\"}";
+			return "{\"ret\":30003,\"error\":\"图片验证码错误\"}";
 		}
 		session.setAttribute("verification", "111111");
 		session.setAttribute("phone", phone);
@@ -68,17 +68,17 @@ public class PasswordController extends BaseContorller {
 	public String verification_check(String verification, HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return "{\"ret\":-1,\"error\":\"error session\"}";
+			return "{\"ret\":30002,\"error\":\":未登录\"}";
 		}
 		if (!StringUtils.hasLength(verification)) {
-			return "{\"ret\":-1,\"error\":\"verification is null\"}";
+			return "{\"ret\":30003,\"error\":\"验证码为空\"}";
 		}
 		if (session.getAttribute("verification") == null) {
-			return "{\"ret\":-1,\"error\":\"error session\"}";
+			return "{\"ret\":30003,\"error\":\"验证码为空\"}";
 		}
 		String verification_session = (String) session.getAttribute("verification");
 		if (!verification_session.equals(verification)) {
-			return "{\"ret\":-1,\"error\":\"error verification\"}";
+			return "{\"ret\":30003,\"error\":\"验证码错误\"}";
 		}
 		session.setAttribute("isVerification", true);
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -92,16 +92,13 @@ public class PasswordController extends BaseContorller {
 			HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return "{\"ret\":-1,\"error\":\"error session\"}";
+			return "{\"ret\":30002,\"error\":\":未登录\"}";
 		}
 		if (!StringUtils.hasLength(password1) || !StringUtils.hasLength(password2)) {
-			return "{\"ret\":-1,\"error\":\"password is null\"}";
+			return "{\"ret\":30003,\"error\":\"输入密码错误\"}";
 		}
 		if (session.getAttribute("isVerification") == null) {
-			return "{\"ret\":-1,\"error\":\"error session\"}";
-		}
-		if (!(Boolean) session.getAttribute("isVerification")) {
-			return "{\"ret\":-1,\"error\":\"error isVerification\"}";
+			return "{\"ret\":30003,\"error\":\"验证码错误\"}";
 		}
 		String phone = (String) session.getAttribute("phone");
 		UserBo userBo = new UserBo();
@@ -120,24 +117,24 @@ public class PasswordController extends BaseContorller {
 			HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return "{\"ret\":-1,\"error\":\"error session\"}";
+			return "{\"ret\":30002,\"error\":\":未登录\"}";
 		}
 		if (session.getAttribute("isLogin") == null) {
-			return "{\"ret\":-1,\"error\":\"error session\"}";
+			return "{\"ret\":30002,\"error\":\":未登录\"}";
 		}
 		if (!StringUtils.hasLength(password1) || !StringUtils.hasLength(password2)
 				|| !StringUtils.hasLength(old_password)) {
-			return "{\"ret\":-1,\"error\":\"password is error\"}";
+			return "{\"ret\":30003,\"error\":\"新输入密码错误\"}";
 		}
 		if (!password1.equals(password2)) {
-			return "{\"ret\":-1,\"error\":\"password is error\"}";
+			return "{\"ret\":30003,\"error\":\"新输入密码错误\"}";
 		}
 		if (session.getAttribute("userBo") == null) {
-			return "{\"ret\":-1,\"error\":\"error session\"}";
+			return "{\"ret\":30002,\"error\":\":未登录\"}";
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
 		if(!CommonUtil.getSHA256(old_password).equals(userBo.getPassword())){
-			return "{\"ret\":-1,\"error\":\"password is error\"}";
+			return "{\"ret\":30003,\"error\":\"原密码错误\"}";
 		}
 		userBo.setPassword(CommonUtil.getSHA256(password1));
 		userService.updatePassword(userBo);

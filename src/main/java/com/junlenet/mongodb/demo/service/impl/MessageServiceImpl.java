@@ -1,5 +1,7 @@
 package com.junlenet.mongodb.demo.service.impl;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,12 +19,12 @@ public class MessageServiceImpl implements IMessageService {
 		return messageDao.insert(messageBo);
 	}
 
-	public MessageBo update_thumbsup_ids(MessageBo messageBo) {
-		return messageDao.update_thumbsup_ids(messageBo);
-	}
-
 	public MessageBo selectById(String messageId) {
 		return messageDao.selectById(messageId);
+	}
+
+	public List<MessageBo> selectByUserId(String userId) {
+		return messageDao.selectByUserId(userId);
 	}
 
 }

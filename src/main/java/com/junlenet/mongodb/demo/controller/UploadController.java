@@ -33,14 +33,14 @@ public class UploadController extends BaseContorller {
 			HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return "{\"ret\":-1,\"error\":\"error session\"}";
+			return "{\"ret\":20002,\"error\":\":未登录\"}";
 		}
 		if (session.getAttribute("isLogin") == null) {
-			return "{\"ret\":-1,\"error\":\"error session\"}";
+			return "{\"ret\":20002,\"error\":\":未登录\"}";
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
 		if (userBo == null) {
-			return "{\"ret\":-1,\"error\":\"error session\"}";
+			return "{\"ret\":20002,\"error\":\":未登录\"}";
 		}
 		String userId = userBo.getId();
 		String fileName = userId + file.getOriginalFilename();
@@ -59,14 +59,14 @@ public class UploadController extends BaseContorller {
 			HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return "{\"ret\":-1,\"error\":\"error session\"}";
+			return "{\"ret\":20002,\"error\":\":未登录\"}";
 		}
 		if (session.getAttribute("isLogin") == null) {
-			return "{\"ret\":-1,\"error\":\"error session\"}";
+			return "{\"ret\":20002,\"error\":\":未登录\"}";
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
 		if (userBo == null) {
-			return "{\"ret\":-1,\"error\":\"error session\"}";
+			return "{\"ret\":20002,\"error\":\":未登录\"}";
 		}
 		String userId = userBo.getId();
 		String fileName = userId + file.getOriginalFilename();
