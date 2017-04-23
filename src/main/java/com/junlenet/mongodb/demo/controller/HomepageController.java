@@ -190,6 +190,7 @@ public class HomepageController extends BaseContorller {
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("thumbsup_from_me", thumbsup_from_me_vo);
+		
 		return JSONObject.fromObject(map).toString();
 	}
 
