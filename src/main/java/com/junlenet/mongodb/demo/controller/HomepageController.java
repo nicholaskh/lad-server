@@ -33,7 +33,7 @@ import net.sf.json.JSONObject;
 @Scope("prototype")
 @RequestMapping("homepage")
 public class HomepageController extends BaseContorller {
-	
+
 	@Autowired
 	private IHomepageService homepageService;
 	@Autowired
@@ -149,7 +149,7 @@ public class HomepageController extends BaseContorller {
 		homepageService.update_new_visitors_count(homepageBo);
 		return JSONObject.fromObject(map).toString();
 	}
-	
+
 	@RequestMapping("/thumbsup")
 	@ResponseBody
 	public String thumbsup(String user_id, HttpServletRequest request, HttpServletResponse response) {
@@ -185,7 +185,7 @@ public class HomepageController extends BaseContorller {
 
 	@RequestMapping("/thumbsup-from-me")
 	@ResponseBody
-	public String thumbsup_from_me(HttpServletRequest request, HttpServletResponse response) throws Exception {
+	public String thumbsup_from_me(String start_id, boolean gt, int limit, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
@@ -201,7 +201,7 @@ public class HomepageController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		String ownerId = userBo.getId();
-		List<ThumbsupBo> thumbsup_from_me = thumbsupService.selectByOwnerId(ownerId);
+		List<ThumbsupBo> thumbsup_from_me = thumbsupService.selectByOwnerIdPaged(start_id, gt, limit, ownerId);
 		List<ThumbsupVo> thumbsup_from_me_vo = new ArrayList<ThumbsupVo>();
 		for (ThumbsupBo item : thumbsup_from_me) {
 			ThumbsupVo vo = new ThumbsupVo();
@@ -211,13 +211,14 @@ public class HomepageController extends BaseContorller {
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("thumbsup_from_me", thumbsup_from_me_vo);
-		
+
 		return JSONObject.fromObject(map).toString();
 	}
 
 	@RequestMapping("/thumbsup-to-me")
 	@ResponseBody
-	public String thumbsup_to_me(HttpServletRequest request, HttpServletResponse response) throws Exception {
+	public String thumbsup_to_me(String start_id, boolean gt, int limit, HttpServletRequest request,
+			HttpServletResponse response) throws Exception {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
@@ -233,7 +234,7 @@ public class HomepageController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		String ownerId = userBo.getId();
-		List<ThumbsupBo> thumbsup_to_me = thumbsupService.selectByVisitorId(ownerId);
+		List<ThumbsupBo> thumbsup_to_me = thumbsupService.selectByVisitorIdPaged(start_id, gt, limit, ownerId);
 		List<ThumbsupVo> thumbsup_to_me_vo = new ArrayList<ThumbsupVo>();
 		for (ThumbsupBo item : thumbsup_to_me) {
 			ThumbsupVo vo = new ThumbsupVo();

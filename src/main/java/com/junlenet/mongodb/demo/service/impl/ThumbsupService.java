@@ -14,7 +14,7 @@ public class ThumbsupService implements IThumbsupService {
 
 	@Autowired
 	private IThumbsupDao thumbsupDao;
-	
+
 	public ThumbsupBo insert(ThumbsupBo thumbsupBo) {
 		return thumbsupDao.insert(thumbsupBo);
 	}
@@ -25,6 +25,14 @@ public class ThumbsupService implements IThumbsupService {
 
 	public List<ThumbsupBo> selectByVisitorId(String visitorId) {
 		return thumbsupDao.selectByVisitorId(visitorId);
+	}
+
+	public List<ThumbsupBo> selectByOwnerIdPaged(String startId, boolean gt, int limit, String ownerId) {
+		return thumbsupDao.selectByOwnerIdPaged(startId, gt, limit, ownerId);
+	}
+
+	public List<ThumbsupBo> selectByVisitorIdPaged(String startId, boolean gt, int limit, String visitorId) {
+		return thumbsupDao.selectByVisitorIdPaged(startId, gt, limit, visitorId);
 	}
 
 }

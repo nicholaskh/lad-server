@@ -2,6 +2,7 @@ package com.junlenet.mongodb.demo.vo;
 
 public class ThumbsupVo extends BaseVo {
 
+	private String id;
 	private String homepage_id;
 	private String owner_id;
 	private String visitor_id;
@@ -22,5 +23,11 @@ public class ThumbsupVo extends BaseVo {
 	}
 	public void setVisitor_id(String visitor_id) {
 		this.visitor_id = visitor_id;
+	}
+	public String getId() {
+		return id;
+	}
+	public void setId(String id) {
+		this.id = id;
 	}
 }
