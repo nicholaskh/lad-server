@@ -29,6 +29,7 @@ public class AccountSecurityController extends BaseContorller {
 	@ResponseBody
 	public String verification_send(HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession();
+		Map<String, Object> map = new HashMap<String, Object>();
 		if (session.isNew()) {
 			return "{\"ret\":-1,\"error\":\"login error\"}";
 		}
@@ -40,7 +41,7 @@ public class AccountSecurityController extends BaseContorller {
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
 		session.setAttribute("account-security.verification-send", "111111");
-		Map<String, Object> map = new HashMap<String, Object>();
+		
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();
 	}

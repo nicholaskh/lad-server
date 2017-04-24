@@ -23,6 +23,8 @@ import com.junlenet.mongodb.demo.bo.ThumbsupBo;
 import com.junlenet.mongodb.demo.bo.UserBo;
 import com.junlenet.mongodb.demo.service.IHomepageService;
 import com.junlenet.mongodb.demo.service.IThumbsupService;
+import com.junlenet.mongodb.demo.util.CommonUtil;
+import com.junlenet.mongodb.demo.util.ERRORCODE;
 import com.junlenet.mongodb.demo.vo.ThumbsupVo;
 
 import net.sf.json.JSONObject;
@@ -42,14 +44,17 @@ public class HomepageController extends BaseContorller {
 	public String isnert(HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return "{\"ret\":40002,\"error\":\":未登录\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (session.getAttribute("isLogin") == null) {
-			return "{\"ret\":40002,\"error\":\":未登录\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
 		if (userBo == null) {
-			return "{\"ret\":40002,\"error\":\":未登录\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		HomepageBo homepageBo = new HomepageBo();
@@ -64,22 +69,27 @@ public class HomepageController extends BaseContorller {
 	public String visit_my_homepage(String visitor_id, HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return "{\"ret\":40002,\"error\":\":未登录\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (session.getAttribute("isLogin") == null) {
-			return "{\"ret\":40002,\"error\":\":未登录\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (!StringUtils.hasLength(visitor_id)) {
-			return "{\"ret\":40003,\"error\":\":来访者为空\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.CONTACT_VISITOR.getIndex(),
+					ERRORCODE.CONTACT_VISITOR.getReason());
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
 		if (userBo == null) {
-			return "{\"ret\":40002,\"error\":\":未登录\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		HomepageBo homepageBo = homepageService.selectByUserId(userBo.getId());
 		if (homepageBo == null) {
-			return "{\"ret\":40003,\"error\":\":我的首页为空\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.CONTACT_HOMEPAGE.getIndex(),
+					ERRORCODE.CONTACT_HOMEPAGE.getReason());
 		}
 		LinkedList<String> visitor_ids = homepageBo.getVisitor_ids();
 		if (visitor_ids == null) {
@@ -111,19 +121,23 @@ public class HomepageController extends BaseContorller {
 	public String new_visitors_count(HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return "{\"ret\":40002,\"error\":\":未登录\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (session.getAttribute("isLogin") == null) {
-			return "{\"ret\":40002,\"error\":\":未登录\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
 		if (userBo == null) {
-			return "{\"ret\":40002,\"error\":\":未登录\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		HomepageBo homepageBo = homepageService.selectByUserId(userBo.getId());
 		if (homepageBo == null) {
-			return "{\"ret\":40003,\"error\":\":我的首页为空\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.CONTACT_HOMEPAGE.getIndex(),
+					ERRORCODE.CONTACT_HOMEPAGE.getReason());
 		}
 		Integer new_visitors_count = homepageBo.getNew_visitors_count();
 		if (new_visitors_count == null) {
@@ -141,17 +155,21 @@ public class HomepageController extends BaseContorller {
 	public String thumbsup(String user_id, HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return "{\"ret\":40002,\"error\":\":未登录\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (session.getAttribute("isLogin") == null) {
-			return "{\"ret\":40002,\"error\":\":未登录\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (!StringUtils.hasLength(user_id)) {
-			return "{\"ret\":40003,\"error\":\":用户ID为空\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.CONTACT_VISITOR.getIndex(),
+					ERRORCODE.CONTACT_VISITOR.getReason());
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
 		if (userBo == null) {
-			return "{\"ret\":40003,\"error\":\":我的首页为空\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.CONTACT_HOMEPAGE.getIndex(),
+					ERRORCODE.CONTACT_HOMEPAGE.getReason());
 		}
 		String owner_id = userBo.getId();
 		HomepageBo homepageBo = homepageService.selectByUserId(user_id);
@@ -170,14 +188,17 @@ public class HomepageController extends BaseContorller {
 	public String thumbsup_from_me(HttpServletRequest request, HttpServletResponse response) throws Exception {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return "{\"ret\":40002,\"error\":\":未登录\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (session.getAttribute("isLogin") == null) {
-			return "{\"ret\":40002,\"error\":\":未登录\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
 		if (userBo == null) {
-			return "{\"ret\":40002,\"error\":\":未登录\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		String ownerId = userBo.getId();
 		List<ThumbsupBo> thumbsup_from_me = thumbsupService.selectByOwnerId(ownerId);
@@ -199,14 +220,17 @@ public class HomepageController extends BaseContorller {
 	public String thumbsup_to_me(HttpServletRequest request, HttpServletResponse response) throws Exception {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return "{\"ret\":40002,\"error\":\":未登录\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (session.getAttribute("isLogin") == null) {
-			return "{\"ret\":40002,\"error\":\":未登录\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
 		if (userBo == null) {
-			return "{\"ret\":40002,\"error\":\":未登录\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		String ownerId = userBo.getId();
 		List<ThumbsupBo> thumbsup_to_me = thumbsupService.selectByVisitorId(ownerId);

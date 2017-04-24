@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.junlenet.mongodb.demo.bo.FeedbackBo;
 import com.junlenet.mongodb.demo.bo.UserBo;
 import com.junlenet.mongodb.demo.service.IFeedbackService;
+import com.junlenet.mongodb.demo.util.CommonUtil;
+import com.junlenet.mongodb.demo.util.ERRORCODE;
 
 import net.sf.json.JSONObject;
 
@@ -34,18 +36,22 @@ public class FeedbackController extends BaseContorller {
 			HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return "{\"ret\":-1,\"error\":\"error session\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (session.getAttribute("isLogin") == null) {
-			return "{\"ret\":-1,\"error\":\"error session\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
 		if (userBo == null) {
-			return "{\"ret\":-1,\"error\":\"error session\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		FeedbackBo feedbackBo = new FeedbackBo();
 		if (StringUtils.isEmpty(content)) {
-			return "{\"ret\":-1,\"error\":\"feeadback is null\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.FEEDBACK_NULL.getIndex(),
+					ERRORCODE.FEEDBACK_NULL.getReason());
 		}
 		feedbackBo.setContent(content);
 		feedbackBo.setContactInfo(contactInfo);

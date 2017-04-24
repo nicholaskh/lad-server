@@ -44,12 +44,12 @@ public class UploadController extends BaseContorller {
 		}
 		String userId = userBo.getId();
 		String fileName = userId + file.getOriginalFilename();
-		CommonUtil.upload(file, Constant.HEAD_PICTURE_PATH, fileName);
+		String path = CommonUtil.upload(file, Constant.HEAD_PICTURE_PATH, fileName);
 		userBo.setHeadPictureName(fileName);
 		userService.updateHeadPictureName(userBo);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
-		map.put("path", Constant.HEAD_PICTURE_PATH + fileName);
+		map.put("path", path);
 		return JSONObject.fromObject(map).toString();
 	}
 
@@ -70,12 +70,12 @@ public class UploadController extends BaseContorller {
 		}
 		String userId = userBo.getId();
 		String fileName = userId + file.getOriginalFilename();
-		CommonUtil.upload(file, Constant.FEEDBACK_PICTURE_PATH, fileName);
+		String path = CommonUtil.upload(file, Constant.FEEDBACK_PICTURE_PATH, fileName);
 		userBo.setHeadPictureName(fileName);
 		userService.updateHeadPictureName(userBo);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
-		map.put("path", Constant.FEEDBACK_PICTURE_PATH + fileName);
+		map.put("path", path);
 		return JSONObject.fromObject(map).toString();
 	}
 

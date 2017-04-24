@@ -17,6 +17,7 @@ import com.junlenet.mongodb.demo.bo.UserBo;
 import com.junlenet.mongodb.demo.service.IRegistService;
 import com.junlenet.mongodb.demo.service.IUserService;
 import com.junlenet.mongodb.demo.util.CommonUtil;
+import com.junlenet.mongodb.demo.util.ERRORCODE;
 
 import net.sf.json.JSONObject;
 
@@ -32,13 +33,15 @@ public class RegistController extends BaseContorller {
 	@RequestMapping("/verification-send")
 	@ResponseBody
 	public String verification_send(String phone, HttpServletRequest request, HttpServletResponse response) {
+		Map<String, Object> map = new HashMap<String, Object>();
 		if (!StringUtils.hasLength(phone)) {
-			return "{\"ret\":10003,\"error\":\"手机号码错误\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PHONE_ERROR.getIndex(),
+					ERRORCODE.ACCOUNT_PHONE_ERROR.getReason());
 		}
 		if (!CommonUtil.isRightPhone(phone)) {
-			return "{\"ret\":10003,\"error\":\"手机号码错误\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PHONE_ERROR.getIndex(),
+					ERRORCODE.ACCOUNT_PHONE_ERROR.getReason());
 		}
-		Map<String, Object> map = new HashMap<String, Object>();
 		switch (registService.verification_send(phone)) {
 		case 0:
 			HttpSession session = request.getSession();
@@ -47,35 +50,36 @@ public class RegistController extends BaseContorller {
 			map.put("ret", 0);
 			break;
 		case -1:
-			map.put("ret", 10005);
-			map.put("error", "手机号码重复");
-			break;
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PHONE_REPEAT.getIndex(),
+					ERRORCODE.ACCOUNT_PHONE_REPEAT.getReason());
 		}
 		return JSONObject.fromObject(map).toString();
 	}
 
 	@RequestMapping("/is-verification-right")
 	@ResponseBody
-	public String is_verification_right(String verification, HttpServletRequest request,
-			HttpServletResponse response) {
+	public String is_verification_right(String verification, HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession();
-		if(session.isNew()){
-			return "{\"ret\":10009,\"error\":\"验证码错误\"}";
+		if (session.isNew()) {
+			return CommonUtil.toErrorResult(ERRORCODE.SECURITY_WRONG_VERIFICATION.getIndex(),
+					ERRORCODE.SECURITY_WRONG_VERIFICATION.getReason());
 		}
 		if (!StringUtils.hasLength(verification)) {
-			return "{\"ret\":10009,\"error\":\"验证码错误\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.SECURITY_WRONG_VERIFICATION.getIndex(),
+					ERRORCODE.SECURITY_WRONG_VERIFICATION.getReason());
 		}
-		if(session.getAttribute("verification") == null){
-			return "{\"ret\":10009,\"error\":\"验证码错误\"}";
+		if (session.getAttribute("verification") == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.SECURITY_WRONG_VERIFICATION.getIndex(),
+					ERRORCODE.SECURITY_WRONG_VERIFICATION.getReason());
 		}
 		String verification_session = (String) session.getAttribute("verification");
 		Map<String, Object> map = new HashMap<String, Object>();
 		if (verification_session.equals(verification)) {
 			map.put("ret", 0);
 			session.setAttribute("isVerificationRight", true);
-		} else{
-			map.put("ret", 10009);
-			map.put("error", "验证码错误");
+		} else {
+			return CommonUtil.toErrorResult(ERRORCODE.SECURITY_WRONG_VERIFICATION.getIndex(),
+					ERRORCODE.SECURITY_WRONG_VERIFICATION.getReason());
 		}
 		return JSONObject.fromObject(map).toString();
 	}
@@ -85,17 +89,21 @@ public class RegistController extends BaseContorller {
 	public String password_set(String password1, String password2, HttpServletRequest request,
 			HttpServletResponse response) {
 		HttpSession session = request.getSession();
-		if(session.isNew()){
-			return "{\"ret\":10009,\"error\":\"验证码错误\"}";
+		if (session.isNew()) {
+			return CommonUtil.toErrorResult(ERRORCODE.SECURITY_WRONG_VERIFICATION.getIndex(),
+					ERRORCODE.SECURITY_WRONG_VERIFICATION.getReason());
 		}
-		if(session.getAttribute("isVerificationRight") == null){
-			return "{\"ret\":10009,\"error\":\"验证码错误\"}";
+		if (session.getAttribute("isVerificationRight") == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.SECURITY_WRONG_VERIFICATION.getIndex(),
+					ERRORCODE.SECURITY_WRONG_VERIFICATION.getReason());
 		}
-		if(session.getAttribute("isVerificationRight") == null){
-			return "{\"ret\":10009,\"error\":\"验证码错误\"}";
+		if (session.getAttribute("isVerificationRight") == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.SECURITY_WRONG_VERIFICATION.getIndex(),
+					ERRORCODE.SECURITY_WRONG_VERIFICATION.getReason());
 		}
 		if (!StringUtils.hasLength(password1) || !StringUtils.hasLength(password2) || !(password1.equals(password2))) {
-			return "{\"ret\":-10003,\"error\":\"输入密码错误\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PASSWORD.getIndex(),
+					ERRORCODE.ACCOUNT_PASSWORD.getReason());
 		}
 
 		String phone = (String) session.getAttribute("phone");
@@ -106,5 +114,5 @@ public class RegistController extends BaseContorller {
 		session.invalidate();
 		return "{\"ret\":0}";
 	}
-	
+
 }

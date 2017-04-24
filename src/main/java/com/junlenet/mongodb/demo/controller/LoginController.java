@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.junlenet.mongodb.demo.service.ILoginService;
 import com.junlenet.mongodb.demo.util.CommonUtil;
+import com.junlenet.mongodb.demo.util.ERRORCODE;
 
 import net.sf.json.JSONObject;
 
@@ -29,7 +30,8 @@ public class LoginController extends BaseContorller {
 	@ResponseBody
 	public String verification_send(String phone, HttpServletRequest request, HttpServletResponse response) {
 		if (!StringUtils.hasLength(phone)) {
-			return "{\"ret\":10003,\"error\":\"手机号码错误\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PHONE_ERROR.getIndex(),
+					ERRORCODE.ACCOUNT_PHONE_ERROR.getReason());
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		HttpSession session = request.getSession();
@@ -45,17 +47,21 @@ public class LoginController extends BaseContorller {
 			HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if(session.isNew()){
-			return "{\"ret\":10009,\"error\":\"验证码错误\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.SECURITY_WRONG_VERIFICATION.getIndex(),
+					ERRORCODE.SECURITY_WRONG_VERIFICATION.getReason());
 		}
 		if (!StringUtils.hasLength(phone)) {
-			return "{\"ret\":10003,\"error\":\"手机号码错误\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PHONE_ERROR.getIndex(),
+					ERRORCODE.ACCOUNT_PHONE_ERROR.getReason());
 		}
 		if (!StringUtils.hasLength(verification)) {
-			return "{\"ret\":10009,\"error\":\"验证码错误\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.SECURITY_WRONG_VERIFICATION.getIndex(),
+					ERRORCODE.SECURITY_WRONG_VERIFICATION.getReason());
 		}
 		String verification_session = (String) session.getAttribute("verification");
 		if(session.getAttribute("phone") == null){
-			return "{\"ret\":10009,\"error\":\"验证码错误\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.SECURITY_WRONG_VERIFICATION.getIndex(),
+					ERRORCODE.SECURITY_WRONG_VERIFICATION.getReason());
 		}
 		String phone_session = (String) session.getAttribute("phone");
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -63,8 +69,8 @@ public class LoginController extends BaseContorller {
 			map.put("ret", 0);
 			session.setAttribute("isLogin", true);
 		} else {
-			map.put("ret", 10009);
-			map.put("error", "验证码错误");
+			return CommonUtil.toErrorResult(ERRORCODE.SECURITY_WRONG_VERIFICATION.getIndex(),
+					ERRORCODE.SECURITY_WRONG_VERIFICATION.getReason());
 		}
 		return JSONObject.fromObject(map).toString();
 	}
@@ -74,10 +80,12 @@ public class LoginController extends BaseContorller {
 	public String login(String phone, String password, HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (!StringUtils.hasLength(phone)) {
-			return "{\"ret\":10003,\"error\":\"手机号码为空\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PHONE_ERROR.getIndex(),
+					ERRORCODE.ACCOUNT_PHONE_ERROR.getReason());
 		}
 		if (!StringUtils.hasLength(password)) {
-			return "{\"ret\":10003,\"error\":\"密码为空\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PASSWORD.getIndex(),
+					ERRORCODE.ACCOUNT_PASSWORD.getReason());
 		}
 		password = CommonUtil.getSHA256(password);
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -86,8 +94,8 @@ public class LoginController extends BaseContorller {
 			session.setAttribute("isLogin", true);
 			session.setAttribute("userBo", loginService.getUser(phone, password));
 		} else {
-			map.put("ret", 10004);
-			map.put("error", "用户名或者密码错误");
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PASSWORD.getIndex(),
+					ERRORCODE.ACCOUNT_PASSWORD.getReason());
 		}
 		return JSONObject.fromObject(map).toString();
 	}
@@ -97,10 +105,12 @@ public class LoginController extends BaseContorller {
 	public String loginout(HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if(session.isNew()){
-			return "{\"ret\":10002,\"error\":\":未登录\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (session.getAttribute("isLogin") == null) {
-			return "{\"ret\":10002,\"error\":\":未登录\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		session.invalidate();
 		Map<String, Object> map = new HashMap<String, Object>();

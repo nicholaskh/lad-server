@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.junlenet.mongodb.demo.bo.MessageBo;
 import com.junlenet.mongodb.demo.bo.UserBo;
 import com.junlenet.mongodb.demo.service.IMessageService;
+import com.junlenet.mongodb.demo.util.CommonUtil;
+import com.junlenet.mongodb.demo.util.ERRORCODE;
 import com.junlenet.mongodb.demo.vo.MessageVo;
 
 import net.sf.json.JSONObject;
@@ -35,20 +37,25 @@ public class MessageController extends BaseContorller {
 	public String isnert(String content, String source, HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return "{\"ret\":40002,\"error\":\":未登录\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (session.getAttribute("isLogin") == null) {
-			return "{\"ret\":40002,\"error\":\":未登录\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
 		if (userBo == null) {
-			return "{\"ret\":40002,\"error\":\":未登录\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (!StringUtils.hasLength(content)) {
-			return "{\"ret\":40003,\"error\":\":内容为空\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.CONTACT_CONTENT.getIndex(),
+					ERRORCODE.CONTACT_CONTENT.getReason());
 		}
 		if (!StringUtils.hasLength(source)) {
-			return "{\"ret\":40003,\"error\":\":来源为空\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.CONTACT_SOURCE.getIndex(),
+					ERRORCODE.CONTACT_SOURCE.getReason());
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		MessageBo messageBo = new MessageBo();
@@ -65,14 +72,17 @@ public class MessageController extends BaseContorller {
 	public String my_message(HttpServletRequest request, HttpServletResponse response) throws Exception {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return "{\"ret\":40002,\"error\":\":未登录\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (session.getAttribute("isLogin") == null) {
-			return "{\"ret\":40002,\"error\":\":未登录\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
 		if (userBo == null) {
-			return "{\"ret\":40002,\"error\":\":未登录\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		List<MessageBo> list = messageService.selectByUserId(userBo.getId());
 		List<MessageVo> message_from_me_vo = new ArrayList<MessageVo>();

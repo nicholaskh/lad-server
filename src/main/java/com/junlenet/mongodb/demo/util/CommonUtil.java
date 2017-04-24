@@ -1,5 +1,6 @@
 package com.junlenet.mongodb.demo.util;
 
+import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.io.File;
@@ -9,6 +10,8 @@ import java.security.NoSuchAlgorithmException;
 
 import org.apache.commons.codec.binary.Hex;
 import org.springframework.web.multipart.MultipartFile;
+
+import net.sf.json.JSONObject;
 
 public class CommonUtil {
 	public static boolean isRightPhone(String phone) {
@@ -33,16 +36,27 @@ public class CommonUtil {
 		return output;
 	}
 
-	public static void upload(MultipartFile file, String path, String filename) {
+	public static String upload(MultipartFile file, String path, String filename) {
 		File targetFile = new File(path, filename);
+		String result = "";
 		if (!targetFile.exists()) {
 			targetFile.mkdirs();
 		}
 		try {
 			file.transferTo(targetFile);
+			result = QiNiu.uploadToQiNiu(path, filename);
+			targetFile.delete();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		return result;
+	}
+
+	public static String toErrorResult(int ret, String error) {
+		HashMap<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", ret);
+		map.put("error", error);
+		return JSONObject.fromObject(map).toString();
 	}
 
 }

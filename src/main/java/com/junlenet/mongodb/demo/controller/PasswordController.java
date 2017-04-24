@@ -18,6 +18,7 @@ import com.junlenet.mongodb.demo.bo.UserBo;
 import com.junlenet.mongodb.demo.service.IRegistService;
 import com.junlenet.mongodb.demo.service.IUserService;
 import com.junlenet.mongodb.demo.util.CommonUtil;
+import com.junlenet.mongodb.demo.util.ERRORCODE;
 
 import net.sf.json.JSONObject;
 
@@ -36,23 +37,29 @@ public class PasswordController extends BaseContorller {
 			HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return "{\"ret\":30002,\"error\":\":未登录\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (!StringUtils.hasLength(phone)) {
-			return "{\"ret\":30003,\"error\":\"手机号码错误\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PHONE_ERROR.getIndex(),
+					ERRORCODE.ACCOUNT_PHONE_ERROR.getReason());
 		}
 		if (!StringUtils.hasLength(verification_img)) {
-			return "{\"ret\":30003,\"error\":\"图片验证码为空\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.SECURITY_WRONG_VERIFICATION.getIndex(),
+					ERRORCODE.SECURITY_WRONG_VERIFICATION.getReason());
 		}
 		if (!registService.is_phone_repeat(phone)) {
-			return "{\"ret\":30003,\"error\":\"手机号码错误\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PHONE_REPEAT.getIndex(),
+					ERRORCODE.ACCOUNT_PHONE_REPEAT.getReason());
 		}
 		if (session.getAttribute("verification_img") == null) {
-			return "{\"ret\":30003,\"error\":\"图片验证码为空\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.SECURITY_WRONG_VERIFICATION.getIndex(),
+					ERRORCODE.SECURITY_WRONG_VERIFICATION.getReason());
 		}
 		String verification_img_session = (String) session.getAttribute("verification_img");
 		if (!verification_img_session.equals(verification_img)) {
-			return "{\"ret\":30003,\"error\":\"图片验证码错误\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.SECURITY_WRONG_VERIFICATION.getIndex(),
+					ERRORCODE.SECURITY_WRONG_VERIFICATION.getReason());
 		}
 		session.setAttribute("verification", "111111");
 		session.setAttribute("phone", phone);
@@ -68,7 +75,8 @@ public class PasswordController extends BaseContorller {
 	public String verification_check(String verification, HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return "{\"ret\":30002,\"error\":\":未登录\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (!StringUtils.hasLength(verification)) {
 			return "{\"ret\":30003,\"error\":\"验证码为空\"}";
@@ -92,13 +100,16 @@ public class PasswordController extends BaseContorller {
 			HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return "{\"ret\":30002,\"error\":\":未登录\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (!StringUtils.hasLength(password1) || !StringUtils.hasLength(password2)) {
-			return "{\"ret\":30003,\"error\":\"输入密码错误\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PASSWORD.getIndex(),
+					ERRORCODE.ACCOUNT_PASSWORD.getReason());
 		}
 		if (session.getAttribute("isVerification") == null) {
-			return "{\"ret\":30003,\"error\":\"验证码错误\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.SECURITY_WRONG_VERIFICATION.getIndex(),
+					ERRORCODE.SECURITY_WRONG_VERIFICATION.getReason());
 		}
 		String phone = (String) session.getAttribute("phone");
 		UserBo userBo = new UserBo();
@@ -117,24 +128,30 @@ public class PasswordController extends BaseContorller {
 			HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return "{\"ret\":30002,\"error\":\":未登录\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (session.getAttribute("isLogin") == null) {
-			return "{\"ret\":30002,\"error\":\":未登录\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (!StringUtils.hasLength(password1) || !StringUtils.hasLength(password2)
 				|| !StringUtils.hasLength(old_password)) {
-			return "{\"ret\":30003,\"error\":\"新输入密码错误\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PASSWORD.getIndex(),
+					ERRORCODE.ACCOUNT_PASSWORD.getReason());
 		}
 		if (!password1.equals(password2)) {
-			return "{\"ret\":30003,\"error\":\"新输入密码错误\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.SECURITY_PASSWORD_INCONSISTENCY.getIndex(),
+					ERRORCODE.SECURITY_PASSWORD_INCONSISTENCY.getReason());
 		}
 		if (session.getAttribute("userBo") == null) {
-			return "{\"ret\":30002,\"error\":\":未登录\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
-		if(!CommonUtil.getSHA256(old_password).equals(userBo.getPassword())){
-			return "{\"ret\":30003,\"error\":\"原密码错误\"}";
+		if (!CommonUtil.getSHA256(old_password).equals(userBo.getPassword())) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PASSWORD.getIndex(),
+					ERRORCODE.ACCOUNT_PASSWORD.getReason());
 		}
 		userBo.setPassword(CommonUtil.getSHA256(password1));
 		userService.updatePassword(userBo);
