@@ -9,8 +9,6 @@ public class UserVo extends BaseVo {
 
 	private String sex;
 
-	private String password;
-
 	private String headPictureName;
 
 	private String birthDay;
@@ -47,14 +45,6 @@ public class UserVo extends BaseVo {
 
 	public void setSex(String sex) {
 		this.sex = sex;
-	}
-
-	public String getPassword() {
-		return password;
-	}
-
-	public void setPassword(String password) {
-		this.password = password;
 	}
 
 	public String getHeadPictureName() {
