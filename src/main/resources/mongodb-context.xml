@@ -30,10 +30,5 @@
         <constructor-arg name="databaseName" value="${mongo.databaseName}" />
        <!--  <constructor-arg name="userCredentials" ref="userCredentials"/> -->
     </bean>
-    
-   <!--  <bean id="userCredentials" class="org.springframework.data.authentication.UserCredentials">
-        <constructor-arg name="username" value="${mongo.username}"/>
-        <constructor-arg name="password" value="${mongo.password}"/>
-    </bean> -->
 
 </beans>

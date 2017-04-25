@@ -13,7 +13,9 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.lad.bo.HomepageBo;
 import com.lad.bo.UserBo;
+import com.lad.service.IHomepageService;
 import com.lad.service.IRegistService;
 import com.lad.service.IUserService;
 import com.lad.util.CommonUtil;
@@ -29,6 +31,8 @@ public class RegistController extends BaseContorller {
 	private IRegistService registService;
 	@Autowired
 	private IUserService userService;
+	@Autowired
+	private IHomepageService homepageService;
 
 	@RequestMapping("/verification-send")
 	@ResponseBody
@@ -111,6 +115,9 @@ public class RegistController extends BaseContorller {
 		userBo.setPhone(phone);
 		userBo.setPassword(CommonUtil.getSHA256(password1));
 		userService.save(userBo);
+		HomepageBo homepageBo = new HomepageBo();
+		homepageBo.setOwner_id(userBo.getId());
+		homepageService.insert(homepageBo);
 		session.invalidate();
 		return "{\"ret\":0}";
 	}
