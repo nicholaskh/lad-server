@@ -27,4 +27,8 @@ public class MessageServiceImpl implements IMessageService {
 		return messageDao.selectByUserId(userId);
 	}
 
+	public List<MessageBo> selectByUserIdPaged(String startId, boolean gt, int limit, String userId) {
+		return messageDao.selectByUserIdPaged(startId, gt, limit, userId);
+	}
+
 }

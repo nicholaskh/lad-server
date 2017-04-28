@@ -11,4 +11,6 @@ public interface IMessageDao extends IBaseDao {
 	public MessageBo selectById(String messageId);
 	
 	public  List<MessageBo> selectByUserId(String userId);
+	
+	public  List<MessageBo> selectByUserIdPaged(String startId, boolean gt, int limit, String userId);
 }

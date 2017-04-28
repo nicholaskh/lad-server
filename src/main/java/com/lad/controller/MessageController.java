@@ -54,8 +54,7 @@ public class MessageController extends BaseContorller {
 					ERRORCODE.CONTACT_CONTENT.getReason());
 		}
 		if (!StringUtils.hasLength(source)) {
-			return CommonUtil.toErrorResult(ERRORCODE.CONTACT_SOURCE.getIndex(),
-					ERRORCODE.CONTACT_SOURCE.getReason());
+			return CommonUtil.toErrorResult(ERRORCODE.CONTACT_SOURCE.getIndex(), ERRORCODE.CONTACT_SOURCE.getReason());
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		MessageBo messageBo = new MessageBo();
@@ -69,7 +68,8 @@ public class MessageController extends BaseContorller {
 
 	@RequestMapping("/my-message")
 	@ResponseBody
-	public String my_message(HttpServletRequest request, HttpServletResponse response) throws Exception {
+	public String my_message(String start_id, boolean gt, int limit, HttpServletRequest request,
+			HttpServletResponse response) throws Exception {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
@@ -84,7 +84,7 @@ public class MessageController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
-		List<MessageBo> list = messageService.selectByUserId(userBo.getId());
+		List<MessageBo> list = messageService.selectByUserIdPaged(start_id, gt, limit, userBo.getId());
 		List<MessageVo> message_from_me_vo = new ArrayList<MessageVo>();
 		for (MessageBo item : list) {
 			MessageVo vo = new MessageVo();
