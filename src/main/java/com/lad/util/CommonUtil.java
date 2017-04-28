@@ -5,6 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -57,6 +58,20 @@ public class CommonUtil {
 		map.put("ret", ret);
 		map.put("error", error);
 		return JSONObject.fromObject(map).toString();
+	}
+
+	public static int sendSMS(String mobile, String message) {
+		try {
+			message = URLEncoder.encode(message, "UTF-8");
+		} catch (UnsupportedEncodingException ex) {
+		}
+		String url = "http://hprpt2.eucp.b2m.cn:8080/sdkproxy/sendsms.action?cdkey=0SDK-EBB-6699-RHSLQ&password=797391&phone="
+				+ mobile + "&message=" + message;
+		String responseString = HttpClientUtil.getInstance().doGetRequest(url);
+		if(responseString.trim().equals(Constant.RESPONSE)){
+			return 0;
+		}
+		return -1;
 	}
 
 }
