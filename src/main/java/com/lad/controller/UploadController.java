@@ -45,7 +45,7 @@ public class UploadController extends BaseContorller {
 		String userId = userBo.getId();
 		String fileName = userId + file.getOriginalFilename();
 		String path = CommonUtil.upload(file, Constant.HEAD_PICTURE_PATH, fileName);
-		userBo.setHeadPictureName(fileName);
+		userBo.setHeadPictureName(path);
 		userService.updateHeadPictureName(userBo);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);

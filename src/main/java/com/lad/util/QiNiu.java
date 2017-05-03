@@ -24,7 +24,7 @@ public class QiNiu {
 		String pathStr[] = path.split("/");
 		String key = pathStr[pathStr.length-1]+"-"+filename;
 		Auth auth = Auth.create(accessKey, secretKey);
-		String upToken = auth.uploadToken(bucket);
+		String upToken = auth.uploadToken(bucket, key);
 		try {
 		    uploadManager.put(localFilePath, key, upToken);
 		} catch (QiniuException ex) {
