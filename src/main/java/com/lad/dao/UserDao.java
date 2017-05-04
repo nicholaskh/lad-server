@@ -45,6 +45,15 @@ public class UserDao {
 			return userBo;
 		}
 		
+		public UserBo updateFriends(UserBo userBo) {
+			Query query = new Query();
+			query.addCriteria(new Criteria("_id").is(userBo.getId()));
+			Update update = new Update();
+			update.set("friends", userBo.getFriends());
+			mongoTemplate.updateFirst(query, update, UserBo.class);	
+			return userBo;
+		}
+		
 		public UserBo updateHeadPictureName(UserBo userBo) {
 			Query query = new Query();
 			query.addCriteria(new Criteria("phone").is(userBo.getPhone()));

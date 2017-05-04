@@ -50,7 +50,7 @@ public class CommonUtil {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return Constant.QINIU_URL+result+"?";
+		return Constant.QINIU_URL+result+"?v="+CommonUtil.getRandom1();
 	}
 
 	public static String toErrorResult(int ret, String error) {
@@ -72,6 +72,10 @@ public class CommonUtil {
 			return 0;
 		}
 		return -1;
+	}
+	
+	public static int getRandom1(){
+		return (int)(1+Math.random()*(10));
 	}
 
 }

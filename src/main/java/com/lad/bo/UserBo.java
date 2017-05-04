@@ -1,83 +1,93 @@
 package com.lad.bo;
 
 import java.io.Serializable;
+import java.util.List;
 
-import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document(collection="t_user")
-public class UserBo extends BaseBo implements Serializable{
+@Document(collection = "t_user")
+public class UserBo extends BaseBo implements Serializable {
 
 	private static final long serialVersionUID = 2928923917001675021L;
-		
-		private String userName;
-		
-		private String phone;
-		
-		private String sex;
-		
-		private String password;
 
-		private String headPictureName;
-		
-		private String birthDay;
-		
-		private String personalizedSignature;
-		
-		public String getUserName() {
-			return userName;
-		}
+	private String userName;
 
-		public void setUserName(String userName) {
-			this.userName = userName;
-		}
+	private String phone;
 
-		public String getPhone() {
-			return phone;
-		}
+	private String sex;
 
-		public void setPhone(String phone) {
-			this.phone = phone;
-		}
+	private String password;
 
-		public String getSex() {
-			return sex;
-		}
+	private String headPictureName;
 
-		public void setSex(String sex) {
-			this.sex = sex;
-		}
+	private String birthDay;
 
-		public String getPassword() {
-			return password;
-		}
+	private String personalizedSignature;
 
-		public void setPassword(String password) {
-			this.password = password;
-		}
+	private List<Long> friends;
 
-		public String getHeadPictureName() {
-			return headPictureName;
-		}
+	public String getUserName() {
+		return userName;
+	}
 
-		public void setHeadPictureName(String headPictureName) {
-			this.headPictureName = headPictureName;
-		}
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
 
-		public String getBirthDay() {
-			return birthDay;
-		}
+	public String getPhone() {
+		return phone;
+	}
 
-		public void setBirthDay(String birthDay) {
-			this.birthDay = birthDay;
-		}
+	public void setPhone(String phone) {
+		this.phone = phone;
+	}
 
-		public String getPersonalizedSignature() {
-			return personalizedSignature;
-		}
+	public String getSex() {
+		return sex;
+	}
 
-		public void setPersonalizedSignature(String personalizedSignature) {
-			this.personalizedSignature = personalizedSignature;
-		}
-		
+	public void setSex(String sex) {
+		this.sex = sex;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public String getHeadPictureName() {
+		return headPictureName;
+	}
+
+	public void setHeadPictureName(String headPictureName) {
+		this.headPictureName = headPictureName;
+	}
+
+	public String getBirthDay() {
+		return birthDay;
+	}
+
+	public void setBirthDay(String birthDay) {
+		this.birthDay = birthDay;
+	}
+
+	public String getPersonalizedSignature() {
+		return personalizedSignature;
+	}
+
+	public void setPersonalizedSignature(String personalizedSignature) {
+		this.personalizedSignature = personalizedSignature;
+	}
+
+	public List<Long> getFriends() {
+		return friends;
+	}
+
+	public void setFriends(List<Long> friends) {
+		this.friends = friends;
+	}
+
 }

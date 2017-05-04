@@ -18,5 +18,7 @@ public interface IUserService extends IBaseService {
 
 	public UserBo updateBirthDay(UserBo userBo);
 	
+	public UserBo updateFriends(UserBo userBo);
+	
 	public UserBo updateSex(UserBo userBo);
 }

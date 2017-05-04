@@ -69,4 +69,8 @@ public class UserServiceImpl implements IUserService{
 		public Pager selectPage(UserBo userBo,Pager pager){
 			return userDao.selectPage(userBo, pager);
 		}
+
+		public UserBo updateFriends(UserBo userBo) {
+			return userDao.updateFriends(userBo);
+		}
 }
