@@ -21,4 +21,8 @@ public interface IUserService extends IBaseService {
 	public UserBo updateFriends(UserBo userBo);
 	
 	public UserBo updateSex(UserBo userBo);
+	
+	public UserBo updateChatrooms(UserBo userBo);
+	
+	public UserBo getUser(String userId);
 }

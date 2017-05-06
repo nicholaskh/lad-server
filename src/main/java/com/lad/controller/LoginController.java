@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.lad.service.ILoginService;
 import com.lad.util.CommonUtil;
 import com.lad.util.ERRORCODE;
+import com.lad.util.PushedUtil;
+import com.pushd.ImAssistant;
 
 import net.sf.json.JSONObject;
 
@@ -46,7 +48,7 @@ public class LoginController extends BaseContorller {
 	public String login_quick(String phone, String verification, HttpServletRequest request,
 			HttpServletResponse response) {
 		HttpSession session = request.getSession();
-		if(session.isNew()){
+		if (session.isNew()) {
 			return CommonUtil.toErrorResult(ERRORCODE.SECURITY_WRONG_VERIFICATION.getIndex(),
 					ERRORCODE.SECURITY_WRONG_VERIFICATION.getReason());
 		}
@@ -59,7 +61,7 @@ public class LoginController extends BaseContorller {
 					ERRORCODE.SECURITY_WRONG_VERIFICATION.getReason());
 		}
 		String verification_session = (String) session.getAttribute("verification");
-		if(session.getAttribute("phone") == null){
+		if (session.getAttribute("phone") == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.SECURITY_WRONG_VERIFICATION.getIndex(),
 					ERRORCODE.SECURITY_WRONG_VERIFICATION.getReason());
 		}
@@ -68,6 +70,11 @@ public class LoginController extends BaseContorller {
 		if (verification_session.equals(verification) && phone_session.equals(phone)) {
 			map.put("ret", 0);
 			session.setAttribute("isLogin", true);
+			String token = PushedUtil.getToken();
+			if (null == token) {
+				return CommonUtil.toErrorResult(ERRORCODE.PUSHED_ERROR.getIndex(), ERRORCODE.PUSHED_ERROR.getReason());
+			}
+			map.put("token", token.trim());
 		} else {
 			return CommonUtil.toErrorResult(ERRORCODE.SECURITY_WRONG_VERIFICATION.getIndex(),
 					ERRORCODE.SECURITY_WRONG_VERIFICATION.getReason());
@@ -93,18 +100,23 @@ public class LoginController extends BaseContorller {
 			map.put("ret", 0);
 			session.setAttribute("isLogin", true);
 			session.setAttribute("userBo", loginService.getUser(phone, password));
+			String token = PushedUtil.getToken();
+			if (null == token) {
+				return CommonUtil.toErrorResult(ERRORCODE.PUSHED_ERROR.getIndex(), ERRORCODE.PUSHED_ERROR.getReason());
+			}
+			map.put("token", token.trim());
 		} else {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PASSWORD.getIndex(),
 					ERRORCODE.ACCOUNT_PASSWORD.getReason());
 		}
 		return JSONObject.fromObject(map).toString();
 	}
-	
+
 	@RequestMapping("/logout")
 	@ResponseBody
 	public String loginout(HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession();
-		if(session.isNew()){
+		if (session.isNew()) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
@@ -117,5 +129,5 @@ public class LoginController extends BaseContorller {
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();
 	}
-	
+
 }

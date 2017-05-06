@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import com.lad.bo.Pager;
 import com.lad.bo.UserBo;
 import com.lad.dao.UserDao;
-import com.lad.service.IRegistService;
 import com.lad.service.IUserService;
 
 /**
@@ -72,5 +71,13 @@ public class UserServiceImpl implements IUserService{
 
 		public UserBo updateFriends(UserBo userBo) {
 			return userDao.updateFriends(userBo);
+		}
+
+		public UserBo updateChatrooms(UserBo userBo) {
+			return userDao.updateChatrooms(userBo);
+		}
+
+		public UserBo getUser(String userId) {
+			return userDao.getUser(userId);
 		}
 }

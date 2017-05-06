@@ -24,7 +24,9 @@ public class UserBo extends BaseBo implements Serializable {
 
 	private String personalizedSignature;
 
-	private List<Long> friends;
+	private List<String> friends;
+	
+	private List<String> chatrooms;
 
 	public String getUserName() {
 		return userName;
@@ -82,12 +84,20 @@ public class UserBo extends BaseBo implements Serializable {
 		this.personalizedSignature = personalizedSignature;
 	}
 
-	public List<Long> getFriends() {
+	public List<String> getFriends() {
 		return friends;
 	}
 
-	public void setFriends(List<Long> friends) {
+	public void setFriends(List<String> friends) {
 		this.friends = friends;
+	}
+
+	public List<String> getChatrooms() {
+		return chatrooms;
+	}
+
+	public void setChatrooms(List<String> chatrooms) {
+		this.chatrooms = chatrooms;
 	}
 
 }

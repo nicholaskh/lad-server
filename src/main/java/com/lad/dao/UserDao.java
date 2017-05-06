@@ -36,6 +36,13 @@ public class UserDao {
 			return userBo;
 		}
 		
+		public UserBo getUser(String userId) {
+			Query query = new Query();
+			query.addCriteria(new Criteria("_id").is(userId));
+			UserBo userBo = mongoTemplate.findOne(query, UserBo.class);	
+			return userBo;
+		}
+		
 		public UserBo updatePhone(UserBo userBo) {
 			Query query = new Query();
 			query.addCriteria(new Criteria("_id").is(userBo.getId()));
@@ -50,6 +57,15 @@ public class UserDao {
 			query.addCriteria(new Criteria("_id").is(userBo.getId()));
 			Update update = new Update();
 			update.set("friends", userBo.getFriends());
+			mongoTemplate.updateFirst(query, update, UserBo.class);	
+			return userBo;
+		}
+		
+		public UserBo updateChatrooms(UserBo userBo) {
+			Query query = new Query();
+			query.addCriteria(new Criteria("_id").is(userBo.getId()));
+			Update update = new Update();
+			update.set("chatrooms", userBo.getChatrooms());
 			mongoTemplate.updateFirst(query, update, UserBo.class);	
 			return userBo;
 		}

@@ -7,6 +7,7 @@ public enum ERRORCODE {
 	ACCOUNT_PHONE_ERROR(10004, "手机号码错误"),
 	ACCOUNT_OFF_LINE(10005, "未登录"),
 	ACCOUNT_NULL_BIRTHDAY(10005, "未登录"),
+	ACCOUNT_ID(10006, "用户名ID错误"),
 
 	USER_USERNAME(20001, "用户名错误"),
 	USER_SEX(20002, "性别错误"),
@@ -21,7 +22,12 @@ public enum ERRORCODE {
 	CONTACT_SOURCE(40003, "消息来源错误"),
 	CONTACT_CONTENT(40004, "消息内容错误"),
 	
-	FEEDBACK_NULL(50001, "反馈为空");
+	FEEDBACK_NULL(50001, "反馈为空"),
+	
+	CHATROOM_NAME_NULL(60001, "聊天室name为空"),
+	CHATROOM_EXIST(60002, "已经加入该聊天室"),
+	
+	PUSHED_ERROR(70002, "PUSHED系统错误");
 
 	private int index;
 	private String reason;
