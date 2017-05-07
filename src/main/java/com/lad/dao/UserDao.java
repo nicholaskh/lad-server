@@ -43,6 +43,20 @@ public class UserDao {
 			return userBo;
 		}
 		
+		public List<UserBo> getUserByName(String name) {
+			Query query = new Query();
+			query.addCriteria(new Criteria("userName").is(name));
+			List<UserBo> userBoList = mongoTemplate.find(query, UserBo.class);	
+			return userBoList;
+		}
+		
+		public UserBo getUserByPhone(String phone) {
+			Query query = new Query();
+			query.addCriteria(new Criteria("phone").is(phone));
+			UserBo userBo = mongoTemplate.findOne(query, UserBo.class);	
+			return userBo;
+		}
+		
 		public UserBo updatePhone(UserBo userBo) {
 			Query query = new Query();
 			query.addCriteria(new Criteria("_id").is(userBo.getId()));

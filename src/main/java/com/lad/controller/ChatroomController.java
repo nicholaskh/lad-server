@@ -79,6 +79,42 @@ public class ChatroomController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
+	@RequestMapping("/update-name")
+	@ResponseBody
+	public String updateName(String roomid, String name, HttpServletRequest request, HttpServletResponse response) {
+		HttpSession session = request.getSession();
+		if (session.isNew()) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		if (session.getAttribute("isLogin") == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		UserBo userBo = (UserBo) session.getAttribute("userBo");
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		if (StringUtils.isEmpty(name)) {
+			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NAME_NULL.getIndex(),
+					ERRORCODE.CHATROOM_NAME_NULL.getReason());
+		}
+		if (StringUtils.isEmpty(roomid)) {
+			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_ID_NULL.getIndex(),
+					ERRORCODE.CHATROOM_ID_NULL.getReason());
+		}
+		ChatroomBo chatroomBo = chatroomService.get(roomid);
+		if (null == chatroomBo) {
+			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(), ERRORCODE.CHATROOM_NULL.getReason());
+		}
+		chatroomBo.setName(name);
+		chatroomService.updateName(chatroomBo);
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		return JSONObject.fromObject(map).toString();
+	}
+
 	@RequestMapping("/insert-user")
 	@ResponseBody
 	public String insertUser(String userid, HttpServletRequest request, HttpServletResponse response) {

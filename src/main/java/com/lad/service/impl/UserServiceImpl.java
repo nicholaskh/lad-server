@@ -1,5 +1,6 @@
 package com.lad.service.impl;
 
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,5 +80,13 @@ public class UserServiceImpl implements IUserService{
 
 		public UserBo getUser(String userId) {
 			return userDao.getUser(userId);
+		}
+
+		public List<UserBo> getUserByName(String name) {
+			return userDao.getUserByName(name);
+		}
+
+		public UserBo getUserByPhone(String phone) {
+			return userDao.getUserByPhone(phone);
 		}
 }

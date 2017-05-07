@@ -10,5 +10,5 @@ public interface IChatroomService extends IBaseService {
 	
 	public ChatroomBo updateUsers(ChatroomBo chatroom);
 
-	public ChatroomBo get(Integer chatroomId);
+	public ChatroomBo get(String chatroomId);
 }

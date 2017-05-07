@@ -21,7 +21,7 @@ public class ChatroomServiceImpl implements IChatroomService {
 		return chatroomDao.updateName(chatroom);
 	}
 
-	public ChatroomBo get(Integer chatroomId) {
+	public ChatroomBo get(String chatroomId) {
 		return chatroomDao.get(chatroomId);
 	}
 

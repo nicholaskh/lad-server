@@ -1,6 +1,8 @@
 package com.lad.controller;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -159,6 +161,69 @@ public class PersonSet extends BaseContorller {
 		map.put("ret", 0);
 		UserVo vo = new UserVo();
 		BeanUtils.copyProperties(vo, userBo);
+		map.put("user", vo);
+		return JSONObject.fromObject(map).toString();
+	}
+
+	@RequestMapping("/search-by-name")
+	@ResponseBody
+	public String searchByName(String name, HttpServletRequest request, HttpServletResponse response) throws Exception {
+		HttpSession session = request.getSession();
+		if (session.isNew()) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		if (session.getAttribute("isLogin") == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		UserBo userBo = (UserBo) session.getAttribute("userBo");
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		if (StringUtils.isEmpty(name)) {
+			return CommonUtil.toErrorResult(ERRORCODE.USER_USERNAME.getIndex(), ERRORCODE.USER_USERNAME.getReason());
+		}
+		List<UserBo> list = userService.getUserByName(name);
+		List<UserVo> userVoList = new LinkedList<UserVo>();
+		for (UserBo item : list) {
+			UserVo vo = new UserVo();
+			BeanUtils.copyProperties(vo, item);
+			userVoList.add(vo);
+		}
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("userList", userVoList);
+		return JSONObject.fromObject(map).toString();
+	}
+
+	@RequestMapping("/search-by-phone")
+	@ResponseBody
+	public String searchByPhone(String phone, HttpServletRequest request, HttpServletResponse response)
+			throws Exception {
+		HttpSession session = request.getSession();
+		if (session.isNew()) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		if (session.getAttribute("isLogin") == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		UserBo userBo = (UserBo) session.getAttribute("userBo");
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		if (StringUtils.isEmpty(phone)) {
+			return CommonUtil.toErrorResult(ERRORCODE.USER_PHONE.getIndex(), ERRORCODE.USER_PHONE.getReason());
+		}
+		UserBo temp = userService.getUserByPhone(phone);
+		UserVo vo = new UserVo();
+		BeanUtils.copyProperties(vo, temp);
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
 		map.put("user", vo);
 		return JSONObject.fromObject(map).toString();
 	}

@@ -31,7 +31,7 @@ public class ChatroomDaoImpl implements IChatroomDao {
 		return chatroom;
 	}
 
-	public ChatroomBo get(Integer chatroomId) {
+	public ChatroomBo get(String chatroomId) {
 		Query query = new Query();
 		query.addCriteria(new Criteria("_id").is(chatroomId));
 		return mongoTemplate.findOne(query, ChatroomBo.class);
