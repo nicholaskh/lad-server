@@ -81,7 +81,7 @@ public class ChatroomController extends BaseContorller {
 
 	@RequestMapping("/insert-user")
 	@ResponseBody
-	public String insertUser(String user, HttpServletRequest request, HttpServletResponse response) {
+	public String insertUser(String userid, HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
@@ -96,12 +96,12 @@ public class ChatroomController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
-		if (StringUtils.isEmpty(user)) {
+		if (StringUtils.isEmpty(userid)) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_ID.getIndex(), ERRORCODE.ACCOUNT_ID.getReason());
 		}
 		ChatroomBo chatroomBo = new ChatroomBo();
 		List<String> list = chatroomBo.getUsers();
-		list.add(user);
+		list.add(userid);
 		chatroomBo.setUsers(list);
 		chatroomService.updateName(chatroomBo);
 		List<String> chatroom = userBo.getChatrooms();
@@ -117,7 +117,7 @@ public class ChatroomController extends BaseContorller {
 
 	@RequestMapping("/delete-user")
 	@ResponseBody
-	public String deltetUser(String user, HttpServletRequest request, HttpServletResponse response) {
+	public String deltetUser(String userid, HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
@@ -132,12 +132,12 @@ public class ChatroomController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
-		if (StringUtils.isEmpty(user)) {
+		if (StringUtils.isEmpty(userid)) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_ID.getIndex(), ERRORCODE.ACCOUNT_ID.getReason());
 		}
 		ChatroomBo chatroomBo = new ChatroomBo();
 		List<String> list = chatroomBo.getUsers();
-		list.remove(user);
+		list.remove(userid);
 		chatroomBo.setUsers(list);
 		chatroomService.updateName(chatroomBo);
 		List<String> chatroom = userBo.getChatrooms();
