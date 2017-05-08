@@ -65,14 +65,14 @@ public class ChatroomController extends BaseContorller {
 		ChatroomBo chatroomBo = new ChatroomBo();
 		chatroomBo.setName(name);
 		chatroomService.insert(chatroomBo);
-		ImAssistant imAssistant = PushedUtil.getPushed("180.76.173.200", 2222);
-		if (null == imAssistant) {
-			return CommonUtil.toErrorResult(ERRORCODE.PUSHED_ERROR.getIndex(), ERRORCODE.PUSHED_ERROR.getReason());
-		}
-		Boolean success = PushedUtil.subscribeToPushed(imAssistant, name, chatroomBo.getId(), userBo.getId());
-		if (!success) {
-			return CommonUtil.toErrorResult(ERRORCODE.PUSHED_ERROR.getIndex(), ERRORCODE.PUSHED_ERROR.getReason());
-		}
+//		ImAssistant imAssistant = PushedUtil.getPushed("180.76.173.200", 2222);
+//		if (null == imAssistant) {
+//			return CommonUtil.toErrorResult(ERRORCODE.PUSHED_ERROR.getIndex(), ERRORCODE.PUSHED_ERROR.getReason());
+//		}
+//		Boolean success = PushedUtil.subscribeToPushed(imAssistant, name, chatroomBo.getId(), userBo.getId());
+//		if (!success) {
+//			return CommonUtil.toErrorResult(ERRORCODE.PUSHED_ERROR.getIndex(), ERRORCODE.PUSHED_ERROR.getReason());
+//		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("channelId", chatroomBo.getId());
