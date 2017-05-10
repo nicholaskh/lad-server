@@ -68,4 +68,11 @@ public class ThumbsupDaoImpl implements IThumbsupDao {
 		return mongoTemplate.find(query, ThumbsupBo.class);
 	}
 
+	public ThumbsupBo getByVidAndVisitorid(String vid, String visitorid) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("owner_id").is(vid));
+		query.addCriteria(new Criteria("visitor_id").is(visitorid));
+		return mongoTemplate.findOne(query, ThumbsupBo.class);
+	}
+
 }

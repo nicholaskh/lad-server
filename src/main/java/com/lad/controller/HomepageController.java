@@ -172,6 +172,11 @@ public class HomepageController extends BaseContorller {
 					ERRORCODE.CONTACT_HOMEPAGE.getReason());
 		}
 		String owner_id = userBo.getId();
+		ThumbsupBo temp = thumbsupService.getByVidAndVisitorid(owner_id, user_id);
+		if(temp != null){
+			return CommonUtil.toErrorResult(ERRORCODE.CONTACT_THUMBSUP_DUPLICATE.getIndex(),
+					ERRORCODE.CONTACT_THUMBSUP_DUPLICATE.getReason());
+		}
 		HomepageBo homepageBo = homepageService.selectByUserId(user_id);
 		ThumbsupBo thumbsupBo = new ThumbsupBo();
 		thumbsupBo.setOwner_id(owner_id);

@@ -35,4 +35,8 @@ public class ThumbsupService implements IThumbsupService {
 		return thumbsupDao.selectByVisitorIdPaged(startId, gt, limit, visitorId);
 	}
 
+	public ThumbsupBo getByVidAndVisitorid(String vid, String visitorid) {
+		return thumbsupDao.getByVidAndVisitorid(vid, visitorid);
+	}
+
 }
