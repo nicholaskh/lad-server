@@ -13,8 +13,8 @@ public class FriendsBo extends BaseBo {
 	private List tag;
 	private String phone;
 	private String description;
-	private Integer VIP;
-	private Integer black;
+	private Integer VIP = 0;
+	private Integer black = 0;
 
 	public String getUserid() {
 		return userid;

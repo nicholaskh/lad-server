@@ -31,7 +31,7 @@ public class FriendsDaoImpl implements IFriendsDao {
 		query.addCriteria(new Criteria("firendid").is(firendid));
 		Update update = new Update();
 		update.set("backName", backName);
-		return mongoTemplate.updateFirst(query, update, HomepageBo.class);
+		return mongoTemplate.updateFirst(query, update, FriendsBo.class);
 	}
 
 	public WriteResult updateTag(String userid, String firendid, List tag) {
@@ -40,7 +40,7 @@ public class FriendsDaoImpl implements IFriendsDao {
 		query.addCriteria(new Criteria("firendid").is(firendid));
 		Update update = new Update();
 		update.set("tag", tag);
-		return mongoTemplate.updateFirst(query, update, HomepageBo.class);
+		return mongoTemplate.updateFirst(query, update, FriendsBo.class);
 	}
 
 	public WriteResult updatePhone(String userid, String firendid, String phone) {
@@ -49,7 +49,7 @@ public class FriendsDaoImpl implements IFriendsDao {
 		query.addCriteria(new Criteria("firendid").is(firendid));
 		Update update = new Update();
 		update.set("phone", phone);
-		return mongoTemplate.updateFirst(query, update, HomepageBo.class);
+		return mongoTemplate.updateFirst(query, update, FriendsBo.class);
 	}
 
 	public WriteResult updateDescription(String userid, String firendid, String description) {
@@ -58,7 +58,7 @@ public class FriendsDaoImpl implements IFriendsDao {
 		query.addCriteria(new Criteria("firendid").is(firendid));
 		Update update = new Update();
 		update.set("description", description);
-		return mongoTemplate.updateFirst(query, update, HomepageBo.class);
+		return mongoTemplate.updateFirst(query, update, FriendsBo.class);
 	}
 
 	public WriteResult updateVIP(String userid, String firendid, Integer VIP) {
@@ -67,7 +67,7 @@ public class FriendsDaoImpl implements IFriendsDao {
 		query.addCriteria(new Criteria("firendid").is(firendid));
 		Update update = new Update();
 		update.set("VIP", VIP);
-		return mongoTemplate.updateFirst(query, update, HomepageBo.class);
+		return mongoTemplate.updateFirst(query, update, FriendsBo.class);
 	}
 
 	public WriteResult updateBlack(String userid, String firendid, Integer black) {
@@ -76,7 +76,14 @@ public class FriendsDaoImpl implements IFriendsDao {
 		query.addCriteria(new Criteria("firendid").is(firendid));
 		Update update = new Update();
 		update.set("black", black);
-		return mongoTemplate.updateFirst(query, update, HomepageBo.class);
+		return mongoTemplate.updateFirst(query, update, FriendsBo.class);
+	}
+
+	public FriendsBo getFriendByIdAndVisitorId(String userid, String firendid) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("userid").is(userid));
+		query.addCriteria(new Criteria("firendid").is(firendid));
+		return mongoTemplate.findOne(query, FriendsBo.class);
 	}
 
 }

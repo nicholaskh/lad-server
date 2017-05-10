@@ -1,11 +1,11 @@
-package com.lad.dao;
+package com.lad.service;
 
 import java.util.List;
 
 import com.lad.bo.FriendsBo;
 import com.mongodb.WriteResult;
 
-public interface IFriendsDao extends IBaseDao {
+public interface IFriendsService extends IBaseService {
 	public FriendsBo insert(FriendsBo friendsBo);
 
 	public WriteResult updateBackName(String userid, String firendid, String backName);
@@ -21,5 +21,4 @@ public interface IFriendsDao extends IBaseDao {
 	public WriteResult updateBlack(String userid, String firendid, Integer black);
 	
 	public FriendsBo getFriendByIdAndVisitorId(String userid, String firendid);
-
 }
