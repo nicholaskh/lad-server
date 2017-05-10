@@ -228,4 +228,34 @@ public class PersonSet extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
+	@RequestMapping("/search-by-userid")
+	@ResponseBody
+	public String searchByUserid(String userid, HttpServletRequest request, HttpServletResponse response)
+			throws Exception {
+		HttpSession session = request.getSession();
+		if (session.isNew()) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		if (session.getAttribute("isLogin") == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		UserBo userBo = (UserBo) session.getAttribute("userBo");
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		if (StringUtils.isEmpty(userid)) {
+			return CommonUtil.toErrorResult(ERRORCODE.USER_ID.getIndex(), ERRORCODE.USER_ID.getReason());
+		}
+		UserBo temp = userService.getUser(userid);
+		UserVo vo = new UserVo();
+		BeanUtils.copyProperties(vo, temp);
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("user", vo);
+		return JSONObject.fromObject(map).toString();
+	}
+
 }
