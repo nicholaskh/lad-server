@@ -1,6 +1,7 @@
 package com.lad.controller;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -14,8 +15,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.lad.bo.ChatroomBo;
 import com.lad.bo.FriendsBo;
 import com.lad.bo.UserBo;
+import com.lad.service.IChatroomService;
 import com.lad.service.IFriendsService;
 import com.lad.util.CommonUtil;
 import com.lad.util.ERRORCODE;
@@ -29,7 +32,9 @@ public class FriendsController extends BaseContorller {
 
 	@Autowired
 	private IFriendsService friendsService;
-
+	@Autowired
+	private IChatroomService chatroomService;
+	
 	@RequestMapping("/insert")
 	@ResponseBody
 	public String insert(String friendid, HttpServletRequest request, HttpServletResponse response) {
@@ -58,6 +63,13 @@ public class FriendsController extends BaseContorller {
 		friendsBo.setUserid(userBo.getId());
 		friendsBo.setFriendid(friendid);
 		friendsService.insert(friendsBo);
+		ChatroomBo ChatroomBo = new ChatroomBo();
+		ChatroomBo.setName("群聊");
+		HashSet<String> users = new HashSet<String>();
+		users.add(userBo.getId());
+		users.add(friendid);
+		ChatroomBo.setUsers(users);
+		chatroomService.insert(ChatroomBo);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();

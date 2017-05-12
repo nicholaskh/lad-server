@@ -2,6 +2,7 @@ package com.lad.controller;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -136,9 +137,9 @@ public class ChatroomController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_ID.getIndex(), ERRORCODE.ACCOUNT_ID.getReason());
 		}
 		ChatroomBo chatroomBo = new ChatroomBo();
-		List<String> list = chatroomBo.getUsers();
-		list.add(userid);
-		chatroomBo.setUsers(list);
+		HashSet<String> set = chatroomBo.getUsers();
+		set.add(userid);
+		chatroomBo.setUsers(set);
 		chatroomService.updateName(chatroomBo);
 		List<String> chatroom = userBo.getChatrooms();
 		if (chatroom.contains(chatroomBo.getId())) {
@@ -172,9 +173,9 @@ public class ChatroomController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_ID.getIndex(), ERRORCODE.ACCOUNT_ID.getReason());
 		}
 		ChatroomBo chatroomBo = new ChatroomBo();
-		List<String> list = chatroomBo.getUsers();
-		list.remove(userid);
-		chatroomBo.setUsers(list);
+		HashSet<String> set = chatroomBo.getUsers();
+		set.remove(userid);
+		chatroomBo.setUsers(set);
 		chatroomService.updateName(chatroomBo);
 		List<String> chatroom = userBo.getChatrooms();
 		chatroom.remove(chatroomBo.getId());

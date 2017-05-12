@@ -1,6 +1,6 @@
 package com.lad.bo;
 
-import java.util.List;
+import java.util.HashSet;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -9,7 +9,7 @@ public class ChatroomBo extends BaseBo {
 
 	private String name;
 
-	private List<String> users;
+	private HashSet<String> users;
 
 	public String getName() {
 		return name;
@@ -19,11 +19,11 @@ public class ChatroomBo extends BaseBo {
 		this.name = name;
 	}
 
-	public List<String> getUsers() {
+	public HashSet<String> getUsers() {
 		return users;
 	}
 
-	public void setUsers(List<String> users) {
+	public void setUsers(HashSet<String> users) {
 		this.users = users;
 	}
 
