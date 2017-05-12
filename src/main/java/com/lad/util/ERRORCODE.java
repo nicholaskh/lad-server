@@ -41,7 +41,7 @@ public enum ERRORCODE {
 	FRIEND_TAG_NULL(80005, "朋友标签为空"),
 	FRIEND_PHONE_NULL(80006, "朋友电话为空"),
 	FRIEND_DESCRIPTION_NULL(80007, "朋友描述为空"),
-	FRIEND_BACKNAME_NULL(80008, "备注名为空");
+	FRIEND_BACKNAME_NULL(80008, "备注为空");
 	private int index;
 	private String reason;
 	
