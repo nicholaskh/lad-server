@@ -10,7 +10,7 @@ public class FriendsBo extends BaseBo {
 	private String userid;
 	private String friendid;
 	private String backname;
-	private List tag;
+	private List<String> tag;
 	private String phone;
 	private String description;
 	private Integer VIP = 0;
@@ -40,11 +40,11 @@ public class FriendsBo extends BaseBo {
 		this.backname = backname;
 	}
 
-	public List getTag() {
+	public List<String> getTag() {
 		return tag;
 	}
 
-	public void setTag(List tag) {
+	public void setTag(List<String> tag) {
 		this.tag = tag;
 	}
 

@@ -2,6 +2,7 @@ package com.lad.controller;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -176,6 +177,113 @@ public class FriendsController extends BaseContorller {
 		}
 		friendsBo.setBackname(backname);
 		friendsService.updateBackname(friendsBo.getUserid(), friendsBo.getFriendid(), backname);
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		return JSONObject.fromObject(map).toString();
+	}
+	
+	@RequestMapping("/set-tag")
+	@ResponseBody
+	public String setTag(String friendid, String tag, HttpServletRequest request, HttpServletResponse response) {
+		HttpSession session = request.getSession();
+		if (session.isNew()) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		if (session.getAttribute("isLogin") == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		UserBo userBo = (UserBo) session.getAttribute("userBo");
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		if (StringUtils.isEmpty(friendid)) {
+			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NULL.getIndex(), ERRORCODE.FRIEND_NULL.getReason());
+		}
+		if (null == tag) {
+			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_BACKNAME_NULL.getIndex(),
+					ERRORCODE.FRIEND_BACKNAME_NULL.getReason());
+		}
+		FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorId(userBo.getId(), friendid);
+		if (friendsBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NULL.getIndex(), ERRORCODE.FRIEND_NULL.getReason());
+		}
+		List<String> tagList = friendsBo.getTag();
+		tagList.add(tag);
+		friendsBo.setTag(tagList);
+		friendsService.updateTag(friendsBo.getUserid(), friendsBo.getFriendid(), tagList);
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		return JSONObject.fromObject(map).toString();
+	}
+	
+	@RequestMapping("/set-phone")
+	@ResponseBody
+	public String setPhone(String friendid, String phone, HttpServletRequest request, HttpServletResponse response) {
+		HttpSession session = request.getSession();
+		if (session.isNew()) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		if (session.getAttribute("isLogin") == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		UserBo userBo = (UserBo) session.getAttribute("userBo");
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		if (StringUtils.isEmpty(friendid)) {
+			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NULL.getIndex(), ERRORCODE.FRIEND_NULL.getReason());
+		}
+		if (null == phone) {
+			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_PHONE_NULL.getIndex(),
+					ERRORCODE.FRIEND_PHONE_NULL.getReason());
+		}
+		FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorId(userBo.getId(), friendid);
+		if (friendsBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NULL.getIndex(), ERRORCODE.FRIEND_NULL.getReason());
+		}
+		friendsBo.setPhone(phone);
+		friendsService.updatePhone(friendsBo.getUserid(), friendsBo.getFriendid(), phone);
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		return JSONObject.fromObject(map).toString();
+	}
+	
+	@RequestMapping("/set-description")
+	@ResponseBody
+	public String setDescription(String friendid, String description, HttpServletRequest request, HttpServletResponse response) {
+		HttpSession session = request.getSession();
+		if (session.isNew()) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		if (session.getAttribute("isLogin") == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		UserBo userBo = (UserBo) session.getAttribute("userBo");
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		if (StringUtils.isEmpty(friendid)) {
+			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NULL.getIndex(), ERRORCODE.FRIEND_NULL.getReason());
+		}
+		if (null == description) {
+			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_PHONE_NULL.getIndex(),
+					ERRORCODE.FRIEND_PHONE_NULL.getReason());
+		}
+		FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorId(userBo.getId(), friendid);
+		if (friendsBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NULL.getIndex(), ERRORCODE.FRIEND_NULL.getReason());
+		}
+		friendsBo.setDescription(description);
+		friendsService.updateDescription(friendsBo.getUserid(), friendsBo.getFriendid(), description);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();
