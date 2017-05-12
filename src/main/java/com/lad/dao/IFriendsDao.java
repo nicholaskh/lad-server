@@ -8,7 +8,7 @@ import com.mongodb.WriteResult;
 public interface IFriendsDao extends IBaseDao {
 	public FriendsBo insert(FriendsBo friendsBo);
 
-	public WriteResult updateBackName(String userid, String firendid, String backName);
+	public WriteResult updateBackname(String userid, String firendid, String backname);
 
 	public WriteResult updateTag(String userid, String firendid, List tag);
 

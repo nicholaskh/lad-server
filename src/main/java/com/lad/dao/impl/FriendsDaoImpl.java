@@ -25,12 +25,12 @@ public class FriendsDaoImpl implements IFriendsDao {
 		return friendsBo;
 	}
 
-	public WriteResult updateBackName(String userid, String firendid, String backName) {
+	public WriteResult updateBackname(String userid, String firendid, String backname) {
 		Query query = new Query();
 		query.addCriteria(new Criteria("userid").is(userid));
 		query.addCriteria(new Criteria("firendid").is(firendid));
 		Update update = new Update();
-		update.set("backName", backName);
+		update.set("backname", backname);
 		return mongoTemplate.updateFirst(query, update, FriendsBo.class);
 	}
 

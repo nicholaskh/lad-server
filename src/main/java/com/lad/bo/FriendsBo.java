@@ -9,7 +9,7 @@ public class FriendsBo extends BaseBo {
 
 	private String userid;
 	private String friendid;
-	private String backName;
+	private String backname;
 	private List tag;
 	private String phone;
 	private String description;
@@ -32,12 +32,12 @@ public class FriendsBo extends BaseBo {
 		this.friendid = friendid;
 	}
 
-	public String getBackName() {
-		return backName;
+	public String getBackname() {
+		return backname;
 	}
 
-	public void setBackName(String backName) {
-		this.backName = backName;
+	public void setBackname(String backname) {
+		this.backname = backname;
 	}
 
 	public List getTag() {

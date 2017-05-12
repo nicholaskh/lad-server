@@ -20,8 +20,8 @@ public class FriendsServiceImpl implements IFriendsService {
 		return friendsDao.insert(friendsBo);
 	}
 
-	public WriteResult updateBackName(String userid, String firendid, String backName) {
-		return friendsDao.updateBackName(userid, firendid, backName);
+	public WriteResult updateBackname(String userid, String firendid, String backname) {
+		return friendsDao.updateBackname(userid, firendid, backname);
 	}
 
 	public WriteResult updateTag(String userid, String firendid, List tag) {

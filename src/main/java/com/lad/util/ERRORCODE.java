@@ -37,7 +37,8 @@ public enum ERRORCODE {
 	FRIEND_NULL(80001, "朋友为空"),
 	FRIEND_VIP_NULL(80002, "VIP为空"),
 	FRIEND_BLACK_NULL(80003, "黑名单为空"),
-	FRIEND_EXIST(80004, "朋友关系已经存在");
+	FRIEND_EXIST(80004, "朋友关系已经存在"),
+	FRIEND_BACKNAME_NULL(80005, "备注名为空");
 	private int index;
 	private String reason;
 	
