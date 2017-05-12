@@ -29,12 +29,14 @@ public class MessageDaoImpl implements IMessageDao {
 	public MessageBo selectById(String messageId) {
 		Query query = new Query();
 		query.addCriteria(new Criteria("_id").is(messageId));
+		query.addCriteria(new Criteria("deleted").is(0));
 		return mongoTemplate.findOne(query, MessageBo.class);
 	}
 
 	public List<MessageBo> selectByUserId(String userId) {
 		Query query = new Query();
 		query.addCriteria(new Criteria("ownerId").is(userId));
+		query.addCriteria(new Criteria("deleted").is(0));
 		return mongoTemplate.find(query, MessageBo.class);
 	}
 
@@ -42,6 +44,7 @@ public class MessageDaoImpl implements IMessageDao {
 		Query query = new Query();
 		query.limit(limit);
 		query.with(new Sort(new Order(Direction.DESC, "_id")));
+		query.addCriteria(new Criteria("deleted").is(0));
 		query.addCriteria(new Criteria("owner_id").is(userId));
 		if (!StringUtils.isEmpty(startId)) {
 			if (gt) {

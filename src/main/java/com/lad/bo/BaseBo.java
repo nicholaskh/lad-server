@@ -5,24 +5,26 @@ import java.util.Date;
 
 import org.springframework.data.annotation.Id;
 
-public class BaseBo implements Serializable{
+public class BaseBo implements Serializable {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -4629611041856330852L;
-	
+
 	@Id
 	private String id;
-	
+
 	private Date createTime;
-	
+
 	private Date updateTime;
-	
+
 	private Integer createuid;
-	
+
 	private Integer updateuid;
-	
+
+	private Integer deleted = 0;
+
 	public String getId() {
 		return id;
 	}
@@ -61,6 +63,14 @@ public class BaseBo implements Serializable{
 
 	public void setUpdateuid(Integer updateuid) {
 		this.updateuid = updateuid;
+	}
+
+	public Integer getDeleted() {
+		return deleted;
+	}
+
+	public void setDeleted(Integer deleted) {
+		this.deleted = deleted;
 	}
 
 }

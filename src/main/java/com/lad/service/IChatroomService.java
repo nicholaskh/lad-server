@@ -1,6 +1,7 @@
 package com.lad.service;
 
 import com.lad.bo.ChatroomBo;
+import com.mongodb.WriteResult;
 
 public interface IChatroomService extends IBaseService {
 	
@@ -11,4 +12,6 @@ public interface IChatroomService extends IBaseService {
 	public ChatroomBo updateUsers(ChatroomBo chatroom);
 
 	public ChatroomBo get(String chatroomId);
+	
+	public WriteResult delete(String chatroomId);
 }

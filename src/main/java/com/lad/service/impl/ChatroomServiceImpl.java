@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import com.lad.bo.ChatroomBo;
 import com.lad.dao.IChatroomDao;
 import com.lad.service.IChatroomService;
+import com.mongodb.WriteResult;
 
 @Service("chatroomService")
 public class ChatroomServiceImpl implements IChatroomService {
@@ -27,6 +28,10 @@ public class ChatroomServiceImpl implements IChatroomService {
 
 	public ChatroomBo updateUsers(ChatroomBo chatroom) {
 		return chatroomDao.updateUsers(chatroom);
+	}
+
+	public WriteResult delete(String chatroomId) {
+		return chatroomDao.delete(chatroomId);
 	}
 
 }

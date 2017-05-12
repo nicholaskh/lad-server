@@ -19,6 +19,7 @@ public class LoginDaoImpl implements ILoginDao {
 		Query query = new Query();
 		Criteria criteria1 = new Criteria("phone").is(username);
 		Criteria criteria2 = new Criteria("password").is(password);
+		query.addCriteria(new Criteria("deleted").is(0));
 		query.addCriteria(criteria1).addCriteria(criteria2);
 		UserBo user = mongoTemplate.findOne(query, UserBo.class);
 		return user;

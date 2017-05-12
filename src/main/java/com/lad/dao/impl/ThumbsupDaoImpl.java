@@ -29,12 +29,14 @@ public class ThumbsupDaoImpl implements IThumbsupDao {
 	public List<ThumbsupBo> selectByOwnerId(String ownerId) {
 		Query query = new Query();
 		query.addCriteria(new Criteria("owner_id").is(ownerId));
+		query.addCriteria(new Criteria("deleted").is(0));
 		return mongoTemplate.find(query, ThumbsupBo.class);
 	}
 
 	public List<ThumbsupBo> selectByVisitorId(String visitorId) {
 		Query query = new Query();
 		query.addCriteria(new Criteria("visitor_id").is(visitorId));
+		query.addCriteria(new Criteria("deleted").is(0));
 		return mongoTemplate.find(query, ThumbsupBo.class);
 	}
 
@@ -42,6 +44,7 @@ public class ThumbsupDaoImpl implements IThumbsupDao {
 		Query query = new Query();
 		query.limit(limit);
 		query.with(new Sort(new Order(Direction.DESC, "_id")));
+		query.addCriteria(new Criteria("deleted").is(0));
 		query.addCriteria(new Criteria("owner_id").is(ownerId));
 		if (!StringUtils.isEmpty(startId)) {
 			if (gt) {
@@ -58,6 +61,7 @@ public class ThumbsupDaoImpl implements IThumbsupDao {
 		query.limit(limit);
 		query.with(new Sort(new Order(Direction.DESC, "_id")));
 		query.addCriteria(new Criteria("visitor_id").is(visitorId));
+		query.addCriteria(new Criteria("deleted").is(0));
 		if (!StringUtils.isEmpty(startId)) {
 			if (gt) {
 				query.addCriteria(new Criteria("_id").gt(startId));
@@ -72,6 +76,7 @@ public class ThumbsupDaoImpl implements IThumbsupDao {
 		Query query = new Query();
 		query.addCriteria(new Criteria("owner_id").is(vid));
 		query.addCriteria(new Criteria("visitor_id").is(visitorid));
+		query.addCriteria(new Criteria("deleted").is(0));
 		return mongoTemplate.findOne(query, ThumbsupBo.class);
 	}
 

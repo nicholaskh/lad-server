@@ -42,6 +42,7 @@ public class HomepageDaoImpl implements IHomepageDao {
 	public HomepageBo selectByUserId(String userId) {
 		Query query = new Query();
 		query.addCriteria(new Criteria("owner_id").is(userId));
+		query.addCriteria(new Criteria("deleted").is(0));
 		return mongoTemplate.findOne(query, HomepageBo.class);
 	}
 

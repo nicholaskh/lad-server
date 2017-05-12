@@ -1,6 +1,7 @@
 package com.lad.dao;
 
 import com.lad.bo.ChatroomBo;
+import com.mongodb.WriteResult;
 
 public interface IChatroomDao extends IBaseDao {
 
@@ -11,4 +12,6 @@ public interface IChatroomDao extends IBaseDao {
 	public ChatroomBo updateUsers(ChatroomBo chatroom);
 
 	public ChatroomBo get(String chatroomId);
+
+	public WriteResult delete(String chatroomId);
 }

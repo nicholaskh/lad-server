@@ -8,9 +8,11 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 import com.lad.bo.ChatroomBo;
+import com.lad.bo.ChatroomoneBo;
 import com.lad.bo.HomepageBo;
 import com.lad.bo.MessageBo;
 import com.lad.dao.IChatroomDao;
+import com.mongodb.WriteResult;
 
 @Repository("chatroomDao")
 public class ChatroomDaoImpl implements IChatroomDao {
@@ -25,6 +27,7 @@ public class ChatroomDaoImpl implements IChatroomDao {
 	public ChatroomBo updateName(ChatroomBo chatroom) {
 		Query query = new Query();
 		query.addCriteria(new Criteria("_id").is(chatroom.getId()));
+		query.addCriteria(new Criteria("deleted").is(0));
 		Update update = new Update();
 		update.set("name", chatroom.getName());
 		mongoTemplate.updateFirst(query, update, ChatroomBo.class);
@@ -34,16 +37,27 @@ public class ChatroomDaoImpl implements IChatroomDao {
 	public ChatroomBo get(String chatroomId) {
 		Query query = new Query();
 		query.addCriteria(new Criteria("_id").is(chatroomId));
+		query.addCriteria(new Criteria("deleted").is(0));
 		return mongoTemplate.findOne(query, ChatroomBo.class);
 	}
 
 	public ChatroomBo updateUsers(ChatroomBo chatroom) {
 		Query query = new Query();
 		query.addCriteria(new Criteria("_id").is(chatroom.getId()));
+		query.addCriteria(new Criteria("deleted").is(0));
 		Update update = new Update();
 		update.set("users", chatroom.getUsers());
 		mongoTemplate.updateFirst(query, update, ChatroomBo.class);
 		return chatroom;
+	}
+
+	public WriteResult delete(String chatroomId) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("_id").is(chatroomId));
+		query.addCriteria(new Criteria("deleted").is(0));
+		Update update = new Update();
+		update.set("deleted", 1);
+		return mongoTemplate.updateFirst(query, update, ChatroomBo.class);
 	}
 
 }

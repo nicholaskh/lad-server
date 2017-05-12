@@ -20,6 +20,7 @@ public class RegistDaoImpl implements IRegistDao {
 	public Integer searchPhone(String phone) {
 		Query query = new Query();
 		Criteria criteria = new Criteria("phone").is(phone);
+		query.addCriteria(new Criteria("deleted").is(0));
 		query.addCriteria(criteria);
 		UserBo user = mongoTemplate.findOne(query, UserBo.class);
 		if (user != null) {

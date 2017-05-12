@@ -48,4 +48,18 @@ public class FriendsServiceImpl implements IFriendsService {
 		return friendsDao.getFriendByIdAndVisitorId(userid, firendid);
 	}
 
+	public List<FriendsBo> getFriendByUserid(String userid) {
+		return friendsDao.getFriendByUserid(userid);
+	}
+
+	public List<FriendsBo> getFriendByFirendid(String firendid) {
+		return friendsDao.getFriendByFirendid(firendid);
+	}
+
+	public WriteResult delete(String userid, String friendid) {
+		return friendsDao.delete(userid, friendid);
+	}
+	
+	
+
 }

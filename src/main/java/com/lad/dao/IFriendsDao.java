@@ -21,5 +21,11 @@ public interface IFriendsDao extends IBaseDao {
 	public WriteResult updateBlack(String userid, String firendid, Integer black);
 	
 	public FriendsBo getFriendByIdAndVisitorId(String userid, String firendid);
+	
+	public List<FriendsBo> getFriendByUserid(String userid);
+	
+	public List<FriendsBo> getFriendByFirendid(String firendid);
+	
+	public WriteResult delete(String userid, String firendid);
 
 }

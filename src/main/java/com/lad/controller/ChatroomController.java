@@ -141,7 +141,7 @@ public class ChatroomController extends BaseContorller {
 		set.add(userid);
 		chatroomBo.setUsers(set);
 		chatroomService.updateName(chatroomBo);
-		List<String> chatroom = userBo.getChatrooms();
+		HashSet<String> chatroom = userBo.getChatrooms();
 		if (chatroom.contains(chatroomBo.getId())) {
 			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_EXIST.getIndex(), ERRORCODE.CHATROOM_EXIST.getReason());
 		}
@@ -177,7 +177,7 @@ public class ChatroomController extends BaseContorller {
 		set.remove(userid);
 		chatroomBo.setUsers(set);
 		chatroomService.updateName(chatroomBo);
-		List<String> chatroom = userBo.getChatrooms();
+		HashSet<String> chatroom = userBo.getChatrooms();
 		chatroom.remove(chatroomBo.getId());
 		userService.updateChatrooms(userBo);
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -237,7 +237,7 @@ public class ChatroomController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
-		List<String> Chatrooms = userBo.getChatrooms();
+		HashSet<String> Chatrooms = userBo.getChatrooms();
 		List<ChatroomVo> ChatroomList = new LinkedList<ChatroomVo>();
 		for (String id : Chatrooms) {
 			UserBo temp = userService.getUser(id);

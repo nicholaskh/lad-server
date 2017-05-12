@@ -29,6 +29,7 @@ public class FriendsDaoImpl implements IFriendsDao {
 		Query query = new Query();
 		query.addCriteria(new Criteria("userid").is(userid));
 		query.addCriteria(new Criteria("firendid").is(firendid));
+		query.addCriteria(new Criteria("deleted").is(0));
 		Update update = new Update();
 		update.set("backname", backname);
 		return mongoTemplate.updateFirst(query, update, FriendsBo.class);
@@ -38,6 +39,7 @@ public class FriendsDaoImpl implements IFriendsDao {
 		Query query = new Query();
 		query.addCriteria(new Criteria("userid").is(userid));
 		query.addCriteria(new Criteria("firendid").is(firendid));
+		query.addCriteria(new Criteria("deleted").is(0));
 		Update update = new Update();
 		update.set("tag", tag);
 		return mongoTemplate.updateFirst(query, update, FriendsBo.class);
@@ -47,6 +49,7 @@ public class FriendsDaoImpl implements IFriendsDao {
 		Query query = new Query();
 		query.addCriteria(new Criteria("userid").is(userid));
 		query.addCriteria(new Criteria("firendid").is(firendid));
+		query.addCriteria(new Criteria("deleted").is(0));
 		Update update = new Update();
 		update.set("phone", phone);
 		return mongoTemplate.updateFirst(query, update, FriendsBo.class);
@@ -56,6 +59,7 @@ public class FriendsDaoImpl implements IFriendsDao {
 		Query query = new Query();
 		query.addCriteria(new Criteria("userid").is(userid));
 		query.addCriteria(new Criteria("firendid").is(firendid));
+		query.addCriteria(new Criteria("deleted").is(0));
 		Update update = new Update();
 		update.set("description", description);
 		return mongoTemplate.updateFirst(query, update, FriendsBo.class);
@@ -65,6 +69,7 @@ public class FriendsDaoImpl implements IFriendsDao {
 		Query query = new Query();
 		query.addCriteria(new Criteria("userid").is(userid));
 		query.addCriteria(new Criteria("firendid").is(firendid));
+		query.addCriteria(new Criteria("deleted").is(0));
 		Update update = new Update();
 		update.set("VIP", VIP);
 		return mongoTemplate.updateFirst(query, update, FriendsBo.class);
@@ -74,6 +79,7 @@ public class FriendsDaoImpl implements IFriendsDao {
 		Query query = new Query();
 		query.addCriteria(new Criteria("userid").is(userid));
 		query.addCriteria(new Criteria("firendid").is(firendid));
+		query.addCriteria(new Criteria("deleted").is(0));
 		Update update = new Update();
 		update.set("black", black);
 		return mongoTemplate.updateFirst(query, update, FriendsBo.class);
@@ -83,7 +89,32 @@ public class FriendsDaoImpl implements IFriendsDao {
 		Query query = new Query();
 		query.addCriteria(new Criteria("userid").is(userid));
 		query.addCriteria(new Criteria("firendid").is(firendid));
+		query.addCriteria(new Criteria("deleted").is(0));
 		return mongoTemplate.findOne(query, FriendsBo.class);
+	}
+
+	public List<FriendsBo> getFriendByUserid(String userid) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("userid").is(userid));
+		query.addCriteria(new Criteria("deleted").is(0));
+		return mongoTemplate.find(query, FriendsBo.class);
+	}
+
+	public List<FriendsBo> getFriendByFirendid(String firendid) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("firendid").is(firendid));
+		query.addCriteria(new Criteria("deleted").is(0));
+		return mongoTemplate.find(query, FriendsBo.class);
+	}
+
+	public WriteResult delete(String userid, String firendid) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("userid").is(userid));
+		query.addCriteria(new Criteria("firendid").is(firendid));
+		query.addCriteria(new Criteria("deleted").is(0));
+		Update update = new Update();
+		update.set("deleted", 1);
+		return mongoTemplate.updateFirst(query, update, FriendsBo.class);
 	}
 
 }

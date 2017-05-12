@@ -1,11 +1,12 @@
 package com.lad.bo;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.List;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document(collection = "t_user")
+@Document(collection = "user")
 public class UserBo extends BaseBo implements Serializable {
 
 	private static final long serialVersionUID = 2928923917001675021L;
@@ -26,7 +27,7 @@ public class UserBo extends BaseBo implements Serializable {
 
 	private List<String> friends;
 	
-	private List<String> chatrooms;
+	private HashSet<String> chatrooms;
 
 	public String getUserName() {
 		return userName;
@@ -92,11 +93,11 @@ public class UserBo extends BaseBo implements Serializable {
 		this.friends = friends;
 	}
 
-	public List<String> getChatrooms() {
+	public HashSet<String> getChatrooms() {
 		return chatrooms;
 	}
 
-	public void setChatrooms(List<String> chatrooms) {
+	public void setChatrooms(HashSet<String> chatrooms) {
 		this.chatrooms = chatrooms;
 	}
 
