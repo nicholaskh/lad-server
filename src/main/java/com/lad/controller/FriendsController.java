@@ -432,11 +432,12 @@ public class FriendsController extends BaseContorller {
 			}
 			userSet.add(id);
 		}
+		userSet.add(userBo.getId());
 		ChatroomBo chatroomBo = new ChatroomBo();
 		chatroomBo.setName("群聊");
 		chatroomBo.setUsers(userSet);
 		chatroomService.insert(chatroomBo);
-		for (String id : idsList) {
+		for (String id : userSet) {
 			UserBo user = userService.getUser(id);
 			HashSet<String> chatroomsSet = user.getChatrooms();
 			chatroomsSet.add(id);
