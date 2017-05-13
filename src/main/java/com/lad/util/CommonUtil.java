@@ -37,7 +37,7 @@ public class CommonUtil {
 		return output;
 	}
 
-	public static String upload(MultipartFile file, String path, String filename) {
+	public static String upload(MultipartFile file, String path, String filename, int due) {
 		File targetFile = new File(path, filename);
 		String result = "";
 		if (!targetFile.exists()) {
@@ -45,12 +45,16 @@ public class CommonUtil {
 		}
 		try {
 			file.transferTo(targetFile);
-			result = QiNiu.uploadToQiNiu(path, filename);
+			if (due == 0) {
+				result = QiNiu.uploadToQiNiu(path, filename);
+			} else {
+				result = QiNiu.uploadToQiNiuDue(path, filename, due);
+			}
 			targetFile.delete();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return Constant.QINIU_URL+result+"?v="+CommonUtil.getRandom1();
+		return Constant.QINIU_URL + result + "?v=" + CommonUtil.getRandom1();
 	}
 
 	public static String toErrorResult(int ret, String error) {
@@ -68,14 +72,14 @@ public class CommonUtil {
 		String url = "http://hprpt2.eucp.b2m.cn:8080/sdkproxy/sendsms.action?cdkey=0SDK-EBB-6699-RHSLQ&password=797391&phone="
 				+ mobile + "&message=" + message;
 		String responseString = HttpClientUtil.getInstance().doGetRequest(url);
-		if(responseString.trim().equals(Constant.RESPONSE)){
+		if (responseString.trim().equals(Constant.RESPONSE)) {
 			return 0;
 		}
 		return -1;
 	}
-	
-	public static int getRandom1(){
-		return (int)(1+Math.random()*(10));
+
+	public static int getRandom1() {
+		return (int) (1 + Math.random() * (10));
 	}
 
 }

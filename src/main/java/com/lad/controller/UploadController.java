@@ -44,7 +44,7 @@ public class UploadController extends BaseContorller {
 		}
 		String userId = userBo.getId();
 		String fileName = userId + file.getOriginalFilename();
-		String path = CommonUtil.upload(file, Constant.HEAD_PICTURE_PATH, fileName);
+		String path = CommonUtil.upload(file, Constant.HEAD_PICTURE_PATH, fileName, 0);
 		userBo.setHeadPictureName(path);
 		userService.updateHeadPictureName(userBo);
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -70,7 +70,32 @@ public class UploadController extends BaseContorller {
 		}
 		String userId = userBo.getId();
 		String fileName = userId + file.getOriginalFilename();
-		String path = CommonUtil.upload(file, Constant.FEEDBACK_PICTURE_PATH, fileName);
+		String path = CommonUtil.upload(file, Constant.FEEDBACK_PICTURE_PATH, fileName, 0);
+		userBo.setHeadPictureName(fileName);
+		userService.updateHeadPictureName(userBo);
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("path", path);
+		return JSONObject.fromObject(map).toString();
+	}
+	
+	@RequestMapping("/imfile")
+	@ResponseBody
+	public String imfile(@RequestParam("imfile") MultipartFile imfile, HttpServletRequest request,
+			HttpServletResponse response) {
+		HttpSession session = request.getSession();
+		if (session.isNew()) {
+			return "{\"ret\":20002,\"error\":\":未登录\"}";
+		}
+		if (session.getAttribute("isLogin") == null) {
+			return "{\"ret\":20002,\"error\":\":未登录\"}";
+		}
+		UserBo userBo = (UserBo) session.getAttribute("userBo");
+		if (userBo == null) {
+			return "{\"ret\":20002,\"error\":\":未登录\"}";
+		}
+		String fileName = imfile.getOriginalFilename();
+		String path = CommonUtil.upload(imfile, Constant.FEEDBACK_PICTURE_PATH, fileName, 1);
 		userBo.setHeadPictureName(fileName);
 		userService.updateHeadPictureName(userBo);
 		Map<String, Object> map = new HashMap<String, Object>();
