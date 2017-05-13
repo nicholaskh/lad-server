@@ -95,7 +95,7 @@ public class UploadController extends BaseContorller {
 			return "{\"ret\":20002,\"error\":\":未登录\"}";
 		}
 		String fileName = imfile.getOriginalFilename();
-		String path = CommonUtil.upload(imfile, Constant.FEEDBACK_PICTURE_PATH, fileName, 1);
+		String path = CommonUtil.upload(imfile, Constant.IMFILE_PATH, fileName, 1);
 		userBo.setHeadPictureName(fileName);
 		userService.updateHeadPictureName(userBo);
 		Map<String, Object> map = new HashMap<String, Object>();
