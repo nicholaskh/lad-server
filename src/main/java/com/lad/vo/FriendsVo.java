@@ -11,6 +11,8 @@ public class FriendsVo extends BaseVo {
 	private String description;
 	private Integer VIP;
 	private Integer black;
+	private String username;
+	private String picture;
 
 	public String getUserid() {
 		return userid;
@@ -74,6 +76,22 @@ public class FriendsVo extends BaseVo {
 
 	public void setBlack(Integer black) {
 		this.black = black;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	public String getPicture() {
+		return picture;
+	}
+
+	public void setPicture(String picture) {
+		this.picture = picture;
 	}
 
 }

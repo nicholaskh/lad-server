@@ -361,6 +361,10 @@ public class FriendsController extends BaseContorller {
 			} catch (InvocationTargetException e) {
 				e.printStackTrace();
 			}
+			String friendid = friendsBo.getFriendid();
+			UserBo friend = userService.getUser(friendid);
+			vo.setUsername(friend.getUserName());
+			vo.setPicture(friend.getHeadPictureName());
 			voList.add(vo);
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
