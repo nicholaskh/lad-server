@@ -25,10 +25,8 @@ import com.lad.service.IChatroomService;
 import com.lad.service.IUserService;
 import com.lad.util.CommonUtil;
 import com.lad.util.ERRORCODE;
-import com.lad.util.PushedUtil;
 import com.lad.vo.ChatroomVo;
 import com.lad.vo.UserVo;
-import com.pushd.ImAssistant;
 
 import net.sf.json.JSONObject;
 

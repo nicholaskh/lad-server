@@ -16,9 +16,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.lad.service.ILoginService;
 import com.lad.util.CommonUtil;
 import com.lad.util.ERRORCODE;
-import com.lad.util.PushedUtil;
-import com.pushd.ImAssistant;
-
 import net.sf.json.JSONObject;
 
 @Controller
