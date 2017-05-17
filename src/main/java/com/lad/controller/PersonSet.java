@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.lad.bo.UserBo;
+import com.lad.service.IRegistService;
 import com.lad.service.IUserService;
 import com.lad.util.CommonUtil;
 import com.lad.util.ERRORCODE;
@@ -30,7 +31,9 @@ public class PersonSet extends BaseContorller {
 
 	@Autowired
 	private IUserService userService;
-
+	@Autowired
+	private IRegistService registService;
+	
 	@RequestMapping("/username")
 	@ResponseBody
 	public String username(String username, HttpServletRequest request, HttpServletResponse response) {
@@ -218,6 +221,9 @@ public class PersonSet extends BaseContorller {
 		}
 		if (StringUtils.isEmpty(phone)) {
 			return CommonUtil.toErrorResult(ERRORCODE.USER_PHONE.getIndex(), ERRORCODE.USER_PHONE.getReason());
+		}
+		if(!registService.is_phone_repeat(phone)){
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PHONE_NULL.getIndex(), ERRORCODE.ACCOUNT_PHONE_NULL.getReason());
 		}
 		UserBo temp = userService.getUserByPhone(phone);
 		UserVo vo = new UserVo();
