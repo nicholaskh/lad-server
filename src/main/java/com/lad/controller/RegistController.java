@@ -111,6 +111,10 @@ public class RegistController extends BaseContorller {
 		}
 
 		String phone = (String) session.getAttribute("phone");
+		if(registService.is_phone_repeat(phone)){
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PHONE_REPEAT.getIndex(),
+					ERRORCODE.ACCOUNT_PHONE_REPEAT.getReason());
+		}
 		UserBo userBo = new UserBo();
 		Long time = System.currentTimeMillis()/1000;
 		userBo.setUserName("user"+time);
