@@ -112,6 +112,8 @@ public class RegistController extends BaseContorller {
 
 		String phone = (String) session.getAttribute("phone");
 		UserBo userBo = new UserBo();
+		Long time = System.currentTimeMillis()/1000;
+		userBo.setUserName("user"+time);
 		userBo.setPhone(phone);
 		userBo.setPassword(CommonUtil.getSHA256(password1));
 		userService.save(userBo);
