@@ -15,6 +15,7 @@ import org.springframework.stereotype.Repository;
 
 import com.lad.bo.Pager;
 import com.lad.bo.UserBo;
+import com.mongodb.WriteResult;
 
 @Repository
 public class UserDao {
@@ -30,6 +31,7 @@ public class UserDao {
 		public UserBo updatePassword(UserBo userBo) {
 			Query query = new Query();
 			query.addCriteria(new Criteria("phone").is(userBo.getPhone()));
+			query.addCriteria(new Criteria("deleted").is(0));
 			Update update = new Update();
 			update.set("password", userBo.getPassword());
 			mongoTemplate.updateFirst(query, update, UserBo.class);	
@@ -39,6 +41,7 @@ public class UserDao {
 		public UserBo getUser(String userId) {
 			Query query = new Query();
 			query.addCriteria(new Criteria("_id").is(userId));
+			query.addCriteria(new Criteria("deleted").is(0));
 			UserBo userBo = mongoTemplate.findOne(query, UserBo.class);	
 			return userBo;
 		}
@@ -46,6 +49,7 @@ public class UserDao {
 		public List<UserBo> getUserByName(String name) {
 			Query query = new Query();
 			query.addCriteria(new Criteria("userName").is(name));
+			query.addCriteria(new Criteria("deleted").is(0));
 			List<UserBo> userBoList = mongoTemplate.find(query, UserBo.class);	
 			return userBoList;
 		}
@@ -53,6 +57,7 @@ public class UserDao {
 		public UserBo getUserByPhone(String phone) {
 			Query query = new Query();
 			query.addCriteria(new Criteria("phone").is(phone));
+			query.addCriteria(new Criteria("deleted").is(0));
 			UserBo userBo = mongoTemplate.findOne(query, UserBo.class);	
 			return userBo;
 		}
@@ -60,6 +65,7 @@ public class UserDao {
 		public UserBo updatePhone(UserBo userBo) {
 			Query query = new Query();
 			query.addCriteria(new Criteria("_id").is(userBo.getId()));
+			query.addCriteria(new Criteria("deleted").is(0));
 			Update update = new Update();
 			update.set("phone", userBo.getPhone());
 			mongoTemplate.updateFirst(query, update, UserBo.class);	
@@ -69,6 +75,7 @@ public class UserDao {
 		public UserBo updateFriends(UserBo userBo) {
 			Query query = new Query();
 			query.addCriteria(new Criteria("_id").is(userBo.getId()));
+			query.addCriteria(new Criteria("deleted").is(0));
 			Update update = new Update();
 			update.set("friends", userBo.getFriends());
 			mongoTemplate.updateFirst(query, update, UserBo.class);	
@@ -78,6 +85,7 @@ public class UserDao {
 		public UserBo updateChatrooms(UserBo userBo) {
 			Query query = new Query();
 			query.addCriteria(new Criteria("_id").is(userBo.getId()));
+			query.addCriteria(new Criteria("deleted").is(0));
 			Update update = new Update();
 			update.set("chatrooms", userBo.getChatrooms());
 			mongoTemplate.updateFirst(query, update, UserBo.class);	
@@ -87,6 +95,7 @@ public class UserDao {
 		public UserBo updateHeadPictureName(UserBo userBo) {
 			Query query = new Query();
 			query.addCriteria(new Criteria("phone").is(userBo.getPhone()));
+			query.addCriteria(new Criteria("deleted").is(0));
 			Update update = new Update();
 			update.set("headPictureName", userBo.getHeadPictureName());
 			mongoTemplate.updateFirst(query, update, UserBo.class);	
@@ -96,6 +105,7 @@ public class UserDao {
 		public UserBo updateUserName(UserBo userBo) {
 			Query query = new Query();
 			query.addCriteria(new Criteria("phone").is(userBo.getPhone()));
+			query.addCriteria(new Criteria("deleted").is(0));
 			Update update = new Update();
 			update.set("userName", userBo.getUserName());
 			mongoTemplate.updateFirst(query, update, UserBo.class);	
@@ -105,6 +115,7 @@ public class UserDao {
 		public UserBo updateSex(UserBo userBo) {
 			Query query = new Query();
 			query.addCriteria(new Criteria("phone").is(userBo.getPhone()));
+			query.addCriteria(new Criteria("deleted").is(0));
 			Update update = new Update();
 			update.set("sex", userBo.getSex());
 			mongoTemplate.updateFirst(query, update, UserBo.class);	
@@ -114,6 +125,7 @@ public class UserDao {
 		public UserBo updatePersonalizedSignature(UserBo userBo) {
 			Query query = new Query();
 			query.addCriteria(new Criteria("phone").is(userBo.getPhone()));
+			query.addCriteria(new Criteria("deleted").is(0));
 			Update update = new Update();
 			update.set("personalizedSignature", userBo.getPersonalizedSignature());
 			mongoTemplate.updateFirst(query, update, UserBo.class);	
@@ -123,6 +135,7 @@ public class UserDao {
 		public UserBo updateBirthDay(UserBo userBo) {
 			Query query = new Query();
 			query.addCriteria(new Criteria("phone").is(userBo.getPhone()));
+			query.addCriteria(new Criteria("deleted").is(0));
 			Update update = new Update();
 			update.set("birthDay", userBo.getBirthDay());
 			mongoTemplate.updateFirst(query, update, UserBo.class);	
@@ -147,6 +160,7 @@ public class UserDao {
 			Query query = new Query();
 			query.skip((pager.getPageNum()-1)*pager.getPageSize());
 			query.limit(pager.getPageSize());
+			query.addCriteria(new Criteria("deleted").is(0));
 			Order order = new Order(Direction.DESC, "id");
 			query.with(new Sort(order));
 			//query.addCriteria(new Criteria("userNo").in("NO1468048113823"));
@@ -160,8 +174,19 @@ public class UserDao {
 		public UserBo findById(String integer){
 			Query query = new Query();
 			query.addCriteria(new Criteria("_id").is(integer));
+			query.addCriteria(new Criteria("deleted").is(0));
 			UserBo userBo = mongoTemplate.findOne(query, UserBo.class);
 			return userBo;
+		}
+		
+		public WriteResult updateLocation(String phone, Double px, Double py) {
+			Query query = new Query();
+			query.addCriteria(new Criteria("phone").is(phone));
+			query.addCriteria(new Criteria("deleted").is(0));
+			Update update = new Update();
+			update.set("px", px);
+			update.set("py", py);
+			return mongoTemplate.updateFirst(query, update, UserBo.class);	
 		}
 			
 }

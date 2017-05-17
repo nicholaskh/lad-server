@@ -26,8 +26,12 @@ public class UserBo extends BaseBo implements Serializable {
 	private String personalizedSignature;
 
 	private List<String> friends;
-	
+
 	private HashSet<String> chatrooms;
+
+	private Double px;
+
+	private Double py;
 
 	public String getUserName() {
 		return userName;
@@ -99,6 +103,22 @@ public class UserBo extends BaseBo implements Serializable {
 
 	public void setChatrooms(HashSet<String> chatrooms) {
 		this.chatrooms = chatrooms;
+	}
+
+	public Double getPx() {
+		return px;
+	}
+
+	public void setPx(Double px) {
+		this.px = px;
+	}
+
+	public Double getPy() {
+		return py;
+	}
+
+	public void setPy(Double py) {
+		this.py = py;
 	}
 
 }

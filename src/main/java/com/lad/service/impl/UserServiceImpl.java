@@ -10,6 +10,7 @@ import com.lad.bo.Pager;
 import com.lad.bo.UserBo;
 import com.lad.dao.UserDao;
 import com.lad.service.IUserService;
+import com.mongodb.WriteResult;
 
 /**
  * 用户service
@@ -88,5 +89,9 @@ public class UserServiceImpl implements IUserService{
 
 		public UserBo getUserByPhone(String phone) {
 			return userDao.getUserByPhone(phone);
+		}
+		
+		public WriteResult updateLocation(String phone, Double px, Double py) {
+			return userDao.updateLocation(phone, px, py);
 		}
 }
