@@ -10,8 +10,6 @@ public class BaseBo implements Serializable {
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -4629611041856330852L;
-
 	@Id
 	private String id;
 

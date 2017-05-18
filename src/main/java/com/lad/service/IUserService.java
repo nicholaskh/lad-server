@@ -32,7 +32,7 @@ public interface IUserService extends IBaseService {
 	public List<UserBo> getUserByName(String name);
 
 	public UserBo getUserByPhone(String phone);
-	
-	public WriteResult updateLocation(String phone, Double px, Double py);
+
+	public WriteResult updateLocation(String phone, String pointid);
 
 }

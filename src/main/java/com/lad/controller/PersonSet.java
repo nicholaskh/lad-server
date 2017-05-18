@@ -16,12 +16,16 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.lad.bo.PointBo;
 import com.lad.bo.UserBo;
+import com.lad.service.IPointService;
 import com.lad.service.IRegistService;
 import com.lad.service.IUserService;
 import com.lad.util.CommonUtil;
 import com.lad.util.ERRORCODE;
 import com.lad.vo.UserVo;
+import com.mongodb.client.model.geojson.Point;
+import com.mongodb.client.model.geojson.Position;
 
 import net.sf.json.JSONObject;
 
@@ -33,7 +37,9 @@ public class PersonSet extends BaseContorller {
 	private IUserService userService;
 	@Autowired
 	private IRegistService registService;
-	
+	@Autowired
+	private IPointService pointService;
+
 	@RequestMapping("/username")
 	@ResponseBody
 	public String username(String username, HttpServletRequest request, HttpServletResponse response) {
@@ -222,8 +228,9 @@ public class PersonSet extends BaseContorller {
 		if (StringUtils.isEmpty(phone)) {
 			return CommonUtil.toErrorResult(ERRORCODE.USER_PHONE.getIndex(), ERRORCODE.USER_PHONE.getReason());
 		}
-		if(!registService.is_phone_repeat(phone)){
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PHONE_NULL.getIndex(), ERRORCODE.ACCOUNT_PHONE_NULL.getReason());
+		if (!registService.is_phone_repeat(phone)) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PHONE_NULL.getIndex(),
+					ERRORCODE.ACCOUNT_PHONE_NULL.getReason());
 		}
 		UserBo temp = userService.getUserByPhone(phone);
 		UserVo vo = new UserVo();
@@ -263,7 +270,7 @@ public class PersonSet extends BaseContorller {
 		map.put("user", vo);
 		return JSONObject.fromObject(map).toString();
 	}
-	
+
 	@RequestMapping("/location")
 	@ResponseBody
 	public String location(Double px, Double py, HttpServletRequest request, HttpServletResponse response)
@@ -282,7 +289,14 @@ public class PersonSet extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
-		userService.updateLocation(userBo.getPhone(), px, py);
+		PointBo pointBo = new PointBo();
+		pointBo.setCoordinate(new Position(px, py));
+		if (StringUtils.isEmpty(userBo.getPointId())) {
+			pointBo = pointService.insertUserPoint(pointBo);
+		} else {
+			pointBo = pointService.updateUserPoint(pointBo);
+		}
+		userService.updateLocation(userBo.getPhone(), pointBo.getId());
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();
