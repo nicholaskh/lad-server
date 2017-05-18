@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.lad.service.ILoginService;
 import com.lad.util.CommonUtil;
 import com.lad.util.ERRORCODE;
+import com.lad.util.PushedUtil;
+
 import net.sf.json.JSONObject;
 
 @Controller
@@ -67,11 +69,11 @@ public class LoginController extends BaseContorller {
 		if (verification_session.equals(verification) && phone_session.equals(phone)) {
 			map.put("ret", 0);
 			session.setAttribute("isLogin", true);
-//			String token = PushedUtil.getToken();
-//			if (null == token) {
-//				return CommonUtil.toErrorResult(ERRORCODE.PUSHED_ERROR.getIndex(), ERRORCODE.PUSHED_ERROR.getReason());
-//			}
-			map.put("token", "token.trim()");
+			String token = PushedUtil.getToken();
+			if (null == token) {
+				return CommonUtil.toErrorResult(ERRORCODE.PUSHED_ERROR.getIndex(), ERRORCODE.PUSHED_ERROR.getReason());
+			}
+			map.put("token", token);
 		} else {
 			return CommonUtil.toErrorResult(ERRORCODE.SECURITY_WRONG_VERIFICATION.getIndex(),
 					ERRORCODE.SECURITY_WRONG_VERIFICATION.getReason());
@@ -97,11 +99,11 @@ public class LoginController extends BaseContorller {
 			map.put("ret", 0);
 			session.setAttribute("isLogin", true);
 			session.setAttribute("userBo", loginService.getUser(phone, password));
-//			String token = PushedUtil.getToken();
-//			if (null == token) {
-//				return CommonUtil.toErrorResult(ERRORCODE.PUSHED_ERROR.getIndex(), ERRORCODE.PUSHED_ERROR.getReason());
-//			}
-			map.put("token", "token.trim()");
+			String token = PushedUtil.getToken();
+			if (null == token) {
+				return CommonUtil.toErrorResult(ERRORCODE.PUSHED_ERROR.getIndex(), ERRORCODE.PUSHED_ERROR.getReason());
+			}
+			map.put("token", token);
 		} else {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PASSWORD.getIndex(),
 					ERRORCODE.ACCOUNT_PASSWORD.getReason());
