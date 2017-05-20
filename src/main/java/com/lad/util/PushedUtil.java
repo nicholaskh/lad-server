@@ -22,7 +22,7 @@ public class PushedUtil {
 		if (null == imAssistant) {
 			return null;
 		}
-		Message toke = imAssistant.getAppKey();
+		Message toke = imAssistant.getToken();
 		if (toke.getStatus() == Message.Status.success) {
 			return toke.getMsg();
 		}
@@ -37,6 +37,7 @@ public class PushedUtil {
 		imAssistant.authServer("cdb5d308e9cd308822f95b8f2c61dbf4289f127b8c46193941aa7fbc9f79d905");
 		Message message = imAssistant.subscribe(channelName, channelId, uuids);
 		if (message.getStatus() == Message.Status.success) {
+			imAssistant.setServerToken(message.getMsg());
 			return true;
 		}
 		return false;
