@@ -21,10 +21,9 @@ public class LocationDaoImpl implements ILocationDao {
 	
 	public List<LocationBo> findCircleNear(Point point, double maxDistance) {
 		Query query = new Query();
-		new Criteria();
 		Criteria criteria1 = Criteria.where("position").nearSphere(point);
 		query.addCriteria(criteria1);
-		query.limit(100);
+		query.limit(1000);
 		List<LocationBo> list = mongoTemplate.find(query, LocationBo.class);
 		return list;
 	}

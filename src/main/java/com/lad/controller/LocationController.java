@@ -52,7 +52,7 @@ public class LocationController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
-		List<LocationBo> locationBoList = locationService.findCircleNear(px, py, 100);
+		List<LocationBo> locationBoList = locationService.findCircleNear(px, py, 5000);
 		List<UserVo> list = new LinkedList<UserVo>();
 		for(LocationBo bo : locationBoList){
 			String userid = bo.getUserid();
