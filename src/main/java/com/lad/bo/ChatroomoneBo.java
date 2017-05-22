@@ -1,5 +1,8 @@
 package com.lad.bo;
 
+import org.springframework.data.mongodb.core.mapping.Document;
+
+@Document(collection = "chatroomone")
 public class ChatroomoneBo extends BaseBo {
 	private String name;
 	private String userid;
