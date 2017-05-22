@@ -33,6 +33,6 @@ public interface IUserService extends IBaseService {
 
 	public UserBo getUserByPhone(String phone);
 
-	public WriteResult updateLocation(String phone, String pointid);
+	public WriteResult updateLocation(String phone, String locationid);
 
 }

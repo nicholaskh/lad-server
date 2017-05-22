@@ -29,7 +29,7 @@ public class UserBo extends BaseBo implements Serializable {
 
 	private HashSet<String> chatrooms;
 
-	private String pointId;
+	private String locationid;
 
 	public String getUserName() {
 		return userName;
@@ -103,11 +103,11 @@ public class UserBo extends BaseBo implements Serializable {
 		this.chatrooms = chatrooms;
 	}
 
-	public String getPointId() {
-		return pointId;
+	public String getLocationid() {
+		return locationid;
 	}
 
-	public void setPointId(String pointId) {
-		this.pointId = pointId;
+	public void setLocationid(String locationid) {
+		this.locationid = locationid;
 	}
 }

@@ -16,9 +16,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.lad.bo.LocationBo;
 import com.lad.bo.PointBo;
 import com.lad.bo.UserBo;
-import com.lad.service.IPointService;
+import com.lad.service.ILocationService;
 import com.lad.service.IRegistService;
 import com.lad.service.IUserService;
 import com.lad.util.CommonUtil;
@@ -38,7 +39,7 @@ public class PersonSet extends BaseContorller {
 	@Autowired
 	private IRegistService registService;
 	@Autowired
-	private IPointService pointService;
+	private ILocationService locationService;
 
 	@RequestMapping("/username")
 	@ResponseBody
@@ -273,7 +274,7 @@ public class PersonSet extends BaseContorller {
 
 	@RequestMapping("/location")
 	@ResponseBody
-	public String location(Double px, Double py, HttpServletRequest request, HttpServletResponse response)
+	public String location(double px, double py, HttpServletRequest request, HttpServletResponse response)
 			throws Exception {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
@@ -289,14 +290,19 @@ public class PersonSet extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
-		PointBo pointBo = new PointBo();
-		pointBo.setCoordinate(new Position(px, py));
-		if (StringUtils.isEmpty(userBo.getPointId())) {
-			pointBo = pointService.insertUserPoint(pointBo);
-		} else {
-			pointBo = pointService.updateUserPoint(pointBo);
+		
+		String userid = userBo.getId();
+		LocationBo locationBo = locationService.getLocationBoByUserid(userid);
+		if(null != locationBo){
+			locationBo.setPosition(new double[]{px,py});
+			locationBo = locationService.updateUserPoint(locationBo);
+		}else{
+			locationBo = new LocationBo();
+			locationBo.setPosition(new double[]{px,py});
+			locationBo.setUserid(userid);
+			locationBo = locationService.insertUserPoint(locationBo);
 		}
-		userService.updateLocation(userBo.getPhone(), pointBo.getId());
+		userService.updateLocation(userBo.getPhone(), locationBo.getId());
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();

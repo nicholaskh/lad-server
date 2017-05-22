@@ -91,7 +91,7 @@ public class UserServiceImpl implements IUserService{
 			return userDao.getUserByPhone(phone);
 		}
 		
-		public WriteResult updateLocation(String phone, String pointid) {
-			return userDao.updateLocation(phone, pointid);
+		public WriteResult updateLocation(String phone, String locationid) {
+			return userDao.updateLocation(phone, locationid);
 		}
 }

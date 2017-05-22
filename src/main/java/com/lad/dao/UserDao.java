@@ -179,12 +179,12 @@ public class UserDao {
 			return userBo;
 		}
 		
-		public WriteResult updateLocation(String phone, String pointid) {
+		public WriteResult updateLocation(String phone, String locationid) {
 			Query query = new Query();
 			query.addCriteria(new Criteria("phone").is(phone));
 			query.addCriteria(new Criteria("deleted").is(0));
 			Update update = new Update();
-			update.set("pointid", pointid);
+			update.set("locationid", locationid);
 			return mongoTemplate.updateFirst(query, update, UserBo.class);	
 		}
 			
