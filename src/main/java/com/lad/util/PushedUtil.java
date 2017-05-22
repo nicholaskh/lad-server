@@ -18,13 +18,13 @@ public class PushedUtil {
 		return assistent;
 	}
 
-	public static String getTokenFromPushed(ImAssistant imAssistant) {
+	public static Message getTokenFromPushed(ImAssistant imAssistant) {
 		if (null == imAssistant) {
 			return null;
 		}
-		Message toke = imAssistant.getToken();
-		if (toke.getStatus() == Message.Status.success) {
-			return toke.getMsg();
+		Message token = imAssistant.getToken();
+		if (null != token) {
+			return token;
 		}
 		return null;
 	}
@@ -43,12 +43,12 @@ public class PushedUtil {
 		return false;
 	}
 	
-	public static String getToken() {
+	public static Message getToken() {
 		ImAssistant imAssistant = PushedUtil.getPushed("180.76.173.200", 2222);
 		if (null == imAssistant) {
 			return null;
 		}
-		String token = PushedUtil.getTokenFromPushed(imAssistant);
+		Message token = PushedUtil.getTokenFromPushed(imAssistant);
 		if (null == token) {
 			return null;
 		}
