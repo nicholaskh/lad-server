@@ -18,4 +18,6 @@ public interface IChatroomDao extends IBaseDao {
 	public ChatroomBo selectByUserIdAndFriendid(String userid, String friendid);
 	
 	public ChatroomBo selectBySeq(int seq);
+	
+	public WriteResult setSeqExpire(int seq);
 }

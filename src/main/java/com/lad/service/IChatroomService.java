@@ -18,4 +18,6 @@ public interface IChatroomService extends IBaseService {
 	public ChatroomBo selectByUserIdAndFriendid(String userid, String friendid);
 	
 	public ChatroomBo selectBySeq(int seq);
+	
+	public WriteResult setSeqExpire(int seq);
 }

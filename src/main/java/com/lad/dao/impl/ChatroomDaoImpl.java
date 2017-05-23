@@ -69,8 +69,19 @@ public class ChatroomDaoImpl implements IChatroomDao {
 	public ChatroomBo selectBySeq(int seq) {
 		Query query = new Query();
 		query.addCriteria(new Criteria("seq").is(seq));
+		query.addCriteria(new Criteria("type").is(3));
 		query.addCriteria(new Criteria("deleted").is(0));
 		return mongoTemplate.findOne(query, ChatroomBo.class);
+	}
+
+	public WriteResult setSeqExpire(int seq) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("seq").is(seq));
+		query.addCriteria(new Criteria("type").is(3));
+		query.addCriteria(new Criteria("deleted").is(0));
+		Update update = new Update();
+		update.set("expire", 0);
+		return mongoTemplate.updateFirst(query, update, ChatroomBo.class);
 	}
 
 }

@@ -7,6 +7,8 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -389,7 +391,7 @@ public class ChatroomController extends BaseContorller {
 	
 	@RequestMapping("/factoface-create")
 	@ResponseBody
-	public String faceToFaceCreate(int seq, double px, double py, HttpServletRequest request, HttpServletResponse response) {
+	public String faceToFaceCreate(final int seq, double px, double py, HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
@@ -419,6 +421,10 @@ public class ChatroomController extends BaseContorller {
 				chatroomService.insert(chatroomBo);
 				isNew = 1;
 			}else{
+				if(0 == chatroomBo.getExpire()){
+					return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_SEQ_EXPIRE.getIndex(),
+							ERRORCODE.CHATROOM_SEQ_EXPIRE.getReason());
+				}
 				userSet.add(userBo.getId());
 				chatroomBo.setUsers(userSet);
 				chatroomService.updateUsers(chatroomBo);
@@ -432,6 +438,12 @@ public class ChatroomController extends BaseContorller {
 		userBo.setChatrooms(chatrooms);
 		userService.updateChatrooms(userBo);
 		if(isNew == 1){
+			Timer timer = new Timer();
+			timer.schedule(new TimerTask(){
+				public void run(){
+					chatroomService.setSeqExpire(seq);
+				}
+			}, 5000);
 			ImAssistant assistent = ImAssistant.init("180.76.173.200", 2222);
 			if(assistent == null){
 				return CommonUtil.toErrorResult(ERRORCODE.PUSHED_CONNECT_ERROR.getIndex(),

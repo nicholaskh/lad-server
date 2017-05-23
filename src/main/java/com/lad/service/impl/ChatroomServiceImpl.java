@@ -42,4 +42,8 @@ public class ChatroomServiceImpl implements IChatroomService {
 		return chatroomDao.selectBySeq(seq);
 	}
 
+	public WriteResult setSeqExpire(int seq) {
+		return chatroomDao.setSeqExpire(seq);
+	}
+
 }
