@@ -13,7 +13,6 @@ public class ChatroomBo extends BaseBo {
 	private String userid;
 	private String friendid;
 	private int seq;
-	private int top = 0;
 	public String getName() {
 		return name;
 	}
@@ -60,14 +59,6 @@ public class ChatroomBo extends BaseBo {
 
 	public void setSeq(int seq) {
 		this.seq = seq;
-	}
-
-	public int getTop() {
-		return top;
-	}
-
-	public void setTop(int top) {
-		this.top = top;
 	}
 
 }

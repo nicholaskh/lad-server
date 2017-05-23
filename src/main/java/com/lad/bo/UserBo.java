@@ -2,6 +2,7 @@ package com.lad.bo;
 
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -28,6 +29,8 @@ public class UserBo extends BaseBo implements Serializable {
 	private List<String> friends;
 
 	private HashSet<String> chatrooms;
+	
+	private LinkedHashSet<String> chatroomsTop;
 
 	private String locationid;
 
@@ -109,5 +112,13 @@ public class UserBo extends BaseBo implements Serializable {
 
 	public void setLocationid(String locationid) {
 		this.locationid = locationid;
+	}
+
+	public LinkedHashSet<String> getChatroomsTop() {
+		return chatroomsTop;
+	}
+
+	public void setChatroomsTop(LinkedHashSet<String> chatroomsTop) {
+		this.chatroomsTop = chatroomsTop;
 	}
 }

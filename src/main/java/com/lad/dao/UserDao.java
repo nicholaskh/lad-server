@@ -92,6 +92,16 @@ public class UserDao {
 			return userBo;
 		}
 		
+		public UserBo updateChatroomsTop(UserBo userBo) {
+			Query query = new Query();
+			query.addCriteria(new Criteria("_id").is(userBo.getId()));
+			query.addCriteria(new Criteria("deleted").is(0));
+			Update update = new Update();
+			update.set("chatroomsTop", userBo.getChatroomsTop());
+			mongoTemplate.updateFirst(query, update, UserBo.class);	
+			return userBo;
+		}
+		
 		public UserBo updateHeadPictureName(UserBo userBo) {
 			Query query = new Query();
 			query.addCriteria(new Criteria("phone").is(userBo.getPhone()));

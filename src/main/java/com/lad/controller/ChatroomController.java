@@ -3,6 +3,7 @@ package com.lad.controller;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -300,6 +301,90 @@ public class ChatroomController extends BaseContorller {
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("ChatroomList", ChatroomList);
+		return JSONObject.fromObject(map).toString();
+	}
+	
+	@RequestMapping("/set-top")
+	@ResponseBody
+	public String setTop(String chatroomid, HttpServletRequest request, HttpServletResponse response) {
+		HttpSession session = request.getSession();
+		if (session.isNew()) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		if (session.getAttribute("isLogin") == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		UserBo userBo = (UserBo) session.getAttribute("userBo");
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		ChatroomBo chatroomBo = chatroomService.get(chatroomid);
+		if(null == chatroomBo){
+			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(), ERRORCODE.CHATROOM_NULL.getReason());
+		}
+		HashSet<String> chatrooms = userBo.getChatrooms();
+		LinkedHashSet<String> chatroomsTop = userBo.getChatroomsTop();
+		if(chatrooms.contains(chatroomid)){
+			chatrooms.remove(chatroomid);
+		}else{
+			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(), ERRORCODE.CHATROOM_NULL.getReason());
+		}
+		if(chatroomsTop.contains(chatroomid)){
+			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_TOP_EXIST.getIndex(), ERRORCODE.CHATROOM_TOP_EXIST.getReason());
+		}else{
+			chatroomsTop.add(chatroomid);
+		}
+		userBo.setChatrooms(chatrooms);
+		userBo.setChatroomsTop(chatroomsTop);
+		userService.updateChatrooms(userBo);
+		userService.updateChatroomsTop(userBo);
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		return JSONObject.fromObject(map).toString();
+	}
+	
+	@RequestMapping("/cancel-top")
+	@ResponseBody
+	public String cancelTop(String chatroomid, HttpServletRequest request, HttpServletResponse response) {
+		HttpSession session = request.getSession();
+		if (session.isNew()) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		if (session.getAttribute("isLogin") == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		UserBo userBo = (UserBo) session.getAttribute("userBo");
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		ChatroomBo chatroomBo = chatroomService.get(chatroomid);
+		if(null == chatroomBo){
+			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(), ERRORCODE.CHATROOM_NULL.getReason());
+		}
+		HashSet<String> chatrooms = userBo.getChatrooms();
+		LinkedHashSet<String> chatroomsTop = userBo.getChatroomsTop();
+		if(chatroomsTop.contains(chatroomid)){
+			chatroomsTop.remove(chatroomid);
+		}else{
+			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(), ERRORCODE.CHATROOM_NULL.getReason());
+		}
+		if(chatrooms.contains(chatroomid)){
+			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_EXIST.getIndex(), ERRORCODE.CHATROOM_EXIST.getReason());
+		}else{
+			chatrooms.add(chatroomid);
+		}
+		userBo.setChatrooms(chatrooms);
+		userBo.setChatroomsTop(chatroomsTop);
+		userService.updateChatrooms(userBo);
+		userService.updateChatroomsTop(userBo);
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();
 	}
 }

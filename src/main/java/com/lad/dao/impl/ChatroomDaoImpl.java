@@ -57,25 +57,6 @@ public class ChatroomDaoImpl implements IChatroomDao {
 		return mongoTemplate.updateFirst(query, update, ChatroomBo.class);
 	}
 
-	public WriteResult setTop(String chatroomId) {
-		Query query = new Query();
-		query.addCriteria(new Criteria("_id").is(chatroomId));
-		query.addCriteria(new Criteria("deleted").is(0));
-		Update update = new Update();
-		update.set("top", 1);
-		return mongoTemplate.updateFirst(query, update, ChatroomBo.class);
-		
-	}
-
-	public WriteResult cancelTop(String chatroomId) {
-		Query query = new Query();
-		query.addCriteria(new Criteria("_id").is(chatroomId));
-		query.addCriteria(new Criteria("deleted").is(0));
-		Update update = new Update();
-		update.set("top", 0);
-		return mongoTemplate.updateFirst(query, update, ChatroomBo.class);
-	}
-
 	public ChatroomBo selectByUserIdAndFriendid(String userid, String friendid) {
 		Query query = new Query();
 		query.addCriteria(new Criteria("userid").is(userid));

@@ -78,6 +78,10 @@ public class UserServiceImpl implements IUserService{
 		public UserBo updateChatrooms(UserBo userBo) {
 			return userDao.updateChatrooms(userBo);
 		}
+		
+		public UserBo updateChatroomsTop(UserBo userBo) {
+			return userDao.updateChatroomsTop(userBo);
+		}
 
 		public UserBo getUser(String userId) {
 			return userDao.getUser(userId);

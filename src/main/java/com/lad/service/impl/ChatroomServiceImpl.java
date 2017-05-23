@@ -34,14 +34,6 @@ public class ChatroomServiceImpl implements IChatroomService {
 		return chatroomDao.delete(chatroomId);
 	}
 
-	public WriteResult setTop(String chatroomId) {
-		return chatroomDao.setTop(chatroomId);
-	}
-
-	public WriteResult cancelTop(String chatroomId) {
-		return chatroomDao.cancelTop(chatroomId);
-	}
-
 	public ChatroomBo selectByUserIdAndFriendid(String userid, String friendid) {
 		return chatroomDao.selectByUserIdAndFriendid(userid, friendid);
 	}

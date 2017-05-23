@@ -15,9 +15,5 @@ public interface IChatroomDao extends IBaseDao {
 
 	public WriteResult delete(String chatroomId);
 	
-	public WriteResult setTop(String chatroomId);
-	
-	public WriteResult cancelTop(String chatroomId);
-	
 	public ChatroomBo selectByUserIdAndFriendid(String userid, String friendid);
 }
