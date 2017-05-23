@@ -87,15 +87,11 @@ public class ChatroomController extends BaseContorller {
 			iMTermService.insert(iMTermBo);
 		}
 		assistent.setServerTerm(iMTermBo.getTerm());
-		Message message3 = assistent.getToken();
-		if(message3.getStatus() == Message.Status.termError){
-			Message message = assistent.getAppKey();
-			String appKey = message.getMsg();
-			Message message2 = assistent.authServer(appKey);
-			String term = message2.getMsg();
-			iMTermService.updateByUserid(userBo.getId(), term);
+		Message message3 = assistent.subscribe(name, chatroomBo.getId(), userBo.getId());
+		if(Message.Status.success != message3.getStatus()) {
+			assistent.close();
+			return CommonUtil.toErrorResult(message3.getStatus(), message3.getMsg());
 		}
-		assistent.subscribe(name, chatroomBo.getId(), userBo.getId());
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("channelId", chatroomBo.getId());

@@ -126,6 +126,7 @@ public class LoginController extends BaseContorller {
 				String term = message2.getMsg();
 				iMTermService.updateByUserid(userBo.getId(), term);
 			}else if (Message.Status.success != message3.getStatus()) {
+				assistent.close();
 				return CommonUtil.toErrorResult(message3.getStatus(), message3.getMsg());
 			}
 			map.put("token", message3.getMsg());
