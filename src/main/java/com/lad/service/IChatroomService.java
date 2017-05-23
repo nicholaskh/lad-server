@@ -16,4 +16,6 @@ public interface IChatroomService extends IBaseService {
 	public WriteResult delete(String chatroomId);
 	
 	public ChatroomBo selectByUserIdAndFriendid(String userid, String friendid);
+	
+	public ChatroomBo selectBySeq(int seq);
 }

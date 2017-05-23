@@ -38,4 +38,8 @@ public class ChatroomServiceImpl implements IChatroomService {
 		return chatroomDao.selectByUserIdAndFriendid(userid, friendid);
 	}
 
+	public ChatroomBo selectBySeq(int seq) {
+		return chatroomDao.selectBySeq(seq);
+	}
+
 }

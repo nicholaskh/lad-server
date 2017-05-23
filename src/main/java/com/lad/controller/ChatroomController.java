@@ -36,7 +36,6 @@ import com.pushd.ImAssistant;
 import com.pushd.Message;
 
 @Controller
-@Scope("prototype")
 @RequestMapping("chatroom")
 public class ChatroomController extends BaseContorller {
 
@@ -385,6 +384,93 @@ public class ChatroomController extends BaseContorller {
 		userService.updateChatroomsTop(userBo);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
+		return JSONObject.fromObject(map).toString();
+	}
+	
+	@RequestMapping("/factoface-create")
+	@ResponseBody
+	public String faceToFaceCreate(int seq, double px, double py, HttpServletRequest request, HttpServletResponse response) {
+		HttpSession session = request.getSession();
+		if (session.isNew()) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		if (session.getAttribute("isLogin") == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		UserBo userBo = (UserBo) session.getAttribute("userBo");
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		HashSet<String> userSet = new HashSet<String>();
+		ChatroomBo chatroomBo = null;
+		int isNew = 0 ;
+		synchronized(this){
+			chatroomBo = chatroomService.selectBySeq(seq);
+			if(null == chatroomBo){
+				chatroomBo = new ChatroomBo();
+				chatroomBo.setSeq(seq);
+				chatroomBo.setName("chatFaceToFace");
+				chatroomBo.setType(3);
+				userSet.add(userBo.getId());
+				chatroomBo.setUsers(userSet);
+				chatroomService.insert(chatroomBo);
+				isNew = 1;
+			}else{
+				userSet.add(userBo.getId());
+				chatroomBo.setUsers(userSet);
+				chatroomService.updateUsers(chatroomBo);
+			}
+		}
+		HashSet<String> chatrooms = userBo.getChatrooms();
+		if(null == chatrooms){
+			chatrooms = new HashSet<String>();
+		}
+		chatrooms.add(chatroomBo.getId());
+		userBo.setChatrooms(chatrooms);
+		userService.updateChatrooms(userBo);
+		if(isNew == 1){
+			ImAssistant assistent = ImAssistant.init("180.76.173.200", 2222);
+			if(assistent == null){
+				return CommonUtil.toErrorResult(ERRORCODE.PUSHED_CONNECT_ERROR.getIndex(),
+						ERRORCODE.PUSHED_CONNECT_ERROR.getReason());
+			}
+			IMTermBo iMTermBo = iMTermService.selectByUserid(userBo.getId());
+			if(iMTermBo == null){
+				iMTermBo = new IMTermBo();
+				iMTermBo.setUserid(userBo.getId());
+				Message message = assistent.getAppKey();
+				String appKey = message.getMsg();
+				Message message2 = assistent.authServer(appKey);
+				String term = message2.getMsg();
+				iMTermBo.setTerm(term);
+				iMTermService.insert(iMTermBo);
+			}
+			assistent.setServerTerm(iMTermBo.getTerm());
+			Message message3 = assistent.subscribe(chatroomBo.getName(), chatroomBo.getId(), userBo.getId());
+			if(message3.getStatus() == Message.Status.termError){
+				Message message = assistent.getAppKey();
+				String appKey = message.getMsg();
+				Message message2 = assistent.authServer(appKey);
+				String term = message2.getMsg();
+				iMTermService.updateByUserid(userBo.getId(), term);
+				assistent.setServerTerm(term);
+				Message message4 = assistent.subscribe(chatroomBo.getName(), chatroomBo.getId(), userBo.getId());
+				if(Message.Status.success != message4.getStatus()) {
+					assistent.close();
+					return CommonUtil.toErrorResult(message4.getStatus(), message4.getMsg());
+				}
+			}else if(Message.Status.success != message3.getStatus()) {
+				assistent.close();
+				return CommonUtil.toErrorResult(message3.getStatus(), message3.getMsg());
+			}
+			assistent.close();
+		}
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("channelId", chatroomBo.getId());
 		return JSONObject.fromObject(map).toString();
 	}
 }
