@@ -7,19 +7,22 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import net.sf.json.JSONObject;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.lad.bo.IMTermBo;
+import com.lad.bo.UserBo;
+import com.lad.service.IIMTermService;
 import com.lad.service.ILoginService;
 import com.lad.util.CommonUtil;
 import com.lad.util.ERRORCODE;
-import com.lad.util.PushedUtil;
+import com.pushd.ImAssistant;
 import com.pushd.Message;
-
-import net.sf.json.JSONObject;
 
 @Controller
 @RequestMapping("login")
@@ -27,6 +30,8 @@ public class LoginController extends BaseContorller {
 
 	@Autowired
 	private ILoginService loginService;
+	@Autowired
+	private IIMTermService iMTermService;
 
 	@RequestMapping("/verification-send")
 	@ResponseBody
@@ -70,11 +75,6 @@ public class LoginController extends BaseContorller {
 		if (verification_session.equals(verification) && phone_session.equals(phone)) {
 			map.put("ret", 0);
 			session.setAttribute("isLogin", true);
-			Message token = PushedUtil.getToken();
-			if (Message.Status.success != token.getStatus()) {
-				return CommonUtil.toErrorResult(token.getStatus(), token.getMsg());
-			}
-			map.put("token", token.getMsg());
 		} else {
 			return CommonUtil.toErrorResult(ERRORCODE.SECURITY_WRONG_VERIFICATION.getIndex(),
 					ERRORCODE.SECURITY_WRONG_VERIFICATION.getReason());
@@ -96,15 +96,40 @@ public class LoginController extends BaseContorller {
 		}
 		password = CommonUtil.getSHA256(password);
 		Map<String, Object> map = new HashMap<String, Object>();
-		if (loginService.getUser(phone, password) != null) {
+		UserBo userBo = loginService.getUser(phone, password);
+		if (userBo != null) {
 			map.put("ret", 0);
 			session.setAttribute("isLogin", true);
-			session.setAttribute("userBo", loginService.getUser(phone, password));
-			Message token = PushedUtil.getToken();
-			if (Message.Status.success != token.getStatus()) {
-				return CommonUtil.toErrorResult(token.getStatus(), token.getMsg());
+			session.setAttribute("userBo", userBo);
+			ImAssistant assistent = ImAssistant.init("180.76.173.200", 2222);
+			if(assistent == null){
+				return CommonUtil.toErrorResult(ERRORCODE.PUSHED_CONNECT_ERROR.getIndex(),
+						ERRORCODE.PUSHED_CONNECT_ERROR.getReason());
 			}
-			map.put("token", token.getMsg());
+			IMTermBo iMTermBo = iMTermService.selectByUserid(userBo.getId());
+			if(iMTermBo == null){
+				iMTermBo = new IMTermBo();
+				iMTermBo.setUserid(userBo.getId());
+				Message message = assistent.getAppKey();
+				String appKey = message.getMsg();
+				Message message2 = assistent.authServer(appKey);
+				String term = message2.getMsg();
+				iMTermBo.setTerm(term);
+				iMTermService.insert(iMTermBo);
+			}
+			assistent.setServerTerm(iMTermBo.getTerm());
+			Message message3 = assistent.getToken();
+			if(message3.getStatus() == Message.Status.termError){
+				Message message = assistent.getAppKey();
+				String appKey = message.getMsg();
+				Message message2 = assistent.authServer(appKey);
+				String term = message2.getMsg();
+				iMTermService.updateByUserid(userBo.getId(), term);
+			}else if (Message.Status.success != message3.getStatus()) {
+				return CommonUtil.toErrorResult(message3.getStatus(), message3.getMsg());
+			}
+			map.put("token", message3.getMsg());
+			assistent.close();
 		} else {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PASSWORD.getIndex(),
 					ERRORCODE.ACCOUNT_PASSWORD.getReason());

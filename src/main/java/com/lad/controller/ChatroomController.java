@@ -11,6 +11,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import net.sf.json.JSONObject;
+
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,17 +22,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.lad.bo.ChatroomBo;
+import com.lad.bo.IMTermBo;
 import com.lad.bo.UserBo;
 import com.lad.service.IChatroomService;
+import com.lad.service.IIMTermService;
 import com.lad.service.IUserService;
 import com.lad.util.CommonUtil;
 import com.lad.util.ERRORCODE;
-import com.lad.util.PushedUtil;
 import com.lad.vo.ChatroomVo;
 import com.lad.vo.UserVo;
 import com.pushd.ImAssistant;
-
-import net.sf.json.JSONObject;
+import com.pushd.Message;
 
 @Controller
 @Scope("prototype")
@@ -41,7 +43,9 @@ public class ChatroomController extends BaseContorller {
 	private IChatroomService chatroomService;
 	@Autowired
 	private IUserService userService;
-
+	@Autowired
+	private IIMTermService iMTermService;
+	
 	@RequestMapping("/create")
 	@ResponseBody
 	public String create(String name, HttpServletRequest request, HttpServletResponse response) {
@@ -66,17 +70,36 @@ public class ChatroomController extends BaseContorller {
 		ChatroomBo chatroomBo = new ChatroomBo();
 		chatroomBo.setName(name);
 		chatroomService.insert(chatroomBo);
-		ImAssistant imAssistant = PushedUtil.getPushed("180.76.173.200", 2222);
-		if (null == imAssistant) {
-			return CommonUtil.toErrorResult(ERRORCODE.PUSHED_ERROR.getIndex(), ERRORCODE.PUSHED_ERROR.getReason());
+		ImAssistant assistent = ImAssistant.init("180.76.173.200", 2222);
+		if(assistent == null){
+			return CommonUtil.toErrorResult(ERRORCODE.PUSHED_CONNECT_ERROR.getIndex(),
+					ERRORCODE.PUSHED_CONNECT_ERROR.getReason());
 		}
-		Boolean success = PushedUtil.subscribeToPushed(imAssistant, name, chatroomBo.getId(), userBo.getId());
-		if (!success) {
-			return CommonUtil.toErrorResult(ERRORCODE.PUSHED_ERROR.getIndex(), ERRORCODE.PUSHED_ERROR.getReason());
+		IMTermBo iMTermBo = iMTermService.selectByUserid(userBo.getId());
+		if(iMTermBo == null){
+			iMTermBo = new IMTermBo();
+			iMTermBo.setUserid(userBo.getId());
+			Message message = assistent.getAppKey();
+			String appKey = message.getMsg();
+			Message message2 = assistent.authServer(appKey);
+			String term = message2.getMsg();
+			iMTermBo.setTerm(term);
+			iMTermService.insert(iMTermBo);
 		}
+		assistent.setServerTerm(iMTermBo.getTerm());
+		Message message3 = assistent.getToken();
+		if(message3.getStatus() == Message.Status.termError){
+			Message message = assistent.getAppKey();
+			String appKey = message.getMsg();
+			Message message2 = assistent.authServer(appKey);
+			String term = message2.getMsg();
+			iMTermService.updateByUserid(userBo.getId(), term);
+		}
+		assistent.subscribe(name, chatroomBo.getId(), userBo.getId());
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("channelId", chatroomBo.getId());
+		assistent.close();
 		return JSONObject.fromObject(map).toString();
 	}
 

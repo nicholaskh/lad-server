@@ -13,7 +13,7 @@ public class BaseBo implements Serializable {
 	@Id
 	private String id;
 
-	private Date createTime;
+	private Date createTime = new Date();
 
 	private Date updateTime;
 
