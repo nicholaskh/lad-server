@@ -8,9 +8,12 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class ChatroomBo extends BaseBo {
 
 	private String name;
-
 	private HashSet<String> users;
-
+	private int type;
+	private String userid;
+	private String friendid;
+	private int seq;
+	private int top = 0;
 	public String getName() {
 		return name;
 	}
@@ -25,6 +28,46 @@ public class ChatroomBo extends BaseBo {
 
 	public void setUsers(HashSet<String> users) {
 		this.users = users;
+	}
+
+	public int getType() {
+		return type;
+	}
+
+	public void setType(int type) {
+		this.type = type;
+	}
+
+	public String getUserid() {
+		return userid;
+	}
+
+	public void setUserid(String userid) {
+		this.userid = userid;
+	}
+
+	public String getFriendid() {
+		return friendid;
+	}
+
+	public void setFriendid(String friendid) {
+		this.friendid = friendid;
+	}
+
+	public int getSeq() {
+		return seq;
+	}
+
+	public void setSeq(int seq) {
+		this.seq = seq;
+	}
+
+	public int getTop() {
+		return top;
+	}
+
+	public void setTop(int top) {
+		this.top = top;
 	}
 
 }

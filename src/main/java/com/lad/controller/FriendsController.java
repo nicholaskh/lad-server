@@ -11,6 +11,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import net.sf.json.JSONObject;
+
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,18 +22,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.lad.bo.ChatroomBo;
-import com.lad.bo.ChatroomoneBo;
 import com.lad.bo.FriendsBo;
 import com.lad.bo.UserBo;
 import com.lad.service.IChatroomService;
-import com.lad.service.IChatroomoneService;
 import com.lad.service.IFriendsService;
 import com.lad.service.IUserService;
 import com.lad.util.CommonUtil;
 import com.lad.util.ERRORCODE;
 import com.lad.vo.FriendsVo;
-
-import net.sf.json.JSONObject;
 
 @Controller
 @Scope("prototype")
@@ -42,8 +40,6 @@ public class FriendsController extends BaseContorller {
 	private IFriendsService friendsService;
 	@Autowired
 	private IChatroomService chatroomService;
-	@Autowired
-	private IChatroomoneService chatroomoneService;
 	@Autowired
 	private IUserService userService;
 
@@ -75,11 +71,15 @@ public class FriendsController extends BaseContorller {
 		friendsBo.setUserid(userBo.getId());
 		friendsBo.setFriendid(friendid);
 		friendsService.insert(friendsBo);
-		ChatroomoneBo chatroomoneBo = new ChatroomoneBo();
-		chatroomoneBo.setName("群聊");
-		chatroomoneBo.setUserid(userBo.getId());
-		chatroomoneBo.setFriendid(friendid);
-		chatroomoneService.insert(chatroomoneBo);
+		ChatroomBo chatroomBo = chatroomService.selectByUserIdAndFriendid(userBo.getId(), friendid);
+		if(null == chatroomBo){
+			chatroomBo = new ChatroomBo();
+			chatroomBo.setType(1);
+			chatroomBo.setName("群聊");
+			chatroomBo.setUserid(userBo.getId());
+			chatroomBo.setFriendid(friendid);
+			chatroomService.insert(chatroomBo);
+		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();
@@ -398,7 +398,10 @@ public class FriendsController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NULL.getIndex(), ERRORCODE.FRIEND_NULL.getReason());
 		}
 		friendsService.delete(userBo.getId(), friendid);
-		chatroomoneService.delete(userBo.getId(), friendid);
+		ChatroomBo chatroomBo = chatroomService.selectByUserIdAndFriendid(userBo.getId(), friendid);
+		if(null != chatroomBo){
+			chatroomService.delete(chatroomBo.getId());
+		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();
@@ -438,6 +441,7 @@ public class FriendsController extends BaseContorller {
 		}
 		userSet.add(userBo.getId());
 		ChatroomBo chatroomBo = new ChatroomBo();
+		chatroomBo.setType(2);
 		chatroomBo.setName("群聊");
 		chatroomBo.setUsers(userSet);
 		chatroomService.insert(chatroomBo);

@@ -69,6 +69,7 @@ public class ChatroomController extends BaseContorller {
 		}
 		ChatroomBo chatroomBo = new ChatroomBo();
 		chatroomBo.setName(name);
+		chatroomBo.setType(2);
 		chatroomService.insert(chatroomBo);
 		ImAssistant assistent = ImAssistant.init("180.76.173.200", 2222);
 		if(assistent == null){
@@ -88,7 +89,19 @@ public class ChatroomController extends BaseContorller {
 		}
 		assistent.setServerTerm(iMTermBo.getTerm());
 		Message message3 = assistent.subscribe(name, chatroomBo.getId(), userBo.getId());
-		if(Message.Status.success != message3.getStatus()) {
+		if(message3.getStatus() == Message.Status.termError){
+			Message message = assistent.getAppKey();
+			String appKey = message.getMsg();
+			Message message2 = assistent.authServer(appKey);
+			String term = message2.getMsg();
+			iMTermService.updateByUserid(userBo.getId(), term);
+			assistent.setServerTerm(term);
+			Message message4 = assistent.subscribe(name, chatroomBo.getId(), userBo.getId());
+			if(Message.Status.success != message4.getStatus()) {
+				assistent.close();
+				return CommonUtil.toErrorResult(message4.getStatus(), message4.getMsg());
+			}
+		}else if(Message.Status.success != message3.getStatus()) {
 			assistent.close();
 			return CommonUtil.toErrorResult(message3.getStatus(), message3.getMsg());
 		}
@@ -137,7 +150,7 @@ public class ChatroomController extends BaseContorller {
 
 	@RequestMapping("/insert-user")
 	@ResponseBody
-	public String insertUser(String userid, HttpServletRequest request, HttpServletResponse response) {
+	public String insertUser(String userid, String chatroomid, HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
@@ -155,17 +168,26 @@ public class ChatroomController extends BaseContorller {
 		if (StringUtils.isEmpty(userid)) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_ID.getIndex(), ERRORCODE.ACCOUNT_ID.getReason());
 		}
-		ChatroomBo chatroomBo = new ChatroomBo();
+		ChatroomBo chatroomBo = chatroomService.get(chatroomid);
+		if(null == chatroomBo){
+			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(), ERRORCODE.CHATROOM_NULL.getReason());
+		}
 		HashSet<String> set = chatroomBo.getUsers();
 		set.add(userid);
 		chatroomBo.setUsers(set);
-		chatroomService.updateName(chatroomBo);
-		HashSet<String> chatroom = userBo.getChatrooms();
+		chatroomService.updateUsers(chatroomBo);
+		UserBo user = userService.getUser(userid);
+		if(null == user){
+			return CommonUtil.toErrorResult(ERRORCODE.USER_NULL.getIndex(),
+					ERRORCODE.USER_NULL.getReason());
+		}
+		HashSet<String> chatroom = user.getChatrooms();
 		if (chatroom.contains(chatroomBo.getId())) {
 			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_EXIST.getIndex(), ERRORCODE.CHATROOM_EXIST.getReason());
 		}
 		chatroom.add(chatroomBo.getId());
-		userService.updateChatrooms(userBo);
+		user.setChatrooms(chatroom);
+		userService.updateChatrooms(user);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();
@@ -173,7 +195,7 @@ public class ChatroomController extends BaseContorller {
 
 	@RequestMapping("/delete-user")
 	@ResponseBody
-	public String deltetUser(String userid, HttpServletRequest request, HttpServletResponse response) {
+	public String deltetUser(String userid, String chatroomid, HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
@@ -191,14 +213,23 @@ public class ChatroomController extends BaseContorller {
 		if (StringUtils.isEmpty(userid)) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_ID.getIndex(), ERRORCODE.ACCOUNT_ID.getReason());
 		}
-		ChatroomBo chatroomBo = new ChatroomBo();
+		ChatroomBo chatroomBo = chatroomService.get(chatroomid);
+		if(null == chatroomBo){
+			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(), ERRORCODE.CHATROOM_NULL.getReason());
+		}
 		HashSet<String> set = chatroomBo.getUsers();
 		set.remove(userid);
 		chatroomBo.setUsers(set);
-		chatroomService.updateName(chatroomBo);
-		HashSet<String> chatroom = userBo.getChatrooms();
+		chatroomService.updateUsers(chatroomBo);
+		UserBo user = userService.getUser(userid);
+		if(null == user){
+			return CommonUtil.toErrorResult(ERRORCODE.USER_NULL.getIndex(),
+					ERRORCODE.USER_NULL.getReason());
+		}
+		HashSet<String> chatroom = user.getChatrooms();
 		chatroom.remove(chatroomBo.getId());
-		userService.updateChatrooms(userBo);
+		user.setChatrooms(chatroom);
+		userService.updateChatrooms(user);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();

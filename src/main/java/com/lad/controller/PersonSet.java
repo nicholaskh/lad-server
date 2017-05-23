@@ -9,6 +9,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import net.sf.json.JSONObject;
+
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.lad.bo.LocationBo;
-import com.lad.bo.PointBo;
 import com.lad.bo.UserBo;
 import com.lad.service.ILocationService;
 import com.lad.service.IRegistService;
@@ -25,10 +26,6 @@ import com.lad.service.IUserService;
 import com.lad.util.CommonUtil;
 import com.lad.util.ERRORCODE;
 import com.lad.vo.UserVo;
-import com.mongodb.client.model.geojson.Point;
-import com.mongodb.client.model.geojson.Position;
-
-import net.sf.json.JSONObject;
 
 @Controller
 @RequestMapping("person-set")

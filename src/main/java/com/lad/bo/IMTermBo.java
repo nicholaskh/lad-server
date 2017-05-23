@@ -1,5 +1,8 @@
 package com.lad.bo;
 
+import org.springframework.data.mongodb.core.mapping.Document;
+
+@Document(collection = "iMTerm")
 public class IMTermBo extends BaseBo {
 	
 	private String term;

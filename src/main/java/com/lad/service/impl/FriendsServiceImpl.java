@@ -20,40 +20,40 @@ public class FriendsServiceImpl implements IFriendsService {
 		return friendsDao.insert(friendsBo);
 	}
 
-	public WriteResult updateBackname(String userid, String firendid, String backname) {
-		return friendsDao.updateBackname(userid, firendid, backname);
+	public WriteResult updateBackname(String userid, String friendid, String backname) {
+		return friendsDao.updateBackname(userid, friendid, backname);
 	}
 
-	public WriteResult updateTag(String userid, String firendid, List tag) {
-		return friendsDao.updateTag(userid, firendid, tag);
+	public WriteResult updateTag(String userid, String friendid, List tag) {
+		return friendsDao.updateTag(userid, friendid, tag);
 	}
 
-	public WriteResult updatePhone(String userid, String firendid, String phone) {
-		return friendsDao.updatePhone(userid, firendid, phone);
+	public WriteResult updatePhone(String userid, String friendid, String phone) {
+		return friendsDao.updatePhone(userid, friendid, phone);
 	}
 
-	public WriteResult updateDescription(String userid, String firendid, String description) {
-		return friendsDao.updateDescription(userid, firendid, description);
+	public WriteResult updateDescription(String userid, String friendid, String description) {
+		return friendsDao.updateDescription(userid, friendid, description);
 	}
 
-	public WriteResult updateVIP(String userid, String firendid, Integer VIP) {
-		return friendsDao.updateVIP(userid, firendid, VIP);
+	public WriteResult updateVIP(String userid, String friendid, Integer VIP) {
+		return friendsDao.updateVIP(userid, friendid, VIP);
 	}
 
-	public WriteResult updateBlack(String userid, String firendid, Integer black) {
-		return friendsDao.updateBlack(userid, firendid, black);
+	public WriteResult updateBlack(String userid, String friendid, Integer black) {
+		return friendsDao.updateBlack(userid, friendid, black);
 	}
 
-	public FriendsBo getFriendByIdAndVisitorId(String userid, String firendid) {
-		return friendsDao.getFriendByIdAndVisitorId(userid, firendid);
+	public FriendsBo getFriendByIdAndVisitorId(String userid, String friendid) {
+		return friendsDao.getFriendByIdAndVisitorId(userid, friendid);
 	}
 
 	public List<FriendsBo> getFriendByUserid(String userid) {
 		return friendsDao.getFriendByUserid(userid);
 	}
 
-	public List<FriendsBo> getFriendByFirendid(String firendid) {
-		return friendsDao.getFriendByFirendid(firendid);
+	public List<FriendsBo> getFriendByFirendid(String friendid) {
+		return friendsDao.getFriendByFirendid(friendid);
 	}
 
 	public WriteResult delete(String userid, String friendid) {

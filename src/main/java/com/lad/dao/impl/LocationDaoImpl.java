@@ -11,7 +11,6 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 import com.lad.bo.LocationBo;
-import com.lad.bo.UserBo;
 import com.lad.dao.ILocationDao;
 
 @Repository("locationDao")

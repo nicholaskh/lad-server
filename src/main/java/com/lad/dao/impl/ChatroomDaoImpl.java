@@ -8,9 +8,6 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 import com.lad.bo.ChatroomBo;
-import com.lad.bo.ChatroomoneBo;
-import com.lad.bo.HomepageBo;
-import com.lad.bo.MessageBo;
 import com.lad.dao.IChatroomDao;
 import com.mongodb.WriteResult;
 
@@ -58,6 +55,34 @@ public class ChatroomDaoImpl implements IChatroomDao {
 		Update update = new Update();
 		update.set("deleted", 1);
 		return mongoTemplate.updateFirst(query, update, ChatroomBo.class);
+	}
+
+	public WriteResult setTop(String chatroomId) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("_id").is(chatroomId));
+		query.addCriteria(new Criteria("deleted").is(0));
+		Update update = new Update();
+		update.set("top", 1);
+		return mongoTemplate.updateFirst(query, update, ChatroomBo.class);
+		
+	}
+
+	public WriteResult cancelTop(String chatroomId) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("_id").is(chatroomId));
+		query.addCriteria(new Criteria("deleted").is(0));
+		Update update = new Update();
+		update.set("top", 0);
+		return mongoTemplate.updateFirst(query, update, ChatroomBo.class);
+	}
+
+	public ChatroomBo selectByUserIdAndFriendid(String userid, String friendid) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("userid").is(userid));
+		query.addCriteria(new Criteria("friendid").is(friendid));
+		query.addCriteria(new Criteria("deleted").is(0));
+		query.addCriteria(new Criteria("type").is(1));
+		return mongoTemplate.findOne(query, ChatroomBo.class);
 	}
 
 }
