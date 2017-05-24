@@ -14,6 +14,7 @@ import javax.servlet.http.HttpSession;
 import net.sf.json.JSONObject;
 
 import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -53,6 +54,10 @@ public class TagController extends BaseContorller {
 		if (userBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		if (StringUtils.isEmpty(name)) {
+			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NAME_NULL.getIndex(),
+					ERRORCODE.CHATROOM_NAME_NULL.getReason());
 		}
 		String friends[] = friendsids.split(",");
 		HashSet<String> firendsSet = new HashSet<String>();
