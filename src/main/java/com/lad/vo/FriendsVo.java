@@ -95,4 +95,11 @@ public class FriendsVo extends BaseVo {
 		this.picture = picture;
 	}
 
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
 }
