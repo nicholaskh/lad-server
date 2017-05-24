@@ -3,6 +3,7 @@ package com.lad.bo;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -26,11 +27,11 @@ public class UserBo extends BaseBo implements Serializable {
 
 	private String personalizedSignature;
 
-	private List<String> friends;
+	private List<String> friends = new LinkedList<String>();
 
-	private HashSet<String> chatrooms;
+	private HashSet<String> chatrooms = new HashSet<String>();
 	
-	private LinkedHashSet<String> chatroomsTop;
+	private LinkedHashSet<String> chatroomsTop = new LinkedHashSet<String>();
 
 	private String locationid;
 

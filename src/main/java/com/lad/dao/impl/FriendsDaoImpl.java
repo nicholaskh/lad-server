@@ -89,7 +89,6 @@ public class FriendsDaoImpl implements IFriendsDao {
 		Query query = new Query();
 		query.addCriteria(new Criteria("userid").is(userid));
 		query.addCriteria(new Criteria("friendid").is(friendid));
-		query.addCriteria(new Criteria("apply").is(1));
 		query.addCriteria(new Criteria("deleted").is(0));
 		return mongoTemplate.findOne(query, FriendsBo.class);
 	}

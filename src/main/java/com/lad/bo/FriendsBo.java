@@ -1,5 +1,6 @@
 package com.lad.bo;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -11,7 +12,7 @@ public class FriendsBo extends BaseBo {
 	private String friendid;
 	private int apply;//0：申请；1：同意好友；-1拒绝好友
 	private String backname;
-	private List<String> tag;
+	private List<String> tag = new LinkedList<String> ();
 	private String phone;
 	private String description;
 	private Integer VIP = 0;

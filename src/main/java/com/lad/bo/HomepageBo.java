@@ -11,7 +11,7 @@ public class HomepageBo extends BaseBo {
 	private String owner_id;
 	private Integer new_visitors_count;
 	private Integer total_visitors_count;
-	private LinkedList<String> visitor_ids;
+	private LinkedList<String> visitor_ids = new LinkedList<String>();
 
 	public String getOwner_id() {
 		return owner_id;

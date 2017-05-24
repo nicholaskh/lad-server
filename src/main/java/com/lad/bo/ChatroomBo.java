@@ -8,7 +8,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class ChatroomBo extends BaseBo {
 
 	private String name;
-	private HashSet<String> users;
+	private HashSet<String> users = new HashSet<String>();
 	private int type;
 	private String userid;
 	private String friendid;

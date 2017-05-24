@@ -14,9 +14,9 @@ import javax.servlet.http.HttpSession;
 import net.sf.json.JSONObject;
 
 import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -32,7 +32,6 @@ import com.lad.util.ERRORCODE;
 import com.lad.vo.FriendsVo;
 
 @Controller
-@Scope("prototype")
 @RequestMapping("friends")
 public class FriendsController extends BaseContorller {
 
@@ -98,8 +97,8 @@ public class FriendsController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NULL.getIndex(), ERRORCODE.FRIEND_NULL.getReason());
 		}
 		FriendsBo friendsBo = friendsService.get(id);
-		if (friendsBo != null) {
-			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_EXIST.getIndex(), ERRORCODE.FRIEND_EXIST.getReason());
+		if (friendsBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NULL.getIndex(), ERRORCODE.FRIEND_NULL.getReason());
 		}
 		friendsService.updateApply(id, 1);
 		ChatroomBo chatroomBo = chatroomService.selectByUserIdAndFriendid(friendsBo.getUserid(), friendsBo.getFriendid());
@@ -137,8 +136,8 @@ public class FriendsController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NULL.getIndex(), ERRORCODE.FRIEND_NULL.getReason());
 		}
 		FriendsBo friendsBo = friendsService.get(id);
-		if (friendsBo != null) {
-			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_EXIST.getIndex(), ERRORCODE.FRIEND_EXIST.getReason());
+		if (friendsBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NULL.getIndex(), ERRORCODE.FRIEND_NULL.getReason());
 		}
 		friendsService.updateApply(id, -1);
 		Map<String, Object> map = new HashMap<String, Object>();
