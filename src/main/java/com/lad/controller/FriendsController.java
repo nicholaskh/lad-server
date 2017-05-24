@@ -316,6 +316,7 @@ public class FriendsController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NULL.getIndex(), ERRORCODE.FRIEND_NULL.getReason());
 		}
 		List<String> tagList = friendsBo.getTag();
+		tagList.clear();
 		tagList.add(tag);
 		friendsBo.setTag(tagList);
 		friendsService.updateTag(friendsBo.getUserid(), friendsBo.getFriendid(), tagList);
