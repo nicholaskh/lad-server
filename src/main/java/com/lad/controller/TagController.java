@@ -153,7 +153,7 @@ public class TagController extends BaseContorller {
 	
 	@RequestMapping("/delete-tag")
 	@ResponseBody
-	public String deleteTag(String tagid, HttpServletRequest request, HttpServletResponse response) {
+	public String deleteTag(String tagid, String frinedid, HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
@@ -173,7 +173,14 @@ public class TagController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.TAG_NULL.getIndex(),
 					ERRORCODE.TAG_NULL.getReason());
 		}
-		tagService.deleteById(tagid);
+		HashSet<String> friendsids = new HashSet<String>();
+		if(friendsids.contains(frinedid)){
+			return CommonUtil.toErrorResult(ERRORCODE.TAG_NULL.getIndex(),
+					ERRORCODE.TAG_NULL.getReason());
+		}
+		friendsids.remove(frinedid);
+		tagBo.setFriendsIds(friendsids);
+		tagService.updateFriendsIdsById(tagBo);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();
