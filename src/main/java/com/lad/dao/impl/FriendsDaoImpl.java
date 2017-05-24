@@ -10,7 +10,6 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 import com.lad.bo.FriendsBo;
-import com.lad.bo.HomepageBo;
 import com.lad.dao.IFriendsDao;
 import com.mongodb.WriteResult;
 
@@ -89,6 +88,15 @@ public class FriendsDaoImpl implements IFriendsDao {
 		Query query = new Query();
 		query.addCriteria(new Criteria("userid").is(userid));
 		query.addCriteria(new Criteria("friendid").is(friendid));
+		query.addCriteria(new Criteria("deleted").is(0));
+		return mongoTemplate.findOne(query, FriendsBo.class);
+	}
+	
+	public FriendsBo getFriendByIdAndVisitorIdAgree(String userid, String friendid) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("userid").is(userid));
+		query.addCriteria(new Criteria("friendid").is(friendid));
+		query.addCriteria(new Criteria("apply").is(1));
 		query.addCriteria(new Criteria("deleted").is(0));
 		return mongoTemplate.findOne(query, FriendsBo.class);
 	}

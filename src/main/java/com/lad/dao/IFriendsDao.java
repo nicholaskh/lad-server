@@ -22,6 +22,8 @@ public interface IFriendsDao extends IBaseDao {
 	
 	public FriendsBo getFriendByIdAndVisitorId(String userid, String friendid);
 	
+	public FriendsBo getFriendByIdAndVisitorIdAgree(String userid, String friendid);
+	
 	public List<FriendsBo> getFriendByUserid(String userid);
 	
 	public List<FriendsBo> getFriendByFirendid(String friendid);

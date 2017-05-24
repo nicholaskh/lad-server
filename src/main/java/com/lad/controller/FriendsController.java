@@ -205,7 +205,7 @@ public class FriendsController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_VIP_NULL.getIndex(),
 					ERRORCODE.FRIEND_VIP_NULL.getReason());
 		}
-		FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorId(userBo.getId(), friendid);
+		FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(userBo.getId(), friendid);
 		if (friendsBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NULL.getIndex(), ERRORCODE.FRIEND_NULL.getReason());
 		}
@@ -240,7 +240,7 @@ public class FriendsController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_BLACK_NULL.getIndex(),
 					ERRORCODE.FRIEND_BLACK_NULL.getReason());
 		}
-		FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorId(userBo.getId(), friendid);
+		FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(userBo.getId(), friendid);
 		if (friendsBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NULL.getIndex(), ERRORCODE.FRIEND_NULL.getReason());
 		}
@@ -276,7 +276,7 @@ public class FriendsController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_BACKNAME_NULL.getIndex(),
 					ERRORCODE.FRIEND_BACKNAME_NULL.getReason());
 		}
-		FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorId(userBo.getId(), friendid);
+		FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(userBo.getId(), friendid);
 		if (friendsBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NULL.getIndex(), ERRORCODE.FRIEND_NULL.getReason());
 		}
@@ -311,7 +311,7 @@ public class FriendsController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_BACKNAME_NULL.getIndex(),
 					ERRORCODE.FRIEND_BACKNAME_NULL.getReason());
 		}
-		FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorId(userBo.getId(), friendid);
+		FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(userBo.getId(), friendid);
 		if (friendsBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NULL.getIndex(), ERRORCODE.FRIEND_NULL.getReason());
 		}
@@ -348,7 +348,7 @@ public class FriendsController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_PHONE_NULL.getIndex(),
 					ERRORCODE.FRIEND_PHONE_NULL.getReason());
 		}
-		FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorId(userBo.getId(), friendid);
+		FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(userBo.getId(), friendid);
 		if (friendsBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NULL.getIndex(), ERRORCODE.FRIEND_NULL.getReason());
 		}
@@ -384,7 +384,7 @@ public class FriendsController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_PHONE_NULL.getIndex(),
 					ERRORCODE.FRIEND_PHONE_NULL.getReason());
 		}
-		FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorId(userBo.getId(), friendid);
+		FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(userBo.getId(), friendid);
 		if (friendsBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NULL.getIndex(), ERRORCODE.FRIEND_NULL.getReason());
 		}
@@ -529,7 +529,7 @@ public class FriendsController extends BaseContorller {
 		String[] idsList = friendids.split(",");
 		HashSet<String> userSet = new HashSet<String>();
 		for (String id : idsList) {
-			FriendsBo temp = friendsService.getFriendByIdAndVisitorId(userBo.getId(), id);
+			FriendsBo temp = friendsService.getFriendByIdAndVisitorIdAgree(userBo.getId(), id);
 			if (temp == null) {
 				return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NULL.getIndex(), ERRORCODE.FRIEND_NULL.getReason());
 			}

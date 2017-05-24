@@ -21,6 +21,8 @@ public interface IFriendsService extends IBaseService {
 	public WriteResult updateBlack(String userid, String friendid, Integer black);
 
 	public FriendsBo getFriendByIdAndVisitorId(String userid, String friendid);
+	
+	public FriendsBo getFriendByIdAndVisitorIdAgree(String userid, String friendid);
 
 	public List<FriendsBo> getFriendByUserid(String userid);
 

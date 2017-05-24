@@ -47,6 +47,10 @@ public class FriendsServiceImpl implements IFriendsService {
 	public FriendsBo getFriendByIdAndVisitorId(String userid, String friendid) {
 		return friendsDao.getFriendByIdAndVisitorId(userid, friendid);
 	}
+	
+	public FriendsBo getFriendByIdAndVisitorIdAgree(String userid, String friendid) {
+		return friendsDao.getFriendByIdAndVisitorIdAgree(userid, friendid);
+	}
 
 	public List<FriendsBo> getFriendByUserid(String userid) {
 		return friendsDao.getFriendByUserid(userid);
