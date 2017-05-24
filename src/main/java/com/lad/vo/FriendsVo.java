@@ -3,6 +3,7 @@ package com.lad.vo;
 import java.util.List;
 
 public class FriendsVo extends BaseVo {
+	private String id;
 	private String userid;
 	private String friendid;
 	private String backname;
