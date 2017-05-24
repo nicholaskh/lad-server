@@ -397,7 +397,7 @@ public class FriendsController extends BaseContorller {
 
 	@RequestMapping("/get-tag")
 	@ResponseBody
-	public String getTag(String userid, HttpServletRequest request, HttpServletResponse response) {
+	public String getTag(String friendid, HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
@@ -412,17 +412,16 @@ public class FriendsController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
-		if (StringUtils.isEmpty(userid)) {
+		if (StringUtils.isEmpty(friendid)) {
 			return CommonUtil.toErrorResult(ERRORCODE.USER_ID.getIndex(), ERRORCODE.USER_ID.getReason());
 		}
-		List<FriendsBo> list = friendsService.getFriendByFirendid(userid);
-		List<List<String>> tagList = new LinkedList<List<String>>();
-		for (FriendsBo friendsBo : list) {
-			tagList.add(friendsBo.getTag());
+		FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(userBo.getId(), friendid);
+		if(null == friendsBo){
+			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NULL.getIndex(), ERRORCODE.FRIEND_NULL.getReason());
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
-		map.put("tag", tagList);
+		map.put("tag", friendsBo.getTag());
 		return JSONObject.fromObject(map).toString();
 	}
 

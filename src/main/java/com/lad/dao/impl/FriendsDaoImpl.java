@@ -109,7 +109,7 @@ public class FriendsDaoImpl implements IFriendsDao {
 		return mongoTemplate.find(query, FriendsBo.class);
 	}
 
-	public List<FriendsBo> getFriendByFirendid(String friendid) {
+	public List<FriendsBo> getFriendByFriendid(String friendid) {
 		Query query = new Query();
 		query.addCriteria(new Criteria("friendid").is(friendid));
 		query.addCriteria(new Criteria("apply").is(1));

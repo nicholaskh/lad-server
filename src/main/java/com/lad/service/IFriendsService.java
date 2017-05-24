@@ -26,7 +26,7 @@ public interface IFriendsService extends IBaseService {
 
 	public List<FriendsBo> getFriendByUserid(String userid);
 
-	public List<FriendsBo> getFriendByFirendid(String friendid);
+	public List<FriendsBo> getFriendByFriendid(String friendid);
 
 	public WriteResult delete(String userid, String friendid);
 	
