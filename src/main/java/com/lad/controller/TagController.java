@@ -181,6 +181,9 @@ public class TagController extends BaseContorller {
 		friendsids.remove(frinedid);
 		tagBo.setFriendsIds(friendsids);
 		tagService.updateFriendsIdsById(tagBo);
+		if(friendsids.size() == 0){
+			tagService.deleteById(tagid);
+		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();
