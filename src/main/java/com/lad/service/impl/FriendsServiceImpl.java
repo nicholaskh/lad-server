@@ -59,6 +59,18 @@ public class FriendsServiceImpl implements IFriendsService {
 	public WriteResult delete(String userid, String friendid) {
 		return friendsDao.delete(userid, friendid);
 	}
+
+	public WriteResult updateApply(String id, int apply) {
+		return friendsDao.updateApply(id, apply);
+	}
+
+	public List<FriendsBo> getApplyFriendByuserid(String userid) {
+		return friendsDao.getApplyFriendByuserid(userid);
+	}
+
+	public FriendsBo get(String id) {
+		return friendsDao.get(id);
+	}
 	
 	
 

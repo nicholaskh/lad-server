@@ -43,9 +43,9 @@ public class FriendsController extends BaseContorller {
 	@Autowired
 	private IUserService userService;
 
-	@RequestMapping("/insert")
+	@RequestMapping("/apply")
 	@ResponseBody
-	public String insert(String friendid, HttpServletRequest request, HttpServletResponse response) {
+	public String apply(String friendid, HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
@@ -70,21 +70,118 @@ public class FriendsController extends BaseContorller {
 		FriendsBo friendsBo = new FriendsBo();
 		friendsBo.setUserid(userBo.getId());
 		friendsBo.setFriendid(friendid);
+		friendsBo.setApply(0);
 		friendsService.insert(friendsBo);
-		ChatroomBo chatroomBo = chatroomService.selectByUserIdAndFriendid(userBo.getId(), friendid);
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		return JSONObject.fromObject(map).toString();
+	}
+
+	@RequestMapping("/agree")
+	@ResponseBody
+	public String agree(String id, HttpServletRequest request, HttpServletResponse response) {
+		HttpSession session = request.getSession();
+		if (session.isNew()) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		if (session.getAttribute("isLogin") == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		UserBo userBo = (UserBo) session.getAttribute("userBo");
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		if (StringUtils.isEmpty(id)) {
+			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NULL.getIndex(), ERRORCODE.FRIEND_NULL.getReason());
+		}
+		FriendsBo friendsBo = friendsService.get(id);
+		if (friendsBo != null) {
+			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_EXIST.getIndex(), ERRORCODE.FRIEND_EXIST.getReason());
+		}
+		friendsService.updateApply(id, 1);
+		ChatroomBo chatroomBo = chatroomService.selectByUserIdAndFriendid(friendsBo.getUserid(), friendsBo.getFriendid());
 		if(null == chatroomBo){
 			chatroomBo = new ChatroomBo();
 			chatroomBo.setType(1);
 			chatroomBo.setName("群聊");
-			chatroomBo.setUserid(userBo.getId());
-			chatroomBo.setFriendid(friendid);
+			chatroomBo.setUserid(friendsBo.getUserid());
+			chatroomBo.setFriendid(friendsBo.getFriendid());
 			chatroomService.insert(chatroomBo);
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();
 	}
-
+	
+	@RequestMapping("/refuse")
+	@ResponseBody
+	public String refuse(String id, HttpServletRequest request, HttpServletResponse response) {
+		HttpSession session = request.getSession();
+		if (session.isNew()) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		if (session.getAttribute("isLogin") == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		UserBo userBo = (UserBo) session.getAttribute("userBo");
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		if (StringUtils.isEmpty(id)) {
+			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NULL.getIndex(), ERRORCODE.FRIEND_NULL.getReason());
+		}
+		FriendsBo friendsBo = friendsService.get(id);
+		if (friendsBo != null) {
+			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_EXIST.getIndex(), ERRORCODE.FRIEND_EXIST.getReason());
+		}
+		friendsService.updateApply(id, -1);
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		return JSONObject.fromObject(map).toString();
+	}
+	
+	@RequestMapping("/apply-list")
+	@ResponseBody
+	public String applyList(HttpServletRequest request, HttpServletResponse response) {
+		HttpSession session = request.getSession();
+		if (session.isNew()) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		if (session.getAttribute("isLogin") == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		UserBo userBo = (UserBo) session.getAttribute("userBo");
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		List<FriendsBo> friendsBoList = friendsService.getApplyFriendByuserid(userBo.getId());
+		List<FriendsVo> friendsVoList = new LinkedList<FriendsVo>();
+		for(FriendsBo friendsBo : friendsBoList){
+			FriendsVo friendsVo = new FriendsVo();
+			try {
+				BeanUtils.copyProperties(friendsVo, friendsBo);
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			} catch (InvocationTargetException e) {
+				e.printStackTrace();
+			}
+			friendsVoList.add(friendsVo);
+		}
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("friendsVoList",friendsVoList);
+		return JSONObject.fromObject(map).toString();
+	}
+	
 	@RequestMapping("/set-VIP")
 	@ResponseBody
 	public String setVIP(String friendid, Integer VIP, HttpServletRequest request, HttpServletResponse response) {

@@ -89,6 +89,7 @@ public class FriendsDaoImpl implements IFriendsDao {
 		Query query = new Query();
 		query.addCriteria(new Criteria("userid").is(userid));
 		query.addCriteria(new Criteria("friendid").is(friendid));
+		query.addCriteria(new Criteria("apply").is(1));
 		query.addCriteria(new Criteria("deleted").is(0));
 		return mongoTemplate.findOne(query, FriendsBo.class);
 	}
@@ -96,6 +97,7 @@ public class FriendsDaoImpl implements IFriendsDao {
 	public List<FriendsBo> getFriendByUserid(String userid) {
 		Query query = new Query();
 		query.addCriteria(new Criteria("userid").is(userid));
+		query.addCriteria(new Criteria("apply").is(1));
 		query.addCriteria(new Criteria("deleted").is(0));
 		return mongoTemplate.find(query, FriendsBo.class);
 	}
@@ -103,6 +105,7 @@ public class FriendsDaoImpl implements IFriendsDao {
 	public List<FriendsBo> getFriendByFirendid(String friendid) {
 		Query query = new Query();
 		query.addCriteria(new Criteria("friendid").is(friendid));
+		query.addCriteria(new Criteria("apply").is(1));
 		query.addCriteria(new Criteria("deleted").is(0));
 		return mongoTemplate.find(query, FriendsBo.class);
 	}
@@ -115,6 +118,30 @@ public class FriendsDaoImpl implements IFriendsDao {
 		Update update = new Update();
 		update.set("deleted", 1);
 		return mongoTemplate.updateFirst(query, update, FriendsBo.class);
+	}
+
+	public WriteResult updateApply(String id, int apply) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("_id").is(id));
+		query.addCriteria(new Criteria("deleted").is(0));
+		Update update = new Update();
+		update.set("apply", apply);
+		return mongoTemplate.updateFirst(query, update, FriendsBo.class);
+	}
+
+	public List<FriendsBo> getApplyFriendByuserid(String userid) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("userid").is(userid));
+		query.addCriteria(new Criteria("apply").is(0));
+		query.addCriteria(new Criteria("deleted").is(0));
+		return mongoTemplate.find(query, FriendsBo.class);
+	}
+
+	public FriendsBo get(String id) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("_id").is(id));
+		query.addCriteria(new Criteria("deleted").is(0));
+		return mongoTemplate.findOne(query, FriendsBo.class);
 	}
 
 }

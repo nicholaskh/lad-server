@@ -9,6 +9,7 @@ public class FriendsBo extends BaseBo {
 
 	private String userid;
 	private String friendid;
+	private int apply;//0：申请；1：同意好友；-1拒绝好友
 	private String backname;
 	private List<String> tag;
 	private String phone;
@@ -78,6 +79,14 @@ public class FriendsBo extends BaseBo {
 
 	public void setBlack(Integer black) {
 		this.black = black;
+	}
+
+	public int getApply() {
+		return apply;
+	}
+
+	public void setApply(int apply) {
+		this.apply = apply;
 	}
 
 }
