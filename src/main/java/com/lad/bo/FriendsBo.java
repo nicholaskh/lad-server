@@ -12,7 +12,6 @@ public class FriendsBo extends BaseBo {
 	private String friendid;
 	private int apply;//0：申请；1：同意好友；-1拒绝好友
 	private String backname;
-	private List<String> tag = new LinkedList<String> ();
 	private String phone;
 	private String description;
 	private Integer VIP = 0;
@@ -40,14 +39,6 @@ public class FriendsBo extends BaseBo {
 
 	public void setBackname(String backname) {
 		this.backname = backname;
-	}
-
-	public List<String> getTag() {
-		return tag;
-	}
-
-	public void setTag(List<String> tag) {
-		this.tag = tag;
 	}
 
 	public String getPhone() {

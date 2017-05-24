@@ -14,7 +14,6 @@ import javax.servlet.http.HttpSession;
 import net.sf.json.JSONObject;
 
 import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -287,44 +286,6 @@ public class FriendsController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	@RequestMapping("/set-tag")
-	@ResponseBody
-	public String setTag(String friendid, String tag, HttpServletRequest request, HttpServletResponse response) {
-		HttpSession session = request.getSession();
-		if (session.isNew()) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-		}
-		if (session.getAttribute("isLogin") == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-		}
-		UserBo userBo = (UserBo) session.getAttribute("userBo");
-		if (userBo == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-		}
-		if (StringUtils.isEmpty(friendid)) {
-			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NULL.getIndex(), ERRORCODE.FRIEND_NULL.getReason());
-		}
-		if (null == tag) {
-			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_BACKNAME_NULL.getIndex(),
-					ERRORCODE.FRIEND_BACKNAME_NULL.getReason());
-		}
-		FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(userBo.getId(), friendid);
-		if (friendsBo == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NULL.getIndex(), ERRORCODE.FRIEND_NULL.getReason());
-		}
-		List<String> tagList = friendsBo.getTag();
-		tagList.clear();
-		tagList.add(tag);
-		friendsBo.setTag(tagList);
-		friendsService.updateTag(friendsBo.getUserid(), friendsBo.getFriendid(), tagList);
-		Map<String, Object> map = new HashMap<String, Object>();
-		map.put("ret", 0);
-		return JSONObject.fromObject(map).toString();
-	}
-
 	@RequestMapping("/set-phone")
 	@ResponseBody
 	public String setPhone(String friendid, String phone, HttpServletRequest request, HttpServletResponse response) {
@@ -393,36 +354,6 @@ public class FriendsController extends BaseContorller {
 		friendsService.updateDescription(friendsBo.getUserid(), friendsBo.getFriendid(), description);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
-		return JSONObject.fromObject(map).toString();
-	}
-
-	@RequestMapping("/get-tag")
-	@ResponseBody
-	public String getTag(String friendid, HttpServletRequest request, HttpServletResponse response) {
-		HttpSession session = request.getSession();
-		if (session.isNew()) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-		}
-		if (session.getAttribute("isLogin") == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-		}
-		UserBo userBo = (UserBo) session.getAttribute("userBo");
-		if (userBo == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-		}
-		if (StringUtils.isEmpty(friendid)) {
-			return CommonUtil.toErrorResult(ERRORCODE.USER_ID.getIndex(), ERRORCODE.USER_ID.getReason());
-		}
-		FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(userBo.getId(), friendid);
-		if(null == friendsBo){
-			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NULL.getIndex(), ERRORCODE.FRIEND_NULL.getReason());
-		}
-		Map<String, Object> map = new HashMap<String, Object>();
-		map.put("ret", 0);
-		map.put("tag", friendsBo.getTag());
 		return JSONObject.fromObject(map).toString();
 	}
 

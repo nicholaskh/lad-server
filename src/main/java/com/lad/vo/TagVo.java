@@ -1,14 +1,10 @@
-package com.lad.bo;
+package com.lad.vo;
 
 import java.util.HashSet;
 
-import org.springframework.data.mongodb.core.mapping.Document;
-
-@Document(collection = "tag")
-public class TagBo extends BaseBo {
-	
+public class TagVo extends BaseVo {
 	private String userid;
-	private HashSet<String> friendsIds = new HashSet<String>();
+	private HashSet<String> friendsIds;
 	private String name;
 	public String getUserid() {
 		return userid;
@@ -28,5 +24,4 @@ public class TagBo extends BaseBo {
 	public void setName(String name) {
 		this.name = name;
 	}
-	
 }
