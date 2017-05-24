@@ -63,7 +63,7 @@ public class FriendsController extends BaseContorller {
 		}
 		FriendsBo temp = friendsService.getFriendByIdAndVisitorId(userBo.getId(), friendid);
 		if (temp != null) {
-			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_EXIST.getIndex(), ERRORCODE.FRIEND_EXIST.getReason());
+			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_APPLY_EXIST.getIndex(), ERRORCODE.FRIEND_APPLY_EXIST.getReason());
 		}
 		FriendsBo friendsBo = new FriendsBo();
 		friendsBo.setUserid(userBo.getId());
