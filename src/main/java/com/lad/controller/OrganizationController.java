@@ -65,7 +65,7 @@ public class OrganizationController extends BaseContorller {
 		organizationBo.setPosition(new double[] { px, py });
 		organizationBo.setLandmark(landmark);
 		organizationBo.setName(name);
-		organizationBo.setTag(sub_tag);
+		organizationBo.setTag(tag);
 		organizationBo.setSub_tag(sub_tag);
 		HashSet<String> masters = new HashSet<String>();
 		masters.add(userBo.getId());
