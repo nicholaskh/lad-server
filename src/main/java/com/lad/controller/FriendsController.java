@@ -106,6 +106,11 @@ public class FriendsController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NULL.getIndex(), ERRORCODE.FRIEND_NULL.getReason());
 		}
 		friendsService.updateApply(id, 1);
+		FriendsBo friendsBo2 = friendsService.get(id);
+		friendsBo2.setUserid(friendsBo.getFriendid());
+		friendsBo2.setFriendid(friendsBo.getUserid());
+		friendsBo2.setId(null);
+		friendsService.insert(friendsBo2);
 		ChatroomBo chatroomBo = chatroomService.selectByUserIdAndFriendid(friendsBo.getUserid(), friendsBo.getFriendid());
 		if(null == chatroomBo){
 			chatroomBo = new ChatroomBo();
