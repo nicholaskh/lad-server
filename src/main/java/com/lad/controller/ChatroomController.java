@@ -21,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.lad.bo.ChatroomBo;
@@ -46,26 +47,31 @@ public class ChatroomController extends BaseContorller {
 	private IUserService userService;
 	@Autowired
 	private IIMTermService iMTermService;
-	
+
 	@RequestMapping("/create")
 	@ResponseBody
-	public String create(String name, HttpServletRequest request, HttpServletResponse response) {
+	public String create(String name, HttpServletRequest request,
+			HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (session.getAttribute("isLogin") == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
 		if (userBo == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (StringUtils.isEmpty(name)) {
-			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NAME_NULL.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CHATROOM_NAME_NULL.getIndex(),
 					ERRORCODE.CHATROOM_NAME_NULL.getReason());
 		}
 		ChatroomBo chatroomBo = new ChatroomBo();
@@ -73,12 +79,13 @@ public class ChatroomController extends BaseContorller {
 		chatroomBo.setType(2);
 		chatroomService.insert(chatroomBo);
 		ImAssistant assistent = ImAssistant.init("180.76.138.200", 2222);
-		if(assistent == null){
-			return CommonUtil.toErrorResult(ERRORCODE.PUSHED_CONNECT_ERROR.getIndex(),
+		if (assistent == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.PUSHED_CONNECT_ERROR.getIndex(),
 					ERRORCODE.PUSHED_CONNECT_ERROR.getReason());
 		}
 		IMTermBo iMTermBo = iMTermService.selectByUserid(userBo.getId());
-		if(iMTermBo == null){
+		if (iMTermBo == null) {
 			iMTermBo = new IMTermBo();
 			iMTermBo.setUserid(userBo.getId());
 			Message message = assistent.getAppKey();
@@ -89,22 +96,26 @@ public class ChatroomController extends BaseContorller {
 			iMTermService.insert(iMTermBo);
 		}
 		assistent.setServerTerm(iMTermBo.getTerm());
-		Message message3 = assistent.subscribe(name, chatroomBo.getId(), userBo.getId());
-		if(message3.getStatus() == Message.Status.termError){
+		Message message3 = assistent.subscribe(name, chatroomBo.getId(),
+				userBo.getId());
+		if (message3.getStatus() == Message.Status.termError) {
 			Message message = assistent.getAppKey();
 			String appKey = message.getMsg();
 			Message message2 = assistent.authServer(appKey);
 			String term = message2.getMsg();
 			iMTermService.updateByUserid(userBo.getId(), term);
 			assistent.setServerTerm(term);
-			Message message4 = assistent.subscribe(name, chatroomBo.getId(), userBo.getId());
-			if(Message.Status.success != message4.getStatus()) {
+			Message message4 = assistent.subscribe(name, chatroomBo.getId(),
+					userBo.getId());
+			if (Message.Status.success != message4.getStatus()) {
 				assistent.close();
-				return CommonUtil.toErrorResult(message4.getStatus(), message4.getMsg());
+				return CommonUtil.toErrorResult(message4.getStatus(),
+						message4.getMsg());
 			}
-		}else if(Message.Status.success != message3.getStatus()) {
+		} else if (Message.Status.success != message3.getStatus()) {
 			assistent.close();
-			return CommonUtil.toErrorResult(message3.getStatus(), message3.getMsg());
+			return CommonUtil.toErrorResult(message3.getStatus(),
+					message3.getMsg());
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
@@ -115,32 +126,39 @@ public class ChatroomController extends BaseContorller {
 
 	@RequestMapping("/update-name")
 	@ResponseBody
-	public String updateName(String roomid, String name, HttpServletRequest request, HttpServletResponse response) {
+	public String updateName(String roomid, String name,
+			HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (session.getAttribute("isLogin") == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
 		if (userBo == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (StringUtils.isEmpty(name)) {
-			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NAME_NULL.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CHATROOM_NAME_NULL.getIndex(),
 					ERRORCODE.CHATROOM_NAME_NULL.getReason());
 		}
 		if (StringUtils.isEmpty(roomid)) {
-			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_ID_NULL.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CHATROOM_ID_NULL.getIndex(),
 					ERRORCODE.CHATROOM_ID_NULL.getReason());
 		}
 		ChatroomBo chatroomBo = chatroomService.get(roomid);
 		if (null == chatroomBo) {
-			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(), ERRORCODE.CHATROOM_NULL.getReason());
+			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(),
+					ERRORCODE.CHATROOM_NULL.getReason());
 		}
 		chatroomBo.setName(name);
 		chatroomService.updateName(chatroomBo);
@@ -151,40 +169,48 @@ public class ChatroomController extends BaseContorller {
 
 	@RequestMapping("/insert-user")
 	@ResponseBody
-	public String insertUser(String userid, String chatroomid, HttpServletRequest request, HttpServletResponse response) {
+	public String insertUser(String userid, String chatroomid,
+			HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (session.getAttribute("isLogin") == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
 		if (userBo == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (StringUtils.isEmpty(userid)) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_ID.getIndex(), ERRORCODE.ACCOUNT_ID.getReason());
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_ID.getIndex(),
+					ERRORCODE.ACCOUNT_ID.getReason());
 		}
 		ChatroomBo chatroomBo = chatroomService.get(chatroomid);
-		if(null == chatroomBo){
-			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(), ERRORCODE.CHATROOM_NULL.getReason());
+		if (null == chatroomBo) {
+			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(),
+					ERRORCODE.CHATROOM_NULL.getReason());
 		}
 		HashSet<String> set = chatroomBo.getUsers();
 		set.add(userid);
 		chatroomBo.setUsers(set);
 		chatroomService.updateUsers(chatroomBo);
 		UserBo user = userService.getUser(userid);
-		if(null == user){
+		if (null == user) {
 			return CommonUtil.toErrorResult(ERRORCODE.USER_NULL.getIndex(),
 					ERRORCODE.USER_NULL.getReason());
 		}
 		HashSet<String> chatroom = user.getChatrooms();
 		if (chatroom.contains(chatroomBo.getId())) {
-			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_EXIST.getIndex(), ERRORCODE.CHATROOM_EXIST.getReason());
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CHATROOM_EXIST.getIndex(),
+					ERRORCODE.CHATROOM_EXIST.getReason());
 		}
 		chatroom.add(chatroomBo.getId());
 		user.setChatrooms(chatroom);
@@ -196,34 +222,40 @@ public class ChatroomController extends BaseContorller {
 
 	@RequestMapping("/delete-user")
 	@ResponseBody
-	public String deltetUser(String userid, String chatroomid, HttpServletRequest request, HttpServletResponse response) {
+	public String deltetUser(String userid, String chatroomid,
+			HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (session.getAttribute("isLogin") == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
 		if (userBo == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (StringUtils.isEmpty(userid)) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_ID.getIndex(), ERRORCODE.ACCOUNT_ID.getReason());
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_ID.getIndex(),
+					ERRORCODE.ACCOUNT_ID.getReason());
 		}
 		ChatroomBo chatroomBo = chatroomService.get(chatroomid);
-		if(null == chatroomBo){
-			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(), ERRORCODE.CHATROOM_NULL.getReason());
+		if (null == chatroomBo) {
+			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(),
+					ERRORCODE.CHATROOM_NULL.getReason());
 		}
 		HashSet<String> set = chatroomBo.getUsers();
 		set.remove(userid);
 		chatroomBo.setUsers(set);
 		chatroomService.updateUsers(chatroomBo);
 		UserBo user = userService.getUser(userid);
-		if(null == user){
+		if (null == user) {
 			return CommonUtil.toErrorResult(ERRORCODE.USER_NULL.getIndex(),
 					ERRORCODE.USER_NULL.getReason());
 		}
@@ -238,20 +270,24 @@ public class ChatroomController extends BaseContorller {
 
 	@RequestMapping("/get-friends")
 	@ResponseBody
-	public String getFriends(HttpServletRequest request, HttpServletResponse response)
-			throws IllegalAccessException, InvocationTargetException {
+	public String getFriends(HttpServletRequest request,
+			HttpServletResponse response) throws IllegalAccessException,
+			InvocationTargetException {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (session.getAttribute("isLogin") == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
 		if (userBo == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		List<String> friends = userBo.getFriends();
@@ -270,28 +306,41 @@ public class ChatroomController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	@RequestMapping("/get-chatrooms")
+	@RequestMapping("/get-my-chatrooms")
 	@ResponseBody
-	public String getChatrooms(HttpServletRequest request, HttpServletResponse response)
-			throws IllegalAccessException, InvocationTargetException {
+	public String getChatrooms(HttpServletRequest request,
+			HttpServletResponse response) throws IllegalAccessException,
+			InvocationTargetException {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (session.getAttribute("isLogin") == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
 		if (userBo == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		HashSet<String> Chatrooms = userBo.getChatrooms();
+		HashSet<String> ChatroomsTop = userBo.getChatroomsTop();
 		List<ChatroomVo> ChatroomList = new LinkedList<ChatroomVo>();
+		for (String id : ChatroomsTop) {
+			ChatroomBo temp = chatroomService.get(id);
+			if (null != temp) {
+				ChatroomVo vo = new ChatroomVo();
+				BeanUtils.copyProperties(vo, temp);
+				ChatroomList.add(vo);
+			}
+		}
 		for (String id : Chatrooms) {
-			UserBo temp = userService.getUser(id);
+			ChatroomBo temp = chatroomService.get(id);
 			if (null != temp) {
 				ChatroomVo vo = new ChatroomVo();
 				BeanUtils.copyProperties(vo, temp);
@@ -301,40 +350,87 @@ public class ChatroomController extends BaseContorller {
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("ChatroomList", ChatroomList);
+		map.put("ChatroomTopNum", ChatroomsTop.size());
 		return JSONObject.fromObject(map).toString();
 	}
-	
-	@RequestMapping("/set-top")
+
+	@RequestMapping("/get-chatroom-info")
 	@ResponseBody
-	public String setTop(String chatroomid, HttpServletRequest request, HttpServletResponse response) {
+	public String getChatroomInfo(
+			@RequestParam(required = true) String chatroomid,
+			HttpServletRequest request, HttpServletResponse response)
+			throws IllegalAccessException, InvocationTargetException {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (session.getAttribute("isLogin") == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
 		if (userBo == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		ChatroomBo temp = chatroomService.get(chatroomid);
+		ChatroomVo vo = new ChatroomVo();
+		if (null != temp) {
+			BeanUtils.copyProperties(vo, temp);
+		} else {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CHATROOM_ID_NULL.getIndex(),
+					ERRORCODE.CHATROOM_ID_NULL.getReason());
+		}
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("Chatroom", vo);
+		return JSONObject.fromObject(map).toString();
+	}
+
+	@RequestMapping("/set-top")
+	@ResponseBody
+	public String setTop(String chatroomid, HttpServletRequest request,
+			HttpServletResponse response) {
+		HttpSession session = request.getSession();
+		if (session.isNew()) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		if (session.getAttribute("isLogin") == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		UserBo userBo = (UserBo) session.getAttribute("userBo");
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		ChatroomBo chatroomBo = chatroomService.get(chatroomid);
-		if(null == chatroomBo){
-			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(), ERRORCODE.CHATROOM_NULL.getReason());
+		if (null == chatroomBo) {
+			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(),
+					ERRORCODE.CHATROOM_NULL.getReason());
 		}
 		HashSet<String> chatrooms = userBo.getChatrooms();
 		LinkedHashSet<String> chatroomsTop = userBo.getChatroomsTop();
-		if(chatrooms.contains(chatroomid)){
+		if (chatrooms.contains(chatroomid)) {
 			chatrooms.remove(chatroomid);
-		}else{
-			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(), ERRORCODE.CHATROOM_NULL.getReason());
+		} else {
+			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(),
+					ERRORCODE.CHATROOM_NULL.getReason());
 		}
-		if(chatroomsTop.contains(chatroomid)){
-			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_TOP_EXIST.getIndex(), ERRORCODE.CHATROOM_TOP_EXIST.getReason());
-		}else{
+		if (chatroomsTop.contains(chatroomid)) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CHATROOM_TOP_EXIST.getIndex(),
+					ERRORCODE.CHATROOM_TOP_EXIST.getReason());
+		} else {
 			chatroomsTop.add(chatroomid);
 		}
 		userBo.setChatrooms(chatrooms);
@@ -345,38 +441,46 @@ public class ChatroomController extends BaseContorller {
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();
 	}
-	
+
 	@RequestMapping("/cancel-top")
 	@ResponseBody
-	public String cancelTop(String chatroomid, HttpServletRequest request, HttpServletResponse response) {
+	public String cancelTop(String chatroomid, HttpServletRequest request,
+			HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (session.getAttribute("isLogin") == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
 		if (userBo == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		ChatroomBo chatroomBo = chatroomService.get(chatroomid);
-		if(null == chatroomBo){
-			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(), ERRORCODE.CHATROOM_NULL.getReason());
+		if (null == chatroomBo) {
+			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(),
+					ERRORCODE.CHATROOM_NULL.getReason());
 		}
 		HashSet<String> chatrooms = userBo.getChatrooms();
 		LinkedHashSet<String> chatroomsTop = userBo.getChatroomsTop();
-		if(chatroomsTop.contains(chatroomid)){
+		if (chatroomsTop.contains(chatroomid)) {
 			chatroomsTop.remove(chatroomid);
-		}else{
-			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(), ERRORCODE.CHATROOM_NULL.getReason());
+		} else {
+			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(),
+					ERRORCODE.CHATROOM_NULL.getReason());
 		}
-		if(chatrooms.contains(chatroomid)){
-			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_EXIST.getIndex(), ERRORCODE.CHATROOM_EXIST.getReason());
-		}else{
+		if (chatrooms.contains(chatroomid)) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CHATROOM_EXIST.getIndex(),
+					ERRORCODE.CHATROOM_EXIST.getReason());
+		} else {
 			chatrooms.add(chatroomid);
 		}
 		userBo.setChatrooms(chatrooms);
@@ -387,30 +491,34 @@ public class ChatroomController extends BaseContorller {
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();
 	}
-	
+
 	@RequestMapping("/factoface-create")
 	@ResponseBody
-	public String faceToFaceCreate(final int seq, double px, double py, HttpServletRequest request, HttpServletResponse response) {
+	public String faceToFaceCreate(final int seq, double px, double py,
+			HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (session.getAttribute("isLogin") == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
 		if (userBo == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		HashSet<String> userSet = new HashSet<String>();
 		ChatroomBo chatroomBo = null;
-		int isNew = 0 ;
-		synchronized(this){
+		int isNew = 0;
+		synchronized (this) {
 			chatroomBo = chatroomService.selectBySeq(seq);
-			if(null == chatroomBo){
+			if (null == chatroomBo) {
 				chatroomBo = new ChatroomBo();
 				chatroomBo.setSeq(seq);
 				chatroomBo.setName("chatFaceToFace");
@@ -419,9 +527,10 @@ public class ChatroomController extends BaseContorller {
 				chatroomBo.setUsers(userSet);
 				chatroomService.insert(chatroomBo);
 				isNew = 1;
-			}else{
-				if(0 == chatroomBo.getExpire()){
-					return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_SEQ_EXPIRE.getIndex(),
+			} else {
+				if (0 == chatroomBo.getExpire()) {
+					return CommonUtil.toErrorResult(
+							ERRORCODE.CHATROOM_SEQ_EXPIRE.getIndex(),
 							ERRORCODE.CHATROOM_SEQ_EXPIRE.getReason());
 				}
 				userSet.add(userBo.getId());
@@ -430,26 +539,27 @@ public class ChatroomController extends BaseContorller {
 			}
 		}
 		HashSet<String> chatrooms = userBo.getChatrooms();
-		if(null == chatrooms){
+		if (null == chatrooms) {
 			chatrooms = new HashSet<String>();
 		}
 		chatrooms.add(chatroomBo.getId());
 		userBo.setChatrooms(chatrooms);
 		userService.updateChatrooms(userBo);
-		if(isNew == 1){
+		if (isNew == 1) {
 			Timer timer = new Timer();
-			timer.schedule(new TimerTask(){
-				public void run(){
+			timer.schedule(new TimerTask() {
+				public void run() {
 					chatroomService.setSeqExpire(seq);
 				}
 			}, 5000);
 			ImAssistant assistent = ImAssistant.init("180.76.138.200", 2222);
-			if(assistent == null){
-				return CommonUtil.toErrorResult(ERRORCODE.PUSHED_CONNECT_ERROR.getIndex(),
+			if (assistent == null) {
+				return CommonUtil.toErrorResult(
+						ERRORCODE.PUSHED_CONNECT_ERROR.getIndex(),
 						ERRORCODE.PUSHED_CONNECT_ERROR.getReason());
 			}
 			IMTermBo iMTermBo = iMTermService.selectByUserid(userBo.getId());
-			if(iMTermBo == null){
+			if (iMTermBo == null) {
 				iMTermBo = new IMTermBo();
 				iMTermBo.setUserid(userBo.getId());
 				Message message = assistent.getAppKey();
@@ -460,22 +570,26 @@ public class ChatroomController extends BaseContorller {
 				iMTermService.insert(iMTermBo);
 			}
 			assistent.setServerTerm(iMTermBo.getTerm());
-			Message message3 = assistent.subscribe(chatroomBo.getName(), chatroomBo.getId(), userBo.getId());
-			if(message3.getStatus() == Message.Status.termError){
+			Message message3 = assistent.subscribe(chatroomBo.getName(),
+					chatroomBo.getId(), userBo.getId());
+			if (message3.getStatus() == Message.Status.termError) {
 				Message message = assistent.getAppKey();
 				String appKey = message.getMsg();
 				Message message2 = assistent.authServer(appKey);
 				String term = message2.getMsg();
 				iMTermService.updateByUserid(userBo.getId(), term);
 				assistent.setServerTerm(term);
-				Message message4 = assistent.subscribe(chatroomBo.getName(), chatroomBo.getId(), userBo.getId());
-				if(Message.Status.success != message4.getStatus()) {
+				Message message4 = assistent.subscribe(chatroomBo.getName(),
+						chatroomBo.getId(), userBo.getId());
+				if (Message.Status.success != message4.getStatus()) {
 					assistent.close();
-					return CommonUtil.toErrorResult(message4.getStatus(), message4.getMsg());
+					return CommonUtil.toErrorResult(message4.getStatus(),
+							message4.getMsg());
 				}
-			}else if(Message.Status.success != message3.getStatus()) {
+			} else if (Message.Status.success != message3.getStatus()) {
 				assistent.close();
-				return CommonUtil.toErrorResult(message3.getStatus(), message3.getMsg());
+				return CommonUtil.toErrorResult(message3.getStatus(),
+						message3.getMsg());
 			}
 			assistent.close();
 		}

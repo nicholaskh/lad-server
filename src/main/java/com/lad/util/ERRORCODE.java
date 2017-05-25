@@ -30,7 +30,7 @@ public enum ERRORCODE {
 	FEEDBACK_NULL(50001, "反馈为空"),
 	
 	CHATROOM_NAME_NULL(60001, "聊天室name为空"),
-	CHATROOM_ID_NULL(60002, "聊天室ID为空"),
+	CHATROOM_ID_NULL(60002, "聊天室ID error"),
 	CHATROOM_NULL(60003, "聊天室为空"),
 	CHATROOM_EXIST(60004, "已经加入该聊天室"),
 	CHATROOM_TOP_EXIST(60005, "该聊天室已经置顶"),
@@ -48,6 +48,7 @@ public enum ERRORCODE {
 	FRIEND_DESCRIPTION_NULL(80007, "朋友描述为空"),
 	FRIEND_BACKNAME_NULL(80008, "备注为空"),
 	FRIEND_APPLY_EXIST(80009, "请求好友申请已经发送"),
+	FRIEND_DATA_ERROR(80010, "好友信息异常，请联系管理员处理"),
 	
 	COMPLAIN_IS_NULL(90001, "投诉为空"),
 	
