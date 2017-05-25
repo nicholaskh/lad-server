@@ -19,7 +19,6 @@ import net.sf.json.JSONObject;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -73,7 +72,7 @@ public class ChatroomController extends BaseContorller {
 		chatroomBo.setName(name);
 		chatroomBo.setType(2);
 		chatroomService.insert(chatroomBo);
-		ImAssistant assistent = ImAssistant.init("180.76.173.200", 2222);
+		ImAssistant assistent = ImAssistant.init("180.76.138.200", 2222);
 		if(assistent == null){
 			return CommonUtil.toErrorResult(ERRORCODE.PUSHED_CONNECT_ERROR.getIndex(),
 					ERRORCODE.PUSHED_CONNECT_ERROR.getReason());
@@ -444,7 +443,7 @@ public class ChatroomController extends BaseContorller {
 					chatroomService.setSeqExpire(seq);
 				}
 			}, 5000);
-			ImAssistant assistent = ImAssistant.init("180.76.173.200", 2222);
+			ImAssistant assistent = ImAssistant.init("180.76.138.200", 2222);
 			if(assistent == null){
 				return CommonUtil.toErrorResult(ERRORCODE.PUSHED_CONNECT_ERROR.getIndex(),
 						ERRORCODE.PUSHED_CONNECT_ERROR.getReason());

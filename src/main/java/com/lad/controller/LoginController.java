@@ -101,7 +101,7 @@ public class LoginController extends BaseContorller {
 			map.put("ret", 0);
 			session.setAttribute("isLogin", true);
 			session.setAttribute("userBo", userBo);
-			ImAssistant assistent = ImAssistant.init("180.76.173.200", 2222);
+			ImAssistant assistent = ImAssistant.init("180.76.138.200", 2222);
 			if(assistent == null){
 				return CommonUtil.toErrorResult(ERRORCODE.PUSHED_CONNECT_ERROR.getIndex(),
 						ERRORCODE.PUSHED_CONNECT_ERROR.getReason());

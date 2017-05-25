@@ -49,7 +49,11 @@ public enum ERRORCODE {
 	FRIEND_BACKNAME_NULL(80008, "备注为空"),
 	FRIEND_APPLY_EXIST(80009, "请求好友申请已经发送"),
 	
-	COMPLAIN_IS_NULL(90001, "投诉为空");
+	COMPLAIN_IS_NULL(90001, "投诉为空"),
+	
+	ORGANIZATION_IS_NULL(100001, "该群组不存在"),
+	ORGANIZATION_APPLY_USER_NULL(100001, "该用户没有申请加入此群组"),
+	ORGANIZATION_APPLY_EXIST(100002, "该群组不存在");
 	
 	private int index;
 	private String reason;

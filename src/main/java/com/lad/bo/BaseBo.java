@@ -7,9 +7,6 @@ import org.springframework.data.annotation.Id;
 
 public class BaseBo implements Serializable {
 
-	/**
-	 * 
-	 */
 	@Id
 	private String id;
 
@@ -17,9 +14,9 @@ public class BaseBo implements Serializable {
 
 	private Date updateTime;
 
-	private Integer createuid;
+	private String createuid;
 
-	private Integer updateuid;
+	private String updateuid;
 
 	private Integer deleted = 0;
 
@@ -47,19 +44,19 @@ public class BaseBo implements Serializable {
 		this.updateTime = updateTime;
 	}
 
-	public Integer getCreateuid() {
+	public String getCreateuid() {
 		return createuid;
 	}
 
-	public void setCreateuid(Integer createuid) {
+	public void setCreateuid(String createuid) {
 		this.createuid = createuid;
 	}
 
-	public Integer getUpdateuid() {
+	public String getUpdateuid() {
 		return updateuid;
 	}
 
-	public void setUpdateuid(Integer updateuid) {
+	public void setUpdateuid(String updateuid) {
 		this.updateuid = updateuid;
 	}
 
