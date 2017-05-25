@@ -22,13 +22,17 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.lad.bo.ChatroomBo;
 import com.lad.bo.FriendsBo;
+import com.lad.bo.IMTermBo;
 import com.lad.bo.UserBo;
 import com.lad.service.IChatroomService;
 import com.lad.service.IFriendsService;
+import com.lad.service.IIMTermService;
 import com.lad.service.IUserService;
 import com.lad.util.CommonUtil;
 import com.lad.util.ERRORCODE;
 import com.lad.vo.FriendsVo;
+import com.pushd.ImAssistant;
+import com.pushd.Message;
 
 @Controller
 @RequestMapping("friends")
@@ -40,6 +44,8 @@ public class FriendsController extends BaseContorller {
 	private IChatroomService chatroomService;
 	@Autowired
 	private IUserService userService;
+	@Autowired
+	private IIMTermService iMTermService;
 
 	@RequestMapping("/apply")
 	@ResponseBody
@@ -476,8 +482,43 @@ public class FriendsController extends BaseContorller {
 			userBo.setChatrooms(chatroomsSet);
 			userService.updateChatrooms(user);
 		}
+		ImAssistant assistent = ImAssistant.init("180.76.138.200", 2222);
+		if(assistent == null){
+			return CommonUtil.toErrorResult(ERRORCODE.PUSHED_CONNECT_ERROR.getIndex(),
+					ERRORCODE.PUSHED_CONNECT_ERROR.getReason());
+		}
+		IMTermBo iMTermBo = iMTermService.selectByUserid(userBo.getId());
+		if(iMTermBo == null){
+			iMTermBo = new IMTermBo();
+			iMTermBo.setUserid(userBo.getId());
+			Message message = assistent.getAppKey();
+			String appKey = message.getMsg();
+			Message message2 = assistent.authServer(appKey);
+			String term = message2.getMsg();
+			iMTermBo.setTerm(term);
+			iMTermService.insert(iMTermBo);
+		}
+		assistent.setServerTerm(iMTermBo.getTerm());
+		Message message3 = assistent.subscribe(chatroomBo.getName(), chatroomBo.getId(), userBo.getId());
+		if(message3.getStatus() == Message.Status.termError){
+			Message message = assistent.getAppKey();
+			String appKey = message.getMsg();
+			Message message2 = assistent.authServer(appKey);
+			String term = message2.getMsg();
+			iMTermService.updateByUserid(userBo.getId(), term);
+			assistent.setServerTerm(term);
+			Message message4 = assistent.subscribe(chatroomBo.getName(), chatroomBo.getId(), userBo.getId());
+			if(Message.Status.success != message4.getStatus()) {
+				assistent.close();
+				return CommonUtil.toErrorResult(message4.getStatus(), message4.getMsg());
+			}
+		}else if(Message.Status.success != message3.getStatus()) {
+			assistent.close();
+			return CommonUtil.toErrorResult(message3.getStatus(), message3.getMsg());
+		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
+		map.put("channelId", chatroomBo.getId());
 		return JSONObject.fromObject(map).toString();
 	}
 
