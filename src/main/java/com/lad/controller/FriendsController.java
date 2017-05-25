@@ -359,7 +359,7 @@ public class FriendsController extends BaseContorller {
 
 	@RequestMapping("/get-friends")
 	@ResponseBody
-	public String getFriends(String userid, HttpServletRequest request, HttpServletResponse response) {
+	public String getFriends(HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
@@ -374,10 +374,7 @@ public class FriendsController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
-		if (StringUtils.isEmpty(userid)) {
-			return CommonUtil.toErrorResult(ERRORCODE.USER_ID.getIndex(), ERRORCODE.USER_ID.getReason());
-		}
-		List<FriendsBo> list = friendsService.getFriendByUserid(userid);
+		List<FriendsBo> list = friendsService.getFriendByUserid(userBo.getId());
 		List<FriendsVo> voList = new LinkedList<FriendsVo>();
 		for (FriendsBo friendsBo : list) {
 			FriendsVo vo = new FriendsVo();
