@@ -32,6 +32,7 @@ import com.lad.util.CommonUtil;
 import com.lad.util.ERRORCODE;
 import com.lad.vo.FriendsVo;
 import com.lad.vo.UserVo;
+import com.lad.vo.UserVoFriends;
 import com.pushd.ImAssistant;
 import com.pushd.Message;
 
@@ -174,25 +175,23 @@ public class FriendsController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		List<FriendsBo> friendsBoList = friendsService.getApplyFriendByuserid(userBo.getId());
-		List<UserVo> userVoList = new LinkedList<UserVo>();
+		List<UserVoFriends> userVoList = new LinkedList<UserVoFriends>();
 		for(FriendsBo friendsBo : friendsBoList){
 			UserBo userBoTemp = userService.getUser(friendsBo.getFriendid());
 			if(null == userBoTemp){
 				return CommonUtil.toErrorResult(ERRORCODE.FRIEND_DATA_ERROR.getIndex(),
 						ERRORCODE.FRIEND_DATA_ERROR.getReason());
 			}
-			UserVo userVo = new UserVo();
+			UserVoFriends user = new UserVoFriends();
 			try {
-				BeanUtils.copyProperties(userVo, userBoTemp);
+				BeanUtils.copyProperties(user, userBoTemp);
 			} catch (IllegalAccessException e) {
 				e.printStackTrace();
 			} catch (InvocationTargetException e) {
 				e.printStackTrace();
 			}
-			userVo.setBirthDay(null);
-			userVo.setChatrooms(null);
-			userVo.setChatroomsTop(null);
-			userVoList.add(userVo);
+			user.setFriendsTableId(friendsBo.getId());
+			userVoList.add(user);
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
@@ -583,5 +582,4 @@ public class FriendsController extends BaseContorller {
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();
 	}
-
 }
