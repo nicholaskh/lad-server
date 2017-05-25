@@ -388,7 +388,7 @@ public class ChatroomController extends BaseContorller {
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
-		map.put("Chatroom", vo);
+		map.put("chatroom", vo);
 		return JSONObject.fromObject(map).toString();
 	}
 
