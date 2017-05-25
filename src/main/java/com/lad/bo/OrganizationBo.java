@@ -2,6 +2,8 @@ package com.lad.bo;
 
 import java.util.HashSet;
 
+import org.springframework.data.mongodb.core.mapping.Document;
+@Document(collection = "organization")
 public class OrganizationBo extends BaseBo {
 	private double[] position;
 	private String landmark;
