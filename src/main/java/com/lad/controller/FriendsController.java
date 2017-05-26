@@ -177,7 +177,7 @@ public class FriendsController extends BaseContorller {
 		List<FriendsBo> friendsBoList = friendsService.getApplyFriendByuserid(userBo.getId());
 		List<UserVoFriends> userVoList = new LinkedList<UserVoFriends>();
 		for(FriendsBo friendsBo : friendsBoList){
-			UserBo userBoTemp = userService.getUser(friendsBo.getFriendid());
+			UserBo userBoTemp = userService.getUser(friendsBo.getUserid());
 			if(null == userBoTemp){
 				return CommonUtil.toErrorResult(ERRORCODE.FRIEND_DATA_ERROR.getIndex(),
 						ERRORCODE.FRIEND_DATA_ERROR.getReason());
