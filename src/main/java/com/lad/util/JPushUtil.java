@@ -5,7 +5,10 @@ import cn.jiguang.common.resp.APIConnectionException;
 import cn.jiguang.common.resp.APIRequestException;
 import cn.jpush.api.JPushClient;
 import cn.jpush.api.push.PushResult;
+import cn.jpush.api.push.model.Platform;
 import cn.jpush.api.push.model.PushPayload;
+import cn.jpush.api.push.model.audience.Audience;
+import cn.jpush.api.push.model.notification.Notification;
 
 public class JPushUtil {
 
@@ -35,7 +38,11 @@ public class JPushUtil {
 	}
 	
 	public static PushPayload buildPushObject_all_alias_alert() {
-		 return PushPayload.alertAll("ALERT test");
+		 return PushPayload.newBuilder()
+	                .setPlatform(Platform.all())
+	                .setAudience(Audience.alias("laoyou"))
+	                .setNotification(Notification.alert("ALERT alias tiantian from xubo"))
+	                .build();
     }
 	
 	public static void main(String [] args){
