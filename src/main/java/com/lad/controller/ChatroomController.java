@@ -322,12 +322,13 @@ public class ChatroomController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
-		UserBo userBo = (UserBo) session.getAttribute("userBo");
-		if (userBo == null) {
+		UserBo userBoTemp = (UserBo) session.getAttribute("userBo");
+		if (userBoTemp == null) {
 			return CommonUtil.toErrorResult(
 					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		UserBo userBo = userService.getUser(userBoTemp.getId());
 		HashSet<String> Chatrooms = userBo.getChatrooms();
 		HashSet<String> ChatroomsTop = userBo.getChatroomsTop();
 		List<ChatroomVo> ChatroomList = new LinkedList<ChatroomVo>();

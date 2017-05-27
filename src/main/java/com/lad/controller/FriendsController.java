@@ -31,7 +31,6 @@ import com.lad.service.IUserService;
 import com.lad.util.CommonUtil;
 import com.lad.util.ERRORCODE;
 import com.lad.vo.FriendsVo;
-import com.lad.vo.UserVo;
 import com.lad.vo.UserVoFriends;
 import com.pushd.ImAssistant;
 import com.pushd.Message;
@@ -122,6 +121,18 @@ public class FriendsController extends BaseContorller {
 			chatroomBo.setFriendid(friendsBo.getFriendid());
 			chatroomService.insert(chatroomBo);
 		}
+		String userid = friendsBo.getUserid();
+		UserBo user = userService.getUser(userid);
+		String friendid= friendsBo.getFriendid();
+		UserBo friend = userService.getUser(friendid);
+		HashSet<String> userChatrooms = user.getChatrooms();
+		HashSet<String> friendChatrooms = friend.getChatrooms();
+		userChatrooms.add(chatroomBo.getId());
+		friendChatrooms.add(chatroomBo.getId());
+		user.setChatrooms(userChatrooms);
+		friend.setChatrooms(friendChatrooms);
+		userService.updateChatrooms(user);
+		userService.updateChatrooms(friend);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();
