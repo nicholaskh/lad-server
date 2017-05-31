@@ -77,4 +77,13 @@ public class CircleDaoImpl implements ICircleDao {
 		return mongoTemplate.updateFirst(query, update, CircleBo.class);
 	}
 
+	public WriteResult updateHeadPicture(String circleBoId, String headPicture) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("_id").is(circleBoId));
+		query.addCriteria(new Criteria("deleted").is(0));
+		Update update = new Update();
+		update.set("headPicture", headPicture);
+		return mongoTemplate.updateFirst(query, update, CircleBo.class);
+	}
+
 }

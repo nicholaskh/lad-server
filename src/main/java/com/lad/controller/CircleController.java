@@ -15,6 +15,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.lad.bo.CircleBo;
 import com.lad.bo.OrganizationBo;
@@ -23,6 +24,7 @@ import com.lad.service.ICircleService;
 import com.lad.service.IOrganizationService;
 import com.lad.service.IUserService;
 import com.lad.util.CommonUtil;
+import com.lad.util.Constant;
 import com.lad.util.ERRORCODE;
 
 @Controller
@@ -101,18 +103,18 @@ public class CircleController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		CircleBo circleBo = circleService.selectById(circleid);
-		if(circleBo == null){
+		if (circleBo == null) {
 			return CommonUtil.toErrorResult(
 					ERRORCODE.CIRCLE_IS_NULL.getIndex(),
 					ERRORCODE.CIRCLE_IS_NULL.getReason());
 		}
-		if(!circleBo.getCreateuid().equals(userBo.getId())){
+		if (!circleBo.getCreateuid().equals(userBo.getId())) {
 			return CommonUtil.toErrorResult(
 					ERRORCODE.CIRCLE_MASTER_NULL.getIndex(),
 					ERRORCODE.CIRCLE_MASTER_NULL.getReason());
 		}
 		OrganizationBo organizationBo = organizationService.get(organizationid);
-		if(null == organizationBo){
+		if (null == organizationBo) {
 			return CommonUtil.toErrorResult(
 					ERRORCODE.ORGANIZATION_IS_NULL.getIndex(),
 					ERRORCODE.ORGANIZATION_IS_NULL.getReason());
@@ -124,4 +126,39 @@ public class CircleController extends BaseContorller {
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();
 	}
+
+	@RequestMapping("/head-picture")
+	@ResponseBody
+	public String head_picture(
+			@RequestParam("head_picture") MultipartFile file,
+			@RequestParam(required = true) String circleid,
+			HttpServletRequest request, HttpServletResponse response) {
+		HttpSession session = request.getSession();
+		if (session.isNew()) {
+			return "{\"ret\":20002,\"error\":\":未登录\"}";
+		}
+		if (session.getAttribute("isLogin") == null) {
+			return "{\"ret\":20002,\"error\":\":未登录\"}";
+		}
+		UserBo userBo = (UserBo) session.getAttribute("userBo");
+		if (userBo == null) {
+			return "{\"ret\":20002,\"error\":\":未登录\"}";
+		}
+		String userId = userBo.getId();
+		String fileName = userId + file.getOriginalFilename();
+		String path = CommonUtil.upload(file, Constant.CIRCLE_HEAD_PICTURE_PATH,
+				fileName, 0);
+		CircleBo circleBo = circleService.selectById(circleid);
+		if (circleBo == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CIRCLE_IS_NULL.getIndex(),
+					ERRORCODE.CIRCLE_IS_NULL.getReason());
+		}
+		circleService.updateHeadPicture(circleid, path);
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("path", path);
+		return JSONObject.fromObject(map).toString();
+	}
+
 }

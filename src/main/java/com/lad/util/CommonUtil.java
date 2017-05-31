@@ -64,13 +64,26 @@ public class CommonUtil {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	public static int sendSMS(String mobile, String message) {
+	public static int sendSMS1(String mobile, String message) {
 		try {
 			message = URLEncoder.encode(message, "UTF-8");
 		} catch (UnsupportedEncodingException ex) {
 		}
 		String url = "http://hprpt2.eucp.b2m.cn:8080/sdkproxy/sendsms.action?cdkey=0SDK-EBB-6699-RHSLQ&password=797391&phone="
 				+ mobile + "&message=" + message;
+		String responseString = HttpClientUtil.getInstance().doGetRequest(url);
+		if (responseString.trim().equals(Constant.RESPONSE)) {
+			return 0;
+		}
+		return -1;
+	}
+	
+	public static int sendSMS2(String mobile, String message) {
+		try {
+			message = URLEncoder.encode(message, "UTF-8");
+		} catch (UnsupportedEncodingException ex) {
+		}
+		String url = "http://118.145.22.174/http20/access/SendMt.do?UserId=1005&Password=MhHv6XuPZr&Mobiles="+mobile+"&Content="+message+"&ExtNo=35";
 		String responseString = HttpClientUtil.getInstance().doGetRequest(url);
 		if (responseString.trim().equals(Constant.RESPONSE)) {
 			return 0;

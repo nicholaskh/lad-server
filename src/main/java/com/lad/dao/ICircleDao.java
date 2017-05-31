@@ -25,4 +25,6 @@ public interface ICircleDao extends IBaseDao {
 	public WriteResult updateOrganizations(String circleBoId,
 			HashSet<String> organizations);
 
+	public WriteResult updateHeadPicture(String circleBoId, String headPicture);
+
 }

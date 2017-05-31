@@ -24,4 +24,6 @@ public interface ICircleService extends IBaseService {
 	public WriteResult updateOrganizations(String circleBoId,
 			HashSet<String> organizations);
 
+	public WriteResult updateHeadPicture(String circleBoId, String headPicture);
+
 }

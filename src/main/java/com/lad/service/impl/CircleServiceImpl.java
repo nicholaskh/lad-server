@@ -48,4 +48,8 @@ public class CircleServiceImpl implements ICircleService {
 		return circleDao.updateOrganizations(circleBoId, organizations);
 	}
 
+	public WriteResult updateHeadPicture(String circleBoId, String headPicture) {
+		return circleDao.updateHeadPicture(circleBoId, headPicture);
+	}
+
 }
