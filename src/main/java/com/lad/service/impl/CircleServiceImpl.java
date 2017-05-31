@@ -1,6 +1,7 @@
 package com.lad.service.impl;
 
 import java.util.HashSet;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.lad.bo.CircleBo;
 import com.lad.dao.ICircleDao;
 import com.lad.service.ICircleService;
+import com.mongodb.WriteResult;
 
 @Service("circleService")
 public class CircleServiceImpl implements ICircleService {
@@ -23,25 +25,25 @@ public class CircleServiceImpl implements ICircleService {
 		return circleDao.selectById(circleBoId);
 	}
 
-	public CircleBo selectByuserid(String userid) {
+	public List<CircleBo> selectByuserid(String userid) {
 		return circleDao.selectByuserid(userid);
 	}
 
-	public CircleBo updateUsers(String circleBoId, HashSet<String> users) {
+	public WriteResult updateUsers(String circleBoId, HashSet<String> users) {
 		return circleDao.updateUsers(circleBoId, users);
 	}
 
-	public CircleBo updateUsersApply(String circleBoId,
+	public WriteResult updateUsersApply(String circleBoId,
 			HashSet<String> usersApply) {
 		return circleDao.updateUsersApply(circleBoId, usersApply);
 	}
 
-	public CircleBo updateUsersRefuse(String circleBoId,
+	public WriteResult updateUsersRefuse(String circleBoId,
 			HashSet<String> usersRefuse) {
 		return circleDao.updateUsersRefuse(circleBoId, usersRefuse);
 	}
 
-	public CircleBo updateOrganizations(String circleBoId,
+	public WriteResult updateOrganizations(String circleBoId,
 			HashSet<String> organizations) {
 		return circleDao.updateOrganizations(circleBoId, organizations);
 	}

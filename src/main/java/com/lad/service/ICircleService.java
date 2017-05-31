@@ -1,25 +1,27 @@
 package com.lad.service;
 
 import java.util.HashSet;
+import java.util.List;
 
 import com.lad.bo.CircleBo;
+import com.mongodb.WriteResult;
 
 public interface ICircleService extends IBaseService {
 	public CircleBo insert(CircleBo circleBo);
 
 	public CircleBo selectById(String circleBoId);
 
-	public CircleBo selectByuserid(String userid);
+	public List<CircleBo> selectByuserid(String userid);
 
-	public CircleBo updateUsers(String circleBoId, HashSet<String> users);
+	public WriteResult updateUsers(String circleBoId, HashSet<String> users);
 
-	public CircleBo updateUsersApply(String circleBoId,
+	public WriteResult updateUsersApply(String circleBoId,
 			HashSet<String> usersApply);
 
-	public CircleBo updateUsersRefuse(String circleBoId,
+	public WriteResult updateUsersRefuse(String circleBoId,
 			HashSet<String> usersRefuse);
 
-	public CircleBo updateOrganizations(String circleBoId,
+	public WriteResult updateOrganizations(String circleBoId,
 			HashSet<String> organizations);
 
 }
