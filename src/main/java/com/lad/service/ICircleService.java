@@ -1,11 +1,10 @@
-package com.lad.dao;
+package com.lad.service;
 
 import java.util.HashSet;
 
 import com.lad.bo.CircleBo;
 
-public interface ICircleDao extends IBaseDao {
-
+public interface ICircleService extends IBaseService {
 	public CircleBo insert(CircleBo circleBo);
 
 	public CircleBo selectById(String circleBoId);

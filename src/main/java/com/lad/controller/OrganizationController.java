@@ -67,12 +67,6 @@ public class OrganizationController extends BaseContorller {
 		organizationBo.setName(name);
 		organizationBo.setTag(tag);
 		organizationBo.setSub_tag(sub_tag);
-		HashSet<String> masters = new HashSet<String>();
-		masters.add(userBo.getId());
-		organizationBo.setMasters(masters);
-		HashSet<String> users = new HashSet<String>();
-		users.add(userBo.getId());
-		organizationBo.setUsers(users);
 		organizationService.insert(organizationBo);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);

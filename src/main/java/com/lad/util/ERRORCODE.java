@@ -53,8 +53,14 @@ public enum ERRORCODE {
 	COMPLAIN_IS_NULL(90001, "投诉为空"),
 	
 	ORGANIZATION_IS_NULL(100001, "该群组不存在"),
-	ORGANIZATION_APPLY_USER_NULL(100001, "该用户没有申请加入此群组"),
-	ORGANIZATION_APPLY_EXIST(100002, "该群组不存在");
+	ORGANIZATION_APPLY_USER_NULL(100002, "该用户没有申请加入此群组"),
+	ORGANIZATION_APPLY_EXIST(100003, "该群组不存在"),
+	ORGANIZATION_NOT_MASTER(100004, "该用户没有申请加入此群组"),
+	
+	CIRCLE_IS_NULL(110001, "该圈子不存在"),
+	CIRCLE_APPLY_USER_NULL(110002, "该用户没有申请加入此圈子"),
+	CIRCLE_APPLY_EXIST(110003, "该圈子不存在"),
+	CIRCLE_MASTER_NULL(110004, "没有权限");
 	
 	private int index;
 	private String reason;
