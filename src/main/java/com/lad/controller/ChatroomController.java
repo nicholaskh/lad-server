@@ -337,6 +337,7 @@ public class ChatroomController extends BaseContorller {
 			if (null != temp) {
 				ChatroomVo vo = new ChatroomVo();
 				BeanUtils.copyProperties(vo, temp);
+				vo.setTop(1);
 				ChatroomList.add(vo);
 			}
 		}
@@ -351,7 +352,6 @@ public class ChatroomController extends BaseContorller {
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("ChatroomList", ChatroomList);
-		map.put("ChatroomTopNum", ChatroomsTop.size());
 		return JSONObject.fromObject(map).toString();
 	}
 

@@ -10,6 +10,7 @@ public class ChatroomVo extends BaseVo {
 	private int type;
 	private String userid;
 	private String friendid;
+	private Integer top = 0;
 	public String getId() {
 		return id;
 	}
@@ -58,4 +59,11 @@ public class ChatroomVo extends BaseVo {
 		this.friendid = friendid;
 	}
 
+	public Integer getTop() {
+		return top;
+	}
+
+	public void setTop(Integer top) {
+		this.top = top;
+	}
 }
