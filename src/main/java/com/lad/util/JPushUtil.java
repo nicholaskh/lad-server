@@ -14,6 +14,9 @@ public class JPushUtil {
 
 	private static String MASTER_SECRET = "db587bc126abddf27e548ecc";
 	private static String APP_KEY = "d53e8d39d6df18e379bf5da4";
+	public static String APPLY = "Have Friend Apply.";
+	public static String AGREE_APPLY_FRIEND = "Friend Apply Agree";
+	public static String REFUSE_APPLY_FRIEND = "Friend Apply refuse";
 
 	public static void pushAll(String content) {
 		JPushClient jpushClient = new JPushClient(MASTER_SECRET, APP_KEY, null,
