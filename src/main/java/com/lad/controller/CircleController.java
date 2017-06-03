@@ -146,8 +146,8 @@ public class CircleController extends BaseContorller {
 		}
 		String userId = userBo.getId();
 		String fileName = userId + file.getOriginalFilename();
-		String path = CommonUtil.upload(file, Constant.CIRCLE_HEAD_PICTURE_PATH,
-				fileName, 0);
+		String path = CommonUtil.upload(file,
+				Constant.CIRCLE_HEAD_PICTURE_PATH, fileName, 0);
 		CircleBo circleBo = circleService.selectById(circleid);
 		if (circleBo == null) {
 			return CommonUtil.toErrorResult(
@@ -158,6 +158,46 @@ public class CircleController extends BaseContorller {
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("path", path);
+		return JSONObject.fromObject(map).toString();
+	}
+
+	@RequestMapping("/apply-insert")
+	@ResponseBody
+	public String applyIsnert(@RequestParam(required = true) String circleid,
+			HttpServletRequest request, HttpServletResponse response) {
+		HttpSession session = request.getSession();
+		if (session.isNew()) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		if (session.getAttribute("isLogin") == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		UserBo userBo = (UserBo) session.getAttribute("userBo");
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		CircleBo circleBo = circleService.selectById(circleid);
+		if (circleBo == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CIRCLE_IS_NULL.getIndex(),
+					ERRORCODE.CIRCLE_IS_NULL.getReason());
+		}
+		HashSet<String> usersApply = circleBo.getUsersApply();
+		if(usersApply.contains(userBo.getId())){
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CIRCLE_USER_EXIST.getIndex(),
+					ERRORCODE.CIRCLE_USER_EXIST.getReason());
+		}
+		usersApply.add(userBo.getId());
+		circleService.updateUsersApply(circleid, usersApply);
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();
 	}
 

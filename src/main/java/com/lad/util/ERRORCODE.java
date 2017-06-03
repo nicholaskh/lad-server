@@ -59,8 +59,9 @@ public enum ERRORCODE {
 	
 	CIRCLE_IS_NULL(110001, "该圈子不存在"),
 	CIRCLE_APPLY_USER_NULL(110002, "该用户没有申请加入此圈子"),
-	CIRCLE_APPLY_EXIST(110003, "该圈子不存在"),
-	CIRCLE_MASTER_NULL(110004, "没有权限");
+	CIRCLE_USER_EXIST(110003, "该用户已经加入此圈子"),
+	CIRCLE_APPLY_EXIST(110004, "该圈子不存在"),
+	CIRCLE_MASTER_NULL(110005, "没有权限");
 	
 	private int index;
 	private String reason;
