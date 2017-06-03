@@ -32,6 +32,7 @@ import com.lad.service.IIMTermService;
 import com.lad.service.IUserService;
 import com.lad.util.CommonUtil;
 import com.lad.util.ERRORCODE;
+import com.lad.util.IMUtil;
 import com.lad.vo.ChatroomVo;
 import com.lad.vo.UserVo;
 import com.pushd.ImAssistant;
@@ -196,6 +197,10 @@ public class ChatroomController extends BaseContorller {
 		if (null == chatroomBo) {
 			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(),
 					ERRORCODE.CHATROOM_NULL.getReason());
+		}
+		String result = IMUtil.subscribe(iMTermService, userid, "", chatroomid, userid);
+		if(!result.equals(IMUtil.FINISH)){
+			return result;
 		}
 		HashSet<String> set = chatroomBo.getUsers();
 		set.add(userid);
