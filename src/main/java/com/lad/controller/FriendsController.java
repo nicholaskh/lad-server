@@ -86,7 +86,7 @@ public class FriendsController extends BaseContorller {
 		friendsBo.setFriendid(friendid);
 		friendsBo.setApply(0);
 		friendsService.insert(friendsBo);
-		JPushUtil.pushTo(JPushUtil.APPLY, friendid);
+		JPushUtil.pushTo(userBo.getUserName()+JPushUtil.APPLY, friendid);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();
@@ -189,7 +189,7 @@ public class FriendsController extends BaseContorller {
 			return CommonUtil.toErrorResult(message3.getStatus(),
 					message3.getMsg());
 		}
-		JPushUtil.pushTo(JPushUtil.AGREE_APPLY_FRIEND, userid);
+		JPushUtil.pushTo(userBo.getUserName()+JPushUtil.AGREE_APPLY_FRIEND, userid);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("channelId", chatroomBo.getId());
@@ -227,7 +227,7 @@ public class FriendsController extends BaseContorller {
 					ERRORCODE.FRIEND_NULL.getReason());
 		}
 		friendsService.updateApply(id, -1);
-		JPushUtil.pushTo(JPushUtil.REFUSE_APPLY_FRIEND, friendsBo.getUserid());
+		JPushUtil.pushTo(userBo.getUserName()+JPushUtil.REFUSE_APPLY_FRIEND, friendsBo.getUserid());
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();
@@ -680,7 +680,7 @@ public class FriendsController extends BaseContorller {
 			return CommonUtil.toErrorResult(message3.getStatus(),
 					message3.getMsg());
 		}
-		JPushUtil.pushTo(JPushUtil.APPLY, idsList);
+		JPushUtil.pushTo(userBo.getUserName()+JPushUtil.MULTI_INSERT, idsList);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("channelId", chatroomBo.getId());

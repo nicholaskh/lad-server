@@ -14,9 +14,10 @@ public class JPushUtil {
 
 	private static String MASTER_SECRET = "db587bc126abddf27e548ecc";
 	private static String APP_KEY = "d53e8d39d6df18e379bf5da4";
-	public static String APPLY = "Have Friend Apply.";
-	public static String AGREE_APPLY_FRIEND = "Friend Apply Agree";
-	public static String REFUSE_APPLY_FRIEND = "Friend Apply refuse";
+	public static String APPLY = "申请加我为好友";
+	public static String AGREE_APPLY_FRIEND = "同意添加我为好友";
+	public static String REFUSE_APPLY_FRIEND = "拒绝添加我为好友";
+	public static String MULTI_INSERT = "邀请我加入群聊";
 
 	public static void pushAll(String content) {
 		JPushClient jpushClient = new JPushClient(MASTER_SECRET, APP_KEY, null,
@@ -49,6 +50,7 @@ public class JPushUtil {
 		JPushClient jpushClient = new JPushClient(MASTER_SECRET, APP_KEY, null,
 				ClientConfig.getInstance());
 		PushPayload payload = buildPushObject_to_alias_alert(content, alias);
+		System.out.println("alias: " + alias);
 		try {
 			PushResult result = jpushClient.sendPush(payload);
 			System.out.println("Got result - " + result);
