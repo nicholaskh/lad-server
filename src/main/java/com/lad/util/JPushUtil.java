@@ -61,6 +61,7 @@ public class JPushUtil {
 			System.out
 					.println("Should review the error, and fix the request : "
 							+ e.getMessage());
+			System.out.println("alias: " + alias);
 			System.out.println("HTTP Status: " + e.getStatus());
 			System.out.println("Error Code: " + e.getErrorCode());
 			System.out.println("Error Message: " + e.getErrorMessage());
@@ -75,6 +76,6 @@ public class JPushUtil {
 	}
 
 	public static void main(String[] args) {
-		JPushUtil.pushAll("Test from B");
+		JPushUtil.pushTo("Test from B","591e984231f0a5786e240f6c");
 	}
 }

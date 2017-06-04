@@ -189,7 +189,7 @@ public class FriendsController extends BaseContorller {
 			return CommonUtil.toErrorResult(message3.getStatus(),
 					message3.getMsg());
 		}
-		JPushUtil.pushTo(JPushUtil.AGREE_APPLY_FRIEND, friendid);
+		JPushUtil.pushTo(JPushUtil.AGREE_APPLY_FRIEND, userid);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("channelId", chatroomBo.getId());
@@ -227,7 +227,7 @@ public class FriendsController extends BaseContorller {
 					ERRORCODE.FRIEND_NULL.getReason());
 		}
 		friendsService.updateApply(id, -1);
-		JPushUtil.pushTo(JPushUtil.REFUSE_APPLY_FRIEND, id);
+		JPushUtil.pushTo(JPushUtil.REFUSE_APPLY_FRIEND, friendsBo.getUserid());
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();
