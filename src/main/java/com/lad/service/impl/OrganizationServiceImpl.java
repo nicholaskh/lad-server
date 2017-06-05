@@ -39,4 +39,9 @@ public class OrganizationServiceImpl implements IOrganizationService {
 		return organizationDao.updateUsersApply(organizationBoId, usersApply);
 	}
 
+	public WriteResult updateDescription(String organizationBoId,
+			String description) {
+		return organizationDao.updateDescription(organizationBoId, description);
+	}
+
 }

@@ -60,4 +60,14 @@ public class OrganizationDaoImpl implements IOrganizationDao {
 		return mongoTemplate.updateFirst(query, update, OrganizationBo.class);
 	}
 
+	public WriteResult updateDescription(String organizationBoId,
+			String description) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("_id").is(organizationBoId));
+		query.addCriteria(new Criteria("deleted").is(0));
+		Update update = new Update();
+		update.set("description", description);
+		return mongoTemplate.updateFirst(query, update, OrganizationBo.class);
+	}
+
 }

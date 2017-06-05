@@ -10,6 +10,7 @@ public class OrganizationBo extends BaseBo {
 	private String name;
 	private String tag;
 	private String sub_tag;
+	private String description;
 	private HashSet<String> masters = new HashSet<String>();
 	private HashSet<String> users = new HashSet<String>();
 	private HashSet<String> usersApply = new HashSet<String>();
@@ -76,5 +77,13 @@ public class OrganizationBo extends BaseBo {
 
 	public void setMasters(HashSet<String> masters) {
 		this.masters = masters;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
 	}
 }

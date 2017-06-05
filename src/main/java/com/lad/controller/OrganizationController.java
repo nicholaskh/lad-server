@@ -200,5 +200,82 @@ public class OrganizationController extends BaseContorller {
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();
 	}
+	
+	@RequestMapping("/set-description")
+	@ResponseBody
+	public String setDescription(
+			@RequestParam(required = true) String organizationid,
+			@RequestParam(required = true) String description,
+			HttpServletRequest request, HttpServletResponse response) {
+		HttpSession session = request.getSession();
+		if (session.isNew()) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		if (session.getAttribute("isLogin") == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		UserBo userBo = (UserBo) session.getAttribute("userBo");
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		OrganizationBo organizationBo = organizationService.get(organizationid);
+		if (organizationBo == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ORGANIZATION_IS_NULL.getIndex(),
+					ERRORCODE.ORGANIZATION_IS_NULL.getReason());
+		}
+		organizationService.updateDescription(organizationid, description);
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		return JSONObject.fromObject(map).toString();
+	}
+	
+	@RequestMapping("/info")
+	@ResponseBody
+	public String info(
+			@RequestParam(required = true) String organizationid,
+			HttpServletRequest request, HttpServletResponse response) {
+		HttpSession session = request.getSession();
+		if (session.isNew()) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		if (session.getAttribute("isLogin") == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		UserBo userBo = (UserBo) session.getAttribute("userBo");
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		OrganizationBo organizationBo = organizationService.get(organizationid);
+		if (organizationBo == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ORGANIZATION_IS_NULL.getIndex(),
+					ERRORCODE.ORGANIZATION_IS_NULL.getReason());
+		}
+		OrganizationVo organizationVo = new OrganizationVo();
+		try {
+			BeanUtils.copyProperties(organizationVo, organizationBo);
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+		}
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("organization", organizationVo);
+		return JSONObject.fromObject(map).toString();
+	}
 
 }

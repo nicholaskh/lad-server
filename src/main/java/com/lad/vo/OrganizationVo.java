@@ -8,6 +8,7 @@ public class OrganizationVo extends BaseVo {
 	private String name;
 	private String tag;
 	private String sub_tag;
+	private String description;
 	private HashSet<String> masters = new HashSet<String>();
 	private HashSet<String> users = new HashSet<String>();
 	private HashSet<String> usersApply = new HashSet<String>();
@@ -74,5 +75,13 @@ public class OrganizationVo extends BaseVo {
 
 	public void setUsersApply(HashSet<String> usersApply) {
 		this.usersApply = usersApply;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
 	}
 }
