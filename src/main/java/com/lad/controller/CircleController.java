@@ -211,7 +211,8 @@ public class CircleController extends BaseContorller {
 
 	@RequestMapping("/my-info")
 	@ResponseBody
-	public String myInfo(HttpServletRequest request, HttpServletResponse response) {
+	public String myInfo(HttpServletRequest request,
+			HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
 			return CommonUtil.toErrorResult(
@@ -229,9 +230,10 @@ public class CircleController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
-		List<CircleBo> circleBoList = circleService.selectByuserid(userBo.getId());
-		List<CircleVo> CircleVoList= new LinkedList<CircleVo>();
-		for(CircleBo CircleBo : circleBoList){
+		List<CircleBo> circleBoList = circleService.selectByuserid(userBo
+				.getId());
+		List<CircleVo> CircleVoList = new LinkedList<CircleVo>();
+		for (CircleBo CircleBo : circleBoList) {
 			CircleVo circleVo = new CircleVo();
 			try {
 				BeanUtils.copyProperties(circleVo, CircleBo);
@@ -248,4 +250,149 @@ public class CircleController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
+	@RequestMapping("/user-apply")
+	@ResponseBody
+	public String userApply(@RequestParam(required = true) String circleid,
+			HttpServletRequest request, HttpServletResponse response) {
+		HttpSession session = request.getSession();
+		if (session.isNew()) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		if (session.getAttribute("isLogin") == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		UserBo userBo = (UserBo) session.getAttribute("userBo");
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		CircleBo circleBo = circleService.selectById(circleid);
+		if (circleBo == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CIRCLE_IS_NULL.getIndex(),
+					ERRORCODE.CIRCLE_IS_NULL.getReason());
+		}
+		HashSet<String> usersApply = circleBo.getUsersApply();
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("usersApply", usersApply);
+		return JSONObject.fromObject(map).toString();
+	}
+
+	@RequestMapping("/user-apply-agree")
+	@ResponseBody
+	public String userApplyAgree(
+			@RequestParam(required = true) String circleid,
+			@RequestParam(required = true) String userid,
+			HttpServletRequest request, HttpServletResponse response) {
+		HttpSession session = request.getSession();
+		if (session.isNew()) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		if (session.getAttribute("isLogin") == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		UserBo userBo = (UserBo) session.getAttribute("userBo");
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		CircleBo circleBo = circleService.selectById(circleid);
+		if (circleBo == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CIRCLE_IS_NULL.getIndex(),
+					ERRORCODE.CIRCLE_IS_NULL.getReason());
+		}
+		if (!circleBo.getCreateuid().equals(userBo.getId())) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CIRCLE_NOT_MASTER.getIndex(),
+					ERRORCODE.CIRCLE_NOT_MASTER.getReason());
+		}
+		UserBo user = userService.getUser(userid);
+		if (null == user) {
+			return CommonUtil.toErrorResult(ERRORCODE.USER_NULL.getIndex(),
+					ERRORCODE.USER_NULL.getReason());
+		}
+		HashSet<String> usersApply = circleBo.getUsersApply();
+		HashSet<String> users = circleBo.getUsers();
+		if (!usersApply.contains(userid)) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CIRCLE_APPLY_USER_NULL.getIndex(),
+					ERRORCODE.CIRCLE_APPLY_USER_NULL.getReason());
+		}
+		usersApply.remove(userid);
+		users.add(userid);
+		circleService.updateUsers(circleBo.getId(), users);
+		circleService.updateUsersApply(circleBo.getId(), usersApply);
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		return JSONObject.fromObject(map).toString();
+	}
+
+	@RequestMapping("/user-apply-refuse")
+	@ResponseBody
+	public String userApplyRefuse(
+			@RequestParam(required = true) String circleid,
+			@RequestParam(required = true) String userid,
+			HttpServletRequest request, HttpServletResponse response) {
+		HttpSession session = request.getSession();
+		if (session.isNew()) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		if (session.getAttribute("isLogin") == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		UserBo userBo = (UserBo) session.getAttribute("userBo");
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		CircleBo circleBo = circleService.selectById(circleid);
+		if (circleBo == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CIRCLE_IS_NULL.getIndex(),
+					ERRORCODE.CIRCLE_IS_NULL.getReason());
+		}
+		if (!circleBo.getCreateuid().equals(userBo.getId())) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CIRCLE_NOT_MASTER.getIndex(),
+					ERRORCODE.CIRCLE_NOT_MASTER.getReason());
+		}
+		UserBo user = userService.getUser(userid);
+		if (null == user) {
+			return CommonUtil.toErrorResult(ERRORCODE.USER_NULL.getIndex(),
+					ERRORCODE.USER_NULL.getReason());
+		}
+		HashSet<String> usersApply = circleBo.getUsersApply();
+		HashSet<String> usersRefuse = circleBo.getUsersRefuse();
+		if (!usersApply.contains(userid)) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CIRCLE_APPLY_USER_NULL.getIndex(),
+					ERRORCODE.CIRCLE_APPLY_USER_NULL.getReason());
+		}
+		usersApply.remove(userid);
+		usersRefuse.add(userid);
+		circleService.updateUsersRefuse(circleBo.getId(), usersRefuse);
+		circleService.updateUsersApply(circleBo.getId(), usersApply);
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		return JSONObject.fromObject(map).toString();
+	}
+
+	
 }
