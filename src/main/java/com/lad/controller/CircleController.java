@@ -1,7 +1,10 @@
 package com.lad.controller;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -10,6 +13,7 @@ import javax.servlet.http.HttpSession;
 
 import net.sf.json.JSONObject;
 
+import org.apache.commons.beanutils.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,6 +30,7 @@ import com.lad.service.IUserService;
 import com.lad.util.CommonUtil;
 import com.lad.util.Constant;
 import com.lad.util.ERRORCODE;
+import com.lad.vo.CircleVo;
 
 @Controller
 @RequestMapping("circle")
@@ -73,6 +78,9 @@ public class CircleController extends BaseContorller {
 		circleBo.setName(name);
 		circleBo.setTag(tag);
 		circleBo.setSub_tag(sub_tag);
+		HashSet<String> users = new HashSet<String>();
+		users.add(userBo.getId());
+		circleBo.setUsers(users);
 		circleService.insert(circleBo);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
@@ -189,7 +197,7 @@ public class CircleController extends BaseContorller {
 					ERRORCODE.CIRCLE_IS_NULL.getReason());
 		}
 		HashSet<String> usersApply = circleBo.getUsersApply();
-		if(usersApply.contains(userBo.getId())){
+		if (usersApply.contains(userBo.getId())) {
 			return CommonUtil.toErrorResult(
 					ERRORCODE.CIRCLE_USER_EXIST.getIndex(),
 					ERRORCODE.CIRCLE_USER_EXIST.getReason());
@@ -198,6 +206,45 @@ public class CircleController extends BaseContorller {
 		circleService.updateUsersApply(circleid, usersApply);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
+		return JSONObject.fromObject(map).toString();
+	}
+
+	@RequestMapping("/my-info")
+	@ResponseBody
+	public String myInfo(HttpServletRequest request, HttpServletResponse response) {
+		HttpSession session = request.getSession();
+		if (session.isNew()) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		if (session.getAttribute("isLogin") == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		UserBo userBo = (UserBo) session.getAttribute("userBo");
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		List<CircleBo> circleBoList = circleService.selectByuserid(userBo.getId());
+		List<CircleVo> CircleVoList= new LinkedList<CircleVo>();
+		for(CircleBo CircleBo : circleBoList){
+			CircleVo circleVo = new CircleVo();
+			try {
+				BeanUtils.copyProperties(circleVo, CircleBo);
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			} catch (InvocationTargetException e) {
+				e.printStackTrace();
+			}
+			CircleVoList.add(circleVo);
+		}
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("CircleVoList", CircleVoList);
 		return JSONObject.fromObject(map).toString();
 	}
 
