@@ -17,8 +17,8 @@ public class NoteServiceImpl implements INoteService {
 		return noteDao.insert(noteBo);
 	}
 
-	public WriteResult updatePhone(String noteId, String photo) {
-		return noteDao.updatePhone(noteId, photo);
+	public WriteResult updatePhoto(String noteId, String photo) {
+		return noteDao.updatePhoto(noteId, photo);
 	}
 
 	public NoteBo selectById(String noteId) {

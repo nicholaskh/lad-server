@@ -8,5 +8,5 @@ public interface INoteDao extends IBaseDao {
 
 	public NoteBo selectById(String noteId);
 
-	public WriteResult updatePhone(String noteId, String photo);
+	public WriteResult updatePhoto(String noteId, String photo);
 }

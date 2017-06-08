@@ -2,6 +2,7 @@ package com.lad.controller;
 
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -19,7 +20,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.lad.bo.CircleBo;
 import com.lad.bo.NoteBo;
-import com.lad.bo.OrganizationBo;
 import com.lad.bo.UserBo;
 import com.lad.service.ICircleService;
 import com.lad.service.INoteService;
@@ -75,6 +75,9 @@ public class NoteController extends BaseContorller {
 		noteBo.setContent(content);
 		noteBo.setCreateuid(userBo.getId());
 		noteService.insert(noteBo);
+		HashSet<String> notes = circleBo.getNotes();
+		notes.add(noteBo.getId());
+		circleService.updateNotes(circleBo.getId(), notes);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();
@@ -108,7 +111,7 @@ public class NoteController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.NOTE_IS_NULL.getIndex(),
 					ERRORCODE.NOTE_IS_NULL.getReason());
 		}
-		noteService.updatePhone(noteid, path);
+		noteService.updatePhoto(noteid, path);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("path", path);

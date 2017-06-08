@@ -21,7 +21,7 @@ public class NoteDaoImpl implements INoteDao {
 		return noteBo;
 	}
 
-	public WriteResult updatePhone(String noteId, String photo) {
+	public WriteResult updatePhoto(String noteId, String photo) {
 		Query query = new Query();
 		query.addCriteria(new Criteria("_id").is(noteId));
 		query.addCriteria(new Criteria("deleted").is(0));
