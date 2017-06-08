@@ -31,7 +31,6 @@ import com.lad.util.CommonUtil;
 import com.lad.util.Constant;
 import com.lad.util.ERRORCODE;
 import com.lad.vo.CircleVo;
-import com.lad.vo.OrganizationVo;
 
 @Controller
 @RequestMapping("circle")

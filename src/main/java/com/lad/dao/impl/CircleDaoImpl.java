@@ -96,4 +96,13 @@ public class CircleDaoImpl implements ICircleDao {
 		return mongoTemplate.find(query, CircleBo.class);
 	}
 
+	public WriteResult updateNotes(String circleBoId, HashSet<String> notes) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("_id").is(circleBoId));
+		query.addCriteria(new Criteria("deleted").is(0));
+		Update update = new Update();
+		update.set("notes", notes);
+		return mongoTemplate.updateFirst(query, update, CircleBo.class);
+	}
+
 }

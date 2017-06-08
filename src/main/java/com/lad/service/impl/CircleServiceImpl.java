@@ -57,4 +57,8 @@ public class CircleServiceImpl implements ICircleService {
 		return circleDao.selectByType(tag, sub_tag, category);
 	}
 
+	public WriteResult updateNotes(String circleBoId, HashSet<String> notes) {
+		return circleDao.updateNotes(circleBoId, notes);
+	}
+
 }

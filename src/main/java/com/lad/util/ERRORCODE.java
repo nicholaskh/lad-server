@@ -62,7 +62,9 @@ public enum ERRORCODE {
 	CIRCLE_USER_EXIST(110003, "该用户已经加入此圈子"),
 	CIRCLE_APPLY_EXIST(110004, "该圈子不存在"),
 	CIRCLE_MASTER_NULL(110005, "没有权限"),
-	CIRCLE_NOT_MASTER(110006, "非群主");
+	CIRCLE_NOT_MASTER(110006, "非群主"),
+	
+	NOTE_IS_NULL(120001, "帖子不存在");
 	
 	private int index;
 	private String reason;
