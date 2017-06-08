@@ -13,6 +13,9 @@ public interface ICircleService extends IBaseService {
 
 	public List<CircleBo> selectByuserid(String userid);
 
+	public List<CircleBo> selectByType(String tag, String sub_tag,
+			String category);
+
 	public WriteResult updateUsers(String circleBoId, HashSet<String> users);
 
 	public WriteResult updateUsersApply(String circleBoId,

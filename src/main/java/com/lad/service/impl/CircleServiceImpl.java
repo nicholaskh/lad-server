@@ -52,4 +52,9 @@ public class CircleServiceImpl implements ICircleService {
 		return circleDao.updateHeadPicture(circleBoId, headPicture);
 	}
 
+	public List<CircleBo> selectByType(String tag, String sub_tag,
+			String category) {
+		return circleDao.selectByType(tag, sub_tag, category);
+	}
+
 }

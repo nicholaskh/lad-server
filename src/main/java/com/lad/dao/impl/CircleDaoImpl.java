@@ -31,7 +31,7 @@ public class CircleDaoImpl implements ICircleDao {
 		return mongoTemplate.findOne(query, CircleBo.class);
 	}
 
-	public  List<CircleBo> selectByuserid(String userid) {
+	public List<CircleBo> selectByuserid(String userid) {
 		Query query = new Query();
 		query.addCriteria(new Criteria("users").is(userid));
 		query.addCriteria(new Criteria("deleted").is(0));
@@ -84,6 +84,16 @@ public class CircleDaoImpl implements ICircleDao {
 		Update update = new Update();
 		update.set("headPicture", headPicture);
 		return mongoTemplate.updateFirst(query, update, CircleBo.class);
+	}
+
+	public List<CircleBo> selectByType(String tag, String sub_tag,
+			String category) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("tag").is(tag));
+		query.addCriteria(new Criteria("sub_tag").is(sub_tag));
+		query.addCriteria(new Criteria("category").is(category));
+		query.addCriteria(new Criteria("deleted").is(0));
+		return mongoTemplate.find(query, CircleBo.class);
 	}
 
 }

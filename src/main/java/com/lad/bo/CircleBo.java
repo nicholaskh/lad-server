@@ -17,6 +17,7 @@ public class CircleBo extends BaseBo {
 	private HashSet<String> usersApply = new HashSet<String>();
 	private HashSet<String> usersRefuse = new HashSet<String>();
 	private HashSet<String> organizations = new HashSet<String>();
+	private HashSet<String> notes = new HashSet<String>();
 
 	public double[] getPosition() {
 		return position;
@@ -104,5 +105,13 @@ public class CircleBo extends BaseBo {
 
 	public void setHeadPicture(String headPicture) {
 		this.headPicture = headPicture;
+	}
+
+	public HashSet<String> getNotes() {
+		return notes;
+	}
+
+	public void setNotes(HashSet<String> notes) {
+		this.notes = notes;
 	}
 }

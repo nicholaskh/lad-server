@@ -31,6 +31,7 @@ import com.lad.util.CommonUtil;
 import com.lad.util.Constant;
 import com.lad.util.ERRORCODE;
 import com.lad.vo.CircleVo;
+import com.lad.vo.OrganizationVo;
 
 @Controller
 @RequestMapping("circle")
@@ -394,5 +395,44 @@ public class CircleController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	
+	@RequestMapping("/list")
+	@ResponseBody
+	public String list(@RequestParam(required = true) String tag,
+			@RequestParam(required = true) String sub_tag,
+			@RequestParam(required = true) String category,
+			HttpServletRequest request, HttpServletResponse response) {
+		HttpSession session = request.getSession();
+		if (session.isNew()) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		if (session.getAttribute("isLogin") == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		UserBo userBo = (UserBo) session.getAttribute("userBo");
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		List<CircleBo> list = circleService
+				.selectByType(tag, sub_tag, category);
+		List<CircleVo> listVo = new LinkedList<CircleVo>();
+		for (CircleBo item : list) {
+			CircleVo circleVo = new CircleVo();
+			circleVo.setId(item.getId());
+			circleVo.setName(item.getName());
+			circleVo.setUsersSize((long) item.getUsers().size());
+			circleVo.setNotesSize((long) item.getNotes().size());
+			listVo.add(circleVo);
+		}
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("CircleVo", listVo);
+		return JSONObject.fromObject(map).toString();
+	}
+
 }
