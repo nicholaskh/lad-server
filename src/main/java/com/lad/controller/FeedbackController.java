@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.lad.bo.FeedbackBo;
 import com.lad.bo.UserBo;
 import com.lad.service.IFeedbackService;
+import com.lad.service.IUserService;
 import com.lad.util.CommonUtil;
 import com.lad.util.ERRORCODE;
 
@@ -29,23 +30,28 @@ public class FeedbackController extends BaseContorller {
 
 	@Autowired
 	private IFeedbackService feedbackService;
+	@Autowired
+	private IUserService userService;
 
 	@RequestMapping("/insert")
 	@ResponseBody
-	public String isnert(String content, String contactInfo, String image, HttpServletRequest request,
-			HttpServletResponse response) {
+	public String isnert(String content, String contactInfo, String image,
+			HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (session.getAttribute("isLogin") == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
 		if (userBo == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		FeedbackBo feedbackBo = new FeedbackBo();

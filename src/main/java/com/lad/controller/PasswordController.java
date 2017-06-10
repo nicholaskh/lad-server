@@ -149,6 +149,7 @@ public class PasswordController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
+		userBo = userService.getUser(userBo.getId());
 		if (!CommonUtil.getSHA256(old_password).equals(userBo.getPassword())) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PASSWORD.getIndex(),
 					ERRORCODE.ACCOUNT_PASSWORD.getReason());

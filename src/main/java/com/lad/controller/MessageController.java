@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.lad.bo.MessageBo;
 import com.lad.bo.UserBo;
 import com.lad.service.IMessageService;
+import com.lad.service.IUserService;
 import com.lad.util.CommonUtil;
 import com.lad.util.ERRORCODE;
 import com.lad.vo.MessageVo;
@@ -31,30 +32,40 @@ public class MessageController extends BaseContorller {
 
 	@Autowired
 	private IMessageService messageService;
+	@Autowired
+	private IUserService userService;
 
 	@RequestMapping("/insert")
 	@ResponseBody
-	public String isnert(String content, String source, HttpServletRequest request, HttpServletResponse response) {
+	public String isnert(String content, String source,
+			HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (session.getAttribute("isLogin") == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
 		if (userBo == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		if (!StringUtils.hasLength(content)) {
-			return CommonUtil.toErrorResult(ERRORCODE.CONTACT_CONTENT.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CONTACT_CONTENT.getIndex(),
 					ERRORCODE.CONTACT_CONTENT.getReason());
 		}
 		if (!StringUtils.hasLength(source)) {
-			return CommonUtil.toErrorResult(ERRORCODE.CONTACT_SOURCE.getIndex(), ERRORCODE.CONTACT_SOURCE.getReason());
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CONTACT_SOURCE.getIndex(),
+					ERRORCODE.CONTACT_SOURCE.getReason());
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		MessageBo messageBo = new MessageBo();
@@ -68,23 +79,29 @@ public class MessageController extends BaseContorller {
 
 	@RequestMapping("/my-message")
 	@ResponseBody
-	public String my_message(String start_id, boolean gt, int limit, HttpServletRequest request,
-			HttpServletResponse response) throws Exception {
+	public String my_message(String start_id, boolean gt, int limit,
+			HttpServletRequest request, HttpServletResponse response)
+			throws Exception {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (session.getAttribute("isLogin") == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
 		if (userBo == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
-		List<MessageBo> list = messageService.selectByUserIdPaged(start_id, gt, limit, userBo.getId());
+		userBo = userService.getUser(userBo.getId());
+		List<MessageBo> list = messageService.selectByUserIdPaged(start_id, gt,
+				limit, userBo.getId());
 		List<MessageVo> message_from_me_vo = new ArrayList<MessageVo>();
 		for (MessageBo item : list) {
 			MessageVo vo = new MessageVo();

@@ -55,6 +55,7 @@ public class PersonSet extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		if (StringUtils.isEmpty(username)) {
 			return CommonUtil.toErrorResult(ERRORCODE.USER_USERNAME.getIndex(), ERRORCODE.USER_USERNAME.getReason());
 		}
@@ -82,6 +83,7 @@ public class PersonSet extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		if (StringUtils.isEmpty(birthday)) {
 			return CommonUtil.toErrorResult(ERRORCODE.USER_BIRTHDAY.getIndex(), ERRORCODE.USER_BIRTHDAY.getReason());
 		}
@@ -112,6 +114,7 @@ public class PersonSet extends BaseContorller {
 		if (StringUtils.isEmpty(sex)) {
 			return CommonUtil.toErrorResult(ERRORCODE.USER_SEX.getIndex(), ERRORCODE.USER_SEX.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		userBo.setSex(sex);
 		userService.updateSex(userBo);
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -137,6 +140,7 @@ public class PersonSet extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		if (StringUtils.isEmpty(personalized_signature)) {
 			return CommonUtil.toErrorResult(ERRORCODE.USER_SIGNATURE.getIndex(), ERRORCODE.USER_SIGNATURE.getReason());
 		}
@@ -164,6 +168,7 @@ public class PersonSet extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		UserVo vo = new UserVo();
@@ -189,6 +194,7 @@ public class PersonSet extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		if (StringUtils.isEmpty(name)) {
 			return CommonUtil.toErrorResult(ERRORCODE.USER_USERNAME.getIndex(), ERRORCODE.USER_USERNAME.getReason());
 		}
@@ -223,6 +229,7 @@ public class PersonSet extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		if (StringUtils.isEmpty(phone)) {
 			return CommonUtil.toErrorResult(ERRORCODE.USER_PHONE.getIndex(), ERRORCODE.USER_PHONE.getReason());
 		}
@@ -257,6 +264,7 @@ public class PersonSet extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		if (StringUtils.isEmpty(userid)) {
 			return CommonUtil.toErrorResult(ERRORCODE.USER_ID.getIndex(), ERRORCODE.USER_ID.getReason());
 		}
@@ -287,7 +295,7 @@ public class PersonSet extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
-		
+		userBo = userService.getUser(userBo.getId());
 		String userid = userBo.getId();
 		LocationBo locationBo = locationService.getLocationBoByUserid(userid);
 		if(null != locationBo){

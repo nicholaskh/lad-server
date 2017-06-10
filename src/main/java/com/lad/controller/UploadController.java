@@ -42,6 +42,7 @@ public class UploadController extends BaseContorller {
 		if (userBo == null) {
 			return "{\"ret\":20002,\"error\":\":未登录\"}";
 		}
+		userBo = userService.getUser(userBo.getId());
 		String userId = userBo.getId();
 		String fileName = userId + file.getOriginalFilename();
 		String path = CommonUtil.upload(file, Constant.HEAD_PICTURE_PATH, fileName, 0);
@@ -68,6 +69,7 @@ public class UploadController extends BaseContorller {
 		if (userBo == null) {
 			return "{\"ret\":20002,\"error\":\":未登录\"}";
 		}
+		userBo = userService.getUser(userBo.getId());
 		String userId = userBo.getId();
 		String fileName = userId + file.getOriginalFilename();
 		String path = CommonUtil.upload(file, Constant.FEEDBACK_PICTURE_PATH, fileName, 0);
@@ -94,6 +96,7 @@ public class UploadController extends BaseContorller {
 		if (userBo == null) {
 			return "{\"ret\":20002,\"error\":\":未登录\"}";
 		}
+		userBo = userService.getUser(userBo.getId());
 		String fileName = imfile.getOriginalFilename();
 		String path = CommonUtil.upload(imfile, Constant.IMFILE_PATH, fileName, 1);
 		userBo.setHeadPictureName(fileName);

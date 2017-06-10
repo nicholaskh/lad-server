@@ -25,6 +25,7 @@ import com.lad.bo.TagBo;
 import com.lad.bo.UserBo;
 import com.lad.service.IFriendsService;
 import com.lad.service.ITagService;
+import com.lad.service.IUserService;
 import com.lad.util.CommonUtil;
 import com.lad.util.ERRORCODE;
 import com.lad.vo.TagVo;
@@ -32,39 +33,49 @@ import com.lad.vo.TagVo;
 @Controller
 @RequestMapping("tag")
 public class TagController extends BaseContorller {
-	
+
 	@Autowired
 	private ITagService tagService;
 	@Autowired
 	private IFriendsService friendsService;
-	
+	@Autowired
+	private IUserService userService;
+
 	@RequestMapping("/set-tag")
 	@ResponseBody
-	public String setTag(String name, String friendsids, HttpServletRequest request, HttpServletResponse response) {
+	public String setTag(String name, String friendsids,
+			HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (session.getAttribute("isLogin") == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
 		if (userBo == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		if (StringUtils.isEmpty(name)) {
-			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NAME_NULL.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CHATROOM_NAME_NULL.getIndex(),
 					ERRORCODE.CHATROOM_NAME_NULL.getReason());
 		}
 		String friends[] = friendsids.split(",");
 		HashSet<String> firendsSet = new HashSet<String>();
-		for(String friendId : friends){
-			FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(userBo.getId(), friendId);
-			if(null == friendsBo){
-				return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NULL.getIndex(),
+		for (String friendId : friends) {
+			FriendsBo friendsBo = friendsService
+					.getFriendByIdAndVisitorIdAgree(userBo.getId(), friendId);
+			if (null == friendsBo) {
+				return CommonUtil.toErrorResult(
+						ERRORCODE.FRIEND_NULL.getIndex(),
 						ERRORCODE.FRIEND_NULL.getReason());
 			}
 			firendsSet.add(friendId);
@@ -78,32 +89,39 @@ public class TagController extends BaseContorller {
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();
 	}
-	
+
 	@RequestMapping("/get-friend-tag")
 	@ResponseBody
-	public String getTag(String friendid, HttpServletRequest request, HttpServletResponse response) {
+	public String getTag(String friendid, HttpServletRequest request,
+			HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (session.getAttribute("isLogin") == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
 		if (userBo == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
-		FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(userBo.getId(), friendid);
-		if(null == friendsBo){
+		userBo = userService.getUser(userBo.getId());
+		FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(
+				userBo.getId(), friendid);
+		if (null == friendsBo) {
 			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NULL.getIndex(),
 					ERRORCODE.FRIEND_NULL.getReason());
 		}
-		List<TagBo> tagBoList = tagService.getTagBoListByUseridAndFrinedid(userBo.getId(), friendid);
+		List<TagBo> tagBoList = tagService.getTagBoListByUseridAndFrinedid(
+				userBo.getId(), friendid);
 		List<TagVo> tagVoList = new LinkedList<TagVo>();
-		for(TagBo tagBo : tagBoList){
+		for (TagBo tagBo : tagBoList) {
 			TagVo TagVo = new TagVo();
 			try {
 				BeanUtils.copyProperties(TagVo, tagBo);
@@ -119,27 +137,32 @@ public class TagController extends BaseContorller {
 		map.put("tag", tagVoList);
 		return JSONObject.fromObject(map).toString();
 	}
-	
+
 	@RequestMapping("/get-tag-list")
 	@ResponseBody
-	public String getTagList(HttpServletRequest request, HttpServletResponse response) {
+	public String getTagList(HttpServletRequest request,
+			HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (session.getAttribute("isLogin") == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
 		if (userBo == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		List<TagBo> tagBoList = tagService.getTagBoListByUserid(userBo.getId());
 		List<TagVo> tagVoList = new LinkedList<TagVo>();
-		for(TagBo tagBo : tagBoList){
+		for (TagBo tagBo : tagBoList) {
 			TagVo TagVo = new TagVo();
 			try {
 				BeanUtils.copyProperties(TagVo, tagBo);
@@ -155,73 +178,85 @@ public class TagController extends BaseContorller {
 		map.put("tag", tagVoList);
 		return JSONObject.fromObject(map).toString();
 	}
-	
+
 	@RequestMapping("/delete-tag")
 	@ResponseBody
-	public String deleteTag(String tagid, String frinedid, HttpServletRequest request, HttpServletResponse response) {
+	public String deleteTag(String tagid, String frinedid,
+			HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (session.getAttribute("isLogin") == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
 		if (userBo == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		TagBo tagBo = tagService.get(tagid);
-		if(null == tagBo){
+		if (null == tagBo) {
 			return CommonUtil.toErrorResult(ERRORCODE.TAG_NULL.getIndex(),
 					ERRORCODE.TAG_NULL.getReason());
 		}
 		HashSet<String> friendsids = new HashSet<String>();
-		if(friendsids.contains(frinedid)){
+		if (friendsids.contains(frinedid)) {
 			return CommonUtil.toErrorResult(ERRORCODE.TAG_NULL.getIndex(),
 					ERRORCODE.TAG_NULL.getReason());
 		}
 		friendsids.remove(frinedid);
 		tagBo.setFriendsIds(friendsids);
 		tagService.updateFriendsIdsById(tagBo);
-		if(friendsids.size() == 0){
+		if (friendsids.size() == 0) {
 			tagService.deleteById(tagid);
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();
 	}
-	
+
 	@RequestMapping("/tag-add-friends")
 	@ResponseBody
-	public String tagAddFriends(String tagid, String friendsids, HttpServletRequest request, HttpServletResponse response) {
+	public String tagAddFriends(String tagid, String friendsids,
+			HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (session.getAttribute("isLogin") == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
 		if (userBo == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		TagBo tagBo = tagService.get(tagid);
-		if(null == tagBo){
+		if (null == tagBo) {
 			return CommonUtil.toErrorResult(ERRORCODE.TAG_NULL.getIndex(),
 					ERRORCODE.TAG_NULL.getReason());
 		}
 		HashSet<String> firendsSet = tagBo.getFriendsIds();
-		String [] friends = friendsids.split(",");
-		for(String friendId : friends){
-			FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(userBo.getId(), friendId);
-			if(null == friendsBo){
-				return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NULL.getIndex(),
+		String[] friends = friendsids.split(",");
+		for (String friendId : friends) {
+			FriendsBo friendsBo = friendsService
+					.getFriendByIdAndVisitorIdAgree(userBo.getId(), friendId);
+			if (null == friendsBo) {
+				return CommonUtil.toErrorResult(
+						ERRORCODE.FRIEND_NULL.getIndex(),
 						ERRORCODE.FRIEND_NULL.getReason());
 			}
 			firendsSet.add(friendId);

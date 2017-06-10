@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.lad.bo.OrganizationBo;
 import com.lad.bo.UserBo;
 import com.lad.service.IOrganizationService;
+import com.lad.service.IUserService;
 import com.lad.util.CommonUtil;
 import com.lad.util.ERRORCODE;
 import com.lad.vo.OrganizationVo;
@@ -33,6 +34,8 @@ public class OrganizationController extends BaseContorller {
 
 	@Autowired
 	private IOrganizationService organizationService;
+	@Autowired
+	private IUserService userService;
 
 	@RequestMapping("/insert")
 	@ResponseBody
@@ -60,6 +63,7 @@ public class OrganizationController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		OrganizationBo organizationBo = new OrganizationBo();
 		organizationBo.setCreateuid(userBo.getId());
 		organizationBo.setPosition(new double[] { px, py });
@@ -95,6 +99,7 @@ public class OrganizationController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		List<OrganizationBo> list = organizationService.selectByTag(tag,
 				sub_tag);
 		List<OrganizationVo> listVo = new LinkedList<OrganizationVo>();
@@ -137,6 +142,7 @@ public class OrganizationController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		OrganizationBo organizationBo = organizationService.get(organizationid);
 		if (organizationBo == null) {
 			return CommonUtil.toErrorResult(
@@ -179,6 +185,7 @@ public class OrganizationController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		OrganizationBo organizationBo = organizationService.get(organizationid);
 		if (organizationBo == null) {
 			return CommonUtil.toErrorResult(
@@ -200,7 +207,7 @@ public class OrganizationController extends BaseContorller {
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();
 	}
-	
+
 	@RequestMapping("/set-description")
 	@ResponseBody
 	public String setDescription(
@@ -224,6 +231,7 @@ public class OrganizationController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		OrganizationBo organizationBo = organizationService.get(organizationid);
 		if (organizationBo == null) {
 			return CommonUtil.toErrorResult(
@@ -235,11 +243,10 @@ public class OrganizationController extends BaseContorller {
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();
 	}
-	
+
 	@RequestMapping("/info")
 	@ResponseBody
-	public String info(
-			@RequestParam(required = true) String organizationid,
+	public String info(@RequestParam(required = true) String organizationid,
 			HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
@@ -258,6 +265,7 @@ public class OrganizationController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		OrganizationBo organizationBo = organizationService.get(organizationid);
 		if (organizationBo == null) {
 			return CommonUtil.toErrorResult(

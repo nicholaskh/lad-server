@@ -23,6 +23,7 @@ import com.lad.bo.NoteBo;
 import com.lad.bo.UserBo;
 import com.lad.service.ICircleService;
 import com.lad.service.INoteService;
+import com.lad.service.IUserService;
 import com.lad.util.CommonUtil;
 import com.lad.util.Constant;
 import com.lad.util.ERRORCODE;
@@ -35,6 +36,8 @@ public class NoteController extends BaseContorller {
 	private INoteService noteService;
 	@Autowired
 	private ICircleService circleService;
+	@Autowired
+	private IUserService userService;
 
 	@RequestMapping("/insert")
 	@ResponseBody
@@ -62,6 +65,7 @@ public class NoteController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		CircleBo circleBo = circleService.selectById(circleid);
 		if (null == circleBo) {
 			return CommonUtil.toErrorResult(
@@ -99,6 +103,7 @@ public class NoteController extends BaseContorller {
 		if (userBo == null) {
 			return "{\"ret\":20002,\"error\":\":未登录\"}";
 		}
+		userBo = userService.getUser(userBo.getId());
 		String userId = userBo.getId();
 		Long time = Calendar.getInstance().getTimeInMillis();
 		String fileName = userId + "-" + time + "-"

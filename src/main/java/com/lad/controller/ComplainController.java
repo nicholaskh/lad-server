@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.lad.bo.ComplainBo;
 import com.lad.bo.UserBo;
 import com.lad.service.IComplainService;
+import com.lad.service.IUserService;
 import com.lad.util.CommonUtil;
 import com.lad.util.ERRORCODE;
 
@@ -27,26 +28,34 @@ import com.lad.util.ERRORCODE;
 public class ComplainController extends BaseContorller {
 	@Autowired
 	private IComplainService complainService;
-	
+	@Autowired
+	private IUserService userService;
+
 	@RequestMapping("/create")
 	@ResponseBody
-	public String create(String content, HttpServletRequest request, HttpServletResponse response) {
+	public String create(String content, HttpServletRequest request,
+			HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (session.getAttribute("isLogin") == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
 		if (userBo == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		if (StringUtils.isEmpty(content)) {
-			return CommonUtil.toErrorResult(ERRORCODE.COMPLAIN_IS_NULL.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.COMPLAIN_IS_NULL.getIndex(),
 					ERRORCODE.COMPLAIN_IS_NULL.getReason());
 		}
 		ComplainBo complainBo = new ComplainBo();

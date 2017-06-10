@@ -52,6 +52,7 @@ public class LocationController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		List<LocationBo> locationBoList = locationService.findCircleNear(px, py, 5000);
 		List<UserVo> list = new LinkedList<UserVo>();
 		for(LocationBo bo : locationBoList){

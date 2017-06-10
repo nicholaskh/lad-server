@@ -70,6 +70,7 @@ public class ChatroomController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		if (StringUtils.isEmpty(name)) {
 			return CommonUtil.toErrorResult(
 					ERRORCODE.CHATROOM_NAME_NULL.getIndex(),
@@ -151,6 +152,7 @@ public class ChatroomController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		if (StringUtils.isEmpty(name)) {
 			return CommonUtil.toErrorResult(
 					ERRORCODE.CHATROOM_NAME_NULL.getIndex(),
@@ -194,6 +196,7 @@ public class ChatroomController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		if (StringUtils.isEmpty(userid)) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_ID.getIndex(),
 					ERRORCODE.ACCOUNT_ID.getReason());
@@ -252,6 +255,7 @@ public class ChatroomController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		if (StringUtils.isEmpty(userid)) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_ID.getIndex(),
 					ERRORCODE.ACCOUNT_ID.getReason());
@@ -306,6 +310,7 @@ public class ChatroomController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		List<String> friends = userBo.getFriends();
 		List<UserVo> userList = new LinkedList<UserVo>();
 		for (String id : friends) {
@@ -394,6 +399,7 @@ public class ChatroomController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		ChatroomBo temp = chatroomService.get(chatroomid);
 		ChatroomVo vo = new ChatroomVo();
 		if (null != temp) {
@@ -430,6 +436,7 @@ public class ChatroomController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		ChatroomBo chatroomBo = chatroomService.get(chatroomid);
 		if (null == chatroomBo) {
 			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(),
@@ -480,6 +487,7 @@ public class ChatroomController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		ChatroomBo chatroomBo = chatroomService.get(chatroomid);
 		if (null == chatroomBo) {
 			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(),
@@ -530,6 +538,7 @@ public class ChatroomController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		HashSet<String> userSet = new HashSet<String>();
 		ChatroomBo chatroomBo = null;
 		int isNew = 0;

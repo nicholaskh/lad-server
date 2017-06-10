@@ -70,6 +70,7 @@ public class CircleController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		CircleBo circleBo = new CircleBo();
 		circleBo.setCreateuid(userBo.getId());
 		circleBo.setCategory(category);
@@ -110,6 +111,7 @@ public class CircleController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		CircleBo circleBo = circleService.selectById(circleid);
 		if (circleBo == null) {
 			return CommonUtil.toErrorResult(
@@ -152,6 +154,7 @@ public class CircleController extends BaseContorller {
 		if (userBo == null) {
 			return "{\"ret\":20002,\"error\":\":未登录\"}";
 		}
+		userBo = userService.getUser(userBo.getId());
 		String userId = userBo.getId();
 		String fileName = userId + file.getOriginalFilename();
 		String path = CommonUtil.upload(file,
@@ -190,6 +193,7 @@ public class CircleController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		CircleBo circleBo = circleService.selectById(circleid);
 		if (circleBo == null) {
 			return CommonUtil.toErrorResult(
@@ -230,6 +234,7 @@ public class CircleController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		List<CircleBo> circleBoList = circleService.selectByuserid(userBo
 				.getId());
 		List<CircleVo> CircleVoList = new LinkedList<CircleVo>();
@@ -271,6 +276,7 @@ public class CircleController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		CircleBo circleBo = circleService.selectById(circleid);
 		if (circleBo == null) {
 			return CommonUtil.toErrorResult(
@@ -307,6 +313,7 @@ public class CircleController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		CircleBo circleBo = circleService.selectById(circleid);
 		if (circleBo == null) {
 			return CommonUtil.toErrorResult(
@@ -362,6 +369,7 @@ public class CircleController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		CircleBo circleBo = circleService.selectById(circleid);
 		if (circleBo == null) {
 			return CommonUtil.toErrorResult(
@@ -417,6 +425,7 @@ public class CircleController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		List<CircleBo> list = circleService
 				.selectByType(tag, sub_tag, category);
 		List<CircleVo> listVo = new LinkedList<CircleVo>();

@@ -23,6 +23,7 @@ import com.lad.bo.ThumbsupBo;
 import com.lad.bo.UserBo;
 import com.lad.service.IHomepageService;
 import com.lad.service.IThumbsupService;
+import com.lad.service.IUserService;
 import com.lad.util.CommonUtil;
 import com.lad.util.ERRORCODE;
 import com.lad.vo.ThumbsupVo;
@@ -38,24 +39,31 @@ public class HomepageController extends BaseContorller {
 	private IHomepageService homepageService;
 	@Autowired
 	private IThumbsupService thumbsupService;
+	@Autowired
+	private IUserService userService;
 
 	@RequestMapping("/insert")
 	@ResponseBody
-	public String isnert(HttpServletRequest request, HttpServletResponse response) {
+	public String isnert(HttpServletRequest request,
+			HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (session.getAttribute("isLogin") == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
 		if (userBo == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		Map<String, Object> map = new HashMap<String, Object>();
 		HomepageBo homepageBo = new HomepageBo();
 		homepageBo.setOwner_id(userBo.getId());
@@ -66,29 +74,36 @@ public class HomepageController extends BaseContorller {
 
 	@RequestMapping("/visit-my-homepage")
 	@ResponseBody
-	public String visit_my_homepage(String visitor_id, HttpServletRequest request, HttpServletResponse response) {
+	public String visit_my_homepage(String visitor_id,
+			HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (session.getAttribute("isLogin") == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (!StringUtils.hasLength(visitor_id)) {
-			return CommonUtil.toErrorResult(ERRORCODE.CONTACT_VISITOR.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CONTACT_VISITOR.getIndex(),
 					ERRORCODE.CONTACT_VISITOR.getReason());
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
 		if (userBo == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		Map<String, Object> map = new HashMap<String, Object>();
 		HomepageBo homepageBo = homepageService.selectByUserId(userBo.getId());
 		if (homepageBo == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.CONTACT_HOMEPAGE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CONTACT_HOMEPAGE.getIndex(),
 					ERRORCODE.CONTACT_HOMEPAGE.getReason());
 		}
 		LinkedList<String> visitor_ids = homepageBo.getVisitor_ids();
@@ -118,25 +133,31 @@ public class HomepageController extends BaseContorller {
 
 	@RequestMapping("/new-visitors-count")
 	@ResponseBody
-	public String new_visitors_count(HttpServletRequest request, HttpServletResponse response) {
+	public String new_visitors_count(HttpServletRequest request,
+			HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (session.getAttribute("isLogin") == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
 		if (userBo == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		Map<String, Object> map = new HashMap<String, Object>();
 		HomepageBo homepageBo = homepageService.selectByUserId(userBo.getId());
 		if (homepageBo == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.CONTACT_HOMEPAGE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CONTACT_HOMEPAGE.getIndex(),
 					ERRORCODE.CONTACT_HOMEPAGE.getReason());
 		}
 		Integer new_visitors_count = homepageBo.getNew_visitors_count();
@@ -152,29 +173,37 @@ public class HomepageController extends BaseContorller {
 
 	@RequestMapping("/thumbsup")
 	@ResponseBody
-	public String thumbsup(String user_id, HttpServletRequest request, HttpServletResponse response) {
+	public String thumbsup(String user_id, HttpServletRequest request,
+			HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (session.getAttribute("isLogin") == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (!StringUtils.hasLength(user_id)) {
-			return CommonUtil.toErrorResult(ERRORCODE.CONTACT_VISITOR.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CONTACT_VISITOR.getIndex(),
 					ERRORCODE.CONTACT_VISITOR.getReason());
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
 		if (userBo == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.CONTACT_HOMEPAGE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CONTACT_HOMEPAGE.getIndex(),
 					ERRORCODE.CONTACT_HOMEPAGE.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		String owner_id = userBo.getId();
-		ThumbsupBo temp = thumbsupService.getByVidAndVisitorid(owner_id, user_id);
-		if(temp != null){
-			return CommonUtil.toErrorResult(ERRORCODE.CONTACT_THUMBSUP_DUPLICATE.getIndex(),
+		ThumbsupBo temp = thumbsupService.getByVidAndVisitorid(owner_id,
+				user_id);
+		if (temp != null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CONTACT_THUMBSUP_DUPLICATE.getIndex(),
 					ERRORCODE.CONTACT_THUMBSUP_DUPLICATE.getReason());
 		}
 		HomepageBo homepageBo = homepageService.selectByUserId(user_id);
@@ -190,23 +219,30 @@ public class HomepageController extends BaseContorller {
 
 	@RequestMapping("/thumbsup-from-me")
 	@ResponseBody
-	public String thumbsup_from_me(String start_id, boolean gt, int limit, HttpServletRequest request, HttpServletResponse response) throws Exception {
+	public String thumbsup_from_me(String start_id, boolean gt, int limit,
+			HttpServletRequest request, HttpServletResponse response)
+			throws Exception {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (session.getAttribute("isLogin") == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
 		if (userBo == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		String ownerId = userBo.getId();
-		List<ThumbsupBo> thumbsup_from_me = thumbsupService.selectByOwnerIdPaged(start_id, gt, limit, ownerId);
+		List<ThumbsupBo> thumbsup_from_me = thumbsupService
+				.selectByOwnerIdPaged(start_id, gt, limit, ownerId);
 		List<ThumbsupVo> thumbsup_from_me_vo = new ArrayList<ThumbsupVo>();
 		for (ThumbsupBo item : thumbsup_from_me) {
 			ThumbsupVo vo = new ThumbsupVo();
@@ -222,24 +258,30 @@ public class HomepageController extends BaseContorller {
 
 	@RequestMapping("/thumbsup-to-me")
 	@ResponseBody
-	public String thumbsup_to_me(String start_id, boolean gt, int limit, HttpServletRequest request,
-			HttpServletResponse response) throws Exception {
+	public String thumbsup_to_me(String start_id, boolean gt, int limit,
+			HttpServletRequest request, HttpServletResponse response)
+			throws Exception {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (session.getAttribute("isLogin") == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
 		if (userBo == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		String ownerId = userBo.getId();
-		List<ThumbsupBo> thumbsup_to_me = thumbsupService.selectByVisitorIdPaged(start_id, gt, limit, ownerId);
+		List<ThumbsupBo> thumbsup_to_me = thumbsupService
+				.selectByVisitorIdPaged(start_id, gt, limit, ownerId);
 		List<ThumbsupVo> thumbsup_to_me_vo = new ArrayList<ThumbsupVo>();
 		for (ThumbsupBo item : thumbsup_to_me) {
 			ThumbsupVo vo = new ThumbsupVo();

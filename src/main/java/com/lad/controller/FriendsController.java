@@ -569,6 +569,7 @@ public class FriendsController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		if (StringUtils.isEmpty(friendid)) {
 			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NULL.getIndex(),
 					ERRORCODE.FRIEND_NULL.getReason());
@@ -616,6 +617,7 @@ public class FriendsController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		userBo = userService.getUser(userBo.getId());
 		if (StringUtils.isEmpty(friendids)) {
 			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NULL.getIndex(),
 					ERRORCODE.FRIEND_NULL.getReason());
@@ -728,6 +730,7 @@ public class FriendsController extends BaseContorller {
 					ERRORCODE.CHATROOM_ID_NULL.getReason());
 		}
 		String userid = userBo.getId();
+		userBo = userService.getUser(userid);
 		HashSet<String> chatrooms = new HashSet<String>();
 		chatrooms = userBo.getChatrooms();
 		if (chatrooms.contains(chatroomid)) {
