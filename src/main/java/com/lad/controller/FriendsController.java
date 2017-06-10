@@ -651,7 +651,7 @@ public class FriendsController extends BaseContorller {
 			UserBo user = userService.getUser(id);
 			HashSet<String> chatroomsSet = user.getChatrooms();
 			chatroomsSet.add(id);
-			userBo.setChatrooms(chatroomsSet);
+			user.setChatrooms(chatroomsSet);
 			userService.updateChatrooms(user);
 		}
 		ImAssistant assistent = ImAssistant.init("180.76.138.200", 2222);
