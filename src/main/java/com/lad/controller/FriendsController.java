@@ -650,7 +650,7 @@ public class FriendsController extends BaseContorller {
 		for (String id : userSet) {
 			UserBo user = userService.getUser(id);
 			HashSet<String> chatroomsSet = user.getChatrooms();
-			chatroomsSet.add(id);
+			chatroomsSet.add(chatroomBo.getId());
 			user.setChatrooms(chatroomsSet);
 			userService.updateChatrooms(user);
 		}
