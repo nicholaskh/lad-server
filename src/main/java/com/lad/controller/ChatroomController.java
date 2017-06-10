@@ -78,7 +78,12 @@ public class ChatroomController extends BaseContorller {
 		ChatroomBo chatroomBo = new ChatroomBo();
 		chatroomBo.setName(name);
 		chatroomBo.setType(2);
+		chatroomBo.setCreateuid(userBo.getId());
 		chatroomService.insert(chatroomBo);
+		HashSet<String> chatrooms = userBo.getChatrooms();
+		chatrooms.add(chatroomBo.getId());
+		userBo.setChatrooms(chatrooms);
+		userService.updateChatrooms(userBo);
 		ImAssistant assistent = ImAssistant.init("180.76.138.200", 2222);
 		if (assistent == null) {
 			return CommonUtil.toErrorResult(
