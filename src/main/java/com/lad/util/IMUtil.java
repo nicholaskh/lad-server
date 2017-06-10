@@ -52,4 +52,88 @@ public class IMUtil {
 		return IMUtil.FINISH;
 	}
 
+	public static String unSubscribe(IIMTermService iMTermService,
+			String userid, String chatroomId, String... ids) {
+		ImAssistant assistent = ImAssistant.init("180.76.138.200", 2222);
+		if (assistent == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.PUSHED_CONNECT_ERROR.getIndex(),
+					ERRORCODE.PUSHED_CONNECT_ERROR.getReason());
+		}
+		IMTermBo iMTermBo = iMTermService.selectByUserid(userid);
+		if (iMTermBo == null) {
+			iMTermBo = new IMTermBo();
+			iMTermBo.setUserid(userid);
+			Message message = assistent.getAppKey();
+			String appKey = message.getMsg();
+			Message message2 = assistent.authServer(appKey);
+			String term = message2.getMsg();
+			iMTermBo.setTerm(term);
+			iMTermService.insert(iMTermBo);
+		}
+		assistent.setServerTerm(iMTermBo.getTerm());
+		Message message3 = assistent.unSubscribe(chatroomId, ids);
+		if (message3.getStatus() == Message.Status.termError) {
+			Message message = assistent.getAppKey();
+			String appKey = message.getMsg();
+			Message message2 = assistent.authServer(appKey);
+			String term = message2.getMsg();
+			iMTermService.updateByUserid(userid, term);
+			assistent.setServerTerm(term);
+			Message message4 = assistent.unSubscribe(chatroomId, ids);
+			if (Message.Status.success != message4.getStatus()) {
+				assistent.close();
+				return CommonUtil.toErrorResult(message4.getStatus(),
+						message4.getMsg());
+			}
+		} else if (Message.Status.success != message3.getStatus()) {
+			assistent.close();
+			return CommonUtil.toErrorResult(message3.getStatus(),
+					message3.getMsg());
+		}
+		return IMUtil.FINISH;
+	}
+
+	public static String disolveRoom(IIMTermService iMTermService,
+			String userid, String chatroomId) {
+		ImAssistant assistent = ImAssistant.init("180.76.138.200", 2222);
+		if (assistent == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.PUSHED_CONNECT_ERROR.getIndex(),
+					ERRORCODE.PUSHED_CONNECT_ERROR.getReason());
+		}
+		IMTermBo iMTermBo = iMTermService.selectByUserid(userid);
+		if (iMTermBo == null) {
+			iMTermBo = new IMTermBo();
+			iMTermBo.setUserid(userid);
+			Message message = assistent.getAppKey();
+			String appKey = message.getMsg();
+			Message message2 = assistent.authServer(appKey);
+			String term = message2.getMsg();
+			iMTermBo.setTerm(term);
+			iMTermService.insert(iMTermBo);
+		}
+		assistent.setServerTerm(iMTermBo.getTerm());
+		Message message3 = assistent.disolveRoom(chatroomId);
+		if (message3.getStatus() == Message.Status.termError) {
+			Message message = assistent.getAppKey();
+			String appKey = message.getMsg();
+			Message message2 = assistent.authServer(appKey);
+			String term = message2.getMsg();
+			iMTermService.updateByUserid(userid, term);
+			assistent.setServerTerm(term);
+			Message message4 = assistent.disolveRoom(chatroomId);
+			if (Message.Status.success != message4.getStatus()) {
+				assistent.close();
+				return CommonUtil.toErrorResult(message4.getStatus(),
+						message4.getMsg());
+			}
+		} else if (Message.Status.success != message3.getStatus()) {
+			assistent.close();
+			return CommonUtil.toErrorResult(message3.getStatus(),
+					message3.getMsg());
+		}
+		return IMUtil.FINISH;
+	}
+
 }

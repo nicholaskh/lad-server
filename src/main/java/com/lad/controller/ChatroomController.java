@@ -198,8 +198,9 @@ public class ChatroomController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(),
 					ERRORCODE.CHATROOM_NULL.getReason());
 		}
-		String result = IMUtil.subscribe(iMTermService, userid, "", chatroomid, userid);
-		if(!result.equals(IMUtil.FINISH)){
+		String result = IMUtil.subscribe(iMTermService, userid, "", chatroomid,
+				userid);
+		if (!result.equals(IMUtil.FINISH)) {
 			return result;
 		}
 		HashSet<String> set = chatroomBo.getUsers();
@@ -249,6 +250,11 @@ public class ChatroomController extends BaseContorller {
 		if (StringUtils.isEmpty(userid)) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_ID.getIndex(),
 					ERRORCODE.ACCOUNT_ID.getReason());
+		}
+		String result = IMUtil.unSubscribe(iMTermService, userid, "",
+				chatroomid, userid);
+		if (!result.equals(IMUtil.FINISH)) {
+			return result;
 		}
 		ChatroomBo chatroomBo = chatroomService.get(chatroomid);
 		if (null == chatroomBo) {

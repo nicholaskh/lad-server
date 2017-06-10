@@ -30,6 +30,7 @@ import com.lad.service.IIMTermService;
 import com.lad.service.IUserService;
 import com.lad.util.CommonUtil;
 import com.lad.util.ERRORCODE;
+import com.lad.util.IMUtil;
 import com.lad.util.JPushUtil;
 import com.lad.vo.FriendsVo;
 import com.lad.vo.UserVoFriends;
@@ -583,6 +584,11 @@ public class FriendsController extends BaseContorller {
 				userBo.getId(), friendid);
 		if (null != chatroomBo) {
 			chatroomService.delete(chatroomBo.getId());
+		}
+		String result = IMUtil.disolveRoom(iMTermService, userBo.getId(),
+				chatroomBo.getId().toString());
+		if (!result.equals(IMUtil.FINISH)) {
+			return result;
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
