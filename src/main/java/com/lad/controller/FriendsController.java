@@ -631,6 +631,7 @@ public class FriendsController extends BaseContorller {
 					userBo.getId(), id);
 			if (temp == null) {
 				if (id.equals(userBo.getId())) {
+					userSet.add(id);
 					continue;
 				}
 				return CommonUtil.toErrorResult(
@@ -644,6 +645,7 @@ public class FriendsController extends BaseContorller {
 		chatroomBo.setType(2);
 		chatroomBo.setName("群聊");
 		chatroomBo.setUsers(userSet);
+		chatroomBo.setCreateuid(userBo.getId());
 		chatroomService.insert(chatroomBo);
 		for (String id : userSet) {
 			UserBo user = userService.getUser(id);
