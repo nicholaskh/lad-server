@@ -7,16 +7,20 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "circle")
 public class CircleBo extends BaseBo {
 	private double[] position;
+	//地标
 	private String landmark;
 	private String name;
 	private String tag;
 	private String sub_tag;
+	//类别
 	private String category;
 	private String headPicture;
 	private HashSet<String> users = new HashSet<String>();
 	private HashSet<String> usersApply = new HashSet<String>();
 	private HashSet<String> usersRefuse = new HashSet<String>();
+	//群组
 	private HashSet<String> organizations = new HashSet<String>();
+	//帖子
 	private HashSet<String> notes = new HashSet<String>();
 
 	public double[] getPosition() {

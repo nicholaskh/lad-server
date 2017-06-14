@@ -9,6 +9,7 @@ public class ChatroomBo extends BaseBo {
 
 	private String name;
 	private HashSet<String> users = new HashSet<String>();
+	//1 表示一对一聊天室，2表示群聊，3表示面对面建群
 	private int type;
 	private String userid;
 	private String friendid;
