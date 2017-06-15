@@ -82,43 +82,38 @@ public class ChatroomController extends BaseContorller {
 					ERRORCODE.PUSHED_CONNECT_ERROR.getIndex(),
 					ERRORCODE.PUSHED_CONNECT_ERROR.getReason());
 		}
+		String term = "";
 		IMTermBo iMTermBo = iMTermService.selectByUserid(userBo.getId());
 		if (iMTermBo == null) {
-			iMTermBo = new IMTermBo();
-			iMTermBo.setUserid(userBo.getId());
-			Message message = assistent.getAppKey();
-			String appKey = message.getMsg();
-			Message message2 = assistent.authServer(appKey);
-			String term = message2.getMsg();
-			iMTermBo.setTerm(term);
-			iMTermService.insert(iMTermBo);
+			term = IMUtil.getTerm(assistent);
+			updateIMTerm(userBo.getId(), term);
+		} else {
+			term = iMTermBo.getTerm();
 		}
-		assistent.setServerTerm(iMTermBo.getTerm());
-		Message message3 = assistent.subscribe(name, chatroomBo.getId(),
-				userBo.getId());
-		if (message3.getStatus() == Message.Status.termError) {
-			Message message = assistent.getAppKey();
-			String appKey = message.getMsg();
-			Message message2 = assistent.authServer(appKey);
-			String term = message2.getMsg();
-			iMTermService.updateByUserid(userBo.getId(), term);
-			assistent.setServerTerm(term);
-			Message message4 = assistent.subscribe(name, chatroomBo.getId(),
+		assistent.setServerTerm(term);
+		try {
+			Message message3 = assistent.subscribe(name, chatroomBo.getId(),
 					userBo.getId());
-			if (Message.Status.success != message4.getStatus()) {
-				assistent.close();
-				return CommonUtil.toErrorResult(message4.getStatus(),
-						message4.getMsg());
+			if (message3.getStatus() == Message.Status.termError) {
+				term =  IMUtil.getTerm(assistent);
+				iMTermService.updateByUserid(userBo.getId(), term);
+				assistent.setServerTerm(term);
+				Message message4 = assistent.subscribe(name, chatroomBo.getId(),
+						userBo.getId());
+				if (Message.Status.success != message4.getStatus()) {
+					return CommonUtil.toErrorResult(message4.getStatus(),
+							message4.getMsg());
+				}
+			} else if (Message.Status.success != message3.getStatus()) {
+				return CommonUtil.toErrorResult(message3.getStatus(),
+						message3.getMsg());
 			}
-		} else if (Message.Status.success != message3.getStatus()) {
+		} finally {
 			assistent.close();
-			return CommonUtil.toErrorResult(message3.getStatus(),
-					message3.getMsg());
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("channelId", chatroomBo.getId());
-		assistent.close();
 		return JSONObject.fromObject(map).toString();
 	}
 
@@ -202,13 +197,20 @@ public class ChatroomController extends BaseContorller {
 		} else {
 			useridArr = new String[]{userids};
 		}
-		String result = IMUtil.subscribe(iMTermService, userBo.getId(), "", chatroomid,
-				useridArr);
-		if (!result.equals(IMUtil.FINISH)) {
-			return result;
+		IMTermBo imTermBo = iMTermService.selectByUserid(userBo.getId());
+		String term = "";
+		if (imTermBo != null) {
+			term = imTermBo.getTerm();
 		}
+		//第一个为返回结果信息，第二位term信息
+		String[] result = IMUtil.subscribe("", chatroomid, term, useridArr);
+		if (!result[0].equals(IMUtil.FINISH)) {
+			return result[0];
+		}
+		updateIMTerm(userBo.getId(), result[1]);
 		HashSet<String> set = chatroomBo.getUsers();
 		for (String userid : useridArr) {
+			updateIMTerm(userid, result[1]);
 			UserBo user = userService.getUser(userid);
 			if (null == user) {
 				return CommonUtil.toErrorResult(ERRORCODE.USER_NULL.getIndex(),
@@ -226,6 +228,22 @@ public class ChatroomController extends BaseContorller {
 		chatroomBo.setUsers(set);
 		chatroomService.updateUsers(chatroomBo);
 		return Constant.COM_RESP;
+	}
+	/**
+	 *
+	 * @param userid
+	 * @param term
+	 */
+	private void updateIMTerm(String userid, String term){
+		IMTermBo imTermBo = iMTermService.selectByUserid(userid);
+		if (imTermBo == null) {
+			imTermBo = new IMTermBo();
+			imTermBo.setTerm(term);
+			imTermBo.setUserid(userid);
+			iMTermService.insert(imTermBo);
+		} else {
+			iMTermService.updateByUserid(userid, term);
+		}
 	}
 
 	@RequestMapping("/delete-user")
@@ -260,10 +278,15 @@ public class ChatroomController extends BaseContorller {
 		} else {
 			useridArr = new String[]{userids.trim()};
 		}
-		String result = IMUtil.unSubscribe(iMTermService, userBo.getId(),
-				chatroomid, useridArr);
-		if (!result.equals(IMUtil.FINISH)) {
-			return result;
+		IMTermBo imTermBo = iMTermService.selectByUserid(userBo.getId());
+		String term = "";
+		if (imTermBo != null) {
+			term = imTermBo.getTerm();
+		}
+		//第一个为返回结果信息，第二位term信息
+		String[] result = IMUtil.unSubscribe(chatroomid, term, useridArr);
+		if (!result[0].equals(IMUtil.FINISH)) {
+			return result[0];
 		}
 		ChatroomBo chatroomBo = chatroomService.get(chatroomid);
 		if (null == chatroomBo) {
@@ -272,6 +295,7 @@ public class ChatroomController extends BaseContorller {
 		}
 		HashSet<String> set = chatroomBo.getUsers();
 		for (String userid : useridArr) {
+			updateIMTerm(userid, result[1]);
 			UserBo user = userService.getUser(userid);
 			if (null == user) {
 				return CommonUtil.toErrorResult(ERRORCODE.USER_NULL.getIndex(),
