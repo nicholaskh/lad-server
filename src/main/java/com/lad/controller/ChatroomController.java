@@ -1,21 +1,20 @@
 package com.lad.controller;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
+import com.lad.bo.ChatroomBo;
+import com.lad.bo.IMTermBo;
+import com.lad.bo.UserBo;
+import com.lad.service.IChatroomService;
+import com.lad.service.IIMTermService;
+import com.lad.service.IUserService;
+import com.lad.util.CommonUtil;
+import com.lad.util.Constant;
+import com.lad.util.ERRORCODE;
+import com.lad.util.IMUtil;
+import com.lad.vo.ChatroomVo;
+import com.lad.vo.UserVo;
+import com.pushd.ImAssistant;
+import com.pushd.Message;
 import net.sf.json.JSONObject;
-
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,19 +23,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.lad.bo.ChatroomBo;
-import com.lad.bo.IMTermBo;
-import com.lad.bo.UserBo;
-import com.lad.service.IChatroomService;
-import com.lad.service.IIMTermService;
-import com.lad.service.IUserService;
-import com.lad.util.CommonUtil;
-import com.lad.util.ERRORCODE;
-import com.lad.util.IMUtil;
-import com.lad.vo.ChatroomVo;
-import com.lad.vo.UserVo;
-import com.pushd.ImAssistant;
-import com.pushd.Message;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
 
 @Controller
 @RequestMapping("chatroom")
@@ -170,15 +161,13 @@ public class ChatroomController extends BaseContorller {
 		}
 		chatroomBo.setName(name);
 		chatroomService.updateName(chatroomBo);
-		Map<String, Object> map = new HashMap<String, Object>();
-		map.put("ret", 0);
-		return JSONObject.fromObject(map).toString();
+		return Constant.COM_RESP;
 	}
 
 	@RequestMapping("/insert-user")
 	@ResponseBody
-	public String insertUser(String userid, String chatroomid,
-			HttpServletRequest request, HttpServletResponse response) {
+	public String insertUser(String userids, String chatroomid,
+							 HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
 			return CommonUtil.toErrorResult(
@@ -197,7 +186,7 @@ public class ChatroomController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		userBo = userService.getUser(userBo.getId());
-		if (StringUtils.isEmpty(userid)) {
+		if (StringUtils.isEmpty(userids)) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_ID.getIndex(),
 					ERRORCODE.ACCOUNT_ID.getReason());
 		}
@@ -206,38 +195,43 @@ public class ChatroomController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(),
 					ERRORCODE.CHATROOM_NULL.getReason());
 		}
-		String result = IMUtil.subscribe(iMTermService, userid, "", chatroomid,
-				userid);
+		//判断参数是一个还是多个
+		String[] useridArr;
+		if (userids.indexOf(',') > 0) {
+			useridArr = userids.trim().split(",");
+		} else {
+			useridArr = new String[]{userids};
+		}
+		String result = IMUtil.subscribe(iMTermService, userBo.getId(), "", chatroomid,
+				useridArr);
 		if (!result.equals(IMUtil.FINISH)) {
 			return result;
 		}
 		HashSet<String> set = chatroomBo.getUsers();
-		set.add(userid);
+		for (String userid : useridArr) {
+			UserBo user = userService.getUser(userid);
+			if (null == user) {
+				return CommonUtil.toErrorResult(ERRORCODE.USER_NULL.getIndex(),
+						 ERRORCODE.USER_NULL.getReason() + ", "+ userid);
+			}
+			HashSet<String> chatroom = user.getChatrooms();
+			//个人聊天室中没有当前聊天室，则添加到个人的聊天室
+			if (!chatroom.contains(chatroomBo.getId())) {
+				chatroom.add(chatroomBo.getId());
+				user.setChatrooms(chatroom);
+				userService.updateChatrooms(user);
+			}
+			set.add(userid);
+		}
 		chatroomBo.setUsers(set);
 		chatroomService.updateUsers(chatroomBo);
-		UserBo user = userService.getUser(userid);
-		if (null == user) {
-			return CommonUtil.toErrorResult(ERRORCODE.USER_NULL.getIndex(),
-					ERRORCODE.USER_NULL.getReason());
-		}
-		HashSet<String> chatroom = user.getChatrooms();
-		if (chatroom.contains(chatroomBo.getId())) {
-			return CommonUtil.toErrorResult(
-					ERRORCODE.CHATROOM_EXIST.getIndex(),
-					ERRORCODE.CHATROOM_EXIST.getReason());
-		}
-		chatroom.add(chatroomBo.getId());
-		user.setChatrooms(chatroom);
-		userService.updateChatrooms(user);
-		Map<String, Object> map = new HashMap<String, Object>();
-		map.put("ret", 0);
-		return JSONObject.fromObject(map).toString();
+		return Constant.COM_RESP;
 	}
 
 	@RequestMapping("/delete-user")
 	@ResponseBody
-	public String deltetUser(String userid, String chatroomid,
-			HttpServletRequest request, HttpServletResponse response) {
+	public String deltetUser(String userids, String chatroomid,
+							 HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
 			return CommonUtil.toErrorResult(
@@ -256,12 +250,18 @@ public class ChatroomController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		userBo = userService.getUser(userBo.getId());
-		if (StringUtils.isEmpty(userid)) {
+		if (StringUtils.isEmpty(userids)) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_ID.getIndex(),
 					ERRORCODE.ACCOUNT_ID.getReason());
 		}
-		String result = IMUtil.unSubscribe(iMTermService, userid, "",
-				chatroomid, userid);
+		String[] useridArr;
+		if (userids.indexOf(',') > 0) {
+			useridArr = userids.trim().split(",");
+		} else {
+			useridArr = new String[]{userids.trim()};
+		}
+		String result = IMUtil.unSubscribe(iMTermService, userBo.getId(),
+				chatroomid, useridArr);
 		if (!result.equals(IMUtil.FINISH)) {
 			return result;
 		}
@@ -271,21 +271,21 @@ public class ChatroomController extends BaseContorller {
 					ERRORCODE.CHATROOM_NULL.getReason());
 		}
 		HashSet<String> set = chatroomBo.getUsers();
-		set.remove(userid);
+		for (String userid : useridArr) {
+			UserBo user = userService.getUser(userid);
+			if (null == user) {
+				return CommonUtil.toErrorResult(ERRORCODE.USER_NULL.getIndex(),
+						ERRORCODE.USER_NULL.getReason() + ", "+ userid);
+			}
+			HashSet<String> chatroom = user.getChatrooms();
+			chatroom.remove(chatroomBo.getId());
+			user.setChatrooms(chatroom);
+			userService.updateChatrooms(user);
+			set.remove(userid);
+		}
 		chatroomBo.setUsers(set);
 		chatroomService.updateUsers(chatroomBo);
-		UserBo user = userService.getUser(userid);
-		if (null == user) {
-			return CommonUtil.toErrorResult(ERRORCODE.USER_NULL.getIndex(),
-					ERRORCODE.USER_NULL.getReason());
-		}
-		HashSet<String> chatroom = user.getChatrooms();
-		chatroom.remove(chatroomBo.getId());
-		user.setChatrooms(chatroom);
-		userService.updateChatrooms(user);
-		Map<String, Object> map = new HashMap<String, Object>();
-		map.put("ret", 0);
-		return JSONObject.fromObject(map).toString();
+		return Constant.COM_RESP;
 	}
 
 	@RequestMapping("/get-friends")
@@ -461,9 +461,7 @@ public class ChatroomController extends BaseContorller {
 		userBo.setChatroomsTop(chatroomsTop);
 		userService.updateChatrooms(userBo);
 		userService.updateChatroomsTop(userBo);
-		Map<String, Object> map = new HashMap<String, Object>();
-		map.put("ret", 0);
-		return JSONObject.fromObject(map).toString();
+		return Constant.COM_RESP;
 	}
 
 	@RequestMapping("/cancel-top")
@@ -512,9 +510,7 @@ public class ChatroomController extends BaseContorller {
 		userBo.setChatroomsTop(chatroomsTop);
 		userService.updateChatrooms(userBo);
 		userService.updateChatroomsTop(userBo);
-		Map<String, Object> map = new HashMap<String, Object>();
-		map.put("ret", 0);
-		return JSONObject.fromObject(map).toString();
+		return Constant.COM_RESP;
 	}
 
 	@RequestMapping("/factoface-create")

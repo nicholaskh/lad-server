@@ -10,4 +10,8 @@ public class Constant {
 
 	public static final String RESPONSE = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><response><error>0</error><message></message></response>";
 
+	/**
+	 * 通用成功返回
+	 */
+	public static final String COM_RESP =  "{\"ret\":0}";
 }

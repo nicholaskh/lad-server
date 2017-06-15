@@ -1,20 +1,19 @@
 package com.lad.util;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import net.sf.json.JSONObject;
+import org.apache.commons.codec.binary.Hex;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
-
-import org.apache.commons.codec.binary.Hex;
-import org.springframework.web.multipart.MultipartFile;
-
-import net.sf.json.JSONObject;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class CommonUtil {
 	public static boolean isRightPhone(String phone) {
@@ -115,5 +114,14 @@ public class CommonUtil {
         SimpleDateFormat sdf = new SimpleDateFormat(format);
         return sdf.format(date);
     }
+
+	/**
+	 * 判断可变形参是否为空
+	 * @param ids 参数
+	 * @return  true if empty
+	 */
+	public static boolean isEmpty(String... ids){
+    	return ids == null || ids.length == 0;
+	}
 
 }
