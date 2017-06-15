@@ -1,5 +1,6 @@
 package com.lad.util;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -8,6 +9,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.SimpleDateFormat;
 
 import org.apache.commons.codec.binary.Hex;
 import org.springframework.web.multipart.MultipartFile;
@@ -94,5 +96,24 @@ public class CommonUtil {
 	public static int getRandom1() {
 		return (int) (1 + Math.random() * (10));
 	}
+	
+	/**
+	 * 将时间转成字符串
+	 * @param date 时间
+	 * @return  yyyy-MM-dd HH:mm:ss
+	 */
+	public static String time2str(Date date){
+		return date2Str("yyyy-MM-dd HH:mm:ss", date);
+	}
+    /**
+     * 将日期转换成制定格式
+     * @param format  日期格式如 yyyy-MM-dd HH:mm:ss
+     * @param date  传入时间
+     * @return  时间字符串
+     */
+    public static String date2Str(String format, Date date){
+        SimpleDateFormat sdf = new SimpleDateFormat(format);
+        return sdf.format(date);
+    }
 
 }
