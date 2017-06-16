@@ -1,36 +1,34 @@
 package com.lad.controller;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
+import com.lad.bo.OrganizationBo;
+import com.lad.bo.UserBo;
+import com.lad.service.IOrganizationService;
+import com.lad.service.IUserService;
+import com.lad.util.CommonUtil;
+import com.lad.util.Constant;
+import com.lad.util.ERRORCODE;
+import com.lad.vo.OrganizationVo;
 import net.sf.json.JSONObject;
-
 import org.apache.commons.beanutils.BeanUtils;
+import org.apache.log4j.Logger;
+import org.apache.log4j.spi.RootLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.lad.bo.OrganizationBo;
-import com.lad.bo.UserBo;
-import com.lad.service.IOrganizationService;
-import com.lad.service.IUserService;
-import com.lad.util.CommonUtil;
-import com.lad.util.ERRORCODE;
-import com.lad.vo.OrganizationVo;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
 
 @Controller
 @RequestMapping("organization")
 public class OrganizationController extends BaseContorller {
+
+	private static final Logger LOG = RootLogger.getLogger(OrganizationController.class);
 
 	@Autowired
 	private IOrganizationService organizationService;
@@ -72,9 +70,7 @@ public class OrganizationController extends BaseContorller {
 		organizationBo.setTag(tag);
 		organizationBo.setSub_tag(sub_tag);
 		organizationService.insert(organizationBo);
-		Map<String, Object> map = new HashMap<String, Object>();
-		map.put("ret", 0);
-		return JSONObject.fromObject(map).toString();
+		return Constant.COM_RESP;
 	}
 
 	@RequestMapping("/list")
@@ -157,9 +153,7 @@ public class OrganizationController extends BaseContorller {
 		}
 		userApply.add(userBo.getId());
 		organizationService.updateUsersApply(organizationid, userApply);
-		Map<String, Object> map = new HashMap<String, Object>();
-		map.put("ret", 0);
-		return JSONObject.fromObject(map).toString();
+		return Constant.COM_RESP;
 	}
 
 	@RequestMapping("/apply-agree")
@@ -203,9 +197,7 @@ public class OrganizationController extends BaseContorller {
 		users.add(userid);
 		organizationService.updateUsersApply(organizationid, userApply);
 		organizationService.updateUsers(organizationid, users);
-		Map<String, Object> map = new HashMap<String, Object>();
-		map.put("ret", 0);
-		return JSONObject.fromObject(map).toString();
+		return Constant.COM_RESP;
 	}
 
 	@RequestMapping("/set-description")
@@ -239,9 +231,7 @@ public class OrganizationController extends BaseContorller {
 					ERRORCODE.ORGANIZATION_IS_NULL.getReason());
 		}
 		organizationService.updateDescription(organizationid, description);
-		Map<String, Object> map = new HashMap<String, Object>();
-		map.put("ret", 0);
-		return JSONObject.fromObject(map).toString();
+		return Constant.COM_RESP;
 	}
 
 	@RequestMapping("/info")
@@ -276,14 +266,57 @@ public class OrganizationController extends BaseContorller {
 		try {
 			BeanUtils.copyProperties(organizationVo, organizationBo);
 		} catch (IllegalAccessException e) {
-			e.printStackTrace();
+			LOG.error(e);
 		} catch (InvocationTargetException e) {
-			e.printStackTrace();
+			LOG.error(e);
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("organization", organizationVo);
 		return JSONObject.fromObject(map).toString();
+	}
+
+
+	@RequestMapping("/delete-user")
+	@ResponseBody
+	public String delete(@RequestParam(required = true) String organizationid,
+						 @RequestParam(required = true) String userid,
+					   HttpServletRequest request, HttpServletResponse response) {
+		HttpSession session = request.getSession();
+		if (session.isNew()) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		if (session.getAttribute("isLogin") == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		UserBo userBo = (UserBo) session.getAttribute("userBo");
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		userBo = userService.getUser(userBo.getId());
+		OrganizationBo organizationBo = organizationService.get(organizationid);
+		//群组创建人为群主
+		if (organizationBo.getCreateuid().equals(userBo.getId())) {
+			HashSet<String> users = organizationBo.getUsers();
+			if (!users.contains(userid)) {
+				return CommonUtil.toErrorResult(
+						ERRORCODE.ORGANIZATION_APPLY_USER_NULL.getIndex(),
+						ERRORCODE.ORGANIZATION_APPLY_USER_NULL.getReason());
+			}
+			users.remove(userid);
+			organizationService.updateUsers(organizationid, users);
+		} else {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ORGANIZATION_NOT_ADMIN.getIndex(),
+					ERRORCODE.ORGANIZATION_NOT_ADMIN.getReason());
+		}
+		return Constant.COM_RESP;
 	}
 
 }
