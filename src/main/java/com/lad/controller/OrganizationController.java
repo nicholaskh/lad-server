@@ -69,6 +69,10 @@ public class OrganizationController extends BaseContorller {
 		organizationBo.setName(name);
 		organizationBo.setTag(tag);
 		organizationBo.setSub_tag(sub_tag);
+		//创始人默认为群主
+		HashSet<String> masters = new HashSet<>();
+		masters.add(userBo.getId());
+		organizationBo.setMasters(masters);
 		organizationService.insert(organizationBo);
 		return Constant.COM_RESP;
 	}
@@ -195,8 +199,7 @@ public class OrganizationController extends BaseContorller {
 		}
 		userApply.remove(userid);
 		users.add(userid);
-		organizationService.updateUsersApply(organizationid, userApply);
-		organizationService.updateUsers(organizationid, users);
+		organizationService.updateMutil(organizationBo);
 		return Constant.COM_RESP;
 	}
 
@@ -301,21 +304,88 @@ public class OrganizationController extends BaseContorller {
 		}
 		userBo = userService.getUser(userBo.getId());
 		OrganizationBo organizationBo = organizationService.get(organizationid);
-		//群组创建人为群主
-		if (organizationBo.getCreateuid().equals(userBo.getId())) {
+		HashSet<String> masters = organizationBo.getMasters();
+		//操作人是不是群主
+		boolean isMaster = false;
+		//最开始 群主默认为 群组创建人
+		if (masters.isEmpty()) {
+			if (organizationBo.getCreateuid().equals(userBo.getId())) {
+				isMaster = true;
+				masters.add(userBo.getId());
+			}
+		} else if (masters.contains(userBo.getId())){
+			isMaster = true;
+		}
+		if (isMaster) {
 			HashSet<String> users = organizationBo.getUsers();
 			if (!users.contains(userid)) {
 				return CommonUtil.toErrorResult(
-						ERRORCODE.ORGANIZATION_APPLY_USER_NULL.getIndex(),
-						ERRORCODE.ORGANIZATION_APPLY_USER_NULL.getReason());
+						ERRORCODE.ORGANIZATION_USER_NULL.getIndex(),
+						ERRORCODE.ORGANIZATION_USER_NULL.getReason());
 			}
 			users.remove(userid);
-			organizationService.updateUsers(organizationid, users);
+			organizationBo.setMasters(masters);
+			organizationService.updateMutil(organizationBo);
 		} else {
 			return CommonUtil.toErrorResult(
-					ERRORCODE.ORGANIZATION_NOT_ADMIN.getIndex(),
-					ERRORCODE.ORGANIZATION_NOT_ADMIN.getReason());
+					ERRORCODE.ORGANIZATION_NOT_MASTER.getIndex(),
+					ERRORCODE.ORGANIZATION_NOT_MASTER.getReason());
 		}
+		return Constant.COM_RESP;
+	}
+
+	@RequestMapping("/transfer")
+	@ResponseBody
+	public String transfer(@RequestParam(required = true) String organizationid,
+						 @RequestParam(required = true) String userid,
+						 HttpServletRequest request, HttpServletResponse response) {
+		HttpSession session = request.getSession();
+		if (session.isNew()) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		if (session.getAttribute("isLogin") == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		UserBo userBo = (UserBo) session.getAttribute("userBo");
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		userBo = userService.getUser(userBo.getId());
+		OrganizationBo organizationBo = organizationService.get(organizationid);
+		HashSet<String> masters = organizationBo.getMasters();
+		if (masters.isEmpty()) {
+			if (userBo.getId().equals(organizationBo.getCreateuid())) {
+				masters.add(userBo.getId());
+			} else {
+				return CommonUtil.toErrorResult(
+						ERRORCODE.ORGANIZATION_NOT_MASTER.getIndex(),
+						ERRORCODE.ORGANIZATION_NOT_MASTER.getReason());
+			}
+		}
+		if (!masters.contains(userBo.getId())) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ORGANIZATION_NOT_MASTER.getIndex(),
+					ERRORCODE.ORGANIZATION_NOT_MASTER.getReason());
+		}
+		if (userBo.getId().equals(userid)) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ORGANIZATION_IS_SELF.getIndex(),
+					ERRORCODE.ORGANIZATION_IS_SELF.getReason());
+		}
+		if (!organizationBo.getUsers().contains(userid)) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.ORGANIZATION_USER_NULL.getIndex(),
+					ERRORCODE.ORGANIZATION_USER_NULL.getReason());
+		}
+		masters.remove(userBo.getId());
+		masters.add(userid);
+		organizationService.updateMutil(organizationBo);
 		return Constant.COM_RESP;
 	}
 
