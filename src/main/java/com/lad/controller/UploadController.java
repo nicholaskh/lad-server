@@ -1,12 +1,10 @@
 package com.lad.controller;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
+import com.lad.bo.UserBo;
+import com.lad.service.IUserService;
+import com.lad.util.CommonUtil;
+import com.lad.util.Constant;
+import net.sf.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,12 +12,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.lad.bo.UserBo;
-import com.lad.service.IUserService;
-import com.lad.util.CommonUtil;
-import com.lad.util.Constant;
-
-import net.sf.json.JSONObject;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import java.util.HashMap;
+import java.util.Map;
 
 @Controller
 @RequestMapping("upload")
@@ -96,11 +93,8 @@ public class UploadController extends BaseContorller {
 		if (userBo == null) {
 			return "{\"ret\":20002,\"error\":\":未登录\"}";
 		}
-		userBo = userService.getUser(userBo.getId());
 		String fileName = imfile.getOriginalFilename();
 		String path = CommonUtil.upload(imfile, Constant.IMFILE_PATH, fileName, 1);
-		userBo.setHeadPictureName(fileName);
-		userService.updateHeadPictureName(userBo);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("path", path);
