@@ -46,4 +46,8 @@ public class ChatroomServiceImpl implements IChatroomService {
 		return chatroomDao.setSeqExpire(seq);
 	}
 
+	@Override
+	public boolean withInRange(String chatroomId, double[] position, int radius) {
+		return chatroomDao.withInRange(chatroomId, position, radius);
+	}
 }

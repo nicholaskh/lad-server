@@ -1,12 +1,12 @@
 package com.lad.bo;
 
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
-
-import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "user")
 public class UserBo extends BaseBo implements Serializable {
@@ -30,6 +30,10 @@ public class UserBo extends BaseBo implements Serializable {
 	private List<String> friends = new LinkedList<String>();
 
 	private HashSet<String> chatrooms = new HashSet<String>();
+	/**
+	 * 面对面群聊
+	 */
+	private HashSet<String> faceChatrooms = new HashSet<String>();
 	
 	private LinkedHashSet<String> chatroomsTop = new LinkedHashSet<String>();
 
@@ -121,5 +125,13 @@ public class UserBo extends BaseBo implements Serializable {
 
 	public void setChatroomsTop(LinkedHashSet<String> chatroomsTop) {
 		this.chatroomsTop = chatroomsTop;
+	}
+
+	public HashSet<String> getFaceChatrooms() {
+		return faceChatrooms;
+	}
+
+	public void setFaceChatrooms(HashSet<String> faceChatrooms) {
+		this.faceChatrooms = faceChatrooms;
 	}
 }

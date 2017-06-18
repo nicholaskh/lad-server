@@ -1,9 +1,9 @@
 package com.lad.service;
 
-import java.util.List;
-
 import com.lad.bo.UserBo;
 import com.mongodb.WriteResult;
+
+import java.util.List;
 
 public interface IUserService extends IBaseService {
 
@@ -26,8 +26,6 @@ public interface IUserService extends IBaseService {
 	public UserBo updateSex(UserBo userBo);
 
 	public UserBo updateChatrooms(UserBo userBo);
-	
-	public UserBo updateChatroomsTop(UserBo userBo);
 
 	public UserBo getUser(String userId);
 
@@ -36,5 +34,6 @@ public interface IUserService extends IBaseService {
 	public UserBo getUserByPhone(String phone);
 
 	public WriteResult updateLocation(String phone, String locationid);
+
 
 }

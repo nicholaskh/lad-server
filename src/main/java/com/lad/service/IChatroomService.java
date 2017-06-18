@@ -20,4 +20,6 @@ public interface IChatroomService extends IBaseService {
 	public ChatroomBo selectBySeq(int seq);
 	
 	public WriteResult setSeqExpire(int seq);
+
+	boolean withInRange(String chatroomId, double[] position, int radius);
 }

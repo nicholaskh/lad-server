@@ -20,4 +20,13 @@ public interface IChatroomDao extends IBaseDao {
 	public ChatroomBo selectBySeq(int seq);
 	
 	public WriteResult setSeqExpire(int seq);
+
+	/**
+	 * 判断聊天室位置是否在制定的距离内
+	 * @param chatroomId  聊天
+	 * @param position  点
+	 * @param radius  距离
+	 * @return  true 在范围； false 不在范围
+	 */
+	boolean withInRange(String chatroomId, double[] position, int radius);
 }

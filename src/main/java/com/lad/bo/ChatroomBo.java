@@ -1,8 +1,8 @@
 package com.lad.bo;
 
-import java.util.HashSet;
-
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.util.HashSet;
 
 @Document(collection = "chatroom")
 public class ChatroomBo extends BaseBo {
@@ -15,6 +15,9 @@ public class ChatroomBo extends BaseBo {
 	private String friendid;
 	private int seq;
 	private int expire = 1;
+
+	private double[] position;
+
 	public String getName() {
 		return name;
 	}
@@ -69,5 +72,13 @@ public class ChatroomBo extends BaseBo {
 
 	public void setExpire(int expire) {
 		this.expire = expire;
+	}
+
+	public double[] getPosition() {
+		return position;
+	}
+
+	public void setPosition(double[] postion) {
+		this.position = postion;
 	}
 }

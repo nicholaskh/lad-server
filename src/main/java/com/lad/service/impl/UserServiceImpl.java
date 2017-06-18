@@ -1,16 +1,15 @@
 package com.lad.service.impl;
 
-import java.util.List;
-import java.util.Set;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.lad.bo.Pager;
 import com.lad.bo.UserBo;
 import com.lad.dao.UserDao;
 import com.lad.service.IUserService;
 import com.mongodb.WriteResult;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * 用户service
@@ -62,7 +61,8 @@ public class UserServiceImpl implements IUserService{
 			userBo = userDao.updatePersonalizedSignature(userBo);
 			return userBo;
 		}
-		
+
+
 		public Set<String> getCollectionNames() {
 			return userDao.getCollectionNames();
 		}
@@ -79,10 +79,6 @@ public class UserServiceImpl implements IUserService{
 			return userDao.updateChatrooms(userBo);
 		}
 		
-		public UserBo updateChatroomsTop(UserBo userBo) {
-			return userDao.updateChatroomsTop(userBo);
-		}
-
 		public UserBo getUser(String userId) {
 			return userDao.getUser(userId);
 		}

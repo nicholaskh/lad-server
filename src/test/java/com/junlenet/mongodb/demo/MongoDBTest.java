@@ -1,82 +1,105 @@
 package com.junlenet.mongodb.demo;
 
-import java.util.Collection;
-import java.util.List;
-
+import com.lad.bo.ChatroomBo;
+import com.lad.dao.IChatroomDao;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.geo.Point;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.index.GeospatialIndex;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import com.lad.bo.LocationBo;
-import com.lad.dao.impl.LocationDaoImpl;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "classpath:spring.xml",
 		"classpath:spring-mvc.xml" })
 public class MongoDBTest {
 
-	@Autowired
-	LocationDaoImpl locationDao;
-
-	@Autowired
-	MongoTemplate template;
+    @Autowired
+    private IChatroomDao chatroomDao;
 
 	@Before
 	public void setUp() {
+       
+
 
 		// 等同db.location.ensureIndex( {position: "2dsphere"} )
-		
+
 //		template.indexOps(Location.class).ensureIndex(
 //				new GeospatialIndex("position"));
 
 		// 初始化数据db.location.ensureIndex( {GeoIndex_2d: "2d"} )
 
-		template.save(new LocationBo("A", 0.1, -0.1));
-
-		template.save(new LocationBo("B", 1, 1));
-
-		template.save(new LocationBo("C", 0.5, 0.5));
-
-		template.save(new LocationBo("D", -0.5, -0.5));
-
 	}
 
+	/**
+	 * 索引创建后测试
+	 */
 	@Test
-	public void findCircleNearTest() {
+	public void save() {
+		ChatroomBo chatroomBo = new ChatroomBo();
+		chatroomBo.setName("face4");
+		chatroomBo.setSeq(0);
+		chatroomBo.setType(3);
+		chatroomBo.setPosition(new double[]{118.639523,32.070078});
+		chatroomDao.insert(chatroomBo);
+		System.out.println(chatroomBo.getId());
 
-		List<LocationBo> locations = locationDao.findCircleNear(new Point(0, 0),
-				0.75);
-		for (LocationBo item : locations) {
-			System.out.println(item.getUserid());
-		}
+		chatroomBo = new ChatroomBo();
+		chatroomBo.setName("talk3");
+		chatroomBo.setSeq(0);
+		chatroomBo.setType(2);
+
+		chatroomDao.insert(chatroomBo);
+
+		System.out.println(chatroomBo.getId());
 
 		System.out.println("-----------------------");
 	}
 
-//	@Test
-//	public void findBoxNearTest() {
+	@Test
+	public void findRangeTest() {
+
+//		DBObject searchObj = new BasicDBObject();
+//		searchObj.put("_id", chatroomId);
+//		DBObject search = new BasicDBObject("$geoNear",
+//				new BasicDBObject("$geometry",
+//						new BasicDBObject("coordinates",position)
+//								.append("type", "Point"))
+//						.append("$maxDistance",radius));
+//		DBObject dbObject = new BasicDBObject();
+//		dbObject.put("position",search);
+//		DBCollection collection = mongoTemplate.getCollection(collectionName);
+//		DBCursor cursor = collection.find(dbObject, searchObj);
 //
-//		List<Location> locations = locationDao.findBoxNear(new Point(0.2, 0.2),
-//				new Point(1, 1));
+//		Iterator<DBObject> its = cursor.iterator();
+//		while (its.hasNext()) {
+//			String obj = its.next().get("_id").toString();
+//			if (obj.equals(chatroomId)){
+//				return true;
+//			}
+//		}DBObject searchObj = new BasicDBObject();
+//		searchObj.put("_id", chatroomId);
+//		DBObject search = new BasicDBObject("$geoNear",
+//				new BasicDBObject("$geometry",
+//						new BasicDBObject("coordinates",position)
+//								.append("type", "Point"))
+//						.append("$maxDistance",radius));
+//		DBObject dbObject = new BasicDBObject();
+//		dbObject.put("position",search);
+//		DBCollection collection = mongoTemplate.getCollection(collectionName);
+//		DBCursor cursor = collection.find(dbObject, searchObj);
 //
-//		System.out.println(locations);
-//
-//	}
-//
-//	public static void print(Collection<Location> locations) {
-//
-//		for (Location location : locations) {
-//
-//			System.err.println(location);
-//
+//		Iterator<DBObject> its = cursor.iterator();
+//		while (its.hasNext()) {
+//			String obj = its.next().get("_id").toString();
+//			if (obj.equals(chatroomId)){
+//				return true;
+//			}
 //		}
-//
-//	}
+
+		double[] position = new double[]{118.788135,32.029064};
+		boolean res = chatroomDao.withInRange("59451b49d75bc2118c082c6c", position, 2000);
+		System.out.println(res);
+	}
 
 }

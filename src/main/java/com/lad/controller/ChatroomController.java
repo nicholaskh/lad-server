@@ -6,17 +6,15 @@ import com.lad.bo.UserBo;
 import com.lad.service.IChatroomService;
 import com.lad.service.IIMTermService;
 import com.lad.service.IUserService;
-import com.lad.util.CommonUtil;
-import com.lad.util.Constant;
-import com.lad.util.ERRORCODE;
-import com.lad.util.IMUtil;
+import com.lad.util.*;
 import com.lad.vo.ChatroomVo;
 import com.lad.vo.UserVo;
 import com.pushd.ImAssistant;
-import com.pushd.Message;
 import net.sf.json.JSONObject;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,6 +26,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 @Controller
 @RequestMapping("chatroom")
@@ -84,33 +83,15 @@ public class ChatroomController extends BaseContorller {
 		}
 		String term = "";
 		IMTermBo iMTermBo = iMTermService.selectByUserid(userBo.getId());
-		if (iMTermBo == null) {
-			term = IMUtil.getTerm(assistent);
-			updateIMTerm(userBo.getId(), term);
-		} else {
+		if (iMTermBo != null) {
 			term = iMTermBo.getTerm();
 		}
-		assistent.setServerTerm(term);
-		try {
-			Message message3 = assistent.subscribe(name, chatroomBo.getId(),
-					userBo.getId());
-			if (message3.getStatus() == Message.Status.termError) {
-				term =  IMUtil.getTerm(assistent);
-				iMTermService.updateByUserid(userBo.getId(), term);
-				assistent.setServerTerm(term);
-				Message message4 = assistent.subscribe(name, chatroomBo.getId(),
-						userBo.getId());
-				if (Message.Status.success != message4.getStatus()) {
-					return CommonUtil.toErrorResult(message4.getStatus(),
-							message4.getMsg());
-				}
-			} else if (Message.Status.success != message3.getStatus()) {
-				return CommonUtil.toErrorResult(message3.getStatus(),
-						message3.getMsg());
-			}
-		} finally {
-			assistent.close();
+		//第一个为返回结果信息，第二位term信息
+		String[] result = IMUtil.subscribe(name, chatroomBo.getId(), term, userBo.getId());
+		if (!result[0].equals(IMUtil.FINISH)) {
+			return result[0];
 		}
+		updateIMTerm(userBo.getId(), result[1]);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("channelId", chatroomBo.getId());
@@ -299,7 +280,7 @@ public class ChatroomController extends BaseContorller {
 			UserBo user = userService.getUser(userid);
 			if (null == user) {
 				return CommonUtil.toErrorResult(ERRORCODE.USER_NULL.getIndex(),
-						ERRORCODE.USER_NULL.getReason() + ", "+ userid);
+						ERRORCODE.USER_NULL.getReason());
 			}
 			HashSet<String> chatroom = user.getChatrooms();
 			chatroom.remove(chatroomBo.getId());
@@ -376,14 +357,14 @@ public class ChatroomController extends BaseContorller {
 		UserBo userBo = userService.getUser(userBoTemp.getId());
 		HashSet<String> Chatrooms = userBo.getChatrooms();
 		HashSet<String> ChatroomsTop = userBo.getChatroomsTop();
-		List<ChatroomVo> ChatroomList = new LinkedList<ChatroomVo>();
+		List<ChatroomVo> chatroomList = new LinkedList<ChatroomVo>();
 		for (String id : ChatroomsTop) {
 			ChatroomBo temp = chatroomService.get(id);
 			if (null != temp) {
 				ChatroomVo vo = new ChatroomVo();
 				BeanUtils.copyProperties(vo, temp);
 				vo.setTop(1);
-				ChatroomList.add(vo);
+				chatroomList.add(vo);
 			}
 		}
 		for (String id : Chatrooms) {
@@ -391,12 +372,12 @@ public class ChatroomController extends BaseContorller {
 			if (null != temp) {
 				ChatroomVo vo = new ChatroomVo();
 				BeanUtils.copyProperties(vo, temp);
-				ChatroomList.add(vo);
+				chatroomList.add(vo);
 			}
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
-		map.put("ChatroomList", ChatroomList);
+		map.put("ChatroomList", chatroomList);
 		return JSONObject.fromObject(map).toString();
 	}
 
@@ -433,7 +414,7 @@ public class ChatroomController extends BaseContorller {
 					ERRORCODE.CHATROOM_ID_NULL.getIndex(),
 					ERRORCODE.CHATROOM_ID_NULL.getReason());
 		}
-		Map<String, Object> map = new HashMap<String, Object>();
+		Map<String, Object> map = new HashMap<>();
 		map.put("ret", 0);
 		map.put("chatroom", vo);
 		return JSONObject.fromObject(map).toString();
@@ -484,7 +465,6 @@ public class ChatroomController extends BaseContorller {
 		userBo.setChatrooms(chatrooms);
 		userBo.setChatroomsTop(chatroomsTop);
 		userService.updateChatrooms(userBo);
-		userService.updateChatroomsTop(userBo);
 		return Constant.COM_RESP;
 	}
 
@@ -533,7 +513,6 @@ public class ChatroomController extends BaseContorller {
 		userBo.setChatrooms(chatrooms);
 		userBo.setChatroomsTop(chatroomsTop);
 		userService.updateChatrooms(userBo);
-		userService.updateChatroomsTop(userBo);
 		return Constant.COM_RESP;
 	}
 
@@ -559,89 +538,83 @@ public class ChatroomController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		userBo = userService.getUser(userBo.getId());
-		HashSet<String> userSet = new HashSet<String>();
-		ChatroomBo chatroomBo = null;
-		int isNew = 0;
-		synchronized (this) {
-			chatroomBo = chatroomService.selectBySeq(seq);
-			if (null == chatroomBo) {
-				chatroomBo = new ChatroomBo();
-				chatroomBo.setSeq(seq);
-				chatroomBo.setName("chatFaceToFace");
-				chatroomBo.setType(3);
+		HashSet<String> userSet = new HashSet<>();
+		ChatroomBo chatroom = null;
+		boolean isNew = false;
+		RedissonClient redisson = RedisUtil.init();
+		RLock lock = redisson.getLock("chatLock");
+		double[] position = new double[]{px,py};
+		try {
+			//10s自动解锁
+			lock.lock(20, TimeUnit.SECONDS);
+			chatroom = chatroomService.selectBySeq(seq);
+			if (null == chatroom) {
+				chatroom = new ChatroomBo();
+				chatroom.setSeq(seq);
+				chatroom.setUserid(userBo.getId());
 				userSet.add(userBo.getId());
-				chatroomBo.setUsers(userSet);
-				chatroomService.insert(chatroomBo);
-				isNew = 1;
+				chatroom.setUsers(userSet);
+				chatroom.setName("FaceToFaceChatroom");
+				chatroom.setPosition(position);
+				chatroomService.insert(chatroom);
+				isNew = true;
 			} else {
-				if (0 == chatroomBo.getExpire()) {
+				if (0 == chatroom.getExpire()) {
 					return CommonUtil.toErrorResult(
 							ERRORCODE.CHATROOM_SEQ_EXPIRE.getIndex(),
 							ERRORCODE.CHATROOM_SEQ_EXPIRE.getReason());
 				}
+
+				if (!CommonUtil.isTimeInTen(chatroom.getCreateTime())) {
+					return CommonUtil.toErrorResult(
+							ERRORCODE.CHATROOM_TIME_OUT.getIndex(),
+							ERRORCODE.CHATROOM_TIME_OUT.getReason());
+				}
+				//聊天室位置是否在100m之内
+				boolean isRange = chatroomService.withInRange(
+						chatroom.getId(), position, 100);
+				if (!isRange) {
+					return CommonUtil.toErrorResult(
+							ERRORCODE.CHATROOM_RANGE_OUT.getIndex(),
+							ERRORCODE.CHATROOM_RANGE_OUT.getReason());
+				}
 				userSet.add(userBo.getId());
-				chatroomBo.setUsers(userSet);
-				chatroomService.updateUsers(chatroomBo);
+				chatroom.setUsers(userSet);
+				chatroomService.updateUsers(chatroom);
 			}
+		} finally {
+			lock.unlock();
 		}
 		HashSet<String> chatrooms = userBo.getChatrooms();
-		if (null == chatrooms) {
-			chatrooms = new HashSet<String>();
-		}
-		chatrooms.add(chatroomBo.getId());
+		chatrooms.add(chatroom.getId());
 		userBo.setChatrooms(chatrooms);
 		userService.updateChatrooms(userBo);
-		if (isNew == 1) {
-			Timer timer = new Timer();
-			timer.schedule(new TimerTask() {
-				public void run() {
-					chatroomService.setSeqExpire(seq);
-				}
-			}, 5000);
-			ImAssistant assistent = ImAssistant.init("180.76.138.200", 2222);
-			if (assistent == null) {
-				return CommonUtil.toErrorResult(
-						ERRORCODE.PUSHED_CONNECT_ERROR.getIndex(),
-						ERRORCODE.PUSHED_CONNECT_ERROR.getReason());
-			}
-			IMTermBo iMTermBo = iMTermService.selectByUserid(userBo.getId());
-			if (iMTermBo == null) {
-				iMTermBo = new IMTermBo();
-				iMTermBo.setUserid(userBo.getId());
-				Message message = assistent.getAppKey();
-				String appKey = message.getMsg();
-				Message message2 = assistent.authServer(appKey);
-				String term = message2.getMsg();
-				iMTermBo.setTerm(term);
-				iMTermService.insert(iMTermBo);
-			}
-			assistent.setServerTerm(iMTermBo.getTerm());
-			Message message3 = assistent.subscribe(chatroomBo.getName(),
-					chatroomBo.getId(), userBo.getId());
-			if (message3.getStatus() == Message.Status.termError) {
-				Message message = assistent.getAppKey();
-				String appKey = message.getMsg();
-				Message message2 = assistent.authServer(appKey);
-				String term = message2.getMsg();
-				iMTermService.updateByUserid(userBo.getId(), term);
-				assistent.setServerTerm(term);
-				Message message4 = assistent.subscribe(chatroomBo.getName(),
-						chatroomBo.getId(), userBo.getId());
-				if (Message.Status.success != message4.getStatus()) {
-					assistent.close();
-					return CommonUtil.toErrorResult(message4.getStatus(),
-							message4.getMsg());
-				}
-			} else if (Message.Status.success != message3.getStatus()) {
-				assistent.close();
-				return CommonUtil.toErrorResult(message3.getStatus(),
-						message3.getMsg());
-			}
-			assistent.close();
+		IMTermBo iMTermBo = iMTermService.selectByUserid(userBo.getId());
+		String term = "";
+		if (iMTermBo != null) {
+			term = iMTermBo.getTerm();
 		}
-		Map<String, Object> map = new HashMap<String, Object>();
+		String chatroomName = "";
+		//首次创建聊天室，需要输入名称
+		if (isNew) {
+			chatroomName = chatroom.getName();
+		}
+		String[] res = IMUtil.subscribe(chatroomName,chatroom.getId(),term, userBo.getId());
+		if (!res[0].equals(IMUtil.FINISH)) {
+			return res[0];
+		}
+		updateIMTerm(userBo.getId(), res[1]);
+		Map<String, Object> map = new HashMap<>();
 		map.put("ret", 0);
-		map.put("channelId", chatroomBo.getId());
+		map.put("channelId", chatroom.getId());
 		return JSONObject.fromObject(map).toString();
+	}
+
+
+	@RequestMapping("/factoface-add")
+	@ResponseBody
+	public String faceToFaceAdd(final int seq, double px, double py,
+								   HttpServletRequest request, HttpServletResponse response) {
+		 return faceToFaceCreate(seq, px, py, request, response);
 	}
 }

@@ -13,7 +13,7 @@ public class IMUtil {
 
 	/**
 	 * 重写聊天创建方法
-	 * @param chatroomName name  添加时为空不能为null
+	 * @param chatroomName name 创建时需要输入名称，后续添加时为"",不能为null
 	 * @param chatroomId  roomid
 	 * @param inTerm  inTerm
 	 * @param ids  ids

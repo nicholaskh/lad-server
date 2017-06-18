@@ -1,22 +1,40 @@
 package com.lad.dao.impl;
 
+import com.lad.bo.ChatroomBo;
+import com.lad.dao.IChatroomDao;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBCollection;
+import com.mongodb.DBObject;
+import com.mongodb.WriteResult;
+import org.apache.commons.lang3.StringUtils;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.geo.Distance;
+import org.springframework.data.geo.Point;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.NearQuery;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
-import com.lad.bo.ChatroomBo;
-import com.lad.dao.IChatroomDao;
-import com.mongodb.WriteResult;
+import java.util.List;
 
 @Repository("chatroomDao")
 public class ChatroomDaoImpl implements IChatroomDao {
+
+	private String collectionName = "chatroom";
+
 	@Autowired
 	private MongoTemplate mongoTemplate;
 
 	public ChatroomBo insert(ChatroomBo chatroom) {
+		DBCollection collection = mongoTemplate.getCollection(collectionName);
+		if (!hasIndex(collection, "position")) {
+			collection.createIndex(new BasicDBObject("position", "2dsphere"), "position");
+		}
 		mongoTemplate.insert(chatroom);
 		return chatroom;
 	}
@@ -82,6 +100,38 @@ public class ChatroomDaoImpl implements IChatroomDao {
 		Update update = new Update();
 		update.set("expire", 0);
 		return mongoTemplate.updateFirst(query, update, ChatroomBo.class);
+	}
+
+	public boolean withInRange(String chatroomId, double[] position, int radius) {
+		//主键筛选条件
+		Query query = new Query();
+		query.addCriteria(new Criteria("_id").is(new ObjectId(chatroomId)));
+		//位置索引查询
+		Point location = new Point(position[0], position[1]);
+		NearQuery nearQuery = NearQuery.near(location)
+				.maxDistance(new Distance(radius/6378137.0)).spherical(true).query(query);
+		Aggregation aggregation = Aggregation.newAggregation(Aggregation.geoNear(nearQuery,"position"));
+		AggregationResults<ChatroomBo> results = mongoTemplate.aggregate(aggregation,collectionName,ChatroomBo.class);
+		List<ChatroomBo> list = results.getMappedResults();
+		return list != null && !list.isEmpty();
+	}
+
+	/**
+	 * 查看是否有索引，没有则创建
+	 * @param collection
+	 * @param indexName
+	 */
+	private boolean hasIndex(DBCollection collection, String indexName){
+		List<DBObject> indexList = collection.getIndexInfo();
+		if(null!=indexList){
+			for(DBObject o:indexList){
+				String name = (String) o.get("name");
+				if (StringUtils.isNotEmpty(name) && name.equals(indexName)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 }

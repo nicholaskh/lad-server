@@ -124,4 +124,25 @@ public class CommonUtil {
     	return ids == null || ids.length == 0;
 	}
 
+
+	/**
+	 * 目标时间距离当前时间是否在time之内
+	 * @param beforeDate 目标时间
+	 * @param time 单位毫秒
+	 * @return ture
+	 */
+	public static boolean isTimeOut(Date beforeDate, long time){
+		long stap = System.currentTimeMillis() - beforeDate.getTime() ;
+		return time >= stap;
+	}
+
+	/**
+	 * 目标时间距离当前时间是否在10分钟内
+	 * @param beforeDate 目标时间
+	 * @return ture
+	 */
+	public static boolean isTimeInTen(Date beforeDate){
+		return isTimeOut(beforeDate, 10*60*1000);
+	}
+
 }

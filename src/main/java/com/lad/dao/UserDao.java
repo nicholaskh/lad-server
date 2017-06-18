@@ -1,8 +1,8 @@
 package com.lad.dao;
 
-import java.util.List;
-import java.util.Set;
-
+import com.lad.bo.Pager;
+import com.lad.bo.UserBo;
+import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
@@ -13,9 +13,8 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
-import com.lad.bo.Pager;
-import com.lad.bo.UserBo;
-import com.mongodb.WriteResult;
+import java.util.List;
+import java.util.Set;
 
 @Repository
 public class UserDao {
@@ -88,17 +87,8 @@ public class UserDao {
 			query.addCriteria(new Criteria("deleted").is(0));
 			Update update = new Update();
 			update.set("chatrooms", userBo.getChatrooms());
-			mongoTemplate.updateFirst(query, update, UserBo.class);	
-			return userBo;
-		}
-		
-		public UserBo updateChatroomsTop(UserBo userBo) {
-			Query query = new Query();
-			query.addCriteria(new Criteria("_id").is(userBo.getId()));
-			query.addCriteria(new Criteria("deleted").is(0));
-			Update update = new Update();
 			update.set("chatroomsTop", userBo.getChatroomsTop());
-			mongoTemplate.updateFirst(query, update, UserBo.class);	
+			mongoTemplate.updateFirst(query, update, UserBo.class);
 			return userBo;
 		}
 		
