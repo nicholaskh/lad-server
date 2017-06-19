@@ -15,6 +15,9 @@ public class FriendsVo extends BaseVo {
 	private String username;
 	private String picture;
 
+	private String channelId;
+
+
 	public String getUserid() {
 		return userid;
 	}
@@ -101,5 +104,13 @@ public class FriendsVo extends BaseVo {
 
 	public void setId(String id) {
 		this.id = id;
+	}
+
+	public String getChannelId() {
+		return channelId;
+	}
+
+	public void setChannelId(String channelId) {
+		this.channelId = channelId;
 	}
 }
