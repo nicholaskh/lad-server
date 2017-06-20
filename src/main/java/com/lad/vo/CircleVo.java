@@ -14,7 +14,6 @@ public class CircleVo extends BaseVo {
 	private HashSet<String> users = new HashSet<String>();
 	private HashSet<String> usersApply = new HashSet<String>();
 	private HashSet<String> usersRefuse = new HashSet<String>();
-	private HashSet<String> organizations = new HashSet<String>();
 	private HashSet<String> notes = new HashSet<String>();
 	private Long notesSize;
 	private Long usersSize;
@@ -105,14 +104,6 @@ public class CircleVo extends BaseVo {
 
 	public void setUsersRefuse(HashSet<String> usersRefuse) {
 		this.usersRefuse = usersRefuse;
-	}
-
-	public HashSet<String> getOrganizations() {
-		return organizations;
-	}
-
-	public void setOrganizations(HashSet<String> organizations) {
-		this.organizations = organizations;
 	}
 
 	public HashSet<String> getNotes() {

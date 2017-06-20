@@ -1,9 +1,12 @@
 package com.lad.bo;
 
-import java.util.HashSet;
-
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.HashSet;
+
+/**
+ * 删除圈子中的群组，圈子代替群组
+ */
 @Document(collection = "circle")
 public class CircleBo extends BaseBo {
 	private double[] position;
@@ -18,8 +21,7 @@ public class CircleBo extends BaseBo {
 	private HashSet<String> users = new HashSet<String>();
 	private HashSet<String> usersApply = new HashSet<String>();
 	private HashSet<String> usersRefuse = new HashSet<String>();
-	//群组
-	private HashSet<String> organizations = new HashSet<String>();
+
 	//帖子
 	private HashSet<String> notes = new HashSet<String>();
 
@@ -79,14 +81,6 @@ public class CircleBo extends BaseBo {
 		this.usersApply = usersApply;
 	}
 
-	public HashSet<String> getOrganizations() {
-		return organizations;
-	}
-
-	public void setOrganizations(HashSet<String> organizations) {
-		this.organizations = organizations;
-	}
-
 	public String getCategory() {
 		return category;
 	}
@@ -118,4 +112,5 @@ public class CircleBo extends BaseBo {
 	public void setNotes(HashSet<String> notes) {
 		this.notes = notes;
 	}
+
 }

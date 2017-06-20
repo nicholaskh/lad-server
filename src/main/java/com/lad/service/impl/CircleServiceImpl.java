@@ -1,15 +1,14 @@
 package com.lad.service.impl;
 
-import java.util.HashSet;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.lad.bo.CircleBo;
 import com.lad.dao.ICircleDao;
 import com.lad.service.ICircleService;
 import com.mongodb.WriteResult;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.HashSet;
+import java.util.List;
 
 @Service("circleService")
 public class CircleServiceImpl implements ICircleService {
@@ -43,11 +42,6 @@ public class CircleServiceImpl implements ICircleService {
 		return circleDao.updateUsersRefuse(circleBoId, usersRefuse);
 	}
 
-	public WriteResult updateOrganizations(String circleBoId,
-			HashSet<String> organizations) {
-		return circleDao.updateOrganizations(circleBoId, organizations);
-	}
-
 	public WriteResult updateHeadPicture(String circleBoId, String headPicture) {
 		return circleDao.updateHeadPicture(circleBoId, headPicture);
 	}
@@ -61,4 +55,13 @@ public class CircleServiceImpl implements ICircleService {
 		return circleDao.updateNotes(circleBoId, notes);
 	}
 
+	@Override
+	public List<CircleBo> findByCreateid(String createid) {
+		return circleDao.findByCreateid(createid);
+	}
+
+	@Override
+	public WriteResult updateMaster(CircleBo circleBo) {
+		return circleDao.updateMaster(circleBo);
+	}
 }

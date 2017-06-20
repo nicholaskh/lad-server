@@ -1,8 +1,8 @@
 package com.lad.dao.impl;
 
-import java.util.HashSet;
-import java.util.List;
-
+import com.lad.bo.CircleBo;
+import com.lad.dao.ICircleDao;
+import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -10,9 +10,8 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
-import com.lad.bo.CircleBo;
-import com.lad.dao.ICircleDao;
-import com.mongodb.WriteResult;
+import java.util.HashSet;
+import java.util.List;
 
 @Repository("circleDao")
 public class CircleDaoImpl implements ICircleDao {
@@ -67,16 +66,6 @@ public class CircleDaoImpl implements ICircleDao {
 		return mongoTemplate.updateFirst(query, update, CircleBo.class);
 	}
 
-	public WriteResult updateOrganizations(String circleBoId,
-			HashSet<String> organizations) {
-		Query query = new Query();
-		query.addCriteria(new Criteria("_id").is(circleBoId));
-		query.addCriteria(new Criteria("deleted").is(0));
-		Update update = new Update();
-		update.set("organizations", organizations);
-		return mongoTemplate.updateFirst(query, update, CircleBo.class);
-	}
-
 	public WriteResult updateHeadPicture(String circleBoId, String headPicture) {
 		Query query = new Query();
 		query.addCriteria(new Criteria("_id").is(circleBoId));
@@ -105,4 +94,22 @@ public class CircleDaoImpl implements ICircleDao {
 		return mongoTemplate.updateFirst(query, update, CircleBo.class);
 	}
 
+	@Override
+	public List<CircleBo> findByCreateid(String createid) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("createuid").is(createid));
+		query.addCriteria(new Criteria("deleted").is(0));
+		return mongoTemplate.find(query, CircleBo.class);
+	}
+
+	@Override
+	public WriteResult updateMaster(CircleBo circleBo) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("_id").is(circleBo.getId()));
+		query.addCriteria(new Criteria("deleted").is(0));
+		Update update = new Update();
+		//创建者默认为群主，后续修改需要更改群主字段
+		update.set("createuid", circleBo.getCreateuid());
+		return mongoTemplate.updateFirst(query, update, CircleBo.class);
+	}
 }

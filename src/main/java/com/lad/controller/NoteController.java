@@ -1,23 +1,5 @@
 package com.lad.controller;
 
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
-import net.sf.json.JSONObject;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.multipart.MultipartFile;
-
 import com.lad.bo.CircleBo;
 import com.lad.bo.NoteBo;
 import com.lad.bo.UserBo;
@@ -27,6 +9,21 @@ import com.lad.service.IUserService;
 import com.lad.util.CommonUtil;
 import com.lad.util.Constant;
 import com.lad.util.ERRORCODE;
+import net.sf.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 
 @Controller
 @RequestMapping("note")
@@ -46,7 +43,7 @@ public class NoteController extends BaseContorller {
 			@RequestParam(required = true) String subject,
 			@RequestParam(required = true) String landmark,
 			@RequestParam(required = true) String content,
-			@RequestParam(required = true) String circleid,
+			@RequestParam(required = true) String organizationid,
 			HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
@@ -66,11 +63,11 @@ public class NoteController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		userBo = userService.getUser(userBo.getId());
-		CircleBo circleBo = circleService.selectById(circleid);
+		CircleBo circleBo = circleService.selectById(organizationid);
 		if (null == circleBo) {
 			return CommonUtil.toErrorResult(
-					ERRORCODE.CIRCLE_IS_NULL.getIndex(),
-					ERRORCODE.CIRCLE_IS_NULL.getReason());
+					ERRORCODE.ORGANIZATION_IS_NULL.getIndex(),
+					ERRORCODE.ORGANIZATION_IS_NULL.getReason());
 		}
 		NoteBo noteBo = new NoteBo();
 		noteBo.setPosition(new double[] { px, py });
@@ -82,9 +79,7 @@ public class NoteController extends BaseContorller {
 		HashSet<String> notes = circleBo.getNotes();
 		notes.add(noteBo.getId());
 		circleService.updateNotes(circleBo.getId(), notes);
-		Map<String, Object> map = new HashMap<String, Object>();
-		map.put("ret", 0);
-		return JSONObject.fromObject(map).toString();
+		return Constant.COM_RESP;
 	}
 
 	@RequestMapping("/photo")

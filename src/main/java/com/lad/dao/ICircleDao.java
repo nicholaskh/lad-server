@@ -1,10 +1,10 @@
 package com.lad.dao;
 
-import java.util.HashSet;
-import java.util.List;
-
 import com.lad.bo.CircleBo;
 import com.mongodb.WriteResult;
+
+import java.util.HashSet;
+import java.util.List;
 
 public interface ICircleDao extends IBaseDao {
 
@@ -25,10 +25,22 @@ public interface ICircleDao extends IBaseDao {
 	public WriteResult updateUsersRefuse(String circleBoId,
 			HashSet<String> usersRefuse);
 
-	public WriteResult updateOrganizations(String circleBoId,
-			HashSet<String> organizations);
-
 	public WriteResult updateHeadPicture(String circleBoId, String headPicture);
 
 	public WriteResult updateNotes(String circleBoId, HashSet<String> notes);
+
+	/**
+	 * 根据创建者查询
+	 * @param createid
+	 * @return
+	 */
+	List<CircleBo> findByCreateid(String createid);
+
+	/**
+	 * 更新群主
+	 * @param circleBo  更新为群主的用户
+	 * @return
+	 */
+	WriteResult updateMaster(CircleBo circleBo);
+
 }
