@@ -43,4 +43,20 @@ public interface ICircleDao extends IBaseDao {
 	 */
 	WriteResult updateMaster(CircleBo circleBo);
 
+	/**
+	 * 返回用户数最多前十圈子
+	 * @return
+	 */
+	List<CircleBo> selectUsersPre();
+
+	/**
+	 * 我的圈子
+	 * @param userid
+	 * @param startId
+	 * @param gt
+	 * @param limit
+	 * @return
+	 */
+	List<CircleBo> findMyCircles(String userid, String startId, boolean gt, int limit);
+
 }

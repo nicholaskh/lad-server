@@ -3,7 +3,9 @@ package com.lad.dao.impl;
 import com.lad.bo.CircleBo;
 import com.lad.dao.ICircleDao;
 import com.mongodb.WriteResult;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -15,6 +17,9 @@ import java.util.List;
 
 @Repository("circleDao")
 public class CircleDaoImpl implements ICircleDao {
+
+	private String collectionName = "circle";
+
 	@Autowired
 	private MongoTemplate mongoTemplate;
 
@@ -43,6 +48,7 @@ public class CircleDaoImpl implements ICircleDao {
 		query.addCriteria(new Criteria("deleted").is(0));
 		Update update = new Update();
 		update.set("users", users);
+		update.set("usernum", users.size());
 		return mongoTemplate.updateFirst(query, update, CircleBo.class);
 	}
 
@@ -110,6 +116,31 @@ public class CircleDaoImpl implements ICircleDao {
 		Update update = new Update();
 		//创建者默认为群主，后续修改需要更改群主字段
 		update.set("createuid", circleBo.getCreateuid());
+		update.set("usernum", circleBo.getUsers().size());
 		return mongoTemplate.updateFirst(query, update, CircleBo.class);
+	}
+
+	public List<CircleBo> selectUsersPre() {
+		Query query = new Query();
+		query.limit(10);
+		query.addCriteria(new Criteria("deleted").is(0));
+		query.with(new Sort(new Sort.Order(Sort.Direction.DESC,"usernum")));
+		return mongoTemplate.find(query, CircleBo.class);
+	}
+
+	public List<CircleBo> findMyCircles(String userid, String startId, boolean gt, int limit) {
+		Query query = new Query();
+		query.limit(limit);
+		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
+		query.addCriteria(new Criteria("users").in(userid));
+		query.addCriteria(new Criteria("deleted").is(0));
+		if (!StringUtils.isEmpty(startId)) {
+			if (gt) {
+				query.addCriteria(new Criteria("_id").gt(startId));
+			} else {
+				query.addCriteria(new Criteria("_id").lt(startId));
+			}
+		}
+		return mongoTemplate.find(query, CircleBo.class);
 	}
 }

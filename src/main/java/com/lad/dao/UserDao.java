@@ -171,14 +171,6 @@ public class UserDao {
 			return pager;
 		}
 		
-		public UserBo findById(String integer){
-			Query query = new Query();
-			query.addCriteria(new Criteria("_id").is(integer));
-			query.addCriteria(new Criteria("deleted").is(0));
-			UserBo userBo = mongoTemplate.findOne(query, UserBo.class);
-			return userBo;
-		}
-		
 		public WriteResult updateLocation(String phone, String locationid) {
 			Query query = new Query();
 			query.addCriteria(new Criteria("phone").is(phone));
@@ -187,5 +179,9 @@ public class UserDao {
 			update.set("locationid", locationid);
 			return mongoTemplate.updateFirst(query, update, UserBo.class);	
 		}
-			
+
+
+	public List<UserBo> getAllUser() {
+		return mongoTemplate.findAll(UserBo.class);
+	}
 }

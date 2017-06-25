@@ -41,4 +41,20 @@ public interface ICircleService extends IBaseService {
 	 * @return
 	 */
 	WriteResult updateMaster(CircleBo circleBo);
+
+	/**
+	 * 我加入的圈子
+	 * @param userid
+	 * @param startId
+	 * @param gt
+	 * @param limit
+	 * @return
+	 */
+	List<CircleBo> findMyCircles(String userid, String startId, boolean gt, int limit);
+
+	/**
+	 * 圈子前十
+	 * @return
+	 */
+	List<CircleBo> selectUsersPre();
 }

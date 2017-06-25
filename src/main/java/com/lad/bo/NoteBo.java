@@ -10,6 +10,10 @@ public class NoteBo extends BaseBo {
 	private String landmark;
 	private double[] position;
 	private String circleId;
+	//访问量
+	private long visitcount;
+
+	private long transcount;
 
 	public String getSubject() {
 		return subject;
@@ -59,4 +63,19 @@ public class NoteBo extends BaseBo {
 		this.circleId = circleId;
 	}
 
+	public long getVisitcount() {
+		return visitcount;
+	}
+
+	public void setVisitcount(long visitcount) {
+		this.visitcount = visitcount;
+	}
+
+	public long getTranscount() {
+		return transcount;
+	}
+
+	public void setTranscount(long transcount) {
+		this.transcount = transcount;
+	}
 }

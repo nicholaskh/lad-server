@@ -18,6 +18,7 @@ public class CircleBo extends BaseBo {
 	//类别
 	private String category;
 	private String headPicture;
+	private int usernum;
 	private HashSet<String> users = new HashSet<String>();
 	private HashSet<String> usersApply = new HashSet<String>();
 	private HashSet<String> usersRefuse = new HashSet<String>();
@@ -113,4 +114,10 @@ public class CircleBo extends BaseBo {
 		this.notes = notes;
 	}
 
+	public int getUsernum() {
+		return usernum;
+	}
+	public void setUsernum(int usernum) {
+		this.usernum = usernum;
+	}
 }

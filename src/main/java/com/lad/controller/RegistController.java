@@ -1,27 +1,30 @@
 package com.lad.controller;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
+import com.lad.bo.HomepageBo;
+import com.lad.bo.IMTermBo;
+import com.lad.bo.UserBo;
+import com.lad.service.IHomepageService;
+import com.lad.service.IIMTermService;
+import com.lad.service.IRegistService;
+import com.lad.service.IUserService;
+import com.lad.util.CommonUtil;
+import com.lad.util.Constant;
+import com.lad.util.ERRORCODE;
+import com.lad.util.IMUtil;
+import com.pushd.ImAssistant;
+import com.pushd.Message;
+import net.sf.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.lad.bo.HomepageBo;
-import com.lad.bo.UserBo;
-import com.lad.service.IHomepageService;
-import com.lad.service.IRegistService;
-import com.lad.service.IUserService;
-import com.lad.util.CommonUtil;
-import com.lad.util.ERRORCODE;
-
-import net.sf.json.JSONObject;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import java.util.HashMap;
+import java.util.Map;
 
 @Controller
 @RequestMapping("regist")
@@ -33,6 +36,9 @@ public class RegistController extends BaseContorller {
 	private IUserService userService;
 	@Autowired
 	private IHomepageService homepageService;
+	@Autowired
+	private IIMTermService iMTermService;
+
 
 	@RequestMapping("/verification-send")
 	@ResponseBody
@@ -125,7 +131,32 @@ public class RegistController extends BaseContorller {
 		homepageBo.setOwner_id(userBo.getId());
 		homepageService.insert(homepageBo);
 		session.invalidate();
-		return "{\"ret\":0}";
+		ImAssistant assistent = ImAssistant.init("180.76.138.200", 2222);
+		if (null == assistent) {
+			return CommonUtil.toErrorResult(ERRORCODE.PUSHED_CONNECT_ERROR.getIndex(),
+					ERRORCODE.PUSHED_CONNECT_ERROR.getReason());
+		}
+		try {
+			String term = IMUtil.getTerm(assistent);
+			IMTermBo iMTermBo = new IMTermBo();
+			iMTermBo.setUserid(userBo.getId());
+			iMTermBo.setTerm(term);
+			iMTermService.insert(iMTermBo);
+			assistent.setServerTerm(term);
+			Message messageUser = assistent.createUser(userBo.getId());
+			if (messageUser.getStatus() == Message.Status.termError) {
+				term = IMUtil.getTerm(assistent);
+				iMTermService.updateByUserid(userBo.getId(), term);
+				messageUser = assistent.createUser(userBo.getId());
+				if (Message.Status.success != messageUser.getStatus()) {
+					return CommonUtil.toErrorResult(messageUser.getStatus(), messageUser.getMsg());
+				}
+			} else if (Message.Status.success != messageUser.getStatus()) {
+				return CommonUtil.toErrorResult(messageUser.getStatus(), messageUser.getMsg());
+			}
+		} finally {
+			assistent.close();
+		}
+		return Constant.COM_RESP;
 	}
-
 }

@@ -64,4 +64,14 @@ public class CircleServiceImpl implements ICircleService {
 	public WriteResult updateMaster(CircleBo circleBo) {
 		return circleDao.updateMaster(circleBo);
 	}
+
+	@Override
+	public List<CircleBo> findMyCircles(String userid, String startId, boolean gt, int limit) {
+		return circleDao.findMyCircles(userid,startId,gt, limit);
+	}
+
+	@Override
+	public List<CircleBo> selectUsersPre() {
+		return circleDao.selectUsersPre();
+	}
 }
