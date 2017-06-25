@@ -12,8 +12,10 @@ public class NoteBo extends BaseBo {
 	private String circleId;
 	//访问量
 	private long visitcount;
-
+	//转发量
 	private long transcount;
+	//评论数
+	private long commentcount;
 
 	public String getSubject() {
 		return subject;
@@ -77,5 +79,13 @@ public class NoteBo extends BaseBo {
 
 	public void setTranscount(long transcount) {
 		this.transcount = transcount;
+	}
+
+	public long getCommentcount() {
+		return commentcount;
+	}
+
+	public void setCommentcount(long commentcount) {
+		this.commentcount = commentcount;
 	}
 }

@@ -584,6 +584,7 @@ public class ChatroomController extends BaseContorller {
 			}
 		} finally {
 			lock.unlock();
+			redisson.shutdown();
 		}
 		HashSet<String> chatrooms = userBo.getChatrooms();
 		chatrooms.add(chatroom.getId());
