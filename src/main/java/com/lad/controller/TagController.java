@@ -62,11 +62,11 @@ public class TagController extends BaseContorller {
 
 	@RequestMapping("/update-tag-name")
 	@ResponseBody
-	public String updateTagName(String tagId, String name,
+	public String updateTagName(String tagid, String name,
 						 HttpServletRequest request, HttpServletResponse response) {
 		try {
 			checkSession(request, userService);
-			TagBo tagBo = tagService.get(tagId);
+			TagBo tagBo = tagService.get(tagid);
 			if (null == tagBo) {
 				return CommonUtil.toErrorResult(ERRORCODE.TAG_NULL.getIndex(),
 						ERRORCODE.TAG_NULL.getReason());
@@ -159,7 +159,7 @@ public class TagController extends BaseContorller {
 
 	@RequestMapping("/cancel-friend-tag")
 	@ResponseBody
-	public String deleteTag(String tagid, String frinedid,
+	public String deleteTag(String tagid, String frinedids,
 							HttpServletRequest request, HttpServletResponse response) {
 		try {
 			checkSession(request, userService);
@@ -171,13 +171,16 @@ public class TagController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.TAG_NULL.getIndex(),
 					ERRORCODE.TAG_NULL.getReason());
 		}
-		HashSet<String> friendsids = tagBo.getFriendsIds();
-		if (!friendsids.contains(frinedid)) {
-			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_TAG_NULL.getIndex(),
-					ERRORCODE.FRIEND_TAG_NULL.getReason());
+		HashSet<String> oldFids = tagBo.getFriendsIds();
+		String[] friends = frinedids.split(",");
+		for (String frinedid: friends) {
+			if (!oldFids.contains(frinedid)) {
+				return CommonUtil.toErrorResult(ERRORCODE.FRIEND_TAG_NULL.getIndex(),
+						ERRORCODE.FRIEND_TAG_NULL.getReason());
+			}
+			oldFids.remove(frinedid);
 		}
-		friendsids.remove(frinedid);
-		tagBo.setFriendsIds(friendsids);
+		tagBo.setFriendsIds(oldFids);
 		tagService.updateFriendsIdsById(tagBo);
 		return Constant.COM_RESP;
 	}
