@@ -1,5 +1,6 @@
 package com.lad.vo;
 
+import java.util.HashSet;
 import java.util.List;
 
 public class FriendsVo extends BaseVo {
@@ -8,7 +9,7 @@ public class FriendsVo extends BaseVo {
 	private String friendid;
 	private String backname;
 	private List<String> tag;
-	private String phone;
+	private HashSet<String> phone = new HashSet<>();
 	private String description;
 	private Integer VIP;
 	private Integer black;
@@ -50,11 +51,11 @@ public class FriendsVo extends BaseVo {
 		this.tag = tag;
 	}
 
-	public String getPhone() {
+	public HashSet<String> getPhone() {
 		return phone;
 	}
 
-	public void setPhone(String phone) {
+	public void setPhone(HashSet<String> phone) {
 		this.phone = phone;
 	}
 

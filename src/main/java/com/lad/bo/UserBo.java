@@ -30,6 +30,7 @@ public class UserBo extends BaseBo implements Serializable {
 	private List<String> friends = new LinkedList<String>();
 
 	private HashSet<String> chatrooms = new HashSet<String>();
+
 	/**
 	 * 面对面群聊
 	 */
@@ -134,4 +135,5 @@ public class UserBo extends BaseBo implements Serializable {
 	public void setFaceChatrooms(HashSet<String> faceChatrooms) {
 		this.faceChatrooms = faceChatrooms;
 	}
+
 }

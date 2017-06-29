@@ -1,9 +1,9 @@
 package com.lad.dao;
 
-import java.util.List;
-
 import com.lad.bo.TagBo;
 import com.mongodb.WriteResult;
+
+import java.util.List;
 
 public interface ITagDao extends IBaseDao {
 	public TagBo insert(TagBo tagBo);
@@ -12,4 +12,8 @@ public interface ITagDao extends IBaseDao {
 	public List<TagBo> getTagBoListByUseridAndFrinedid(String userid, String friendid);
 	public WriteResult deleteById(String tagId);
 	public TagBo get(String tagId);
+
+	WriteResult updateTagName(TagBo tagBo);
+
+	TagBo getBynameAndUserid(String tagName, String userid);
 }

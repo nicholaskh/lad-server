@@ -3,10 +3,14 @@ package com.lad.controller;
 import com.lad.bo.ChatroomBo;
 import com.lad.bo.IMTermBo;
 import com.lad.bo.UserBo;
+import com.lad.redis.RedisServer;
 import com.lad.service.IChatroomService;
 import com.lad.service.IIMTermService;
 import com.lad.service.IUserService;
-import com.lad.util.*;
+import com.lad.util.CommonUtil;
+import com.lad.util.Constant;
+import com.lad.util.ERRORCODE;
+import com.lad.util.IMUtil;
 import com.lad.vo.ChatroomVo;
 import com.lad.vo.UserVo;
 import com.pushd.ImAssistant;
@@ -14,7 +18,6 @@ import net.sf.json.JSONObject;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.redisson.api.RLock;
-import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,6 +41,9 @@ public class ChatroomController extends BaseContorller {
 	private IUserService userService;
 	@Autowired
 	private IIMTermService iMTermService;
+
+	@Autowired
+	private RedisServer redisServer;
 
 	@RequestMapping("/create")
 	@ResponseBody
@@ -541,12 +547,11 @@ public class ChatroomController extends BaseContorller {
 		HashSet<String> userSet = new HashSet<>();
 		ChatroomBo chatroom = null;
 		boolean isNew = false;
-		RedissonClient redisson = RedisUtil.init();
-		RLock lock = redisson.getLock("chatLock");
+		RLock lock = redisServer.getRLock(Constant.CHAT_LOCK);
 		double[] position = new double[]{px,py};
 		try {
 			//10s自动解锁
-			lock.lock(20, TimeUnit.SECONDS);
+			lock.lock(10, TimeUnit.SECONDS);
 			chatroom = chatroomService.selectBySeq(seq);
 			if (null == chatroom) {
 				chatroom = new ChatroomBo();
@@ -584,7 +589,6 @@ public class ChatroomController extends BaseContorller {
 			}
 		} finally {
 			lock.unlock();
-			redisson.shutdown();
 		}
 		HashSet<String> chatrooms = userBo.getChatrooms();
 		chatrooms.add(chatroom.getId());

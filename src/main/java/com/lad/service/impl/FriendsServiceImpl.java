@@ -1,14 +1,14 @@
 package com.lad.service.impl;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.lad.bo.FriendsBo;
 import com.lad.dao.IFriendsDao;
 import com.lad.service.IFriendsService;
 import com.mongodb.WriteResult;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.HashSet;
+import java.util.List;
 
 @Service("friendsService")
 public class FriendsServiceImpl implements IFriendsService {
@@ -28,8 +28,8 @@ public class FriendsServiceImpl implements IFriendsService {
 		return friendsDao.updateTag(userid, friendid, tag);
 	}
 
-	public WriteResult updatePhone(String userid, String friendid, String phone) {
-		return friendsDao.updatePhone(userid, friendid, phone);
+	public WriteResult updatePhone(String userid, String friendid, HashSet<String> phones) {
+		return friendsDao.updatePhone(userid, friendid, phones);
 	}
 
 	public WriteResult updateDescription(String userid, String friendid, String description) {

@@ -1,5 +1,6 @@
 package com.lad.service;
 
+import com.lad.bo.CommentBo;
 import com.lad.bo.NoteBo;
 import com.mongodb.WriteResult;
 
@@ -15,10 +16,33 @@ public interface INoteService extends IBaseService {
 	/**
 	 * 更新帖子访问量
 	 * @param noteId
-	 * @param visitcount
 	 * @return
 	 */
-	WriteResult updateVisit(String noteId, long visitcount);
+	WriteResult updateVisitCount(String noteId);
+
+	/**
+	 * 更新评论数量
+	 * @param noteId
+	 * @param commentcount
+	 * @return
+	 */
+	WriteResult updateCommentCount(String noteId, long commentcount);
+
+	/**
+	 * 更新转发数量
+	 * @param noteId
+	 * @param transcount
+	 * @return
+	 */
+	WriteResult updateTransCount(String noteId, long transcount);
+
+	/**
+	 * 更新点赞数量
+	 * @param noteId
+	 * @param thumpsubcount
+	 * @return
+	 */
+	WriteResult updateThumpsubCount(String noteId, long thumpsubcount);
 
 	/**
 	 * 获取圈子内最新的帖子
@@ -33,11 +57,18 @@ public interface INoteService extends IBaseService {
 
 	/**
 	 * 帖子点赞
-	 * @param circleid
+	 * @param noteid
 	 * @param userid
 	 * @return
 	 */
-	WriteResult thumbSupNote(String circleid, String userid);
+	WriteResult thumbSupNote(String noteid, String userid);
+
+	/**
+	 * 帖子评论
+	 * @param noteid
+	 * @return
+	 */
+	WriteResult addComment(String noteid, CommentBo commentBo);
 
 	/**
 	 * 取评论最高前十

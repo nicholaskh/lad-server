@@ -1,7 +1,8 @@
 package com.lad.dao.impl;
 
-import java.util.List;
-
+import com.lad.bo.TagBo;
+import com.lad.dao.ITagDao;
+import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -9,9 +10,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
-import com.lad.bo.TagBo;
-import com.lad.dao.ITagDao;
-import com.mongodb.WriteResult;
+import java.util.List;
 
 @Repository("tagDao")
 public class TagDaoImpl implements ITagDao {
@@ -30,6 +29,15 @@ public class TagDaoImpl implements ITagDao {
 		query.addCriteria(new Criteria("deleted").is(0));
 		Update update = new Update();
 		update.set("friendsIds", tagBo.getFriendsIds());
+		return mongoTemplate.updateFirst(query, update, TagBo.class);
+	}
+
+	public WriteResult updateTagName(TagBo tagBo){
+		Query query = new Query();
+		query.addCriteria(new Criteria("_id").is(tagBo.getId()));
+		query.addCriteria(new Criteria("deleted").is(0));
+		Update update = new Update();
+		update.set("name", tagBo.getName());
 		return mongoTemplate.updateFirst(query, update, TagBo.class);
 	}
 
@@ -60,6 +68,13 @@ public class TagDaoImpl implements ITagDao {
 		Query query = new Query();
 		query.addCriteria(new Criteria("_id").is(tagId));
 		query.addCriteria(new Criteria("deleted").is(0));
+		return mongoTemplate.findOne(query, TagBo.class);
+	}
+
+	public TagBo getBynameAndUserid(String tagName, String userid){
+		Query query = new Query();
+		query.addCriteria(new Criteria("name").is(tagName));
+		query.addCriteria(new Criteria("userid").is(userid));
 		return mongoTemplate.findOne(query, TagBo.class);
 	}
 }

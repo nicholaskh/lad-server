@@ -1,7 +1,8 @@
 package com.lad.dao.impl;
 
-import java.util.List;
-
+import com.lad.bo.FriendsBo;
+import com.lad.dao.IFriendsDao;
+import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -9,9 +10,8 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
-import com.lad.bo.FriendsBo;
-import com.lad.dao.IFriendsDao;
-import com.mongodb.WriteResult;
+import java.util.HashSet;
+import java.util.List;
 
 @Repository("friendsDao")
 public class FriendsDaoImpl implements IFriendsDao {
@@ -44,13 +44,13 @@ public class FriendsDaoImpl implements IFriendsDao {
 		return mongoTemplate.updateFirst(query, update, FriendsBo.class);
 	}
 
-	public WriteResult updatePhone(String userid, String friendid, String phone) {
+	public WriteResult updatePhone(String userid, String friendid, HashSet<String> phones) {
 		Query query = new Query();
 		query.addCriteria(new Criteria("userid").is(userid));
 		query.addCriteria(new Criteria("friendid").is(friendid));
 		query.addCriteria(new Criteria("deleted").is(0));
 		Update update = new Update();
-		update.set("phone", phone);
+		update.set("phone", phones);
 		return mongoTemplate.updateFirst(query, update, FriendsBo.class);
 	}
 

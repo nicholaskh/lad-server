@@ -1,9 +1,8 @@
 package com.lad.bo;
 
-import java.util.LinkedList;
-import java.util.List;
-
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.util.HashSet;
 
 @Document(collection = "friends")
 public class FriendsBo extends BaseBo {
@@ -12,7 +11,7 @@ public class FriendsBo extends BaseBo {
 	private String friendid;
 	private int apply;//0：申请；1：同意好友；-1拒绝好友
 	private String backname;
-	private String phone;
+	private HashSet<String> phone = new HashSet<>();
 	private String description;
 	private Integer VIP = 0;
 	private Integer black = 0;
@@ -41,11 +40,11 @@ public class FriendsBo extends BaseBo {
 		this.backname = backname;
 	}
 
-	public String getPhone() {
+	public HashSet<String> getPhone() {
 		return phone;
 	}
 
-	public void setPhone(String phone) {
+	public void setPhone(HashSet<String> phone) {
 		this.phone = phone;
 	}
 

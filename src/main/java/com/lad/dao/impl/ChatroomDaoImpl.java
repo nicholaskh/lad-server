@@ -27,13 +27,17 @@ public class ChatroomDaoImpl implements IChatroomDao {
 
 	private String collectionName = "chatroom";
 
+	private boolean isIndex = false;
+
 	@Autowired
 	private MongoTemplate mongoTemplate;
 
 	public ChatroomBo insert(ChatroomBo chatroom) {
-		DBCollection collection = mongoTemplate.getCollection(collectionName);
-		if (!hasIndex(collection, "position")) {
-			collection.createIndex(new BasicDBObject("position", "2dsphere"), "position");
+		if (!isIndex) {
+			DBCollection collection = mongoTemplate.getCollection(collectionName);
+			if (!hasIndex(collection, "position")) {
+				collection.createIndex(new BasicDBObject("position", "2dsphere"), "position");
+			}
 		}
 		mongoTemplate.insert(chatroom);
 		return chatroom;
@@ -127,7 +131,7 @@ public class ChatroomDaoImpl implements IChatroomDao {
 			for(DBObject o:indexList){
 				String name = (String) o.get("name");
 				if (StringUtils.isNotEmpty(name) && name.equals(indexName)) {
-					return true;
+					return (isIndex = true);
 				}
 			}
 		}

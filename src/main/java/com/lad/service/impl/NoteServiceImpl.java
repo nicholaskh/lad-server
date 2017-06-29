@@ -1,5 +1,7 @@
 package com.lad.service.impl;
 
+import com.lad.bo.CommentBo;
+import com.lad.dao.ICommentDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +17,9 @@ public class NoteServiceImpl implements INoteService {
 	@Autowired
 	private INoteDao noteDao;
 
+	@Autowired
+	private ICommentDao commentDao;
+
 	public NoteBo insert(NoteBo noteBo) {
 		return noteDao.insert(noteBo);
 	}
@@ -28,17 +33,12 @@ public class NoteServiceImpl implements INoteService {
 	}
 
 	@Override
-	public WriteResult updateVisit(String noteId, long visitcount) {
-		return noteDao.updateVisit(noteId, visitcount);
-	}
-
-	@Override
 	public List<NoteBo> finyByCreateTime(String circleid, String startId, boolean gt, int limit) {
 		return noteDao.finyByCreateTime(circleid,startId, gt, limit);
 	}
 
 	@Override
-	public WriteResult thumbSupNote(String circleid, String userid) {
+	public WriteResult thumbSupNote(String noteId, String userid) {
 		return null;
 	}
 
@@ -50,5 +50,31 @@ public class NoteServiceImpl implements INoteService {
 	@Override
 	public List<NoteBo> selectByVisit(String circleid) {
 		return noteDao.selectByVisit(circleid);
+	}
+
+	@Override
+	public WriteResult updateVisitCount(String noteId) {
+		return noteDao.updateVisitCount(noteId);
+	}
+
+	@Override
+	public WriteResult updateCommentCount(String noteId, long commentcount) {
+		return noteDao.updateCommentCount(noteId, commentcount);
+	}
+
+	@Override
+	public WriteResult updateTransCount(String noteId, long transcount) {
+		return noteDao.updateTransCount(noteId, transcount);
+	}
+
+	@Override
+	public WriteResult updateThumpsubCount(String noteId, long thumpsubcount) {
+		return noteDao.updateThumpsubCount(noteId, thumpsubcount);
+	}
+
+
+	@Override
+	public WriteResult addComment(String noteid, CommentBo commentBo) {
+		return null;
 	}
 }

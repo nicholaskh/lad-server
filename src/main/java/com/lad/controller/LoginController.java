@@ -1,28 +1,27 @@
 package com.lad.controller;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
+import com.lad.bo.IMTermBo;
+import com.lad.bo.UserBo;
+import com.lad.redis.RedisServer;
+import com.lad.service.IIMTermService;
+import com.lad.service.ILoginService;
+import com.lad.util.CommonUtil;
+import com.lad.util.ERRORCODE;
+import com.lad.util.IMUtil;
+import com.pushd.ImAssistant;
+import com.pushd.Message;
 import net.sf.json.JSONObject;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.lad.bo.IMTermBo;
-import com.lad.bo.UserBo;
-import com.lad.service.IIMTermService;
-import com.lad.service.ILoginService;
-import com.lad.util.CommonUtil;
-import com.lad.util.ERRORCODE;
-import com.pushd.ImAssistant;
-import com.pushd.Message;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import java.util.HashMap;
+import java.util.Map;
 
 @Controller
 @RequestMapping("login")
@@ -32,6 +31,8 @@ public class LoginController extends BaseContorller {
 	private ILoginService loginService;
 	@Autowired
 	private IIMTermService iMTermService;
+	@Autowired
+	private RedisServer redisServer;
 
 	@RequestMapping("/verification-send")
 	@ResponseBody
@@ -110,20 +111,14 @@ public class LoginController extends BaseContorller {
 			if(iMTermBo == null){
 				iMTermBo = new IMTermBo();
 				iMTermBo.setUserid(userBo.getId());
-				Message message = assistent.getAppKey();
-				String appKey = message.getMsg();
-				Message message2 = assistent.authServer(appKey);
-				String term = message2.getMsg();
+				String term =IMUtil.getTerm(assistent);
 				iMTermBo.setTerm(term);
 				iMTermService.insert(iMTermBo);
 			}
 			assistent.setServerTerm(iMTermBo.getTerm());
 			Message message3 = assistent.getToken();
 			if(message3.getStatus() == Message.Status.termError){
-				Message message = assistent.getAppKey();
-				String appKey = message.getMsg();
-				Message message2 = assistent.authServer(appKey);
-				String term = message2.getMsg();
+				String term =IMUtil.getTerm(assistent);
 				iMTermService.updateByUserid(userBo.getId(), term);
 			}else if (Message.Status.success != message3.getStatus()) {
 				assistent.close();

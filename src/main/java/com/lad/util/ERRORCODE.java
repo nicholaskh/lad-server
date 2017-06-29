@@ -46,12 +46,14 @@ public enum ERRORCODE {
 	FRIEND_VIP_NULL(80002, "VIP为空"),
 	FRIEND_BLACK_NULL(80003, "黑名单为空"),
 	FRIEND_EXIST(80004, "朋友关系已经存在"),
-	TAG_NULL(80005, "好友标签为空"),
+	TAG_NULL(80005, "标签不存在"),
 	FRIEND_PHONE_NULL(80006, "朋友电话为空"),
 	FRIEND_DESCRIPTION_NULL(80007, "朋友描述为空"),
 	FRIEND_BACKNAME_NULL(80008, "备注为空"),
 	FRIEND_APPLY_EXIST(80009, "请求好友申请已经发送"),
 	FRIEND_DATA_ERROR(80010, "好友信息异常，请联系管理员处理"),
+	FRIEND_TAG_NULL(80011, "好友标签为空"),
+	TAG_NAME_EXIST(80012, "标签名称已存在"),
 	
 	COMPLAIN_IS_NULL(90001, "投诉为空"),
 	
@@ -66,7 +68,8 @@ public enum ERRORCODE {
 	CIRCLE_USER_NULL(110009, "该用户不在此圈子"),
 	
 	NOTE_IS_NULL(120001, "帖子不存在");
-	
+
+
 	private int index;
 	private String reason;
 	

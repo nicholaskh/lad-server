@@ -10,6 +10,7 @@ import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.regex.Matcher;
@@ -143,6 +144,28 @@ public class CommonUtil {
 	 */
 	public static boolean isTimeInTen(Date beforeDate){
 		return isTimeOut(beforeDate, 10*60*1000);
+	}
+
+	/**
+	 * 获取当前时间一周以前时期
+	 * @return
+	 */
+	public static Date getBeforeWeekDate(){
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(new Date());
+		calendar.add(Calendar.DATE, -7);
+		return calendar.getTime();
+	}
+
+	/**
+	 * 获取当前时间每年的第几周
+	 * @return week no
+	 */
+	public static int getWeekOfYear(Date date) {
+		Calendar calendar = Calendar.getInstance();
+		calendar.setFirstDayOfWeek(Calendar.MONDAY);
+		calendar.setTime(date);
+		return calendar.get(Calendar.WEEK_OF_YEAR);
 	}
 
 }

@@ -1,9 +1,10 @@
 package com.lad.service;
 
-import java.util.List;
-
 import com.lad.bo.FriendsBo;
 import com.mongodb.WriteResult;
+
+import java.util.HashSet;
+import java.util.List;
 
 public interface IFriendsService extends IBaseService {
 	public FriendsBo insert(FriendsBo friendsBo);
@@ -12,7 +13,7 @@ public interface IFriendsService extends IBaseService {
 
 	public WriteResult updateTag(String userid, String friendid, List tag);
 
-	public WriteResult updatePhone(String userid, String friendid, String phone);
+	public WriteResult updatePhone(String userid, String friendid, HashSet<String> phones);
 
 	public WriteResult updateDescription(String userid, String friendid, String description);
 

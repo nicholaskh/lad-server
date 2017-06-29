@@ -15,10 +15,33 @@ public interface INoteDao extends IBaseDao {
 	/**
 	 * 更新帖子访问量
 	 * @param noteId
-	 * @param visitcount
 	 * @return
 	 */
-	WriteResult updateVisit(String noteId, long visitcount);
+	WriteResult updateVisitCount(String noteId);
+
+	/**
+	 * 更新评论数量
+	 * @param noteId
+	 * @param commentcount
+	 * @return
+	 */
+	WriteResult updateCommentCount(String noteId, long commentcount);
+
+	/**
+	 * 更新转发数量
+	 * @param noteId
+	 * @param transcount
+	 * @return
+	 */
+	WriteResult updateTransCount(String noteId, long transcount);
+
+	/**
+	 * 更新点赞数量
+	 * @param noteId
+	 * @param thumpsubcount
+	 * @return
+	 */
+	WriteResult updateThumpsubCount(String noteId, long thumpsubcount);
 
 	/**
 	 * 获取圈子内最新的帖子
@@ -43,4 +66,11 @@ public interface INoteDao extends IBaseDao {
 	 * @return
 	 */
 	List<NoteBo> selectByVisit(String circleid);
+
+	/**
+	 * 圈子内热门帖子列表
+	 * @param circleid
+	 * @return
+	 */
+	List<NoteBo> selectHotNotes(String circleid);
 }

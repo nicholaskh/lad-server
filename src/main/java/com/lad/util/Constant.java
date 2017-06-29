@@ -14,4 +14,30 @@ public class Constant {
 	 * 通用成功返回
 	 */
 	public static final String COM_RESP =  "{\"ret\":0}";
+
+	/**
+	 * 面对面建群lock
+	 */
+	public static final String CHAT_LOCK = "chatLock";
+
+	/**
+	 * 访问量lock
+	 */
+	public static final String VISIT_LOCK = "visitLock";
+
+	/**
+	 * 点赞量lock
+	 */
+	public static final String THUMB_LOCK = "thumpLock";
+
+	/**
+	 * 评论量lock
+	 */
+	public static final String COMOMENT_LOCK = "commentLock";
+
+	/**
+	 * 转发量lock
+	 */
+	public static final String TRANS_LOCK = "transLock";
+
 }

@@ -1,5 +1,6 @@
 package com.lad.service;
 
+import com.lad.bo.RedstarBo;
 import com.lad.bo.UserBo;
 import com.mongodb.WriteResult;
 
@@ -35,5 +36,18 @@ public interface IUserService extends IBaseService {
 
 	public WriteResult updateLocation(String phone, String locationid);
 
+	/**
+	 * 红人总榜
+	 * @param circleId
+	 * @return
+	 */
+	List<RedstarBo> findRedUserTotal(String circleId);
+
+	/**
+	 * 红人周榜
+	 * @param circleId
+	 * @return
+	 */
+	List<RedstarBo> findRedUserWeek(String circleId);
 
 }

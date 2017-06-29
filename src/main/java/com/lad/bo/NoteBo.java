@@ -16,6 +16,11 @@ public class NoteBo extends BaseBo {
 	private long transcount;
 	//评论数
 	private long commentcount;
+	//点赞数
+	private long thumpsubcount;
+
+	//用于聚合查询的临时值，不用于数据保存
+	private long temp;
 
 	public String getSubject() {
 		return subject;
@@ -87,5 +92,21 @@ public class NoteBo extends BaseBo {
 
 	public void setCommentcount(long commentcount) {
 		this.commentcount = commentcount;
+	}
+
+	public long getThumpsubcount() {
+		return thumpsubcount;
+	}
+
+	public void setThumpsubcount(long thumpsubcount) {
+		this.thumpsubcount = thumpsubcount;
+	}
+
+	public long getTemp() {
+		return temp;
+	}
+
+	public void setTemp(long temp) {
+		this.temp = temp;
 	}
 }
