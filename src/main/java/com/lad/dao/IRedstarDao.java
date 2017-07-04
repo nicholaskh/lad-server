@@ -19,7 +19,7 @@ public interface IRedstarDao {
      * @param userid
      * @return
      */
-    WriteResult addCommentCount(String userid, String circleid);
+    WriteResult addCommentCount(String userid, String circleid, int count);
 
     /**
      * 红人周榜更新
@@ -29,18 +29,28 @@ public interface IRedstarDao {
     WriteResult updateRedWeek(int weekNo);
 
     /**
-     * 红人总榜
-     * @param limit
+     * 更新单个人的红人榜
+     * @param userid
+     * @param weekNo
+     * @param year
      * @return
      */
-    List<RedstarBo> findRedTotal(String circleid, int limit);
+    WriteResult updateRedWeekByUser(String userid, int weekNo, int year);
+
+    /**
+     * 红人总榜
+     * @return
+     */
+    List<RedstarBo> findRedTotal(String circleid);
 
     /**
      * 红人周榜
-     * @param limit
+     * @param circleid
+     * @param weekNo
+     * @param year
      * @return
      */
-    List<RedstarBo> findRedWeek(String circleid, int limit);
+    List<RedstarBo> findRedWeek(String circleid, int weekNo, int year);
 
     /**
      * 个人评论

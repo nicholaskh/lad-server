@@ -4,14 +4,13 @@ import com.lad.bo.Pager;
 import com.lad.bo.RedstarBo;
 import com.lad.bo.UserBo;
 import com.lad.dao.IRedstarDao;
-import com.lad.dao.UserDao;
+import com.lad.dao.IUserDao;
 import com.lad.service.IUserService;
 import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * 用户service
@@ -21,7 +20,7 @@ import java.util.Set;
 public class UserServiceImpl implements IUserService{
 
 	@Autowired
-	private UserDao userDao;
+	private IUserDao userDao;
 
 	@Autowired
 	private IRedstarDao redstarDao;
@@ -66,11 +65,6 @@ public class UserServiceImpl implements IUserService{
 		return userBo;
 	}
 
-
-	public Set<String> getCollectionNames() {
-		return userDao.getCollectionNames();
-	}
-
 	public Pager selectPage(UserBo userBo,Pager pager){
 		return userDao.selectPage(userBo, pager);
 	}
@@ -101,10 +95,10 @@ public class UserServiceImpl implements IUserService{
 
 
 	public List<RedstarBo> findRedUserTotal(String circleId){
-		return redstarDao.findRedTotal(circleId, 4);
+		return redstarDao.findRedTotal(circleId);
 	}
 
-	public List<RedstarBo> findRedUserWeek(String circleId){
-		return redstarDao.findRedWeek(circleId, 4);
+	public List<RedstarBo> findRedUserWeek(String circleId,int weekNo, int year){
+		return redstarDao.findRedWeek(circleId, weekNo, year);
 	}
 }

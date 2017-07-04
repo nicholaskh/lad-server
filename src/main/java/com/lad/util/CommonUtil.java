@@ -168,4 +168,16 @@ public class CommonUtil {
 		return calendar.get(Calendar.WEEK_OF_YEAR);
 	}
 
+	/**
+	 * 获取当前时间的年份
+	 * @return year
+	 */
+	public static int getYear(Date date) {
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(date);
+		return calendar.get(Calendar.YEAR);
+	}
+
+	
+
 }

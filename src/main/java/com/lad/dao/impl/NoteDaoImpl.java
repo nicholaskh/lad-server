@@ -16,6 +16,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
+import java.util.HashSet;
 import java.util.List;
 
 @Repository("noteDao")
@@ -23,17 +24,20 @@ public class NoteDaoImpl implements INoteDao {
 	@Autowired
 	private MongoTemplate mongoTemplate;
 
+	private String[] fields = new String[]{"subject", "_id", "visitcount", "transcount",
+			"commentcount", "thumpsubcount", "result", "createTime"};
+
 	public NoteBo insert(NoteBo noteBo) {
 		mongoTemplate.insert(noteBo);
 		return noteBo;
 	}
 
-	public WriteResult updatePhoto(String noteId, String photo) {
+	public WriteResult updatePhoto(String noteId, HashSet<String> photos) {
 		Query query = new Query();
 		query.addCriteria(new Criteria("_id").is(noteId));
 		query.addCriteria(new Criteria("deleted").is(0));
 		Update update = new Update();
-		update.set("photo", photo);
+		update.set("photos", photos);
 		return mongoTemplate.updateFirst(query, update, NoteBo.class);
 	}
 
@@ -70,7 +74,7 @@ public class NoteDaoImpl implements INoteDao {
 		Update update = new Update();
 		query.addCriteria(new Criteria("_id").is(noteId));
 		query.addCriteria(new Criteria("deleted").is(0));
-		update.inc("thumpsubcount", 1);
+		update.inc("thumpsubcount", thumpsubcount);
 		return mongoTemplate.updateFirst(query, update, NoteBo.class);
 	}
 
@@ -119,12 +123,9 @@ public class NoteDaoImpl implements INoteDao {
 
 	public List<NoteBo> selectHotNotes(String circleid){
 
-		Criteria criteria = new Criteria("createTime").gt(CommonUtil.getBeforeWeekDate());
+		Criteria criteria = new Criteria("createTime").gte(CommonUtil.getBeforeWeekDate());
 		criteria.and("circleId").is(circleid);
 		AggregationOperation match = Aggregation.match(criteria);
-
-		String[] fields = new String[]{"subject", "_id", "visitcount", "transcount",
-				"commentcount", "thumpsubcount", "result", "createTime"};
 
 		AggregationOperation project = Aggregation.project(fields).and("temp")
 				.plus("visitcount").plus("transcount").plus("commentcount").plus("thumpsubcount").as("result");
@@ -134,6 +135,17 @@ public class NoteDaoImpl implements INoteDao {
 				Aggregation.limit(10));
 		AggregationResults<NoteBo> results = mongoTemplate.aggregate(aggregation, "note", NoteBo.class);
 		return results.getMappedResults();
+	}
+
+	public List<NoteBo> selectTopNotes(String circleid){
+		Query query = new Query();
+		query.addCriteria(new Criteria("circleId").is(circleid));
+		query.addCriteria(new Criteria("deleted").is(0));
+		query.addCriteria(new Criteria("content").regex("^[\\s\\S]{200,}"));
+		query.addCriteria(new Criteria("photos.2").exists(true));
+		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "createTime")));
+		query.limit(2);
+		return mongoTemplate.find(query, NoteBo.class);
 	}
 
 }

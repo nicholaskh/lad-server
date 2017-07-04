@@ -7,6 +7,7 @@ import com.lad.dao.IRedstarDao;
 import com.lad.service.ICommentService;
 import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,13 +25,11 @@ public class CommentService implements ICommentService {
     @Autowired
     private IRedstarDao redstarDao;
 
-    public CommentBo insert(CommentBo commentBo, RedstarBo redstarBo) {
-            redstarDao.insert(redstarBo);
-        return commentDao.insert(commentBo);
+    public RedstarBo insertRedstar(RedstarBo redstarBo) {
+        return redstarDao.insert(redstarBo);
     }
 
     public CommentBo insert(CommentBo commentBo) {
-        redstarDao.addCommentCount(commentBo.getCreateuid(), "");
         return commentDao.insert(commentBo);
     }
 
@@ -59,16 +58,21 @@ public class CommentService implements ICommentService {
         return commentDao.selectByUser(userid);
     }
 
+    @Async
     public WriteResult updateRedWeek(int weekNo){
         return redstarDao.updateRedWeek(weekNo);
-    }
-
-    public WriteResult updateCommmentCount(String userid, String circleid){
-        return redstarDao.addCommentCount(userid, circleid);
     }
 
     public RedstarBo findRedstarBo(String userid, String circleid){
         return redstarDao.findByUserAndCircle(userid, circleid);
     }
 
+    @Override
+    public WriteResult updateRedWeekByUser(String userid, int weekNo, int year) {
+        return redstarDao.updateRedWeekByUser(userid, weekNo, year);
+    }
+
+    public WriteResult addRadstarCount(String userid, String circleid){
+        return  redstarDao.addCommentCount(userid, circleid, 1);
+    }
 }

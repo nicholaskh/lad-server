@@ -30,42 +30,57 @@ public class RedstarDaoImpl implements IRedstarDao {
         return redstarBo;
     }
 
-    public WriteResult addCommentCount(String userid, String circleid){
+    public WriteResult addCommentCount(String userid, String circleid, int count){
         Query query = new Query();
         query.addCriteria(new Criteria("userid").is(userid));
         query.addCriteria(new Criteria("circleid").is(circleid));
         query.addCriteria(new Criteria("deleted").is(0));
         Update update = new Update();
-        update.inc("commentTotal", 1);
-        update.inc("commentWeek", 1);
+        update.inc("commentTotal", count);
+        update.inc("commentWeek", count);
         return mongoTemplate.updateFirst(query, update, RedstarBo.class);
+    }
+
+    public  WriteResult updateRedWeekByUser(String userid, int weekNo, int year){
+        Query query = new Query();
+        query.addCriteria(new Criteria("userid").is(userid));
+        query.addCriteria(new Criteria("deleted").is(0));
+        Update update = new Update();
+        update.set("commentWeek", 1);
+        update.inc("commentTotal", 1);
+        update.set("weekNo", weekNo);
+        update.set("year", year);
+        return mongoTemplate.updateMulti(query, update, RedstarBo.class);
     }
 
     public  WriteResult updateRedWeek(int weekNo){
         Query query = new Query();
         query.addCriteria(new Criteria("deleted").is(0));
+        query.addCriteria(new Criteria("weekNo").ne(weekNo));
         query.addCriteria(new Criteria("commentWeek").gt(0));
         Update update = new Update();
-        update.set("commentWeek", 0);
+        update.set("commentWeek", 1);
         update.set("weekNo", weekNo);
         return mongoTemplate.updateMulti(query, update, RedstarBo.class);
     }
 
-    public List<RedstarBo> findRedTotal(String circleid,int limit){
+    public List<RedstarBo> findRedTotal(String circleid){
         Query query = new Query();
         query.addCriteria(new Criteria("deleted").is(0));
         query.addCriteria(new Criteria("circleid").is(circleid));
         query.with(new Sort(Sort.Direction.DESC, "commentTotal"));
-        query.limit(limit);
+        query.limit(4);
         return mongoTemplate.find(query, RedstarBo.class);
     }
 
-    public List<RedstarBo> findRedWeek(String circleid,int limit){
+    public List<RedstarBo> findRedWeek(String circleid, int weekNo, int year){
         Query query = new Query();
         query.addCriteria(new Criteria("deleted").is(0));
         query.addCriteria(new Criteria("circleid").is(circleid));
+        query.addCriteria(new Criteria("weekNo").is(weekNo));
+        query.addCriteria(new Criteria("year").is(year));
         query.with(new Sort(Sort.Direction.DESC, "commentWeek"));
-        query.limit(limit);
+        query.limit(4);
         return mongoTemplate.find(query, RedstarBo.class);
     }
 

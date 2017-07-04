@@ -1,13 +1,13 @@
 package com.lad.service.impl;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.lad.bo.ThumbsupBo;
 import com.lad.dao.IThumbsupDao;
 import com.lad.service.IThumbsupService;
+import com.mongodb.WriteResult;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service("thumbsupService")
 public class ThumbsupService implements IThumbsupService {
@@ -37,6 +37,11 @@ public class ThumbsupService implements IThumbsupService {
 
 	public ThumbsupBo getByVidAndVisitorid(String vid, String visitorid) {
 		return thumbsupDao.getByVidAndVisitorid(vid, visitorid);
+	}
+
+	@Override
+	public WriteResult deleteById(String thumbsupId) {
+		return thumbsupDao.delete(thumbsupId);
 	}
 
 }

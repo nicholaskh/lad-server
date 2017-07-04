@@ -12,8 +12,8 @@ import org.springframework.context.annotation.Bean;
  */
 @EnableRedissonHttpSession(maxInactiveIntervalInSeconds = 120*60)
 public class RadisSessionConfig {
-    
-    @Bean
+
+    @Bean(destroyMethod = "shutdown")
     public RedissonClient redisson() {
         return Redisson.create();
     }

@@ -45,9 +45,11 @@ public interface IUserService extends IBaseService {
 
 	/**
 	 * 红人周榜
-	 * @param circleId
+	 * @param circleid
+	 * @param weekNo
+	 * @param year
 	 * @return
 	 */
-	List<RedstarBo> findRedUserWeek(String circleId);
+	List<RedstarBo> findRedUserWeek(String circleid, int weekNo, int year);
 
 }

@@ -15,7 +15,7 @@ import javax.annotation.PostConstruct;
  * Version: 1.0
  * Time:2017/6/28
  */
-@Component
+@Component("redisServer")
 public class RedisServer {
 
     private static final Logger logger = RootLogger.getLogger(RedisServer.class);

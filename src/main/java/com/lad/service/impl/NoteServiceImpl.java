@@ -10,6 +10,7 @@ import com.lad.dao.INoteDao;
 import com.lad.service.INoteService;
 import com.mongodb.WriteResult;
 
+import java.util.HashSet;
 import java.util.List;
 
 @Service("noteService")
@@ -24,8 +25,8 @@ public class NoteServiceImpl implements INoteService {
 		return noteDao.insert(noteBo);
 	}
 
-	public WriteResult updatePhoto(String noteId, String photo) {
-		return noteDao.updatePhoto(noteId, photo);
+	public WriteResult updatePhoto(String noteId, HashSet<String> photos) {
+		return noteDao.updatePhoto(noteId, photos);
 	}
 
 	public NoteBo selectById(String noteId) {
@@ -76,5 +77,10 @@ public class NoteServiceImpl implements INoteService {
 	@Override
 	public WriteResult addComment(String noteid, CommentBo commentBo) {
 		return null;
+	}
+
+	@Override
+	public List<NoteBo> selectTopNotes(String circleid) {
+		return noteDao.selectTopNotes(circleid);
 	}
 }

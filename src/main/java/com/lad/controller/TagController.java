@@ -39,9 +39,10 @@ public class TagController extends BaseContorller {
 	public String setTag(String name, String friendsids,
 			HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
+		TagBo tagBo;
 		try {
 			userBo = checkSession(request, userService);
-			TagBo tagBo = tagService.getBynameAndUserid(name.trim(), userBo.getId());
+			tagBo = tagService.getBynameAndUserid(name.trim(), userBo.getId());
 			if (tagBo != null) {
 				return CommonUtil.toErrorResult(ERRORCODE.TAG_NAME_EXIST.getIndex(),
 						ERRORCODE.TAG_NAME_EXIST.getReason());
@@ -49,14 +50,17 @@ public class TagController extends BaseContorller {
 			HashSet<String> firendsSet = new HashSet<String>();
 			addFriend(friendsids,firendsSet, userBo.getId());
 			tagBo = new TagBo();
-			tagBo.setFriendsIds(firendsSet);
-			tagBo.setUserid(userBo.getId());
+			tagBo.setFriendsIds(firendsSet);	tagBo.setUserid(userBo.getId());
 			tagBo.setName(name.trim());
 			tagService.insert(tagBo);
+
 		} catch (MyException e) {
 			return e.getMessage();
 		}
-		return Constant.COM_RESP;
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("tagid", tagBo.getId());
+		return JSONObject.fromObject(map).toString();
 	}
 
 

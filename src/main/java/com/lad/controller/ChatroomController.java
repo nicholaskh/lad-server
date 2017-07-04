@@ -201,7 +201,7 @@ public class ChatroomController extends BaseContorller {
 			UserBo user = userService.getUser(userid);
 			if (null == user) {
 				return CommonUtil.toErrorResult(ERRORCODE.USER_NULL.getIndex(),
-						 ERRORCODE.USER_NULL.getReason() + ", "+ userid);
+						 ERRORCODE.USER_NULL.getReason());
 			}
 			HashSet<String> chatroom = user.getChatrooms();
 			//个人聊天室中没有当前聊天室，则添加到个人的聊天室

@@ -3,6 +3,7 @@ package com.lad.service;
 import com.lad.bo.CommentBo;
 import com.lad.bo.RedstarBo;
 import com.mongodb.WriteResult;
+import org.springframework.scheduling.annotation.Async;
 
 import java.util.List;
 
@@ -13,9 +14,19 @@ import java.util.List;
  */
 public interface ICommentService {
 
+    /**
+     * 当前使用红人列表已经存在时
+     * @param commentBo
+     * @return
+     */
     CommentBo insert(CommentBo commentBo);
 
-    CommentBo insert(CommentBo commentBo, RedstarBo redstarBo);
+    /**
+     * 当前使用人红人列表不存在
+     * @param redstarBo
+     * @return
+     */
+    RedstarBo insertRedstar(RedstarBo redstarBo);
 
     /**
      * 查询帖子内的评论数
@@ -53,18 +64,21 @@ public interface ICommentService {
     List<CommentBo> selectByUser(String userid);
 
     /**
-     * 更新红人周榜
+     * 更新红人周榜,涉及到所有人员，所以异步执行
      * @param weekNo
      * @return
      */
+    @Async
     WriteResult updateRedWeek(int weekNo);
 
     /**
-     * 更新周榜信息
+     * 更新单个人的红人周榜,总榜数据也+1
      * @param userid
+     * @param weekNo
+     * @param year
      * @return
      */
-    WriteResult updateCommmentCount(String userid, String circleid);
+    WriteResult updateRedWeekByUser(String userid, int weekNo, int year);
 
     /**
      * 红人表信息
@@ -72,4 +86,12 @@ public interface ICommentService {
      * @return
      */
     RedstarBo findRedstarBo(String userid, String circleid);
+
+    /**
+     * 添加红人评论数
+     * @param userid
+     * @param circleid
+     * @return
+     */
+    WriteResult addRadstarCount(String userid, String circleid);
 }

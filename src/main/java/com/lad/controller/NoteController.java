@@ -20,7 +20,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -76,86 +75,92 @@ public class NoteController extends BaseContorller {
 		HashSet<String> notes = circleBo.getNotes();
 		notes.add(noteBo.getId());
 		circleService.updateNotes(circleBo.getId(), notes);
-		return Constant.COM_RESP;
+		NoteVo noteVo = new NoteVo();
+		boToVo(noteBo, noteVo);
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("noteVo", noteVo);
+		return JSONObject.fromObject(map).toString();
 	}
 
 	@RequestMapping("/photo")
 	@ResponseBody
-	public String head_picture(@RequestParam("photo") MultipartFile file,
+	public String note_picture(@RequestParam("photos") MultipartFile[] files,
 			@RequestParam(required = true) String noteid,
 			HttpServletRequest request, HttpServletResponse response) {
-		HttpSession session = request.getSession();
-		if (session.isNew()) {
-			return "{\"ret\":20002,\"error\":\":未登录\"}";
+		UserBo userBo;
+		try {
+			userBo = checkSession(request, userService);
+		} catch (MyException e) {
+			return e.getMessage();
 		}
-		if (session.getAttribute("isLogin") == null) {
-			return "{\"ret\":20002,\"error\":\":未登录\"}";
-		}
-		UserBo userBo = (UserBo) session.getAttribute("userBo");
-		if (userBo == null) {
-			return "{\"ret\":20002,\"error\":\":未登录\"}";
-		}
-		userBo = userService.getUser(userBo.getId());
 		String userId = userBo.getId();
 		Long time = Calendar.getInstance().getTimeInMillis();
-		String fileName = userId + "-" + time + "-"
-				+ file.getOriginalFilename();
-		String path = CommonUtil.upload(file, Constant.NOTE_PICTURE_PATH,
-				fileName, 0);
 
 		NoteBo noteBo = noteService.selectById(noteid);
 		if (null == noteBo) {
 			return CommonUtil.toErrorResult(ERRORCODE.NOTE_IS_NULL.getIndex(),
 					ERRORCODE.NOTE_IS_NULL.getReason());
 		}
-		noteService.updatePhoto(noteid, path);
+		HashSet<String> photos = noteBo.getPhotos();
+		List<String> paths = new ArrayList<>();
+		for (MultipartFile file : files) {
+			String fileName = userId + "-" + time + "-"
+					+ file.getOriginalFilename();
+			String path = CommonUtil.upload(file, Constant.NOTE_PICTURE_PATH,
+					fileName, 0);
+			photos.add(path);
+			paths.add(path);
+		}
+		noteService.updatePhoto(noteid, photos);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
-		map.put("path", path);
+		map.put("path", paths);
 		return JSONObject.fromObject(map).toString();
 	}
 
 	@RequestMapping("/thumbsup")
 	@ResponseBody
 	public String thumbsup(String noteid, HttpServletRequest request, HttpServletResponse response){
-		HttpSession session = request.getSession();
-		if (session.isNew()) {
-			return "{\"ret\":20002,\"error\":\":未登录\"}";
+		UserBo userBo;
+		try {
+			userBo = checkSession(request, userService);
+		} catch (MyException e) {
+			return e.getMessage();
 		}
-		if (session.getAttribute("isLogin") == null) {
-			return "{\"ret\":20002,\"error\":\":未登录\"}";
-		}
-		UserBo userBo = (UserBo) session.getAttribute("userBo");
-		if (userBo == null) {
-			return "{\"ret\":20002,\"error\":\":未登录\"}";
-		}
-		userBo = userService.getUser(userBo.getId());
 		ThumbsupBo thumbsupBo = new ThumbsupBo();
 		thumbsupBo.setOwner_id(noteid);
 		thumbsupBo.setVisitor_id(userBo.getId());
 		thumbsupService.insert(thumbsupBo);
+		RLock lock = redisServer.getRLock(Constant.THUMB_LOCK);
+		try {
+			lock.lock(2,TimeUnit.SECONDS);
+			noteService.updateThumpsubCount(noteid, 1);
+		} finally {
+			lock.unlock();
+		}
 		return Constant.COM_RESP;
 	}
 
 	@RequestMapping("/cancal-thumbsup")
 	@ResponseBody
 	public String cancelThumbsup(String noteid, HttpServletRequest request, HttpServletResponse response){
-		HttpSession session = request.getSession();
-		if (session.isNew()) {
-			return "{\"ret\":20002,\"error\":\":未登录\"}";
+		UserBo userBo;
+		try {
+			userBo = checkSession(request, userService);
+		} catch (MyException e) {
+			return e.getMessage();
 		}
-		if (session.getAttribute("isLogin") == null) {
-			return "{\"ret\":20002,\"error\":\":未登录\"}";
-		}
-		UserBo userBo = (UserBo) session.getAttribute("userBo");
-		if (userBo == null) {
-			return "{\"ret\":20002,\"error\":\":未登录\"}";
-		}
-		userBo = userService.getUser(userBo.getId());
 		ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(noteid, userBo.getId());
 		if (thumbsupBo != null) {
-			thumbsupBo.setDeleted(1);
-			thumbsupService.insert(thumbsupBo);
+			thumbsupService.deleteById(thumbsupBo.getId());
+			RLock lock = redisServer.getRLock(Constant.THUMB_LOCK);
+			try {
+				lock.lock(2,TimeUnit.SECONDS);
+				noteService.updateThumpsubCount(noteid, -1);
+			} finally {
+				lock.unlock();
+			}
 		}
 		return Constant.COM_RESP;
 	}
@@ -163,22 +168,11 @@ public class NoteController extends BaseContorller {
 	@RequestMapping("/note-info")
 	@ResponseBody
 	public String noteInfo(String noteid, HttpServletRequest request, HttpServletResponse response) {
-		HttpSession session = request.getSession();
-		if (session.isNew()) {
-			return CommonUtil.toErrorResult(
-					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-		}
-		if (session.getAttribute("isLogin") == null) {
-			return CommonUtil.toErrorResult(
-					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-		}
-		UserBo userBo = (UserBo) session.getAttribute("userBo");
-		if (userBo == null) {
-			return CommonUtil.toErrorResult(
-					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		UserBo userBo;
+		try {
+			userBo = checkSession(request, userService);
+		} catch (MyException e) {
+			return e.getMessage();
 		}
 		NoteBo noteBo = noteService.selectById(noteid);
 		if (null == noteBo) {
@@ -186,10 +180,20 @@ public class NoteController extends BaseContorller {
 					ERRORCODE.NOTE_IS_NULL.getIndex(),
 					ERRORCODE.NOTE_IS_NULL.getReason());
 		}
-        noteService.updateVisitCount(noteid);
 
-
-		return "";
+		RLock lock = redisServer.getRLock(Constant.VISIT_LOCK);
+		try {
+			lock.lock(3,TimeUnit.SECONDS);
+			noteService.updateVisitCount(noteid);
+		} finally {
+			lock.unlock();
+		}
+		NoteVo noteVo = new NoteVo();
+		boToVo(noteBo, noteVo);
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("noteVo", noteVo);
+		return JSONObject.fromObject(map).toString();
 	}
 
 	/**
@@ -275,7 +279,6 @@ public class NoteController extends BaseContorller {
 					ERRORCODE.NOTE_IS_NULL.getIndex(),
 					ERRORCODE.NOTE_IS_NULL.getReason());
 		}
-
 		Date currentDate = new Date();
 		CommentBo commentBo = new CommentBo();
 		commentBo.setNoteid(noteBo.getId());
@@ -283,36 +286,54 @@ public class NoteController extends BaseContorller {
 		commentBo.setContent(countent);
 		commentBo.setCreateuid(userBo.getId());
 		commentBo.setCreateTime(currentDate);
+		commentService.insert(commentBo);
 
 		RedstarBo redstarBo = commentService.findRedstarBo(userBo.getId(), circleid);
-
 		int curretWeekNo = CommonUtil.getWeekOfYear(currentDate);
-
+		int year = CommonUtil.getYear(currentDate);
 		if (redstarBo == null) {
-			redstarBo = new RedstarBo();
-			redstarBo.setUserid(commentBo.getCreateuid());
-			redstarBo.setCommentTotal((long) 1);
-			redstarBo.setCommentWeek((long) 1);
-			redstarBo.setWeekNo(curretWeekNo);
-			commentService.insert(commentBo, redstarBo);
-		} else {
-			 if (curretWeekNo != redstarBo.getWeekNo()) {
-				 commentService.updateRedWeek(curretWeekNo);
-			 }
-			commentService.insert(commentBo);
-		}
-		//帖子的作者也需要更新评论数
-		UserBo noteUserBo = userService.getUser(noteBo.getCreateuid());
-		//如果是自己的帖子则不再添加
-		if (noteUserBo != null && !noteUserBo.getId().equals(userBo.getId())) {
-			RLock lock = redisServer.getRLock(Constant.COMOMENT_LOCK);
-			try {
-				lock.lock(3, TimeUnit.SECONDS);
-				//更新另外一个user的红人评论数，此时需要加锁，保证数据同步
-				commentService.updateCommmentCount(noteUserBo.getId(), circleid);
-			} finally {
-				lock.unlock();
+			redstarBo = setRedstarBo(userBo.getId(), circleid, curretWeekNo, year);
+			commentService.insertRedstar(redstarBo);
+		} 
+		//判断贴的作者是不是自己
+		boolean isNotSelf = !userBo.getId().equals(noteBo.getCreateuid());
+		boolean isNoteUserCurrWeek = true;
+		//如果帖子作者不是自己
+		if (isNotSelf) {
+			//帖子作者没有红人数据信息，则添加
+			RedstarBo noteRedstarBo = commentService.findRedstarBo(noteBo.getCreateuid(), circleid);
+			if (noteRedstarBo == null) {
+				noteRedstarBo = setRedstarBo(noteBo.getCreateuid(), circleid, curretWeekNo, year);
+				commentService.insertRedstar(noteRedstarBo);
+			} else {
+				//判断帖子作者周榜是不是当前周，是则添加数据，不是则更新周榜数据
+				isNoteUserCurrWeek = (year == noteRedstarBo.getYear() && curretWeekNo == noteRedstarBo.getWeekNo());
 			}
+		}
+		//判断自己周榜是不是同一周，是则添加数据，不是则更新周榜数据
+		boolean isCurrentWeek = (year == redstarBo.getYear() && curretWeekNo == redstarBo.getWeekNo());
+		//更新自己或他人红人评论数量，需要加锁，保证数据准确
+		RLock lock = redisServer.getRLock(Constant.COMOMENT_LOCK);
+		try {
+			lock.lock(5, TimeUnit.SECONDS);
+			//更新帖子评论数
+			noteService.updateCommentCount(noteid,1);
+			//更新自己的红人信息
+			if (isCurrentWeek) {
+				commentService.addRadstarCount(userBo.getId(), circleid);
+			} else {
+				commentService.updateRedWeekByUser(userBo.getId(), curretWeekNo, year);
+			}
+			if (isNotSelf) {
+				//更新帖子作者的红人信息
+				if (isNoteUserCurrWeek) {
+					commentService.addRadstarCount(noteBo.getCreateuid(), circleid);
+				} else {
+					commentService.updateRedWeekByUser(noteBo.getCreateuid(), curretWeekNo, year);
+				}
+			}
+		} finally {
+			lock.unlock();
 		}
 		Map<String, Object> map = new HashMap<>();
 		map.put("ret", 0);
@@ -320,21 +341,56 @@ public class NoteController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
+	/**
+	 * 获取置顶帖子，置顶帖子条件，字数>=200, 图片>=3,时间倒序取前2
+	 * @return
+	 */
+	@RequestMapping("/top-notes")
+	@ResponseBody
+	public String topNotes(String circleid,HttpServletRequest request,
+						   HttpServletResponse response) {
+		try {
+			checkSession(request, userService);
+		} catch (MyException e) {
+			return e.getMessage();
+		}
+		List<NoteBo> noteBos = noteService.selectTopNotes(circleid);
+		List<NoteVo> noteVoList = bo2vo(noteBos);
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("noteVoList", noteVoList);
+		return JSONObject.fromObject(map).toString();
+	}
+
+
+	private RedstarBo setRedstarBo(String userid, String circleid, int weekNo, int year){
+		RedstarBo redstarBo = new RedstarBo();
+		redstarBo.setUserid(userid);
+		redstarBo.setCommentTotal((long) 1);
+		redstarBo.setCommentWeek((long) 1);
+		redstarBo.setWeekNo(weekNo);
+		redstarBo.setCircleid(circleid);
+		redstarBo.setYear(year);
+		return redstarBo;
+	}
+
     private List<NoteVo> bo2vo(List<NoteBo> noteBos){
         List<NoteVo> noteVoList = new LinkedList<>();
         NoteVo noteVo;
         for (NoteBo noteBo : noteBos) {
             noteVo = new NoteVo();
-            BeanUtils.copyProperties(noteVo, noteBo);
-            List<CommentBo> commentBos = commentService.selectByNoteid(noteBo.getId());
-            if (commentBos != null) {
-                noteVo.setCommontCount((long)commentBos.size());
-            }
-            noteVo.setVisitCount(noteBo.getVisitcount());
-            noteVo.setNodeid(noteBo.getId());
-            noteVo.setTransCount(noteBo.getTranscount());
+           	boToVo(noteBo, noteVo);
+			noteVoList.add(noteVo);
         }
 		return noteVoList;
+	}
+
+	private void boToVo(NoteBo noteBo, NoteVo noteVo){
+		BeanUtils.copyProperties(noteBo, noteVo);
+		noteVo.setCommontCount(noteBo.getCommentcount());
+		noteVo.setVisitCount(noteBo.getVisitcount());
+		noteVo.setNodeid(noteBo.getId());
+		noteVo.setTransCount(noteBo.getTranscount());
 	}
 
 

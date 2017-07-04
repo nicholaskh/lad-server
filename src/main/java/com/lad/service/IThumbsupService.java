@@ -1,8 +1,9 @@
 package com.lad.service;
 
-import java.util.List;
-
 import com.lad.bo.ThumbsupBo;
+import com.mongodb.WriteResult;
+
+import java.util.List;
 
 public interface IThumbsupService extends IBaseService {
 	public ThumbsupBo insert(ThumbsupBo thumbsupBo);
@@ -16,4 +17,6 @@ public interface IThumbsupService extends IBaseService {
 	public List<ThumbsupBo> selectByVisitorIdPaged(String startId, boolean gt, int limit, String visitorId);
 
 	public List<ThumbsupBo> selectByOwnerIdPaged(String startId, boolean gt, int limit, String ownerId);
+
+	WriteResult deleteById(String thumbsupId);
 }

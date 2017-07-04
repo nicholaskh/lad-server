@@ -1,5 +1,7 @@
 package com.lad.vo;
 
+import java.util.HashSet;
+
 /**
  * 功能描述：
  * Version: 1.0
@@ -19,7 +21,12 @@ public class NoteVo extends BaseVo {
 
     private Long transCount;
 
+    private HashSet<String> photos = new HashSet<>();
+
     private String createuid;
+
+    private double[] position;
+    private String circleId;
 
     private boolean isForward = false;
 
@@ -85,5 +92,29 @@ public class NoteVo extends BaseVo {
 
     public void setForward(boolean forward) {
         isForward = forward;
+    }
+
+    public HashSet<String> getPhotos() {
+        return photos;
+    }
+
+    public void setPhotos(HashSet<String> photos) {
+        this.photos = photos;
+    }
+
+    public double[] getPosition() {
+        return position;
+    }
+
+    public void setPosition(double[] position) {
+        this.position = position;
+    }
+
+    public String getCircleId() {
+        return circleId;
+    }
+
+    public void setCircleId(String circleId) {
+        this.circleId = circleId;
     }
 }

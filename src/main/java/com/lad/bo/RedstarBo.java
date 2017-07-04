@@ -24,6 +24,9 @@ public class RedstarBo extends BaseBo {
     //最后更新日期是今年第几周
     private int weekNo;
 
+    //最后更新日期是今年第几周
+    private int year;
+
     public String getCircleid() {
         return circleid;
     }
@@ -62,5 +65,13 @@ public class RedstarBo extends BaseBo {
 
     public void setWeekNo(int weekNo) {
         this.weekNo = weekNo;
+    }
+
+    public int getYear() {
+        return year;
+    }
+
+    public void setYear(int year) {
+        this.year = year;
     }
 }

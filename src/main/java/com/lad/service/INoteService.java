@@ -4,6 +4,7 @@ import com.lad.bo.CommentBo;
 import com.lad.bo.NoteBo;
 import com.mongodb.WriteResult;
 
+import java.util.HashSet;
 import java.util.List;
 
 public interface INoteService extends IBaseService {
@@ -11,7 +12,7 @@ public interface INoteService extends IBaseService {
 
 	public NoteBo selectById(String noteId);
 
-	public WriteResult updatePhoto(String noteId, String photo);
+	public WriteResult updatePhoto(String noteId, HashSet<String> photos);
 
 	/**
 	 * 更新帖子访问量
@@ -84,5 +85,10 @@ public interface INoteService extends IBaseService {
 	 */
 	List<NoteBo> selectByVisit(String circleid);
 
-
+	/**
+	 * 查找置顶帖子
+	 * @param circleid
+	 * @return
+	 */
+	List<NoteBo> selectTopNotes(String circleid);
 }

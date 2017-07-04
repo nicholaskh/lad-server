@@ -2,11 +2,13 @@ package com.lad.bo;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.HashSet;
+
 @Document(collection = "note")
 public class NoteBo extends BaseBo {
 	private String subject;
 	private String content;
-	private String photo;
+	private HashSet<String> photos = new HashSet<>();
 	private String landmark;
 	private double[] position;
 	private String circleId;
@@ -38,12 +40,12 @@ public class NoteBo extends BaseBo {
 		this.content = content;
 	}
 
-	public String getPhoto() {
-		return photo;
+	public HashSet<String> getPhotos() {
+		return photos;
 	}
 
-	public void setPhoto(String photo) {
-		this.photo = photo;
+	public void setPhotos(HashSet<String> photos) {
+		this.photos = photos;
 	}
 
 	public String getLandmark() {

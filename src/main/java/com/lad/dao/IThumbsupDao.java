@@ -1,8 +1,9 @@
 package com.lad.dao;
 
-import java.util.List;
-
 import com.lad.bo.ThumbsupBo;
+import com.mongodb.WriteResult;
+
+import java.util.List;
 
 public interface IThumbsupDao extends IBaseDao {
 	public ThumbsupBo insert(ThumbsupBo thumbsupBo);
@@ -16,4 +17,6 @@ public interface IThumbsupDao extends IBaseDao {
 	public List<ThumbsupBo> selectByVisitorIdPaged(String startId, boolean gt, int limit, String visitorId);
 	
 	public List<ThumbsupBo> selectByOwnerIdPaged(String startId, boolean gt, int limit, String ownerId);
+
+	WriteResult delete(String thumbsupId);
 }

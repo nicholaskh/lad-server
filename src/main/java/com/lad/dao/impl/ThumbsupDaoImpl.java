@@ -1,7 +1,8 @@
 package com.lad.dao.impl;
 
-import java.util.List;
-
+import com.lad.bo.ThumbsupBo;
+import com.lad.dao.IThumbsupDao;
+import com.mongodb.WriteResult;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -10,10 +11,10 @@ import org.springframework.data.domain.Sort.Order;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
-import com.lad.bo.ThumbsupBo;
-import com.lad.dao.IThumbsupDao;
+import java.util.List;
 
 @Repository("thumbsupDao")
 public class ThumbsupDaoImpl implements IThumbsupDao {
@@ -24,6 +25,14 @@ public class ThumbsupDaoImpl implements IThumbsupDao {
 	public ThumbsupBo insert(ThumbsupBo thumbsupBo) {
 		mongoTemplate.insert(thumbsupBo);
 		return thumbsupBo;
+	}
+
+	public WriteResult delete(String thumbsupId) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("_id").is(thumbsupId));
+		Update update = new Update();
+		update.set("deleted", 1);
+		return mongoTemplate.updateFirst(query,update,ThumbsupBo.class );
 	}
 
 	public List<ThumbsupBo> selectByOwnerId(String ownerId) {

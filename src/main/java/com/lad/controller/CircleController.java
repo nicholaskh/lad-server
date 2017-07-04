@@ -428,6 +428,41 @@ public class CircleController extends BaseContorller {
 	}
 
 	/**
+	 * 圈子详情
+	 */
+	@RequestMapping("/circle-info")
+	@ResponseBody
+	public String info(String circleid, HttpServletRequest request, HttpServletResponse response) {
+		try {
+			checkSession(request, userService);
+		} catch (MyException e) {
+			return e.getMessage();
+		}
+		CircleBo circleBo = circleService.selectById(circleid);
+		if (circleBo == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CIRCLE_IS_NULL.getIndex(),
+					ERRORCODE.CIRCLE_IS_NULL.getReason());
+		}
+		CircleVo circleVo = new CircleVo();
+		try {
+			BeanUtils.copyProperties(circleVo, circleBo);
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+		}
+		circleVo.setId(circleBo.getId());
+		circleVo.setName(circleBo.getName());
+		circleVo.setUsersSize((long) circleBo.getUsers().size());
+		circleVo.setNotesSize((long) circleBo.getNotes().size());
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("circleVo", circleVo);
+		return JSONObject.fromObject(map).toString();
+	}
+
+	/**
 	 * 红人列表，总榜及周榜
 	 */
 	@RequestMapping("/red-star-list")
@@ -438,10 +473,14 @@ public class CircleController extends BaseContorller {
 		} catch (MyException e) {
 			return e.getMessage();
 		}
-		
+
+		Date currentDate = new Date();
+		int weekNo = CommonUtil.getWeekOfYear(currentDate);
+		int year = CommonUtil.getYear(currentDate);
+
 		List<RedstarBo> total = userService.findRedUserTotal(circleid);
 
-		List<RedstarBo> week = userService.findRedUserWeek(circleid);
+		List<RedstarBo> week = userService.findRedUserWeek(circleid, weekNo, year);
 
 		List<UserStarVo>  totals = getStar(total);
 
@@ -465,6 +504,7 @@ public class CircleController extends BaseContorller {
 				starVo.setUserName(userBo.getUserName());
 				starVo.setTotalCount(redstarBo.getCommentTotal());
 				starVo.setWeekCount(redstarBo.getCommentWeek());
+				userStarVos.add(starVo);
 			}
 		}
 		return  userStarVos;
