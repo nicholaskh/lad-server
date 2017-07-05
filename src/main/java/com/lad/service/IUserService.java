@@ -52,4 +52,12 @@ public interface IUserService extends IBaseService {
 	 */
 	List<RedstarBo> findRedUserWeek(String circleid, int weekNo, int year);
 
+	/**
+	 * 置顶圈子
+	 * @param userid
+	 * @param topCircles
+	 * @return
+	 */
+	WriteResult updateTopCircles(String userid, List<String> topCircles);
+
 }

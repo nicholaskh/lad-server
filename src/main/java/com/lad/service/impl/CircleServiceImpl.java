@@ -1,7 +1,9 @@
 package com.lad.service.impl;
 
 import com.lad.bo.CircleBo;
+import com.lad.bo.ReasonBo;
 import com.lad.dao.ICircleDao;
+import com.lad.dao.IReasonDao;
 import com.lad.service.ICircleService;
 import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +17,9 @@ public class CircleServiceImpl implements ICircleService {
 
 	@Autowired
 	private ICircleDao circleDao;
+
+	@Autowired
+	private IReasonDao reasonDao;
 
 	public CircleBo insert(CircleBo circleBo) {
 		return circleDao.insert(circleBo);
@@ -32,14 +37,18 @@ public class CircleServiceImpl implements ICircleService {
 		return circleDao.updateUsers(circleBoId, users);
 	}
 
-	public WriteResult updateUsersApply(String circleBoId,
-			HashSet<String> usersApply) {
+	public WriteResult updateUsersApply(String circleBoId, HashSet<String> usersApply) {
 		return circleDao.updateUsersApply(circleBoId, usersApply);
 	}
 
-	public WriteResult updateUsersRefuse(String circleBoId,
-			HashSet<String> usersRefuse) {
-		return circleDao.updateUsersRefuse(circleBoId, usersRefuse);
+	@Override
+	public WriteResult updateApplyAgree(String circleBoId, HashSet<String> users, HashSet<String> usersApply) {
+		return circleDao.updateApplyAgree(circleBoId, users, usersApply);
+	}
+
+	public WriteResult updateUsersRefuse(String circleBoId, HashSet<String> usersApply,
+										 HashSet<String> usersRefuse) {
+		return circleDao.updateUsersRefuse(circleBoId, usersApply, usersRefuse);
 	}
 
 	public WriteResult updateHeadPicture(String circleBoId, String headPicture) {
@@ -71,7 +80,20 @@ public class CircleServiceImpl implements ICircleService {
 	}
 
 	@Override
-	public List<CircleBo> selectUsersPre() {
-		return circleDao.selectUsersPre();
+	public List<CircleBo> selectUsersPre(String userid) {
+		return circleDao.selectUsersPre(userid);
 	}
+
+	public ReasonBo insertApplyReason(ReasonBo reasonBo){
+		return reasonDao.insert(reasonBo);
+	}
+
+	public ReasonBo findByUserAndCircle(String userid, String circleid){
+		return reasonDao.findByUserAndCircle(userid, circleid);
+	}
+
+	public WriteResult updateApply(String reasonId, int status, String refuse){
+		return reasonDao.updateApply(reasonId, status,refuse);
+	}
+
 }

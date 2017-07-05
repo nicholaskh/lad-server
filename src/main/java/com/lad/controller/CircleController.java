@@ -1,6 +1,7 @@
 package com.lad.controller;
 
 import com.lad.bo.CircleBo;
+import com.lad.bo.ReasonBo;
 import com.lad.bo.RedstarBo;
 import com.lad.bo.UserBo;
 import com.lad.service.ICircleService;
@@ -10,9 +11,10 @@ import com.lad.util.Constant;
 import com.lad.util.ERRORCODE;
 import com.lad.util.MyException;
 import com.lad.vo.CircleVo;
+import com.lad.vo.UserApplyVo;
 import com.lad.vo.UserStarVo;
 import net.sf.json.JSONObject;
-import org.apache.commons.beanutils.BeanUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,8 +24,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 @Controller
@@ -86,18 +86,12 @@ public class CircleController extends BaseContorller {
 			@RequestParam("head_picture") MultipartFile file,
 			@RequestParam(required = true) String circleid,
 			HttpServletRequest request, HttpServletResponse response) {
-		HttpSession session = request.getSession();
-		if (session.isNew()) {
-			return "{\"ret\":20002,\"error\":\":未登录\"}";
+		UserBo userBo;
+		try {
+			userBo = checkSession(request, userService);
+		} catch (MyException e) {
+			return e.getMessage();
 		}
-		if (session.getAttribute("isLogin") == null) {
-			return "{\"ret\":20002,\"error\":\":未登录\"}";
-		}
-		UserBo userBo = (UserBo) session.getAttribute("userBo");
-		if (userBo == null) {
-			return "{\"ret\":20002,\"error\":\":未登录\"}";
-		}
-		userBo = userService.getUser(userBo.getId());
 		String userId = userBo.getId();
 		String fileName = userId + file.getOriginalFilename();
 		String path = CommonUtil.upload(file,
@@ -117,7 +111,7 @@ public class CircleController extends BaseContorller {
 
 	@RequestMapping("/apply-insert")
 	@ResponseBody
-	public String applyIsnert(@RequestParam(required = true) String circleid,
+	public String applyIsnert(@RequestParam(required = true) String circleid, String reason,
 			HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
 		try {
@@ -138,10 +132,15 @@ public class CircleController extends BaseContorller {
 					ERRORCODE.CIRCLE_USER_EXIST.getReason());
 		}
 		usersApply.add(userBo.getId());
+
+		ReasonBo reasonBo = new ReasonBo();
+		reasonBo.setCircleid(circleid);
+		reasonBo.setReason(reason);
+		reasonBo.setCreateuid(userBo.getId());
+		reasonBo.setStatus(Constant.ADD_APPLY);
 		circleService.updateUsersApply(circleid, usersApply);
-		Map<String, Object> map = new HashMap<String, Object>();
-		map.put("ret", 0);
-		return JSONObject.fromObject(map).toString();
+		circleService.insertApplyReason(reasonBo);
+		return Constant.COM_RESP;
 	}
 
 	@RequestMapping("/my-info")
@@ -159,13 +158,7 @@ public class CircleController extends BaseContorller {
 		List<CircleVo> circleVoList = new LinkedList<CircleVo>();
 		for (CircleBo CircleBo : circleBoList) {
 			CircleVo circleVo = new CircleVo();
-			try {
-				BeanUtils.copyProperties(circleVo, CircleBo);
-			} catch (IllegalAccessException e) {
-				e.printStackTrace();
-			} catch (InvocationTargetException e) {
-				e.printStackTrace();
-			}
+			BeanUtils.copyProperties(CircleBo, circleVo);
 			circleVoList.add(circleVo);
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -191,9 +184,35 @@ public class CircleController extends BaseContorller {
 					ERRORCODE.CIRCLE_IS_NULL.getReason());
 		}
 		HashSet<String> usersApply = circleBo.getUsersApply();
+		List<UserApplyVo> userApplyVos = new ArrayList<>();
+
+		boolean isChange = false;
+		for (String userid : usersApply) {
+			UserBo apply = userService.getUser(userid);
+			if (apply != null) {
+				UserApplyVo  userApplyVo = new UserApplyVo();
+				userApplyVo.setBirthDay(apply.getBirthDay());
+				userApplyVo.setHeadPictureName(apply.getHeadPictureName());
+				userApplyVo.setCircleid(circleid);
+				userApplyVo.setUserid(apply.getId());
+				userApplyVo.setUserName(apply.getUserName());
+				ReasonBo reasonBo = circleService.findByUserAndCircle(apply.getId(), circleid);
+				if (apply != null) {
+					userApplyVo.setReason(reasonBo.getReason());
+					userApplyVo.setStatus(reasonBo.getStatus());
+				}
+				userApplyVos.add(userApplyVo);
+			} else {
+				usersApply.remove(userid);
+				isChange = true;
+			}
+		}
+		if (isChange) {
+			circleService.updateUsersApply(circleid, usersApply);
+		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
-		map.put("usersApply", usersApply);
+		map.put("usersApply", userApplyVos);
 		return JSONObject.fromObject(map).toString();
 	}
 
@@ -239,8 +258,11 @@ public class CircleController extends BaseContorller {
 		}
 		usersApply.remove(userid);
 		users.add(userid);
-		circleService.updateUsers(circleBo.getId(), users);
-		circleService.updateUsersApply(circleBo.getId(), usersApply);
+		ReasonBo reasonBo = circleService.findByUserAndCircle(userid,circleid);
+		if (reasonBo != null) {
+			circleService.updateApply(reasonBo.getId(), Constant.ADD_AGREE, "");
+		}
+		circleService.updateApplyAgree(circleBo.getId(), users, usersApply);
 		return Constant.COM_RESP;
 	}
 
@@ -249,7 +271,7 @@ public class CircleController extends BaseContorller {
 	public String userApplyRefuse(
 			@RequestParam(required = true) String circleid,
 			@RequestParam(required = true) String userid,
-			HttpServletRequest request, HttpServletResponse response) {
+			String refuse, HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
 		try {
 			userBo = checkSession(request, userService);
@@ -281,8 +303,11 @@ public class CircleController extends BaseContorller {
 		}
 		usersApply.remove(userid);
 		usersRefuse.add(userid);
-		circleService.updateUsersRefuse(circleBo.getId(), usersRefuse);
-		circleService.updateUsersApply(circleBo.getId(), usersApply);
+		ReasonBo reasonBo = circleService.findByUserAndCircle(userid, circleid);
+		if (reasonBo != null) {
+			circleService.updateApply(reasonBo.getId(), Constant.ADD_REFUSE, refuse);
+		}
+		circleService.updateUsersRefuse(circleBo.getId(),usersApply, usersRefuse);
 		return Constant.COM_RESP;
 	}
 
@@ -300,7 +325,7 @@ public class CircleController extends BaseContorller {
 		}
 		List<CircleBo> list = circleService
 				.selectByType(tag, sub_tag, category);
-		return bo2vo(list);
+		return bo2vos(list);
 	}
 
 
@@ -407,8 +432,25 @@ public class CircleController extends BaseContorller {
 		} catch (MyException e) {
 			return e.getMessage();
 		}
+
+		List<String> myCircles = userBo.getCircleTops();
 		List<CircleBo> circleBos = circleService.findMyCircles(userBo.getId(), startId, gt, limit);
-		return bo2vo(circleBos);
+		List<CircleVo> voList = new LinkedList<>();
+		//筛选出置顶的圈子
+		for (CircleBo circleBo : circleBos) {
+			if (myCircles.contains(circleBo.getId())) {
+				voList.add(bo2vo(circleBo, 1));
+				circleBos.remove(circleBo);
+			}
+		}
+		for (CircleBo item : circleBos) {
+			voList.add(bo2vo(item,0));
+		}
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("circleVoList", voList);
+		return JSONObject.fromObject(map).toString();
+
 	}
 
 	/**
@@ -417,14 +459,14 @@ public class CircleController extends BaseContorller {
 	@RequestMapping("/guess-you-like")
 	@ResponseBody
 	public String youLike(HttpServletRequest request, HttpServletResponse response) {
+		UserBo userBo;
 		try {
-			checkSession(request, userService);
+			userBo = checkSession(request, userService);
 		} catch (MyException e) {
 			return e.getMessage();
 		}
-
-		List<CircleBo> circleBos = circleService.selectUsersPre();
-		return bo2vo(circleBos);
+		List<CircleBo> circleBos = circleService.selectUsersPre(userBo.getId());
+		return bo2vos(circleBos);
 	}
 
 	/**
@@ -445,13 +487,7 @@ public class CircleController extends BaseContorller {
 					ERRORCODE.CIRCLE_IS_NULL.getReason());
 		}
 		CircleVo circleVo = new CircleVo();
-		try {
-			BeanUtils.copyProperties(circleVo, circleBo);
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-		} catch (InvocationTargetException e) {
-			e.printStackTrace();
-		}
+		BeanUtils.copyProperties(circleBo, circleVo);
 		circleVo.setId(circleBo.getId());
 		circleVo.setName(circleBo.getName());
 		circleVo.setUsersSize((long) circleBo.getUsers().size());
@@ -493,6 +529,50 @@ public class CircleController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
+	/**
+	 * 置顶圈子
+	 */
+	@RequestMapping("/set-top")
+	@ResponseBody
+	public String setTopCircle(String circleid, HttpServletRequest request, HttpServletResponse response) {
+		UserBo userBo = null;
+		try {
+			userBo = checkSession(request, userService);
+			CircleBo circleBo = circleService.selectById(circleid);
+			if (null == circleBo) {
+				return CommonUtil.toErrorResult(
+						ERRORCODE.CIRCLE_IS_NULL.getIndex(),
+						ERRORCODE.CIRCLE_IS_NULL.getReason());
+			}
+			List<String> topList = userBo.getCircleTops();
+			topList.add(0,circleid);
+			userService.updateTopCircles(userBo.getId(), topList);
+		} catch (MyException e) {
+			return e.getMessage();
+		}
+		return Constant.COM_RESP;
+	}
+	/**
+	 * 取消置顶圈子
+	 */
+	@RequestMapping("/cancel-top")
+	@ResponseBody
+	public String cancelTopCircle(String circleid, HttpServletRequest request, HttpServletResponse response) {
+		try {
+			UserBo userBo = checkSession(request, userService);
+			List<String> topList = userBo.getCircleTops();
+			if (topList.contains(circleid)) {
+				topList.remove(circleid);
+			}
+			userService.updateTopCircles(userBo.getId(), topList);
+		} catch (MyException e) {
+			return e.getMessage();
+		}
+
+		return Constant.COM_RESP;
+	}
+
+
 	private List<UserStarVo> getStar(List<RedstarBo> redstarBos){
 		List<UserStarVo>  userStarVos = new ArrayList<>();
 		for (RedstarBo redstarBo : redstarBos) {
@@ -515,27 +595,25 @@ public class CircleController extends BaseContorller {
 	 * @param circleBos
 	 * @return
 	 */
-	private String bo2vo(List<CircleBo> circleBos){
+	private String bo2vos(List<CircleBo> circleBos){
 		List<CircleVo> listVo = new LinkedList<CircleVo>();
-		CircleVo circleVo = null;
 		for (CircleBo item : circleBos) {
-			circleVo = new CircleVo();
-			try {
-				BeanUtils.copyProperties(circleVo, item);
-			} catch (IllegalAccessException e) {
-				e.printStackTrace();
-			} catch (InvocationTargetException e) {
-				e.printStackTrace();
-			}
-			circleVo.setId(item.getId());
-			circleVo.setName(item.getName());
-			circleVo.setUsersSize((long) item.getUsers().size());
-			circleVo.setNotesSize((long) item.getNotes().size());
-			listVo.add(circleVo);
+			listVo.add(bo2vo(item,0));
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("circleVoList", listVo);
 		return JSONObject.fromObject(map).toString();
+	}
+
+	private CircleVo bo2vo(CircleBo circleBo, int top){
+		CircleVo circleVo = new CircleVo();
+		BeanUtils.copyProperties(circleBo, circleVo);
+		circleVo.setId(circleBo.getId());
+		circleVo.setName(circleBo.getName());
+		circleVo.setUsersSize((long) circleBo.getUsers().size());
+		circleVo.setNotesSize((long) circleBo.getNotes().size());
+		circleVo.setTop(top);
+		return circleVo;
 	}
 }

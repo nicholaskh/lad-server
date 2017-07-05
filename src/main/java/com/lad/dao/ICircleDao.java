@@ -17,12 +17,15 @@ public interface ICircleDao extends IBaseDao {
 	public List<CircleBo> selectByType(String tag, String sub_tag,
 			String category);
 
-	public WriteResult updateUsers(String circleBoId, HashSet<String> users);
+	WriteResult updateUsers(String circleBoId, HashSet<String> users);
 
-	public WriteResult updateUsersApply(String circleBoId,
+	WriteResult updateUsersApply(String circleBoId,
 			HashSet<String> usersApply);
 
-	public WriteResult updateUsersRefuse(String circleBoId,
+	WriteResult updateApplyAgree(String circleBoId, HashSet<String> users,
+								 HashSet<String> usersApply);
+
+	WriteResult updateUsersRefuse(String circleBoId,HashSet<String> usersApply,
 			HashSet<String> usersRefuse);
 
 	public WriteResult updateHeadPicture(String circleBoId, String headPicture);
@@ -47,7 +50,7 @@ public interface ICircleDao extends IBaseDao {
 	 * 返回用户数最多前十圈子
 	 * @return
 	 */
-	List<CircleBo> selectUsersPre();
+	List<CircleBo> selectUsersPre(String userid);
 
 	/**
 	 * 我的圈子

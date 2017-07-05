@@ -52,8 +52,7 @@ public class CircleDaoImpl implements ICircleDao {
 		return mongoTemplate.updateFirst(query, update, CircleBo.class);
 	}
 
-	public WriteResult updateUsersApply(String circleBoId,
-			HashSet<String> usersApply) {
+	public WriteResult updateUsersApply(String circleBoId,HashSet<String> usersApply) {
 		Query query = new Query();
 		query.addCriteria(new Criteria("_id").is(circleBoId));
 		query.addCriteria(new Criteria("deleted").is(0));
@@ -62,12 +61,25 @@ public class CircleDaoImpl implements ICircleDao {
 		return mongoTemplate.updateFirst(query, update, CircleBo.class);
 	}
 
-	public WriteResult updateUsersRefuse(String circleBoId,
-			HashSet<String> usersRefuse) {
+	@Override
+	public WriteResult updateApplyAgree(String circleBoId, HashSet<String> users, HashSet<String> usersApply) {
 		Query query = new Query();
 		query.addCriteria(new Criteria("_id").is(circleBoId));
 		query.addCriteria(new Criteria("deleted").is(0));
 		Update update = new Update();
+		update.set("users", users);
+		update.set("usernum", users.size());
+		update.set("usersApply", usersApply);
+		return mongoTemplate.updateFirst(query, update, CircleBo.class);
+	}
+
+	public WriteResult updateUsersRefuse(String circleBoId, HashSet<String> usersApply,
+										 HashSet<String> usersRefuse) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("_id").is(circleBoId));
+		query.addCriteria(new Criteria("deleted").is(0));
+		Update update = new Update();
+		update.set("usersApply", usersApply);
 		update.set("usersRefuse", usersRefuse);
 		return mongoTemplate.updateFirst(query, update, CircleBo.class);
 	}
@@ -120,11 +132,12 @@ public class CircleDaoImpl implements ICircleDao {
 		return mongoTemplate.updateFirst(query, update, CircleBo.class);
 	}
 
-	public List<CircleBo> selectUsersPre() {
+	public List<CircleBo> selectUsersPre(String userid) {
 		Query query = new Query();
-		query.limit(10);
 		query.addCriteria(new Criteria("deleted").is(0));
+		query.addCriteria(new Criteria("users").nin(userid));
 		query.with(new Sort(new Sort.Order(Sort.Direction.DESC,"usernum")));
+		query.limit(10);
 		return mongoTemplate.find(query, CircleBo.class);
 	}
 

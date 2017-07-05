@@ -40,6 +40,14 @@ public interface IUserDao extends IBaseDao {
     UserBo updateBirthDay(UserBo userBo);
 
     /**
+     * 置顶圈子
+     * @param userid
+     * @param topCircles
+     * @return
+     */
+    WriteResult updateTopCircles(String userid, List<String> topCircles);
+
+    /**
      * 分页查询数据
      * @param userBo
      * @param pager

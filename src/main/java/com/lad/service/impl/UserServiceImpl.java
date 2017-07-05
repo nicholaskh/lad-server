@@ -101,4 +101,9 @@ public class UserServiceImpl implements IUserService{
 	public List<RedstarBo> findRedUserWeek(String circleId,int weekNo, int year){
 		return redstarDao.findRedWeek(circleId, weekNo, year);
 	}
+
+	@Override
+	public WriteResult updateTopCircles(String userid, List<String> topCircles) {
+		return userDao.updateTopCircles(userid, topCircles);
+	}
 }

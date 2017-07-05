@@ -18,6 +18,9 @@ public class CircleVo extends BaseVo {
 	private Long notesSize;
 	private Long usersSize;
 
+	// 置顶标识，1置顶
+	private int top = 0;
+
 	public String getId() {
 		return id;
 	}
@@ -128,5 +131,13 @@ public class CircleVo extends BaseVo {
 
 	public void setUsersSize(Long usersSize) {
 		this.usersSize = usersSize;
+	}
+
+	public int getTop() {
+		return top;
+	}
+
+	public void setTop(int top) {
+		this.top = top;
 	}
 }

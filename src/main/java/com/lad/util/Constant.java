@@ -40,4 +40,27 @@ public class Constant {
 	 */
 	public static final String TRANS_LOCK = "transLock";
 
+	/**
+	 * 申请
+	 */
+	public static final int ADD_APPLY = 0;
+	/**
+	 * 申请同意
+	 */
+	public static final int ADD_AGREE= 1;
+	/**
+	 * 申请拒绝
+	 */
+	public static final int ADD_REFUSE= -1;
+
+
+	/**                                    I
+	 * 激活
+	 */
+	public static final int ACTIVITY= 0;
+	/**
+	 * 删除
+	 */
+	public static final int DELETED = 1;
+
 }

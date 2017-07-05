@@ -1,6 +1,7 @@
 package com.lad.service;
 
 import com.lad.bo.CircleBo;
+import com.lad.bo.ReasonBo;
 import com.mongodb.WriteResult;
 
 import java.util.HashSet;
@@ -18,10 +19,11 @@ public interface ICircleService extends IBaseService {
 
 	public WriteResult updateUsers(String circleBoId, HashSet<String> users);
 
-	public WriteResult updateUsersApply(String circleBoId,
-			HashSet<String> usersApply);
+	public WriteResult updateUsersApply(String circleBoId, HashSet<String> usersApply);
 
-	public WriteResult updateUsersRefuse(String circleBoId,
+	WriteResult updateApplyAgree(String circleBoId, HashSet<String> users, HashSet<String> usersApply);
+
+	public WriteResult updateUsersRefuse(String circleBoId, HashSet<String> usersApply,
 			HashSet<String> usersRefuse);
 
 	public WriteResult updateHeadPicture(String circleBoId, String headPicture);
@@ -56,5 +58,11 @@ public interface ICircleService extends IBaseService {
 	 * 圈子前十
 	 * @return
 	 */
-	List<CircleBo> selectUsersPre();
+	List<CircleBo> selectUsersPre(String userid);
+
+	ReasonBo insertApplyReason(ReasonBo reasonBo);
+
+	ReasonBo findByUserAndCircle(String userid, String circleid);
+
+	WriteResult updateApply(String reasonId, int status, String refuse);
 }

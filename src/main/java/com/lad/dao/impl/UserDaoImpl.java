@@ -186,6 +186,15 @@ public class UserDaoImpl implements IUserDao {
         return mongoTemplate.updateFirst(query, update, UserBo.class);
     }
 
+    public WriteResult updateTopCircles(String userid, List<String> topCircles) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("_id").is(userid));
+        query.addCriteria(new Criteria("deleted").is(0));
+        Update update = new Update();
+        update.set("circleTops", topCircles);
+        return mongoTemplate.updateFirst(query, update, UserBo.class);
+    }
+
     public List<UserBo> getAllUser() {
         return mongoTemplate.findAll(UserBo.class);
     }
