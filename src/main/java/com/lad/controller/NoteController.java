@@ -387,10 +387,17 @@ public class NoteController extends BaseContorller {
 
 	private void boToVo(NoteBo noteBo, NoteVo noteVo){
 		BeanUtils.copyProperties(noteBo, noteVo);
+
+    	UserBo userBo = userService.getUser(noteBo.getCreateuid());
+		noteVo.setSex(userBo.getSex());
+		noteVo.setBirthDay(userBo.getBirthDay());
+		noteVo.setHeadPictureName(userBo.getHeadPictureName());
+		noteVo.setUsername(userBo.getUserName());
 		noteVo.setCommontCount(noteBo.getCommentcount());
 		noteVo.setVisitCount(noteBo.getVisitcount());
 		noteVo.setNodeid(noteBo.getId());
 		noteVo.setTransCount(noteBo.getTranscount());
+		noteVo.setThumpsubCount(noteBo.getThumpsubcount());
 	}
 
 

@@ -1,5 +1,6 @@
 package com.lad.vo;
 
+import java.util.Date;
 import java.util.HashSet;
 
 /**
@@ -9,6 +10,14 @@ import java.util.HashSet;
  */
 public class NoteVo extends BaseVo {
 
+    private String username;
+
+    private String sex;
+
+    private String headPictureName;
+
+    private String birthDay;
+
     private String nodeid;
 
     private String subject;
@@ -17,11 +26,15 @@ public class NoteVo extends BaseVo {
 
     private Long visitCount;
 
+    private Long thumpsubCount;
+
     private Long commontCount;
 
     private Long transCount;
 
     private HashSet<String> photos = new HashSet<>();
+
+    private Date createTime;
 
     private String createuid;
 
@@ -116,5 +129,53 @@ public class NoteVo extends BaseVo {
 
     public void setCircleId(String circleId) {
         this.circleId = circleId;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getSex() {
+        return sex;
+    }
+
+    public void setSex(String sex) {
+        this.sex = sex;
+    }
+
+    public String getHeadPictureName() {
+        return headPictureName;
+    }
+
+    public void setHeadPictureName(String headPictureName) {
+        this.headPictureName = headPictureName;
+    }
+
+    public String getBirthDay() {
+        return birthDay;
+    }
+
+    public void setBirthDay(String birthDay) {
+        this.birthDay = birthDay;
+    }
+
+    public Long getThumpsubCount() {
+        return thumpsubCount;
+    }
+
+    public void setThumpsubCount(Long thumpsubCount) {
+        this.thumpsubCount = thumpsubCount;
+    }
+
+    public Date getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(Date createTime) {
+        this.createTime = createTime;
     }
 }
