@@ -196,8 +196,9 @@ public class CircleController extends BaseContorller {
 				userApplyVo.setCircleid(circleid);
 				userApplyVo.setUserid(apply.getId());
 				userApplyVo.setUserName(apply.getUserName());
+				userApplyVo.setSex(apply.getSex());
 				ReasonBo reasonBo = circleService.findByUserAndCircle(apply.getId(), circleid);
-				if (apply != null) {
+				if (reasonBo != null) {
 					userApplyVo.setReason(reasonBo.getReason());
 					userApplyVo.setStatus(reasonBo.getStatus());
 				}
