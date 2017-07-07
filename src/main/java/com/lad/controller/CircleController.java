@@ -221,7 +221,7 @@ public class CircleController extends BaseContorller {
 	@ResponseBody
 	public String userApplyAgree(
 			@RequestParam(required = true) String circleid,
-			@RequestParam(required = true) String userid,
+			@RequestParam(required = true) String userids,
 			HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
 		try {
@@ -246,22 +246,30 @@ public class CircleController extends BaseContorller {
 					ERRORCODE.CIRCLE_NOT_MASTER.getIndex(),
 					ERRORCODE.CIRCLE_NOT_MASTER.getReason());
 		}
-		UserBo user = userService.getUser(userid);
-		if (null == user) {
-			return CommonUtil.toErrorResult(ERRORCODE.USER_NULL.getIndex(),
-					ERRORCODE.USER_NULL.getReason());
+		String[] useridArr;
+		if (userids.indexOf(',') > -1) {
+			useridArr = userids.split(",");
+		} else {
+			useridArr = new String[]{userids};
 		}
 		HashSet<String> usersApply = circleBo.getUsersApply();
-		if (!usersApply.contains(userid)) {
-			return CommonUtil.toErrorResult(
-					ERRORCODE.CIRCLE_APPLY_USER_NULL.getIndex(),
-					ERRORCODE.CIRCLE_APPLY_USER_NULL.getReason());
-		}
-		usersApply.remove(userid);
-		users.add(userid);
-		ReasonBo reasonBo = circleService.findByUserAndCircle(userid,circleid);
-		if (reasonBo != null) {
-			circleService.updateApply(reasonBo.getId(), Constant.ADD_AGREE, "");
+		for (String userid : useridArr) {
+			UserBo user = userService.getUser(userid);
+			if (null == user) {
+				return CommonUtil.toErrorResult(ERRORCODE.USER_NULL.getIndex(),
+						ERRORCODE.USER_NULL.getReason());
+			}
+			if (!usersApply.contains(userid)) {
+				return CommonUtil.toErrorResult(
+						ERRORCODE.CIRCLE_APPLY_USER_NULL.getIndex(),
+						ERRORCODE.CIRCLE_APPLY_USER_NULL.getReason());
+			}
+			usersApply.remove(userid);
+			users.add(userid);
+			ReasonBo reasonBo = circleService.findByUserAndCircle(userid,circleid);
+			if (reasonBo != null) {
+				circleService.updateApply(reasonBo.getId(), Constant.ADD_AGREE, "");
+			}
 		}
 		circleService.updateApplyAgree(circleBo.getId(), users, usersApply);
 		return Constant.COM_RESP;
@@ -271,7 +279,7 @@ public class CircleController extends BaseContorller {
 	@ResponseBody
 	public String userApplyRefuse(
 			@RequestParam(required = true) String circleid,
-			@RequestParam(required = true) String userid,
+			@RequestParam(required = true) String userids,
 			String refuse, HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
 		try {
@@ -290,23 +298,31 @@ public class CircleController extends BaseContorller {
 					ERRORCODE.CIRCLE_NOT_MASTER.getIndex(),
 					ERRORCODE.CIRCLE_NOT_MASTER.getReason());
 		}
-		UserBo user = userService.getUser(userid);
-		if (null == user) {
-			return CommonUtil.toErrorResult(ERRORCODE.USER_NULL.getIndex(),
-					ERRORCODE.USER_NULL.getReason());
+		String[] useridArr;
+		if (userids.indexOf(',') > -1) {
+			useridArr = userids.split(",");
+		} else {
+			useridArr = new String[]{userids};
 		}
 		HashSet<String> usersApply = circleBo.getUsersApply();
 		HashSet<String> usersRefuse = circleBo.getUsersRefuse();
-		if (!usersApply.contains(userid)) {
-			return CommonUtil.toErrorResult(
-					ERRORCODE.CIRCLE_APPLY_USER_NULL.getIndex(),
-					ERRORCODE.CIRCLE_APPLY_USER_NULL.getReason());
-		}
-		usersApply.remove(userid);
-		usersRefuse.add(userid);
-		ReasonBo reasonBo = circleService.findByUserAndCircle(userid, circleid);
-		if (reasonBo != null) {
-			circleService.updateApply(reasonBo.getId(), Constant.ADD_REFUSE, refuse);
+		for (String userid : useridArr) {
+			UserBo user = userService.getUser(userid);
+			if (null == user) {
+				return CommonUtil.toErrorResult(ERRORCODE.USER_NULL.getIndex(),
+						ERRORCODE.USER_NULL.getReason());
+			}
+			if (!usersApply.contains(userid)) {
+				return CommonUtil.toErrorResult(
+						ERRORCODE.CIRCLE_APPLY_USER_NULL.getIndex(),
+						ERRORCODE.CIRCLE_APPLY_USER_NULL.getReason());
+			}
+			usersApply.remove(userid);
+			usersRefuse.add(userid);
+			ReasonBo reasonBo = circleService.findByUserAndCircle(userid, circleid);
+			if (reasonBo != null) {
+				circleService.updateApply(reasonBo.getId(), Constant.ADD_REFUSE, refuse);
+			}
 		}
 		circleService.updateUsersRefuse(circleBo.getId(),usersApply, usersRefuse);
 		return Constant.COM_RESP;
