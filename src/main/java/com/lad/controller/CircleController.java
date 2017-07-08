@@ -14,6 +14,9 @@ import com.lad.vo.CircleVo;
 import com.lad.vo.UserApplyVo;
 import com.lad.vo.UserStarVo;
 import net.sf.json.JSONObject;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
+import org.apache.log4j.spi.RootLogger;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -29,6 +32,8 @@ import java.util.*;
 @Controller
 @RequestMapping("circle")
 public class CircleController extends BaseContorller {
+
+	private final static Logger logger = RootLogger.getLogger(CircleController.class);
 
 	@Autowired
 	private ICircleService circleService;
@@ -156,9 +161,9 @@ public class CircleController extends BaseContorller {
 		List<CircleBo> circleBoList = circleService.selectByuserid(userBo
 				.getId());
 		List<CircleVo> circleVoList = new LinkedList<CircleVo>();
-		for (CircleBo CircleBo : circleBoList) {
+		for (CircleBo circleBo : circleBoList) {
 			CircleVo circleVo = new CircleVo();
-			BeanUtils.copyProperties(CircleBo, circleVo);
+			BeanUtils.copyProperties(circleBo, circleVo);
 			circleVoList.add(circleVo);
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -229,6 +234,8 @@ public class CircleController extends BaseContorller {
 		} catch (MyException e) {
 			return e.getMessage();
 		}
+		logger.info("circleid: " + circleid);
+		logger.info("user-apply-agree: " + userids);
 		CircleBo circleBo = circleService.selectById(circleid);
 		if (circleBo == null) {
 			return CommonUtil.toErrorResult(
@@ -287,6 +294,8 @@ public class CircleController extends BaseContorller {
 		} catch (MyException e) {
 			return e.getMessage();
 		}
+		logger.info("circleid: " + circleid);
+		logger.info("user-apply-agree: " + userids);
 		CircleBo circleBo = circleService.selectById(circleid);
 		if (circleBo == null) {
 			return CommonUtil.toErrorResult(
@@ -307,21 +316,23 @@ public class CircleController extends BaseContorller {
 		HashSet<String> usersApply = circleBo.getUsersApply();
 		HashSet<String> usersRefuse = circleBo.getUsersRefuse();
 		for (String userid : useridArr) {
-			UserBo user = userService.getUser(userid);
-			if (null == user) {
-				return CommonUtil.toErrorResult(ERRORCODE.USER_NULL.getIndex(),
-						ERRORCODE.USER_NULL.getReason());
-			}
-			if (!usersApply.contains(userid)) {
-				return CommonUtil.toErrorResult(
-						ERRORCODE.CIRCLE_APPLY_USER_NULL.getIndex(),
-						ERRORCODE.CIRCLE_APPLY_USER_NULL.getReason());
-			}
-			usersApply.remove(userid);
-			usersRefuse.add(userid);
-			ReasonBo reasonBo = circleService.findByUserAndCircle(userid, circleid);
-			if (reasonBo != null) {
-				circleService.updateApply(reasonBo.getId(), Constant.ADD_REFUSE, refuse);
+			if (StringUtils.isNotEmpty(userid)) {
+				UserBo user = userService.getUser(userid);
+				if (null == user) {
+					return CommonUtil.toErrorResult(ERRORCODE.USER_NULL.getIndex(),
+							ERRORCODE.USER_NULL.getReason());
+				}
+				if (!usersApply.contains(userid)) {
+					return CommonUtil.toErrorResult(
+							ERRORCODE.CIRCLE_APPLY_USER_NULL.getIndex(),
+							ERRORCODE.CIRCLE_APPLY_USER_NULL.getReason());
+				}
+				usersApply.remove(userid);
+				usersRefuse.add(userid);
+				ReasonBo reasonBo = circleService.findByUserAndCircle(userid, circleid);
+				if (reasonBo != null) {
+					circleService.updateApply(reasonBo.getId(), Constant.ADD_REFUSE, refuse);
+				}
 			}
 		}
 		circleService.updateUsersRefuse(circleBo.getId(),usersApply, usersRefuse);
@@ -441,7 +452,7 @@ public class CircleController extends BaseContorller {
 
 	@RequestMapping("/my-circles")
 	@ResponseBody
-	public String myCircles(String startId, boolean gt, int limit, HttpServletRequest request,
+	public String myCircles(String start_id, boolean gt, int limit, HttpServletRequest request,
 						 HttpServletResponse response) {
 		UserBo userBo;
 		try {
@@ -449,18 +460,21 @@ public class CircleController extends BaseContorller {
 		} catch (MyException e) {
 			return e.getMessage();
 		}
-
+		//置顶的圈子id
 		List<String> myCircles = userBo.getCircleTops();
-		List<CircleBo> circleBos = circleService.findMyCircles(userBo.getId(), startId, gt, limit);
+		List<CircleBo> circleBos = circleService.findMyCircles(userBo.getId(), start_id, gt, limit);
+		//未置顶的圈子
+		List<CircleBo> noTops = new LinkedList<>();
 		List<CircleVo> voList = new LinkedList<>();
 		//筛选出置顶的圈子
 		for (CircleBo circleBo : circleBos) {
 			if (myCircles.contains(circleBo.getId())) {
 				voList.add(bo2vo(circleBo, 1));
-				circleBos.remove(circleBo);
+			} else {
+				noTops.add(circleBo);
 			}
 		}
-		for (CircleBo item : circleBos) {
+		for (CircleBo item : noTops) {
 			voList.add(bo2vo(item,0));
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -562,8 +576,14 @@ public class CircleController extends BaseContorller {
 						ERRORCODE.CIRCLE_IS_NULL.getReason());
 			}
 			List<String> topList = userBo.getCircleTops();
-			topList.add(0,circleid);
-			userService.updateTopCircles(userBo.getId(), topList);
+			if (topList.contains(circleid)) {
+				return CommonUtil.toErrorResult(
+						ERRORCODE.CIRCLE_IS_NULL.getIndex(),
+						ERRORCODE.CIRCLE_IS_NULL.getReason());
+			} else {
+				topList.add(0,circleid);
+				userService.updateTopCircles(userBo.getId(), topList);
+			}
 		} catch (MyException e) {
 			return e.getMessage();
 		}
@@ -580,8 +600,8 @@ public class CircleController extends BaseContorller {
 			List<String> topList = userBo.getCircleTops();
 			if (topList.contains(circleid)) {
 				topList.remove(circleid);
+				userService.updateTopCircles(userBo.getId(), topList);
 			}
-			userService.updateTopCircles(userBo.getId(), topList);
 		} catch (MyException e) {
 			return e.getMessage();
 		}

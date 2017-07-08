@@ -128,6 +128,7 @@ public class LoginController extends BaseContorller {
 				return CommonUtil.toErrorResult(message3.getStatus(), message3.getMsg());
 			}
 			map.put("token", message3.getMsg());
+			map.put("userid",userBo.getId());
 			assistent.close();
 		} else {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PASSWORD.getIndex(),

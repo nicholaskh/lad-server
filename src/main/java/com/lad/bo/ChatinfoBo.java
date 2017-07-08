@@ -5,7 +5,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 /**
  * 收藏的聊天信息
  */
-@Document
+@Document(collection = "chatinfo")
 public class ChatinfoBo extends BaseBo {
 	
 	private String content;

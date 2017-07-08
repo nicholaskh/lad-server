@@ -47,7 +47,7 @@ public class ReasonDaoImpl implements IReasonDao {
     @Override
     public ReasonBo findByUserAndCircle(String userid, String circleid) {
         Query query = new Query();
-        query.addCriteria(new Criteria("userid").is(userid));
+        query.addCriteria(new Criteria("createuid").is(userid));
         query.addCriteria(new Criteria("circleid").is(circleid));
         query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
         query.addCriteria(new Criteria("status").is(Constant.ADD_APPLY));

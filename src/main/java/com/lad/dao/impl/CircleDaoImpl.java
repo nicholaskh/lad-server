@@ -141,6 +141,16 @@ public class CircleDaoImpl implements ICircleDao {
 		return mongoTemplate.find(query, CircleBo.class);
 	}
 
+	public WriteResult uddateName(String userid, String name){
+		Query query = new Query();
+		query.addCriteria(new Criteria("deleted").is(0));
+		query.addCriteria(new Criteria("_id").is(userid));
+		Update update = new Update();
+		//创建者默认为群主，后续修改需要更改群主字段
+		update.set("name", name);
+		return mongoTemplate.updateFirst(query, update, CircleBo.class);
+	}
+
 	public List<CircleBo> findMyCircles(String userid, String startId, boolean gt, int limit) {
 		Query query = new Query();
 		query.limit(limit);

@@ -62,10 +62,11 @@ public enum ERRORCODE {
 	CIRCLE_USER_EXIST(110003, "该用户已经加入此圈子"),
 	CIRCLE_MASTER_NULL(110004, "没有权限"),
 	CIRCLE_IS_SELF(100005, "群主不能转给自己"),
-	CIRCLE_NOT_MASTER(110006, "非群主"),
+	CIRCLE_NOT_MASTER(110006, "没有权限"),
 	CIRCLE_USER_MAX(110007, "圈子人数已到达上限"),
 	CIRCLE_CREATE_MAX(110008, "圈子创建数已到达上限"),
 	CIRCLE_USER_NULL(110009, "该用户不在此圈子"),
+	CIRCLE_TOP_EXIST(110010, "圈子已经置顶"),
 	
 	NOTE_IS_NULL(120001, "帖子不存在");
 

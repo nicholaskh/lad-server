@@ -11,6 +11,7 @@ public class CircleVo extends BaseVo {
 	private String sub_tag;
 	private String category;
 	private String headPicture;
+	private String createuid;
 	private HashSet<String> users = new HashSet<String>();
 	private HashSet<String> usersApply = new HashSet<String>();
 	private HashSet<String> usersRefuse = new HashSet<String>();
@@ -139,5 +140,13 @@ public class CircleVo extends BaseVo {
 
 	public void setTop(int top) {
 		this.top = top;
+	}
+
+	public String getCreateuid() {
+		return createuid;
+	}
+
+	public void setCreateuid(String createuid) {
+		this.createuid = createuid;
 	}
 }

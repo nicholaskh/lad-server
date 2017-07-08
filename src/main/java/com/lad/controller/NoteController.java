@@ -201,14 +201,14 @@ public class NoteController extends BaseContorller {
 	 */
 	@RequestMapping("/new-situation")
 	@ResponseBody
-	public String newSituation(String circleid, String startId, boolean gt, int limit,
+	public String newSituation(String circleid, String start_id, boolean gt, int limit,
 							   HttpServletRequest request, HttpServletResponse response) {
 		try {
 			checkSession(request, userService);
 		} catch (MyException e) {
 			return e.getMessage();
 		}
-		List<NoteBo> noteBos = noteService.finyByCreateTime(circleid,startId,gt,limit);
+		List<NoteBo> noteBos = noteService.finyByCreateTime(circleid,start_id,gt,limit);
         List<NoteVo> noteVoList = bo2vo(noteBos);
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("ret", 0);
