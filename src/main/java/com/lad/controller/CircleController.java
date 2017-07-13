@@ -49,6 +49,9 @@ public class CircleController extends BaseContorller {
 			@RequestParam(required = true) String tag,
 			@RequestParam(required = true) String sub_tag,
 			@RequestParam(required = true) String category,
+			@RequestParam(required = true) String description,
+						 @RequestParam(required = true) boolean isOpen,
+						 @RequestParam("head_picture") MultipartFile file,
 			HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
 		try {
@@ -63,7 +66,6 @@ public class CircleController extends BaseContorller {
 					ERRORCODE.CIRCLE_CREATE_MAX.getIndex(),
 					ERRORCODE.CIRCLE_CREATE_MAX.getReason());
 		}
-		userBo = userService.getUser(userBo.getId());
 		CircleBo circleBo = new CircleBo();
 		circleBo.setCreateuid(userBo.getId());
 		circleBo.setCategory(category);
@@ -73,6 +75,15 @@ public class CircleController extends BaseContorller {
 		circleBo.setTag(tag);
 		circleBo.setUsernum(1);
 		circleBo.setSub_tag(sub_tag);
+		circleBo.setDescription(description);
+		circleBo.setOpen(isOpen);
+		//圈子头像
+		String userId = userBo.getId();
+		String fileName = userId + file.getOriginalFilename();
+		String path = CommonUtil.upload(file,
+				Constant.CIRCLE_HEAD_PICTURE_PATH, fileName, 0);
+		circleBo.setHeadPicture(path);
+
 		HashSet<String> users = new HashSet<String>();
 		users.add(userBo.getId());
 		circleBo.setUsers(users);

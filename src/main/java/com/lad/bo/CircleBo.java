@@ -19,6 +19,12 @@ public class CircleBo extends BaseBo {
 	private String category;
 	private String headPicture;
 	private int usernum;
+
+	private String description;
+
+	//圈子5公里是否加入
+	private boolean isOpen;
+
 	private HashSet<String> users = new HashSet<String>();
 	private HashSet<String> usersApply = new HashSet<String>();
 	private HashSet<String> usersRefuse = new HashSet<String>();
@@ -119,5 +125,21 @@ public class CircleBo extends BaseBo {
 	}
 	public void setUsernum(int usernum) {
 		this.usernum = usernum;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public boolean isOpen() {
+		return isOpen;
+	}
+
+	public void setOpen(boolean open) {
+		isOpen = open;
 	}
 }
