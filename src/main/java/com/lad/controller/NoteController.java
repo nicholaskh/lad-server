@@ -51,6 +51,7 @@ public class NoteController extends BaseContorller {
 			@RequestParam(required = true) String landmark,
 			@RequestParam(required = true) String content,
 			@RequestParam(required = true) String circleid,
+						 @RequestParam("pictures") MultipartFile[] multipartFiles,
 			HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
 		try {
@@ -71,10 +72,22 @@ public class NoteController extends BaseContorller {
 		noteBo.setContent(content);
 		noteBo.setVisitcount(1);
 		noteBo.setCreateuid(userBo.getId());
+
+		List<String> photos = noteBo.getPhotos();
+		String userId =  userBo.getId();
+		Long time = Calendar.getInstance().getTimeInMillis();
+		for (MultipartFile file : multipartFiles) {
+			String fileName = userId + "-" + time + "-"
+					+ file.getOriginalFilename();
+			String path = CommonUtil.upload(file, Constant.NOTE_PICTURE_PATH,
+					fileName, 0);
+			photos.add(path);
+		}
 		noteService.insert(noteBo);
 		HashSet<String> notes = circleBo.getNotes();
 		notes.add(noteBo.getId());
 		circleService.updateNotes(circleBo.getId(), notes);
+
 		NoteVo noteVo = new NoteVo();
 		boToVo(noteBo, noteVo);
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -102,7 +115,7 @@ public class NoteController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.NOTE_IS_NULL.getIndex(),
 					ERRORCODE.NOTE_IS_NULL.getReason());
 		}
-		HashSet<String> photos = noteBo.getPhotos();
+		LinkedList<String> photos = noteBo.getPhotos();
 		List<String> paths = new ArrayList<>();
 		for (MultipartFile file : files) {
 			String fileName = userId + "-" + time + "-"

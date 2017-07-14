@@ -54,7 +54,7 @@ public class Constant {
 	public static final int ADD_REFUSE= -1;
 
 
-	/**                                    I
+	/** 
 	 * 激活
 	 */
 	public static final int ACTIVITY= 0;

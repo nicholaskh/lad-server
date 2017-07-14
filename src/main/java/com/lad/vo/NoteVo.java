@@ -1,7 +1,7 @@
 package com.lad.vo;
 
 import java.util.Date;
-import java.util.HashSet;
+import java.util.LinkedList;
 
 /**
  * 功能描述：
@@ -32,7 +32,7 @@ public class NoteVo extends BaseVo {
 
     private Long transCount;
 
-    private HashSet<String> photos = new HashSet<>();
+    private LinkedList<String> photos = new LinkedList<>();
 
     private Date createTime;
 
@@ -107,11 +107,11 @@ public class NoteVo extends BaseVo {
         isForward = forward;
     }
 
-    public HashSet<String> getPhotos() {
+    public LinkedList<String> getPhotos() {
         return photos;
     }
 
-    public void setPhotos(HashSet<String> photos) {
+    public void setPhotos(LinkedList<String> photos) {
         this.photos = photos;
     }
 

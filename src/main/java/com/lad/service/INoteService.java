@@ -4,7 +4,7 @@ import com.lad.bo.CommentBo;
 import com.lad.bo.NoteBo;
 import com.mongodb.WriteResult;
 
-import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 
 public interface INoteService extends IBaseService {
@@ -12,7 +12,7 @@ public interface INoteService extends IBaseService {
 
 	public NoteBo selectById(String noteId);
 
-	public WriteResult updatePhoto(String noteId, HashSet<String> photos);
+	public WriteResult updatePhoto(String noteId, LinkedList<String> photos);
 
 	/**
 	 * 更新帖子访问量

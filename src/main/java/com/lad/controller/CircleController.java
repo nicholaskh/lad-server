@@ -60,12 +60,6 @@ public class CircleController extends BaseContorller {
 			return e.getMessage();
 		}
 		//每人最多创建三个群
-		List<CircleBo> circleBos = circleService.findByCreateid(userBo.getId());
-		if (circleBos != null && circleBos.size() >= 3) {
-			return CommonUtil.toErrorResult(
-					ERRORCODE.CIRCLE_CREATE_MAX.getIndex(),
-					ERRORCODE.CIRCLE_CREATE_MAX.getReason());
-		}
 		CircleBo circleBo = new CircleBo();
 		circleBo.setCreateuid(userBo.getId());
 		circleBo.setCategory(category);
@@ -94,6 +88,29 @@ public class CircleController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
+	@RequestMapping("/pre-create")
+	@ResponseBody
+	public String preCreateCircle(HttpServletRequest request, HttpServletResponse response){
+		UserBo userBo;
+		try {
+			userBo = checkSession(request, userService);
+		} catch (MyException e) {
+			return e.getMessage();
+		}
+		List<CircleBo> circleBos = circleService.findByCreateid(userBo.getId());
+		int initNum = 5;
+		int userLevel = 1;
+		int createNum = initNum;
+		if (circleBos != null) {
+			createNum = circleBos.size();
+		}
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("userLevel", userLevel);
+		map.put("createNum", createNum);
+		map.put("maxNum", initNum);
+		return JSONObject.fromObject(map).toString();
+	}
 
 
 	@RequestMapping("/head-picture")

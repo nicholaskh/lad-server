@@ -16,7 +16,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
-import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 
 @Repository("noteDao")
@@ -32,7 +32,7 @@ public class NoteDaoImpl implements INoteDao {
 		return noteBo;
 	}
 
-	public WriteResult updatePhoto(String noteId, HashSet<String> photos) {
+	public WriteResult updatePhoto(String noteId, LinkedList<String> photos) {
 		Query query = new Query();
 		query.addCriteria(new Criteria("_id").is(noteId));
 		query.addCriteria(new Criteria("deleted").is(0));

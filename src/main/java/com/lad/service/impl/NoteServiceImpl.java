@@ -1,16 +1,15 @@
 package com.lad.service.impl;
 
 import com.lad.bo.CommentBo;
-import com.lad.dao.ICommentDao;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.lad.bo.NoteBo;
+import com.lad.dao.ICommentDao;
 import com.lad.dao.INoteDao;
 import com.lad.service.INoteService;
 import com.mongodb.WriteResult;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 
 @Service("noteService")
@@ -25,7 +24,7 @@ public class NoteServiceImpl implements INoteService {
 		return noteDao.insert(noteBo);
 	}
 
-	public WriteResult updatePhoto(String noteId, HashSet<String> photos) {
+	public WriteResult updatePhoto(String noteId, LinkedList<String> photos) {
 		return noteDao.updatePhoto(noteId, photos);
 	}
 
