@@ -82,4 +82,19 @@ public class NoteServiceImpl implements INoteService {
 	public List<NoteBo> selectTopNotes(String circleid) {
 		return noteDao.selectTopNotes(circleid);
 	}
+
+	@Override
+	public List<NoteBo> selectHotNotes(String circleid) {
+		return noteDao.selectHotNotes(circleid);
+	}
+
+	@Override
+	public void deleteNote(String noteId) {
+		noteDao.deleteNote(noteId);
+	}
+
+	@Override
+	public List<NoteBo> selectMyNotes(String userid, String startId, boolean gt, int limit) {
+		return noteDao.selectMyNotes(userid, startId, gt, limit);
+	}
 }

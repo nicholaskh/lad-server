@@ -91,4 +91,28 @@ public interface INoteService extends IBaseService {
 	 * @return
 	 */
 	List<NoteBo> selectTopNotes(String circleid);
+
+	/**
+	 * 圈子内热门帖子列表
+	 * @param circleid
+	 * @return
+	 */
+	List<NoteBo> selectHotNotes(String circleid);
+
+	/**
+	 * 删除帖子
+	 * @param noteId
+	 * @return
+	 */
+	void deleteNote(String noteId);
+
+	/**
+	 * 我的帖子
+	 * @param userid
+	 * @param startId
+	 * @param gt
+	 * @param limit
+	 * @return
+	 */
+	List<NoteBo> selectMyNotes(String userid, String startId, boolean gt, int limit);
 }

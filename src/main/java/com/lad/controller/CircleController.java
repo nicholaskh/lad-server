@@ -100,7 +100,7 @@ public class CircleController extends BaseContorller {
 		List<CircleBo> circleBos = circleService.findByCreateid(userBo.getId());
 		int initNum = 5;
 		int userLevel = 1;
-		int createNum = initNum;
+		int createNum = 0;
 		if (circleBos != null) {
 			createNum = circleBos.size();
 		}
@@ -281,12 +281,7 @@ public class CircleController extends BaseContorller {
 					ERRORCODE.CIRCLE_NOT_MASTER.getIndex(),
 					ERRORCODE.CIRCLE_NOT_MASTER.getReason());
 		}
-		String[] useridArr;
-		if (userids.indexOf(',') > -1) {
-			useridArr = userids.split(",");
-		} else {
-			useridArr = new String[]{userids};
-		}
+		String[] useridArr = CommonUtil.getIds(userids);
 		HashSet<String> usersApply = circleBo.getUsersApply();
 		for (String userid : useridArr) {
 			UserBo user = userService.getUser(userid);
@@ -335,12 +330,7 @@ public class CircleController extends BaseContorller {
 					ERRORCODE.CIRCLE_NOT_MASTER.getIndex(),
 					ERRORCODE.CIRCLE_NOT_MASTER.getReason());
 		}
-		String[] useridArr;
-		if (userids.indexOf(',') > -1) {
-			useridArr = userids.split(",");
-		} else {
-			useridArr = new String[]{userids};
-		}
+		String[] useridArr = CommonUtil.getIds(userids);
 		HashSet<String> usersApply = circleBo.getUsersApply();
 		HashSet<String> usersRefuse = circleBo.getUsersRefuse();
 		for (String userid : useridArr) {

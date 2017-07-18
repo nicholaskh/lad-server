@@ -81,4 +81,21 @@ public interface INoteDao extends IBaseDao {
 	 * @return
 	 */
 	List<NoteBo> selectTopNotes(String circleid);
+
+	/**
+	 * 删除帖子
+	 * @param noteId
+	 * @return
+	 */
+	WriteResult deleteNote(String noteId);
+
+	/**
+	 * 我的帖子
+	 * @param userid
+	 * @param startId
+	 * @param gt
+	 * @param limit
+	 * @return
+	 */
+	List<NoteBo> selectMyNotes(String userid, String startId, boolean gt, int limit);
 }

@@ -178,6 +178,21 @@ public class CommonUtil {
 		return calendar.get(Calendar.YEAR);
 	}
 
+	/**
+	 * 根据逗号将数据列表打散
+	 * @param ids
+	 * @return
+	 */
+	public static String[] getIds(String ids){
+		String[] idsArr;
+		if (ids.indexOf(',') > -1) {
+			idsArr = ids.split(",");
+		} else {
+			idsArr = new String[]{ids};
+		}
+		return idsArr;
+	}
+
 	
 
 }

@@ -45,13 +45,12 @@ public class NoteController extends BaseContorller {
 
 	@RequestMapping("/insert")
 	@ResponseBody
-	public String isnert(@RequestParam(required = true) double px,
-			@RequestParam(required = true) double py,
+	public String isnert(double px, double py,
 			@RequestParam(required = true) String subject,
-			@RequestParam(required = true) String landmark,
+			String landmark,
 			@RequestParam(required = true) String content,
 			@RequestParam(required = true) String circleid,
-						 @RequestParam("pictures") MultipartFile[] multipartFiles,
+						 MultipartFile[] pictures,
 			HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
 		try {
@@ -72,17 +71,20 @@ public class NoteController extends BaseContorller {
 		noteBo.setContent(content);
 		noteBo.setVisitcount(1);
 		noteBo.setCreateuid(userBo.getId());
-
-		List<String> photos = noteBo.getPhotos();
+		noteBo.setCircleId(circleid);
+		LinkedList<String> photos = new LinkedList<>();
 		String userId =  userBo.getId();
-		Long time = Calendar.getInstance().getTimeInMillis();
-		for (MultipartFile file : multipartFiles) {
-			String fileName = userId + "-" + time + "-"
-					+ file.getOriginalFilename();
-			String path = CommonUtil.upload(file, Constant.NOTE_PICTURE_PATH,
-					fileName, 0);
-			photos.add(path);
+		if (pictures != null) {
+			Long time = Calendar.getInstance().getTimeInMillis();
+			for (MultipartFile file : pictures) {
+				String fileName = userId + "-" + time + "-"
+						+ file.getOriginalFilename();
+				String path = CommonUtil.upload(file, Constant.NOTE_PICTURE_PATH,
+						fileName, 0);
+				photos.add(path);
+			}
 		}
+		noteBo.setPhotos(photos);
 		noteService.insert(noteBo);
 		HashSet<String> notes = circleBo.getNotes();
 		notes.add(noteBo.getId());
@@ -262,9 +264,9 @@ public class NoteController extends BaseContorller {
 		} catch (MyException e) {
 			return e.getMessage();
 		}
-        List<NoteBo> noteBos = noteService.selectByComment(circleid);
+        List<NoteBo> noteBos = noteService.selectHotNotes(circleid);
         List<NoteVo> noteVoList = bo2vo(noteBos);
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map<String, Object> map = new HashMap<>();
         map.put("ret", 0);
         map.put("noteVoList", noteVoList);
         return JSONObject.fromObject(map).toString();
@@ -375,6 +377,91 @@ public class NoteController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
+	/**
+	 * 我的帖子
+	 * @return
+	 */
+	@RequestMapping("/my-notes")
+	@ResponseBody
+	public String myNotes(String start_id, boolean gt, int limit, HttpServletRequest request,
+						   HttpServletResponse response) {
+		UserBo userBo;
+		try {
+			userBo = checkSession(request, userService);
+		} catch (MyException e) {
+			return e.getMessage();
+		}
+		List<NoteBo> noteBos = noteService.selectMyNotes(userBo.getId(), start_id, gt, limit);
+		Map<String, Object> map = new HashMap<>();
+		map.put("ret", 0);
+		map.put("noteVoList", bo2vo(noteBos));
+		return JSONObject.fromObject(map).toString();
+	}
+
+	/**
+	 * 圈主删除帖子
+	 * @return
+	 */
+	@RequestMapping("/delete-circle-notes")
+	@ResponseBody
+	public String deleteNotes(@RequestParam String nodeids, @RequestParam String circleid, HttpServletRequest request,
+						  HttpServletResponse response) {
+		UserBo userBo;
+		try {
+			userBo = checkSession(request, userService);
+		} catch (MyException e) {
+			return e.getMessage();
+		}
+		CircleBo circleBo = circleService.selectById(circleid);
+		if (null == circleBo) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CIRCLE_IS_NULL.getIndex(),
+					ERRORCODE.CIRCLE_IS_NULL.getReason());
+		}
+		String[] ids = CommonUtil.getIds(nodeids);
+		if (circleBo.getCreateuid().equals(userBo.getId())) {
+			for (String id : ids) {
+				NoteBo noteBo = noteService.selectById(id);
+				if (null != noteBo) {
+					//圈主删除帖子
+					noteService.deleteNote(id);
+				}
+			}
+		}  else {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.NOTE_NOT_MASTER.getIndex(),
+					ERRORCODE.NOTE_NOT_MASTER.getReason());
+		}
+		return Constant.COM_RESP;
+	}
+
+
+	/**
+	 * 个人删除自己的帖子
+	 * @return
+	 */
+	@RequestMapping("/delete-my-notes")
+	@ResponseBody
+	public String deleteMyNotes(@RequestParam String nodeids,HttpServletRequest request,
+							  HttpServletResponse response) {
+		UserBo userBo;
+		try {
+			userBo = checkSession(request, userService);
+		} catch (MyException e) {
+			return e.getMessage();
+		}
+		String[] ids = CommonUtil.getIds(nodeids);
+		for (String id : ids) {
+			NoteBo noteBo = noteService.selectById(id);
+			if (null != noteBo) {
+				//删除帖子
+				if (noteBo.getCreateuid().equals(userBo.getId())) {
+					noteService.deleteNote(id);
+				}
+			}
+		}
+		return Constant.COM_RESP;
+	}
 
 	private RedstarBo setRedstarBo(String userid, String circleid, int weekNo, int year){
 		RedstarBo redstarBo = new RedstarBo();
@@ -389,9 +476,8 @@ public class NoteController extends BaseContorller {
 
     private List<NoteVo> bo2vo(List<NoteBo> noteBos){
         List<NoteVo> noteVoList = new LinkedList<>();
-        NoteVo noteVo;
         for (NoteBo noteBo : noteBos) {
-            noteVo = new NoteVo();
+			NoteVo noteVo = new NoteVo();
            	boToVo(noteBo, noteVo);
 			noteVoList.add(noteVo);
         }

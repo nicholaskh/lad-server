@@ -108,17 +108,7 @@ public class NoteDaoImpl implements INoteDao {
 	public List<NoteBo> finyByCreateTime(String circleid, String startId, boolean gt, int limit){
 		Query query = new Query();
 		query.addCriteria(new Criteria("circleId").is(circleid));
-		query.addCriteria(new Criteria("deleted").is(0));
-		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "createTime")));
-		if (!StringUtils.isEmpty(startId)) {
-			if (gt) {
-				query.addCriteria(new Criteria("_id").gt(startId));
-			} else {
-				query.addCriteria(new Criteria("_id").lt(startId));
-			}
-		}
-		query.limit(limit);
-		return mongoTemplate.find(query, NoteBo.class);
+		return findNotesByPage(query, startId, gt, limit);
 	}
 
 	public List<NoteBo> selectHotNotes(String circleid){
@@ -145,6 +135,43 @@ public class NoteDaoImpl implements INoteDao {
 		query.addCriteria(new Criteria("photos.2").exists(true));
 		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "createTime")));
 		query.limit(2);
+		return mongoTemplate.find(query, NoteBo.class);
+	}
+
+	public WriteResult deleteNote(String noteId) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("_id").is(noteId));
+		query.addCriteria(new Criteria("deleted").is(0));
+		Update update = new Update();
+		update.set("deleted", 1);
+		return mongoTemplate.updateFirst(query, update, NoteBo.class);
+	}
+
+	public List<NoteBo> selectMyNotes(String userid, String startId, boolean gt, int limit){
+		Query query = new Query();
+		query.addCriteria(new Criteria("createuid").is(userid));
+		return findNotesByPage(query, startId, gt, limit);
+	}
+
+	/**
+	 * 按照主键分页查询
+	 * @param query
+	 * @param startId
+	 * @param gt
+	 * @param limit
+	 * @return
+	 */
+	private List<NoteBo> findNotesByPage(Query query, String startId, boolean gt, int limit){
+		query.addCriteria(new Criteria("deleted").is(0));
+		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
+		if (!StringUtils.isEmpty(startId)) {
+			if (gt) {
+				query.addCriteria(new Criteria("_id").gt(startId));
+			} else {
+				query.addCriteria(new Criteria("_id").lt(startId));
+			}
+		}
+		query.limit(limit);
 		return mongoTemplate.find(query, NoteBo.class);
 	}
 
