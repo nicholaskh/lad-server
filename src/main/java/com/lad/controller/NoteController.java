@@ -45,12 +45,13 @@ public class NoteController extends BaseContorller {
 
 	@RequestMapping("/insert")
 	@ResponseBody
-	public String isnert(double px, double py,
-			@RequestParam(required = true) String subject,
-			String landmark,
-			@RequestParam(required = true) String content,
-			@RequestParam(required = true) String circleid,
-						 MultipartFile[] pictures,
+	public String isnert(@RequestParam double px,
+						 @RequestParam double py,
+						 @RequestParam String subject,
+						 @RequestParam(required = false)String landmark,
+						 @RequestParam String content,
+						 @RequestParam String circleid,
+						 @RequestParam(required = false) MultipartFile[] pictures,
 			HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
 		try {
@@ -404,7 +405,7 @@ public class NoteController extends BaseContorller {
 	 */
 	@RequestMapping("/delete-circle-notes")
 	@ResponseBody
-	public String deleteNotes(@RequestParam String nodeids, @RequestParam String circleid, HttpServletRequest request,
+	public String deleteNotes(@RequestParam String noteids, @RequestParam String circleid, HttpServletRequest request,
 						  HttpServletResponse response) {
 		UserBo userBo;
 		try {
@@ -418,7 +419,7 @@ public class NoteController extends BaseContorller {
 					ERRORCODE.CIRCLE_IS_NULL.getIndex(),
 					ERRORCODE.CIRCLE_IS_NULL.getReason());
 		}
-		String[] ids = CommonUtil.getIds(nodeids);
+		String[] ids = CommonUtil.getIds(noteids);
 		if (circleBo.getCreateuid().equals(userBo.getId())) {
 			for (String id : ids) {
 				NoteBo noteBo = noteService.selectById(id);
@@ -442,7 +443,7 @@ public class NoteController extends BaseContorller {
 	 */
 	@RequestMapping("/delete-my-notes")
 	@ResponseBody
-	public String deleteMyNotes(@RequestParam String nodeids,HttpServletRequest request,
+	public String deleteMyNotes(@RequestParam String noteids,HttpServletRequest request,
 							  HttpServletResponse response) {
 		UserBo userBo;
 		try {
@@ -450,7 +451,7 @@ public class NoteController extends BaseContorller {
 		} catch (MyException e) {
 			return e.getMessage();
 		}
-		String[] ids = CommonUtil.getIds(nodeids);
+		String[] ids = CommonUtil.getIds(noteids);
 		for (String id : ids) {
 			NoteBo noteBo = noteService.selectById(id);
 			if (null != noteBo) {
