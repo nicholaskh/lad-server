@@ -23,7 +23,7 @@ public interface ICommentDao {
      * @param noteid
      * @return
      */
-    List<CommentBo> selectByNoteid(String noteid);
+    List<CommentBo> selectByNoteid(String noteid, String startId, boolean gt, int limit);
 
     /**
      * 查询当前回复的评论
@@ -51,5 +51,5 @@ public interface ICommentDao {
      * @param userid
      * @return
      */
-    List<CommentBo> selectByUser(String userid);
+    List<CommentBo> selectByUser(String userid, String startId, boolean gt, int limit);
 }

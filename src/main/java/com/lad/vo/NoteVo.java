@@ -32,6 +32,16 @@ public class NoteVo extends BaseVo {
 
     private Long transCount;
 
+    private Boolean thumbsup;
+
+    public Boolean getThumbsup() {
+        return thumbsup;
+    }
+
+    public void setThumbsup(Boolean thumbsup) {
+        this.thumbsup = thumbsup;
+    }
+
     private LinkedList<String> photos = new LinkedList<>();
 
     private Date createTime;

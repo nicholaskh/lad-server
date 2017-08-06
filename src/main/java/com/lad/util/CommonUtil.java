@@ -2,6 +2,10 @@ package com.lad.util;
 
 import net.sf.json.JSONObject;
 import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -193,6 +197,25 @@ public class CommonUtil {
 		return idsArr;
 	}
 
-	
+
+	/**
+	 * 分页查询
+	 * @param query
+	 * @param startId  开始主键
+	 * @param gt
+	 * @param limit
+	 */
+	public static void queryByIdPage(Query query, String startId, boolean gt, int limit){
+		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
+		if (!StringUtils.isEmpty(startId)) {
+			if (gt) {
+				query.addCriteria(new Criteria("_id").gt(startId));
+			} else {
+				query.addCriteria(new Criteria("_id").lt(startId));
+			}
+		}
+		query.limit(limit);
+	}
+
 
 }

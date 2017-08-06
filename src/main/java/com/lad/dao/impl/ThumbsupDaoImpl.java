@@ -35,6 +35,14 @@ public class ThumbsupDaoImpl implements IThumbsupDao {
 		return mongoTemplate.updateFirst(query,update,ThumbsupBo.class );
 	}
 
+	@Override
+	public ThumbsupBo findIsDelete(ThumbsupBo thumbsupBo) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("owner_id").is(thumbsupBo.getOwner_id()));
+		query.addCriteria(new Criteria("visitor_id").is(thumbsupBo.getVisitor_id()));
+		return mongoTemplate.findOne(query, ThumbsupBo.class);
+	}
+
 	public List<ThumbsupBo> selectByOwnerId(String ownerId) {
 		Query query = new Query();
 		query.addCriteria(new Criteria("owner_id").is(ownerId));
@@ -89,4 +97,11 @@ public class ThumbsupDaoImpl implements IThumbsupDao {
 		return mongoTemplate.findOne(query, ThumbsupBo.class);
 	}
 
+	public WriteResult updateDelete(String thumbsupId) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("_id").is(thumbsupId));
+		Update update = new Update();
+		update.set("deleted", 0);
+		return mongoTemplate.updateFirst(query,update,ThumbsupBo.class );
+	}
 }

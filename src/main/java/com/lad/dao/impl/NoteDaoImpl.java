@@ -115,6 +115,7 @@ public class NoteDaoImpl implements INoteDao {
 
 		Criteria criteria = new Criteria("createTime").gte(CommonUtil.getBeforeWeekDate());
 		criteria.and("circleId").is(circleid);
+		criteria.and("deleted").is(0);
 		AggregationOperation match = Aggregation.match(criteria);
 
 		AggregationOperation project = Aggregation.project(fields).and("temp")
@@ -141,7 +142,6 @@ public class NoteDaoImpl implements INoteDao {
 	public WriteResult deleteNote(String noteId) {
 		Query query = new Query();
 		query.addCriteria(new Criteria("_id").is(noteId));
-		query.addCriteria(new Criteria("deleted").is(0));
 		Update update = new Update();
 		update.set("deleted", 1);
 		return mongoTemplate.updateFirst(query, update, NoteBo.class);

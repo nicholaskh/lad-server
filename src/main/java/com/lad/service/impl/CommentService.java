@@ -34,8 +34,8 @@ public class CommentService implements ICommentService {
     }
 
     @Override
-    public List<CommentBo> selectByNoteid(String noteid) {
-        return commentDao.selectByNoteid(noteid);
+    public List<CommentBo> selectByNoteid(String noteid, String startId, boolean gt, int limit) {
+        return commentDao.selectByNoteid(noteid, startId, gt,limit);
     }
 
     @Override
@@ -54,8 +54,8 @@ public class CommentService implements ICommentService {
     }
 
     @Override
-    public List<CommentBo> selectByUser(String userid) {
-        return commentDao.selectByUser(userid);
+    public List<CommentBo> selectByUser(String userid,  String startId, boolean gt, int limit) {
+        return commentDao.selectByUser(userid, startId, gt, limit);
     }
 
     @Async

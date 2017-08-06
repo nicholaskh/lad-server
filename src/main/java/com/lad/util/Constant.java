@@ -63,4 +63,17 @@ public class Constant {
 	 */
 	public static final int DELETED = 1;
 
+	/**
+	 * 评论或点赞类型 note 帖子
+	 */
+	public static final int NOTE_TYPE = 0;
+	/**
+	 * 评论或点赞类型 infor 资讯
+	 */
+	public static final int INFOR_TYPE = 1;
+	/**
+	 * 主页评论或点赞型 homepage 资讯
+	 */
+	public static final int PAGE_TYPE = 2;
+
 }

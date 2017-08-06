@@ -3,6 +3,7 @@ package com.lad.service.impl;
 import com.lad.bo.ThumbsupBo;
 import com.lad.dao.IThumbsupDao;
 import com.lad.service.IThumbsupService;
+import com.lad.util.Constant;
 import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,7 +17,14 @@ public class ThumbsupService implements IThumbsupService {
 	private IThumbsupDao thumbsupDao;
 
 	public ThumbsupBo insert(ThumbsupBo thumbsupBo) {
-		return thumbsupDao.insert(thumbsupBo);
+		ThumbsupBo old = thumbsupDao.findIsDelete(thumbsupBo);
+		if (old != null) {
+			thumbsupDao.updateDelete(thumbsupBo.getId());
+			old.setDeleted(Constant.ACTIVITY);
+			return old;
+		} else {
+			return thumbsupDao.insert(thumbsupBo);
+		}
 	}
 
 	public List<ThumbsupBo> selectByOwnerId(String ownerId) {

@@ -19,4 +19,8 @@ public interface IThumbsupDao extends IBaseDao {
 	public List<ThumbsupBo> selectByOwnerIdPaged(String startId, boolean gt, int limit, String ownerId);
 
 	WriteResult delete(String thumbsupId);
+
+	ThumbsupBo findIsDelete(ThumbsupBo thumbsupBo);
+
+	WriteResult updateDelete(String thumbsupId);
 }

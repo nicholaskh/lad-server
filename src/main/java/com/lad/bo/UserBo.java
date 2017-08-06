@@ -2,16 +2,13 @@ package com.lad.bo;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.io.Serializable;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 
 @Document(collection = "user")
-public class UserBo extends BaseBo implements Serializable {
-
-	private static final long serialVersionUID = 2928923917001675021L;
+public class UserBo extends BaseBo {
 
 	private String userName;
 

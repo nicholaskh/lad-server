@@ -7,8 +7,12 @@ import com.qiniu.storage.BucketManager;
 import com.qiniu.storage.Configuration;
 import com.qiniu.storage.UploadManager;
 import com.qiniu.util.Auth;
+import org.apache.log4j.Logger;
+import org.apache.log4j.spi.RootLogger;
 
 public class QiNiu {
+
+	private static final Logger logger = RootLogger.getLogger(QiNiu.class);
 	
 	public static String uploadToQiNiu(String path ,String filename){
 		//构造一个带指定Zone对象的配置类
@@ -30,7 +34,7 @@ public class QiNiu {
 		    uploadManager.put(localFilePath, key, upToken);
 		} catch (QiniuException ex) {
 		    Response r = ex.response;
-		    System.err.println(r.toString());
+			logger.error(r.toString());
 		}
 		return key;
 	}
@@ -61,12 +65,16 @@ public class QiNiu {
 		    bucketManager.deleteAfterDays(bucket, key, days);
 		} catch (QiniuException ex) {
 		    System.err.println(ex.response.toString());
+			logger.error(ex.response.toString());
 		}
 		return key;
 	}
 	
 	public static void main(String[] args){
-		uploadToQiNiu("/Users/gouxubo/picture/head/", "58d9c84e589b55369688bb4e12.png");
+		Long startTie = System.currentTimeMillis();
+		uploadToQiNiu("E:\\个人\\picture\\图片\\", "20150510_125219.jpg");
+
+		System.out.println(System.currentTimeMillis() - startTie);
 	}
 
 }

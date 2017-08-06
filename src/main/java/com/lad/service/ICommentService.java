@@ -33,7 +33,7 @@ public interface ICommentService {
      * @param noteid
      * @return
      */
-    List<CommentBo> selectByNoteid(String noteid);
+    List<CommentBo> selectByNoteid(String noteid, String startId, boolean gt, int limit);
 
     /**
      * 查询回帖
@@ -61,7 +61,7 @@ public interface ICommentService {
      * @param userid
      * @return
      */
-    List<CommentBo> selectByUser(String userid);
+    List<CommentBo> selectByUser(String userid, String startId, boolean gt, int limit);
 
     /**
      * 更新红人周榜,涉及到所有人员，所以异步执行

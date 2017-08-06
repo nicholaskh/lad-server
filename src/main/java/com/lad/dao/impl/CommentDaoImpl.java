@@ -2,6 +2,8 @@ package com.lad.dao.impl;
 
 import com.lad.bo.CommentBo;
 import com.lad.dao.ICommentDao;
+import com.lad.util.CommonUtil;
+import com.lad.util.Constant;
 import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -35,10 +37,11 @@ public class CommentDaoImpl implements ICommentDao {
         return mongoTemplate.findOne(query, CommentBo.class);
     }
 
-    public List<CommentBo> selectByNoteid(String noteid){
+    public List<CommentBo> selectByNoteid(String noteid, String startId, boolean gt, int limit){
         Query query = new Query();
         query.addCriteria(new Criteria("noteid").is(noteid));
         query.addCriteria(new Criteria("deleted").is(0));
+        CommonUtil.queryByIdPage(query,startId,gt,limit);
         return mongoTemplate.find(query, CommentBo.class);
     }
 
@@ -56,10 +59,12 @@ public class CommentDaoImpl implements ICommentDao {
         return mongoTemplate.updateFirst(query, update, CommentBo.class);
     }
 
-    public List<CommentBo> selectByUser(String userid){
+    public List<CommentBo> selectByUser(String userid,  String startId, boolean gt, int limit){
         Query query = new Query();
         query.addCriteria(new Criteria("createuid").is(userid));
         query.addCriteria(new Criteria("deleted").is(0));
+        query.addCriteria(new Criteria("type").is(Constant.NOTE_TYPE));
+        CommonUtil.queryByIdPage(query,startId,gt,limit);
         return mongoTemplate.find(query, CommentBo.class);
     }
 

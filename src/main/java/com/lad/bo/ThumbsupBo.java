@@ -5,10 +5,13 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "thumbsup")
 public class ThumbsupBo extends BaseBo {
 
-	private static final long serialVersionUID = 1L;
 	private String homepage_id;
 	private String owner_id;
 	private String visitor_id;
+
+	// 0 帖子点赞； 1 资讯点赞
+	private int type;
+
 	public String getHomepage_id() {
 		return homepage_id;
 	}
@@ -27,5 +30,12 @@ public class ThumbsupBo extends BaseBo {
 	public void setVisitor_id(String visitor_id) {
 		this.visitor_id = visitor_id;
 	}
-	
+
+	public int getType() {
+		return type;
+	}
+
+	public void setType(int type) {
+		this.type = type;
+	}
 }

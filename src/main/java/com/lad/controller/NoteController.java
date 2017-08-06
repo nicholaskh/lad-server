@@ -7,16 +7,22 @@ import com.lad.util.CommonUtil;
 import com.lad.util.Constant;
 import com.lad.util.ERRORCODE;
 import com.lad.util.MyException;
+import com.lad.vo.CommentVo;
 import com.lad.vo.NoteVo;
 import net.sf.json.JSONObject;
+import org.apache.log4j.Logger;
+import org.apache.log4j.spi.RootLogger;
 import org.redisson.api.RLock;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -26,6 +32,8 @@ import java.util.concurrent.TimeUnit;
 @Controller
 @RequestMapping("note")
 public class NoteController extends BaseContorller {
+
+	private final Logger logger = RootLogger.getLogger(NoteController.class);
 
 	@Autowired
 	private INoteService noteService;
@@ -42,6 +50,9 @@ public class NoteController extends BaseContorller {
 	@Autowired
 	private RedisServer redisServer;
 
+	@Autowired
+	private CommonsMultipartResolver multipartResolver;
+
 
 	@RequestMapping("/insert")
 	@ResponseBody
@@ -53,6 +64,7 @@ public class NoteController extends BaseContorller {
 						 @RequestParam String circleid,
 						 @RequestParam(required = false) MultipartFile[] pictures,
 			HttpServletRequest request, HttpServletResponse response) {
+		System.out.println("----------------------" + (pictures != null));
 		UserBo userBo;
 		try {
 			userBo = checkSession(request, userService);
@@ -76,12 +88,15 @@ public class NoteController extends BaseContorller {
 		LinkedList<String> photos = new LinkedList<>();
 		String userId =  userBo.getId();
 		if (pictures != null) {
+			System.out.println("----------------------" + userId);
 			Long time = Calendar.getInstance().getTimeInMillis();
 			for (MultipartFile file : pictures) {
 				String fileName = userId + "-" + time + "-"
 						+ file.getOriginalFilename();
+				logger.info(fileName);
 				String path = CommonUtil.upload(file, Constant.NOTE_PICTURE_PATH,
 						fileName, 0);
+				logger.info(path);
 				photos.add(path);
 			}
 		}
@@ -92,12 +107,81 @@ public class NoteController extends BaseContorller {
 		circleService.updateNotes(circleBo.getId(), notes);
 
 		NoteVo noteVo = new NoteVo();
-		boToVo(noteBo, noteVo);
+		boToVo(noteBo, noteVo, userBo);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("noteVo", noteVo);
 		return JSONObject.fromObject(map).toString();
 	}
+
+
+	@RequestMapping("/insert2")
+	@ResponseBody
+	public String isnert2(@RequestParam double px,
+						 @RequestParam double py,
+						 @RequestParam String subject,
+						 @RequestParam(required = false)String landmark,
+						 @RequestParam String content,
+						 @RequestParam String circleid,
+						 @RequestParam(required = false) MultipartFile pictures,
+						 HttpServletRequest request, HttpServletResponse response) {
+
+		UserBo userBo;
+		try {
+			userBo = checkSession(request, userService);
+		} catch (MyException e) {
+			return e.getMessage();
+		}
+		CircleBo circleBo = circleService.selectById(circleid);
+		if (null == circleBo) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CIRCLE_IS_NULL.getIndex(),
+					ERRORCODE.CIRCLE_IS_NULL.getReason());
+		}
+		NoteBo noteBo = new NoteBo();
+		noteBo.setPosition(new double[] { px, py });
+		noteBo.setLandmark(landmark);
+		noteBo.setSubject(subject);
+		noteBo.setContent(content);
+		noteBo.setVisitcount(1);
+		noteBo.setCreateuid(userBo.getId());
+		noteBo.setCircleId(circleid);
+		LinkedList<String> photos = new LinkedList<>();
+		String userId =  userBo.getId();
+
+		Long time = Calendar.getInstance().getTimeInMillis();
+		System.out.println("----------------------" + time);
+		if (multipartResolver.isMultipart(request)){
+			System.out.println("----------------------2" + time);
+			//转换成多部分request
+			MultipartHttpServletRequest multiRequest = (MultipartHttpServletRequest)request;
+			//取得request中的所有文件名
+			Iterator<String> iter = multiRequest.getFileNames();
+			while (iter.hasNext()){
+				MultipartFile file = multiRequest.getFile(iter.next());
+				String fileName = userId + "-" + time + "-"
+						+ file.getOriginalFilename();
+				String path = CommonUtil.upload(file, Constant.NOTE_PICTURE_PATH,
+						fileName, 0);
+				photos.add(path);
+				System.out.println("----------------------" + path);
+			}
+		}
+		noteBo.setPhotos(photos);
+		noteService.insert(noteBo);
+		HashSet<String> notes = circleBo.getNotes();
+		notes.add(noteBo.getId());
+		circleService.updateNotes(circleBo.getId(), notes);
+
+		NoteVo noteVo = new NoteVo();
+		boToVo(noteBo, noteVo, userBo);
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("noteVo", noteVo);
+		return JSONObject.fromObject(map).toString();
+
+	}
+
 
 	@RequestMapping("/photo")
 	@ResponseBody
@@ -147,6 +231,7 @@ public class NoteController extends BaseContorller {
 		ThumbsupBo thumbsupBo = new ThumbsupBo();
 		thumbsupBo.setOwner_id(noteid);
 		thumbsupBo.setVisitor_id(userBo.getId());
+		thumbsupBo.setType(Constant.NOTE_TYPE);
 		thumbsupService.insert(thumbsupBo);
 		RLock lock = redisServer.getRLock(Constant.THUMB_LOCK);
 		try {
@@ -204,8 +289,11 @@ public class NoteController extends BaseContorller {
 		} finally {
 			lock.unlock();
 		}
+		ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(userBo.getId(), noteid);
 		NoteVo noteVo = new NoteVo();
-		boToVo(noteBo, noteVo);
+		boToVo(noteBo, noteVo, userBo);
+		//这个帖子自己是否点赞
+		noteVo.setThumbsup(null != thumbsupBo);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("noteVo", noteVo);
@@ -225,10 +313,18 @@ public class NoteController extends BaseContorller {
 			return e.getMessage();
 		}
 		List<NoteBo> noteBos = noteService.finyByCreateTime(circleid,start_id,gt,limit);
-        List<NoteVo> noteVoList = bo2vo(noteBos);
+		List<NoteVo> noteVos = new LinkedList<>();
+		if (noteBos != null) {
+			for (NoteBo noteBo : noteBos) {
+				NoteVo note = new NoteVo();
+				UserBo userBo = userService.getUser(noteBo.getCreateuid());
+				boToVo(noteBo, note, userBo);
+				noteVos.add(note);
+			}
+		}
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("ret", 0);
-        map.put("noteVoList", noteVoList);
+        map.put("noteVoList", noteVos);
         return JSONObject.fromObject(map).toString();
 	}
 
@@ -245,7 +341,13 @@ public class NoteController extends BaseContorller {
 			return e.getMessage();
 		}
         List<NoteBo> noteBos = noteService.selectByVisit(circleid);
-        List<NoteVo> noteVoList = bo2vo(noteBos);
+		List<NoteVo> noteVoList = new LinkedList<>();
+		for (NoteBo noteBo : noteBos) {
+			NoteVo noteVo = new NoteVo();
+			UserBo userBo = userService.getUser(noteBo.getCreateuid());
+			boToVo(noteBo, noteVo, userBo);
+			noteVoList.add(noteVo);
+		}
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("ret", 0);
         map.put("noteVoList", noteVoList);
@@ -266,7 +368,13 @@ public class NoteController extends BaseContorller {
 			return e.getMessage();
 		}
         List<NoteBo> noteBos = noteService.selectHotNotes(circleid);
-        List<NoteVo> noteVoList = bo2vo(noteBos);
+		List<NoteVo> noteVoList = new LinkedList<>();
+		for (NoteBo noteBo : noteBos) {
+			NoteVo noteVo = new NoteVo();
+			UserBo userBo = userService.getUser(noteBo.getCreateuid());
+			boToVo(noteBo, noteVo, userBo);
+			noteVoList.add(noteVo);
+		}
         Map<String, Object> map = new HashMap<>();
         map.put("ret", 0);
         map.put("noteVoList", noteVoList);
@@ -299,6 +407,7 @@ public class NoteController extends BaseContorller {
 		CommentBo commentBo = new CommentBo();
 		commentBo.setNoteid(noteBo.getId());
 		commentBo.setParentid(parentid);
+		commentBo.setUserName(userBo.getUserName());
 		commentBo.setContent(countent);
 		commentBo.setCreateuid(userBo.getId());
 		commentBo.setCreateTime(currentDate);
@@ -353,9 +462,95 @@ public class NoteController extends BaseContorller {
 		}
 		Map<String, Object> map = new HashMap<>();
 		map.put("ret", 0);
-		map.put("commentVo", commentBo);
+		map.put("commentVo", comentBo2Vo(commentBo));
 		return JSONObject.fromObject(map).toString();
 	}
+
+
+	/**
+	 * 删除自己的帖子评论
+	 * @return
+	 */
+	@RequestMapping("/delete-self-comment")
+	@ResponseBody
+	public String deleteComments(String commentid,HttpServletRequest request,  HttpServletResponse response) {
+
+		UserBo userBo;
+		try {
+			userBo = checkSession(request, userService);
+		} catch (MyException e) {
+			return e.getMessage();
+		}
+		CommentBo commentBo = commentService.findById(commentid);
+		if (commentBo != null) {
+			if (userBo.getId().equals(commentBo.getCreateuid())) {
+				commentService.delete(commentid);
+			} else {
+				return CommonUtil.toErrorResult(
+						ERRORCODE.NOTE_NOT_MASTER.getIndex(),
+						ERRORCODE.NOTE_NOT_MASTER.getReason());
+			}
+		}
+		return Constant.COM_RESP;
+	}
+
+	/**
+	 * 获取帖子评论
+	 * @return
+	 */
+	@RequestMapping("/get-comments")
+	@ResponseBody
+	public String getComments(String noteid, String start_id, boolean gt, int limit,
+							  HttpServletRequest request, HttpServletResponse response) {
+		UserBo userBo;
+		try {
+			userBo = checkSession(request, userService);
+		} catch (MyException e) {
+			return e.getMessage();
+		}
+		NoteBo noteBo = noteService.selectById(noteid);
+		if (noteBo == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.NOTE_IS_NULL.getIndex(),
+					ERRORCODE.NOTE_IS_NULL.getReason());
+		}
+
+		List<CommentBo> commentBos = commentService.selectByNoteid(noteid, start_id, gt, limit);
+		List<CommentVo> commentVos = new ArrayList<>();
+		for (CommentBo commentBo : commentBos) {
+			commentVos.add(comentBo2Vo(commentBo));
+		}
+		Map<String, Object> map = new HashMap<>();
+		map.put("ret", 0);
+		map.put("commentVoList", commentVos);
+		return JSONObject.fromObject(map).toString();
+	}
+
+	/**
+	 * 获取帖子评论
+	 * @return
+	 */
+	@RequestMapping("/get-self-comments")
+	@ResponseBody
+	public String getSelfComments(String start_id, boolean gt, int limit,
+								  HttpServletRequest request, HttpServletResponse response) {
+		UserBo userBo;
+		try {
+			userBo = checkSession(request, userService);
+		} catch (MyException e) {
+			return e.getMessage();
+		}
+		List<CommentBo> commentBos = commentService.selectByUser(userBo.getId(), start_id, gt, limit);
+		List<CommentVo> commentVos = new ArrayList<>();
+		for (CommentBo commentBo : commentBos) {
+			commentVos.add(comentBo2Vo(commentBo));
+		}
+		Map<String, Object> map = new HashMap<>();
+		map.put("ret", 0);
+		map.put("commentVoList", commentVos);
+		return JSONObject.fromObject(map).toString();
+	}
+
 
 	/**
 	 * 获取置顶帖子，置顶帖子条件，字数>=200, 图片>=3,时间倒序取前2
@@ -371,7 +566,12 @@ public class NoteController extends BaseContorller {
 			return e.getMessage();
 		}
 		List<NoteBo> noteBos = noteService.selectTopNotes(circleid);
-		List<NoteVo> noteVoList = bo2vo(noteBos);
+		List<NoteVo> noteVoList = new LinkedList<>();
+		for (NoteBo noteBo : noteBos) {
+			NoteVo noteVo = new NoteVo();
+			boToVo(noteBo, noteVo, userService.getUser(noteBo.getCreateuid()));
+			noteVoList.add(noteVo);
+		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("noteVoList", noteVoList);
@@ -393,9 +593,17 @@ public class NoteController extends BaseContorller {
 			return e.getMessage();
 		}
 		List<NoteBo> noteBos = noteService.selectMyNotes(userBo.getId(), start_id, gt, limit);
+		List<NoteVo> noteVoList = new LinkedList<>();
+		NoteVo noteVo = null;
+		for (NoteBo noteBo : noteBos) {
+			noteVo = new NoteVo();
+			userBo = userService.getUser(noteBo.getCreateuid());
+			boToVo(noteBo, noteVo, userBo);
+			noteVoList.add(noteVo);
+		}
 		Map<String, Object> map = new HashMap<>();
 		map.put("ret", 0);
-		map.put("noteVoList", bo2vo(noteBos));
+		map.put("noteVoList", noteVoList);
 		return JSONObject.fromObject(map).toString();
 	}
 
@@ -475,29 +683,34 @@ public class NoteController extends BaseContorller {
 		return redstarBo;
 	}
 
-    private List<NoteVo> bo2vo(List<NoteBo> noteBos){
-        List<NoteVo> noteVoList = new LinkedList<>();
-        for (NoteBo noteBo : noteBos) {
-			NoteVo noteVo = new NoteVo();
-           	boToVo(noteBo, noteVo);
-			noteVoList.add(noteVo);
-        }
-		return noteVoList;
-	}
 
-	private void boToVo(NoteBo noteBo, NoteVo noteVo){
+
+	private void boToVo(NoteBo noteBo, NoteVo noteVo, UserBo userBo){
 		BeanUtils.copyProperties(noteBo, noteVo);
-
-    	UserBo userBo = userService.getUser(noteBo.getCreateuid());
-		noteVo.setSex(userBo.getSex());
-		noteVo.setBirthDay(userBo.getBirthDay());
-		noteVo.setHeadPictureName(userBo.getHeadPictureName());
-		noteVo.setUsername(userBo.getUserName());
+		if (userBo!= null) {
+			noteVo.setSex(userBo.getSex());
+			noteVo.setBirthDay(userBo.getBirthDay());
+			noteVo.setHeadPictureName(userBo.getHeadPictureName());
+			noteVo.setUsername(userBo.getUserName());
+		}
 		noteVo.setCommontCount(noteBo.getCommentcount());
 		noteVo.setVisitCount(noteBo.getVisitcount());
 		noteVo.setNodeid(noteBo.getId());
 		noteVo.setTransCount(noteBo.getTranscount());
 		noteVo.setThumpsubCount(noteBo.getThumpsubcount());
+	}
+
+	private CommentVo comentBo2Vo(CommentBo commentBo){
+		CommentVo commentVo = new CommentVo();
+		BeanUtils.copyProperties(commentBo, commentVo);
+		if (!StringUtils.isEmpty(commentBo.getParentid())) {
+			CommentBo parent = commentService.findById(commentBo.getParentid());
+			commentVo.setParentUserName(parent.getUserName());
+			commentVo.setParentUserid(parent.getCreateuid());
+		}
+		commentVo.setCommentId(commentBo.getId());
+		commentVo.setUserid(commentBo.getCreateuid());
+		return commentVo;
 	}
 
 
