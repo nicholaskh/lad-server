@@ -13,6 +13,7 @@ import org.springframework.data.mongodb.core.aggregation.ProjectionOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -31,9 +32,10 @@ public class InforDaoImpl implements IInforDao {
 
     @Override
     public List<InforBo> selectAllInfos() {
-        ProjectionOperation project = Aggregation.project("module","className", "classNum");
+        ProjectionOperation project = Aggregation.project("_id","className", "classNum");
         GroupOperation groupOperation = Aggregation.group("className", "classNum").count().as("nums");
-        Aggregation aggregation = Aggregation.newAggregation(project, groupOperation);
+        Aggregation aggregation = Aggregation.newAggregation(project, groupOperation,
+                Aggregation.sort(Sort.Direction.DESC, "_id"));
         AggregationResults<InforBo> results = mongoTemplateTwo.aggregate(aggregation, "test", InforBo.class);
         return results.getMappedResults();
     }
@@ -51,11 +53,14 @@ public class InforDaoImpl implements IInforDao {
         return null;
     }
 
-    public List<InforBo> findByList(String className){
+    public List<InforBo> findByList(String className, String createTime, int limit){
         Query query = new Query();
         query.addCriteria(new Criteria("className").is(className));
         query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "time")));
-        query.limit(4);
+        if (!StringUtils.isEmpty(createTime)) {
+            query.addCriteria(new Criteria("time").lt(createTime));
+        }
+        query.limit(limit);
         return mongoTemplateTwo.find(query, InforBo.class);
     }
 

@@ -50,6 +50,13 @@ public class ThumbsupDaoImpl implements IThumbsupDao {
 		return mongoTemplate.find(query, ThumbsupBo.class);
 	}
 
+	public long selectByOwnerIdCount(String ownerId) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("owner_id").is(ownerId));
+		query.addCriteria(new Criteria("deleted").is(0));
+		return mongoTemplate.count(query, ThumbsupBo.class);
+	}
+
 	public List<ThumbsupBo> selectByVisitorId(String visitorId) {
 		Query query = new Query();
 		query.addCriteria(new Criteria("visitor_id").is(visitorId));

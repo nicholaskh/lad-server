@@ -21,6 +21,9 @@ public class NoteBo extends BaseBo {
 	//点赞数
 	private long thumpsubcount;
 
+	//上传的文件类型，前端传值
+	private String type;
+
 	//用于聚合查询的临时值，不用于数据保存
 	private long temp;
 
@@ -110,5 +113,13 @@ public class NoteBo extends BaseBo {
 
 	public void setTemp(long temp) {
 		this.temp = temp;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
 	}
 }

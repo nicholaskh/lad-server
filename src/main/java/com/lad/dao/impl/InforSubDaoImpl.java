@@ -12,6 +12,7 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 
 /**
  * 功能描述：
@@ -31,7 +32,7 @@ public class InforSubDaoImpl implements IInforSubDao {
         return inforSubscriptionBo;
     }
 
-    public WriteResult updateSub(String userid, LinkedHashSet<String> subscriptions){
+    public WriteResult updateSub(String userid, LinkedList<String> subscriptions){
         Query query = new Query();
         query.addCriteria(new Criteria("userid").is(userid));
         query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));

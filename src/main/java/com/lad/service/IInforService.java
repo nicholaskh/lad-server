@@ -5,6 +5,7 @@ import com.lad.scrapybo.InforBo;
 import com.mongodb.WriteResult;
 
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -17,10 +18,9 @@ public interface IInforService {
 
     /**
      * 获取一级分类 类型名称
-     * @param module
      * @return
      */
-    List<InforBo> findGroups(String module);
+    List<InforBo> findAllGroups() ;
 
     /**
      * 一级分类下咨询信息列表
@@ -38,17 +38,19 @@ public interface IInforService {
 
     /**
      * 二级分类下咨询信息列表
-     * @param className
+     * @param className  文章分类
+     * @param createTime  文章的发布时间
+     * @param limit   每页显示数量
      * @return
      */
-    List<InforBo> findClassInfos(String className);
+    List<InforBo> findClassInfos(String className, String createTime, int limit);
 
 
     InforBo findById(String id);
 
 
 
-    List<InforSubscriptionBo> findMySubs(String userid);
+    InforSubscriptionBo findMySubs(String userid);
 
     /**
      * 订阅一级分类 类型
@@ -84,7 +86,7 @@ public interface IInforService {
      * @param subscriptions
      * @return
      */
-    WriteResult updateSub(String userid, LinkedHashSet<String> subscriptions);
+    WriteResult updateSub(String userid, LinkedList<String> subscriptions);
 
     /**
      * 更新咨询收藏

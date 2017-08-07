@@ -75,4 +75,9 @@ public class CommentService implements ICommentService {
     public WriteResult addRadstarCount(String userid, String circleid){
         return  redstarDao.addCommentCount(userid, circleid, 1);
     }
+
+    @Override
+    public List<CommentBo> selectCommentByType(int type, String id, String startId, boolean gt, int limit) {
+        return commentDao.selectCommentByType(type, id, startId, gt, limit);
+    }
 }

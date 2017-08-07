@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -32,8 +33,8 @@ public class InforSerivceImpl implements IInforService {
     private IInforDao inforDao;
 
     @Override
-    public List<InforBo> findGroups(String module) {
-        return null;
+    public List<InforBo> findAllGroups() {
+        return inforDao.selectAllInfos();
     }
 
     @Override
@@ -47,8 +48,8 @@ public class InforSerivceImpl implements IInforService {
     }
 
     @Override
-    public List<InforBo> findClassInfos(String className) {
-        return null;
+    public List<InforBo> findClassInfos(String className, String createTime, int limit) {
+        return inforDao.findByList(className, createTime, limit);
     }
 
     @Override
@@ -58,8 +59,8 @@ public class InforSerivceImpl implements IInforService {
     }
 
     @Override
-    public List<InforSubscriptionBo> findMySubs(String userid) {
-        return null;
+    public InforSubscriptionBo findMySubs(String userid) {
+        return inforSubDao.findByUserid(userid);
     }
 
     @Override
@@ -88,7 +89,7 @@ public class InforSerivceImpl implements IInforService {
     }
 
     @Override
-    public WriteResult updateSub(String userid, LinkedHashSet<String> subscriptions) {
+    public WriteResult updateSub(String userid, LinkedList<String> subscriptions) {
         return inforSubDao.updateSub(userid, subscriptions);
     }
 

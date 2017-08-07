@@ -34,6 +34,8 @@ public class NoteVo extends BaseVo {
 
     private Boolean thumbsup;
 
+    private String type;
+
     public Boolean getThumbsup() {
         return thumbsup;
     }
@@ -44,7 +46,7 @@ public class NoteVo extends BaseVo {
 
     private LinkedList<String> photos = new LinkedList<>();
 
-    private Date createTime;
+    private Date createTime;                        
 
     private String createuid;
 
@@ -187,5 +189,13 @@ public class NoteVo extends BaseVo {
 
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }

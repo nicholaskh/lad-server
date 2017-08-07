@@ -23,4 +23,11 @@ public interface IThumbsupDao extends IBaseDao {
 	ThumbsupBo findIsDelete(ThumbsupBo thumbsupBo);
 
 	WriteResult updateDelete(String thumbsupId);
+
+	/**
+	 * 获取当前点赞数量
+	 * @param ownerId
+	 * @return
+	 */
+	long selectByOwnerIdCount(String ownerId);
 }

@@ -17,7 +17,7 @@ public interface IInforDao {
 
     List<InforBo> findGroups(String module);
 
-    List<InforBo> findByList(String groupName);
+    List<InforBo> findByList(String groupName, String createTime, int limit);
 
     InforBo findById(String id);
 

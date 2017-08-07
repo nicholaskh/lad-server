@@ -52,4 +52,8 @@ public class ThumbsupService implements IThumbsupService {
 		return thumbsupDao.delete(thumbsupId);
 	}
 
+	@Override
+	public long selectByOwnerIdCount(String ownerId) {
+		return thumbsupDao.selectByOwnerIdCount(ownerId);
+	}
 }

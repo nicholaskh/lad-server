@@ -36,6 +36,17 @@ public interface ICommentService {
     List<CommentBo> selectByNoteid(String noteid, String startId, boolean gt, int limit);
 
     /**
+     * 查询置顶类型下 置顶 id 下的评论
+     * @param type
+     * @param id
+     * @param startId
+     * @param gt
+     * @param limit
+     * @return
+     */
+    List<CommentBo> selectCommentByType(int type, String id, String startId, boolean gt, int limit);
+
+    /**
      * 查询回帖
      * @param parentid
      * @return

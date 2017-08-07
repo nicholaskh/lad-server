@@ -67,9 +67,13 @@ public enum ERRORCODE {
 	CIRCLE_CREATE_MAX(110008, "圈子创建数已到达上限"),
 	CIRCLE_USER_NULL(110009, "该用户不在此圈子"),
 	CIRCLE_TOP_EXIST(110010, "圈子已经置顶"),
+
+	INFOR_IS_NULL(130001, "资讯不存在"),
 	
 	NOTE_IS_NULL(120001, "帖子不存在"),
 	NOTE_NOT_MASTER(120002, "没有权限");
+
+
 
 
 	private int index;

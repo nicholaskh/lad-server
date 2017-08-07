@@ -19,4 +19,11 @@ public interface IThumbsupService extends IBaseService {
 	public List<ThumbsupBo> selectByOwnerIdPaged(String startId, boolean gt, int limit, String ownerId);
 
 	WriteResult deleteById(String thumbsupId);
+
+	/**
+	 * 获取当前点赞数量
+	 * @param ownerId
+	 * @return
+	 */
+	long selectByOwnerIdCount(String ownerId);
 }
