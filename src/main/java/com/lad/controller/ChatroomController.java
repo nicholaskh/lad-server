@@ -7,10 +7,7 @@ import com.lad.redis.RedisServer;
 import com.lad.service.IChatroomService;
 import com.lad.service.IIMTermService;
 import com.lad.service.IUserService;
-import com.lad.util.CommonUtil;
-import com.lad.util.Constant;
-import com.lad.util.ERRORCODE;
-import com.lad.util.IMUtil;
+import com.lad.util.*;
 import com.lad.vo.ChatroomVo;
 import com.lad.vo.UserVo;
 import com.pushd.ImAssistant;
@@ -343,28 +340,16 @@ public class ChatroomController extends BaseContorller {
 	public String getChatrooms(HttpServletRequest request,
 			HttpServletResponse response) throws IllegalAccessException,
 			InvocationTargetException {
-		HttpSession session = request.getSession();
-		if (session.isNew()) {
-			return CommonUtil.toErrorResult(
-					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		UserBo userBo;
+		try {
+			userBo = checkSession(request, userService);
+		} catch (MyException e) {
+			return e.getMessage();
 		}
-		if (session.getAttribute("isLogin") == null) {
-			return CommonUtil.toErrorResult(
-					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-		}
-		UserBo userBoTemp = (UserBo) session.getAttribute("userBo");
-		if (userBoTemp == null) {
-			return CommonUtil.toErrorResult(
-					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-		}
-		UserBo userBo = userService.getUser(userBoTemp.getId());
-		HashSet<String> Chatrooms = userBo.getChatrooms();
-		HashSet<String> ChatroomsTop = userBo.getChatroomsTop();
+		HashSet<String> chatrooms = userBo.getChatrooms();
+		HashSet<String> chatroomsTop = userBo.getChatroomsTop();
 		List<ChatroomVo> chatroomList = new LinkedList<ChatroomVo>();
-		for (String id : ChatroomsTop) {
+		for (String id : chatroomsTop) {
 			ChatroomBo temp = chatroomService.get(id);
 			if (null != temp) {
 				ChatroomVo vo = new ChatroomVo();
@@ -373,7 +358,7 @@ public class ChatroomController extends BaseContorller {
 				chatroomList.add(vo);
 			}
 		}
-		for (String id : Chatrooms) {
+		for (String id : chatrooms) {
 			ChatroomBo temp = chatroomService.get(id);
 			if (null != temp) {
 				ChatroomVo vo = new ChatroomVo();

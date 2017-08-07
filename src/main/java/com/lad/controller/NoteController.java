@@ -63,8 +63,8 @@ public class NoteController extends BaseContorller {
 						 @RequestParam String content,
 						 @RequestParam String circleid,
 						 @RequestParam(required = false) MultipartFile[] pictures,
+						 @RequestParam(required = false) String type,
 			HttpServletRequest request, HttpServletResponse response) {
-		System.out.println("----------------------" + (pictures != null));
 		UserBo userBo;
 		try {
 			userBo = checkSession(request, userService);
@@ -85,10 +85,10 @@ public class NoteController extends BaseContorller {
 		noteBo.setVisitcount(1);
 		noteBo.setCreateuid(userBo.getId());
 		noteBo.setCircleId(circleid);
+		noteBo.setType(type);
 		LinkedList<String> photos = new LinkedList<>();
 		String userId =  userBo.getId();
 		if (pictures != null) {
-			System.out.println("----------------------" + userId);
 			Long time = Calendar.getInstance().getTimeInMillis();
 			for (MultipartFile file : pictures) {
 				String fileName = userId + "-" + time + "-"
@@ -150,9 +150,7 @@ public class NoteController extends BaseContorller {
 		String userId =  userBo.getId();
 
 		Long time = Calendar.getInstance().getTimeInMillis();
-		System.out.println("----------------------" + time);
 		if (multipartResolver.isMultipart(request)){
-			System.out.println("----------------------2" + time);
 			//转换成多部分request
 			MultipartHttpServletRequest multiRequest = (MultipartHttpServletRequest)request;
 			//取得request中的所有文件名
@@ -164,7 +162,6 @@ public class NoteController extends BaseContorller {
 				String path = CommonUtil.upload(file, Constant.NOTE_PICTURE_PATH,
 						fileName, 0);
 				photos.add(path);
-				System.out.println("----------------------" + path);
 			}
 		}
 		noteBo.setPhotos(photos);
