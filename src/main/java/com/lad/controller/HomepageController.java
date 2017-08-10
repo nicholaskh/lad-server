@@ -1,15 +1,16 @@
 package com.lad.controller;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
+import com.lad.bo.HomepageBo;
+import com.lad.bo.ThumbsupBo;
+import com.lad.bo.UserBo;
+import com.lad.service.IHomepageService;
+import com.lad.service.IThumbsupService;
+import com.lad.service.IUserService;
+import com.lad.util.CommonUtil;
+import com.lad.util.Constant;
+import com.lad.util.ERRORCODE;
+import com.lad.vo.ThumbsupVo;
+import net.sf.json.JSONObject;
 import org.apache.commons.beanutils.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -18,17 +19,10 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.lad.bo.HomepageBo;
-import com.lad.bo.ThumbsupBo;
-import com.lad.bo.UserBo;
-import com.lad.service.IHomepageService;
-import com.lad.service.IThumbsupService;
-import com.lad.service.IUserService;
-import com.lad.util.CommonUtil;
-import com.lad.util.ERRORCODE;
-import com.lad.vo.ThumbsupVo;
-
-import net.sf.json.JSONObject;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import java.util.*;
 
 @Controller
 @Scope("prototype")
@@ -211,6 +205,7 @@ public class HomepageController extends BaseContorller {
 		thumbsupBo.setOwner_id(owner_id);
 		thumbsupBo.setVisitor_id(user_id);
 		thumbsupBo.setHomepage_id(homepageBo.getId());
+		thumbsupBo.setType(Constant.PAGE_TYPE);
 		thumbsupService.insert(thumbsupBo);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
@@ -242,7 +237,7 @@ public class HomepageController extends BaseContorller {
 		userBo = userService.getUser(userBo.getId());
 		String ownerId = userBo.getId();
 		List<ThumbsupBo> thumbsup_from_me = thumbsupService
-				.selectByOwnerIdPaged(start_id, gt, limit, ownerId);
+				.selectByOwnerIdPaged(start_id, gt, limit, ownerId, Constant.PAGE_TYPE);
 		List<ThumbsupVo> thumbsup_from_me_vo = new ArrayList<ThumbsupVo>();
 		for (ThumbsupBo item : thumbsup_from_me) {
 			ThumbsupVo vo = new ThumbsupVo();

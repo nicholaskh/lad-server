@@ -230,6 +230,7 @@ public class NoteController extends BaseContorller {
 		thumbsupBo.setOwner_id(noteid);
 		thumbsupBo.setVisitor_id(userBo.getId());
 		thumbsupBo.setType(Constant.NOTE_TYPE);
+		thumbsupBo.setImage(userBo.getHeadPictureName());
 		thumbsupService.insert(thumbsupBo);
 		RLock lock = redisServer.getRLock(Constant.THUMB_LOCK);
 		try {
@@ -602,9 +603,10 @@ public class NoteController extends BaseContorller {
 
 		ThumbsupBo thumbsupBo = new ThumbsupBo();
 		thumbsupBo.setType(Constant.NOTE_COM_TYPE);
-		thumbsupBo.setOwner_id(commentid);
+		thumbsupBo.setOwner_id(commentid);thumbsupBo.setImage(userBo.getHeadPictureName());
 		thumbsupBo.setVisitor_id(userBo.getId());
 		thumbsupBo.setCreateuid(userBo.getId());
+
 		thumbsupService.insert(thumbsupBo);
 		return Constant.COM_RESP;
 	}
