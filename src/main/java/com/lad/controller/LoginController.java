@@ -145,30 +145,6 @@ public class LoginController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	@RequestMapping("/login1")
-	@ResponseBody
-	public String login1(String phone,String password,
-						HttpServletRequest request, HttpServletResponse response) {
-		System.out.println("login1=======" + phone + password );
-		return login(phone, password, request, response);
-	}
-
-	@RequestMapping("/login2")
-	@ResponseBody
-	public String login2(String phone, @RequestParam String password,
-						 HttpServletRequest request, HttpServletResponse response) {
-		System.out.println("login2=======" + phone + password );
-		return login(phone, password, request, response);
-	}
-
-	@RequestMapping("/login3")
-	@ResponseBody
-	public String login3(@RequestParam String phone,String password,
-						 HttpServletRequest request, HttpServletResponse response) {
-		System.out.println("login2=======" + phone + password );
-		return login(phone, password, request, response);
-	}
-
 
 	@RequestMapping("/login-no")
 	@ResponseBody
