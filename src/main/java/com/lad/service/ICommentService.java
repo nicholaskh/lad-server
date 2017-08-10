@@ -68,7 +68,7 @@ public interface ICommentService {
     WriteResult delete(String commentId);
 
     /**
-     * 查到用户所有的帖子
+     * 查到用户所有的评论
      * @param userid
      * @return
      */
@@ -105,4 +105,5 @@ public interface ICommentService {
      * @return
      */
     WriteResult addRadstarCount(String userid, String circleid);
+
 }

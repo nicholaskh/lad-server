@@ -25,6 +25,7 @@ public class CommentService implements ICommentService {
     @Autowired
     private IRedstarDao redstarDao;
 
+
     public RedstarBo insertRedstar(RedstarBo redstarBo) {
         return redstarDao.insert(redstarBo);
     }

@@ -9,6 +9,7 @@ import com.lad.util.ERRORCODE;
 import com.lad.util.MyException;
 import com.lad.vo.CommentVo;
 import com.lad.vo.NoteVo;
+import com.lad.vo.UserBaseVo;
 import net.sf.json.JSONObject;
 import org.apache.log4j.Logger;
 import org.apache.log4j.spi.RootLogger;
@@ -290,7 +291,7 @@ public class NoteController extends BaseContorller {
 		NoteVo noteVo = new NoteVo();
 		boToVo(noteBo, noteVo, userBo);
 		//这个帖子自己是否点赞
-		noteVo.setThumbsup(null != thumbsupBo);
+		noteVo.setMyThumbsup(null != thumbsupBo);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("noteVo", noteVo);
@@ -515,7 +516,17 @@ public class NoteController extends BaseContorller {
 		List<CommentBo> commentBos = commentService.selectByNoteid(noteid, start_id, gt, limit);
 		List<CommentVo> commentVos = new ArrayList<>();
 		for (CommentBo commentBo : commentBos) {
-			commentVos.add(comentBo2Vo(commentBo));
+			CommentVo commentVo = comentBo2Vo(commentBo);
+			ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(noteid, userBo.getId());
+			commentVo.setMyThumbsup(thumbsupBo != null);
+			long thums = thumbsupService.selectByOwnerIdCount(noteid);
+			commentVo.setThumpsubCount(thums);
+			if (!StringUtils.isEmpty(commentBo.getParentid())) {
+				CommentBo parent = commentService.findById(commentBo.getParentid());
+				commentVo.setParentUserName(parent.getUserName());
+				commentVo.setParentUserid(parent.getCreateuid());
+			}
+			commentVos.add(commentVo);
 		}
 		Map<String, Object> map = new HashMap<>();
 		map.put("ret", 0);
@@ -524,7 +535,7 @@ public class NoteController extends BaseContorller {
 	}
 
 	/**
-	 * 获取帖子评论
+	 * 获取自己的所有评论
 	 * @return
 	 */
 	@RequestMapping("/get-self-comments")
@@ -545,6 +556,89 @@ public class NoteController extends BaseContorller {
 		Map<String, Object> map = new HashMap<>();
 		map.put("ret", 0);
 		map.put("commentVoList", commentVos);
+		return JSONObject.fromObject(map).toString();
+	}
+
+	/**
+	 * 获取自己被评论过的帖子
+	 * @return
+	 */
+	@RequestMapping("/my-comment-notes")
+	@ResponseBody
+	public String getMyCommentNotes(String start_id, boolean gt, int limit,
+								  HttpServletRequest request, HttpServletResponse response) {
+		UserBo userBo;
+		try {
+			userBo = checkSession(request, userService);
+		} catch (MyException e) {
+			return e.getMessage();
+		}
+		List<NoteBo> noteBos = noteService.finyMyNoteByComment(userBo.getId(), start_id, gt, limit);
+		List<NoteVo> noteVoList = new LinkedList<>();
+		for (NoteBo noteBo : noteBos) {
+			NoteVo noteVo = new NoteVo();
+			boToVo(noteBo, noteVo, userBo);
+			noteVoList.add(noteVo);
+		}
+		Map<String, Object> map = new HashMap<>();
+		map.put("ret", 0);
+		map.put("noteVoList", noteVoList);
+		return JSONObject.fromObject(map).toString();
+	}
+
+	/**
+	 * 评论点赞
+	 * @return
+	 */
+	@RequestMapping("/comment-thumbsup")
+	@ResponseBody
+	public String commentThumbsup(String commentid,HttpServletRequest request, HttpServletResponse response) {
+		UserBo userBo;
+		try {
+			userBo = checkSession(request, userService);
+		} catch (MyException e) {
+			return e.getMessage();
+		}
+
+		ThumbsupBo thumbsupBo = new ThumbsupBo();
+		thumbsupBo.setType(Constant.NOTE_COM_TYPE);
+		thumbsupBo.setOwner_id(commentid);
+		thumbsupBo.setVisitor_id(userBo.getId());
+		thumbsupBo.setCreateuid(userBo.getId());
+		thumbsupService.insert(thumbsupBo);
+		return Constant.COM_RESP;
+	}
+
+
+	/**
+	 * 获取帖子点赞列表
+	 * @return
+	 */
+	@RequestMapping("/get-note-thumbsups")
+	@ResponseBody
+	public String getNoteThumbsups(String noteid, String start_id, boolean gt, int limit,
+									HttpServletRequest request, HttpServletResponse response) {
+		UserBo userBo;
+		try {
+			userBo = checkSession(request, userService);
+		} catch (MyException e) {
+			return e.getMessage();
+		}
+		List<ThumbsupBo> thumbsupBos = thumbsupService.selectByOwnerIdPaged(
+				start_id, gt, limit, noteid, Constant.NOTE_TYPE);
+
+		List<UserBaseVo> userBaseVos = new ArrayList<>();
+		for (ThumbsupBo thumbsupBo : thumbsupBos) {
+			UserBo user = userService.getUser(thumbsupBo.getVisitor_id());
+			if (user != null) {
+				UserBaseVo userBaseVo = new UserBaseVo();
+				BeanUtils.copyProperties(user, userBaseVo);
+				userBaseVos.add(userBaseVo);
+			}
+		}
+		Map<String, Object> map = new HashMap<>();
+		map.put("ret", 0);
+		map.put("userVoList", userBaseVos);
 		return JSONObject.fromObject(map).toString();
 	}
 
@@ -700,11 +794,6 @@ public class NoteController extends BaseContorller {
 	private CommentVo comentBo2Vo(CommentBo commentBo){
 		CommentVo commentVo = new CommentVo();
 		BeanUtils.copyProperties(commentBo, commentVo);
-		if (!StringUtils.isEmpty(commentBo.getParentid())) {
-			CommentBo parent = commentService.findById(commentBo.getParentid());
-			commentVo.setParentUserName(parent.getUserName());
-			commentVo.setParentUserid(parent.getCreateuid());
-		}
 		commentVo.setCommentId(commentBo.getId());
 		commentVo.setUserid(commentBo.getCreateuid());
 		return commentVo;

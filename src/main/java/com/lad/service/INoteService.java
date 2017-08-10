@@ -115,4 +115,14 @@ public interface INoteService extends IBaseService {
 	 * @return
 	 */
 	List<NoteBo> selectMyNotes(String userid, String startId, boolean gt, int limit);
+
+	/**
+	 * 获取我被评论的帖子列表
+	 * @param userid
+	 * @param startId
+	 * @param gt
+	 * @param limit
+	 * @return
+	 */
+	List<NoteBo> finyMyNoteByComment(String userid, String startId, boolean gt, int limit);
 }

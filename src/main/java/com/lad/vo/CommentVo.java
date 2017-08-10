@@ -26,6 +26,26 @@ public class CommentVo extends BaseVo {
 
     private Date createTime;
 
+    private long thumpsubCount;
+
+    private Boolean isMyThumbsup;
+
+    public long getThumpsubCount() {
+        return thumpsubCount;
+    }
+
+    public void setThumpsubCount(long thumpsubCount) {
+        this.thumpsubCount = thumpsubCount;
+    }
+
+    public Boolean getMyThumbsup() {
+        return isMyThumbsup;
+    }
+
+    public void setMyThumbsup(Boolean myThumbsup) {
+        isMyThumbsup = myThumbsup;
+    }
+
     public String getParentUserid() {
         return parentUserid;
     }

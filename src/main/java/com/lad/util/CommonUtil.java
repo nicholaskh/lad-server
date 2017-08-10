@@ -214,6 +214,9 @@ public class CommonUtil {
 				query.addCriteria(new Criteria("_id").lt(startId));
 			}
 		}
+		if (limit < 0 || limit > 500) {
+			limit = 10;
+		}
 		query.limit(limit);
 	}
 

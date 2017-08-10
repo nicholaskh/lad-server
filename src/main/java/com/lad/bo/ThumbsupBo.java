@@ -9,7 +9,7 @@ public class ThumbsupBo extends BaseBo {
 	private String owner_id;
 	private String visitor_id;
 
-	// 0 帖子点赞； 1 资讯点赞
+	// 0 帖子点赞； 1 资讯点赞,   5 帖子评论点赞， 6 资讯评论点赞
 	private int type;
 
 	public String getHomepage_id() {

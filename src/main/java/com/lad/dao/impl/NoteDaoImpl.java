@@ -104,6 +104,14 @@ public class NoteDaoImpl implements INoteDao {
 		return mongoTemplate.find(query, NoteBo.class);
 	}
 
+
+	public List<NoteBo> finyMyNoteByComment(String userid, String startId, boolean gt, int limit){
+		Query query = new Query();
+		query.addCriteria(new Criteria("createuid").is(userid));
+		query.addCriteria(new Criteria("deleted").is(0));
+		query.addCriteria(new Criteria("commentcount").gt(0));
+		return findNotesByPage(query, startId, gt, limit);
+	}
 	
 	public List<NoteBo> finyByCreateTime(String circleid, String startId, boolean gt, int limit){
 		Query query = new Query();

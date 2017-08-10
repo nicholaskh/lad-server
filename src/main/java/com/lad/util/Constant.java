@@ -75,5 +75,23 @@ public class Constant {
 	 * 主页评论或点赞型 homepage 资讯
 	 */
 	public static final int PAGE_TYPE = 2;
+	/**
+	 * 帖子评论点赞
+	 */
+	public static final int NOTE_COM_TYPE = 8;
+	/**
+	 * 资讯评论点赞
+	 */
+	public static final int INFOR_COM_TYPE = 9;
+
+	/**
+	 * 举报
+	 */
+	public static final int FEED_TIPS = 1;
+	/**
+	 * 反馈
+	 */
+	public static final int FEED_BACK= 0;
+
 
 }

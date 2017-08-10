@@ -32,16 +32,16 @@ public class NoteVo extends BaseVo {
 
     private Long transCount;
 
-    private Boolean thumbsup;
+    private Boolean isMyThumbsup;
 
     private String type;
 
-    public Boolean getThumbsup() {
-        return thumbsup;
+    public Boolean getMyThumbsup() {
+        return isMyThumbsup;
     }
 
-    public void setThumbsup(Boolean thumbsup) {
-        this.thumbsup = thumbsup;
+    public void setMyThumbsup(Boolean myThumbsup) {
+        isMyThumbsup = myThumbsup;
     }
 
     private LinkedList<String> photos = new LinkedList<>();
