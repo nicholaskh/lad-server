@@ -82,4 +82,17 @@ public class CommentDaoImpl implements ICommentDao {
         CommonUtil.queryByIdPage(query,startId,gt,limit);
         return mongoTemplate.find(query, CommentBo.class);
     }
+
+    @Override
+    public long selectCommentByTypeCount(int type, String id) {
+        Query query = new Query();
+        if (type == Constant.NOTE_TYPE) {
+            query.addCriteria(new Criteria("noteid").is(id));
+        } else if (type == Constant.INFOR_TYPE) {
+            query.addCriteria(new Criteria("targetid").is(id));
+        }
+        query.addCriteria(new Criteria("deleted").is(0));
+        query.addCriteria(new Criteria("type").is(type));
+        return mongoTemplate.count(query, CommentBo.class);
+    }
 }

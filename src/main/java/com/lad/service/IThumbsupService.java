@@ -26,4 +26,10 @@ public interface IThumbsupService extends IBaseService {
 	 * @return
 	 */
 	long selectByOwnerIdCount(String ownerId);
+	
+
+	ThumbsupBo findHaveOwenidAndVisitorid(String vid, String visitorid);
+	
+
+	WriteResult udateDeleteById(String thumbsupId);
 }

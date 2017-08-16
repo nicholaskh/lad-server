@@ -69,7 +69,7 @@ public class RedstarDaoImpl implements IRedstarDao {
         query.addCriteria(new Criteria("deleted").is(0));
         query.addCriteria(new Criteria("circleid").is(circleid));
         query.with(new Sort(Sort.Direction.DESC, "commentTotal"));
-        query.limit(4);
+        query.limit(10);
         return mongoTemplate.find(query, RedstarBo.class);
     }
 
@@ -80,7 +80,7 @@ public class RedstarDaoImpl implements IRedstarDao {
         query.addCriteria(new Criteria("weekNo").is(weekNo));
         query.addCriteria(new Criteria("year").is(year));
         query.with(new Sort(Sort.Direction.DESC, "commentWeek"));
-        query.limit(4);
+        query.limit(10);
         return mongoTemplate.find(query, RedstarBo.class);
     }
 

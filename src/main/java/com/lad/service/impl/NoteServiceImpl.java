@@ -102,4 +102,9 @@ public class NoteServiceImpl implements INoteService {
 	public List<NoteBo> finyMyNoteByComment(String userid, String startId, boolean gt, int limit) {
 		return noteDao.finyMyNoteByComment(userid, startId, gt, limit);
 	}
+
+	@Override
+	public long finyNotesNum(String circleid) {
+		return noteDao.finyNotesNum(circleid);
+	}
 }

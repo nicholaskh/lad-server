@@ -1,5 +1,6 @@
 package com.lad.service;
 
+import com.lad.bo.InforReadNumBo;
 import com.lad.bo.InforSubscriptionBo;
 import com.lad.scrapybo.InforBo;
 import com.mongodb.WriteResult;
@@ -103,5 +104,11 @@ public interface IInforService {
      */
     InforSubscriptionBo findByUserid(String userid);
 
-    
+
+    InforReadNumBo findReadByid(String inforid);
+
+
+    InforReadNumBo addReadNum(InforReadNumBo readNumBo);
+
+    void updateReadNum(String inforid);
 }

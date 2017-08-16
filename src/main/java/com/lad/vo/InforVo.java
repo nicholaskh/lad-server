@@ -32,6 +32,8 @@ public class InforVo extends BaseVo {
 
     private Long thumpsubNum;
 
+    private Long commentNum;
+
     private boolean selfSub;
 
     public String getInforid() {
@@ -128,5 +130,13 @@ public class InforVo extends BaseVo {
 
     public void setSelfSub(boolean selfSub) {
         this.selfSub = selfSub;
+    }
+
+    public Long getCommentNum() {
+        return commentNum;
+    }
+
+    public void setCommentNum(Long commentNum) {
+        this.commentNum = commentNum;
     }
 }

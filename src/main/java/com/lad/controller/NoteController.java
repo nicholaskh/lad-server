@@ -54,6 +54,9 @@ public class NoteController extends BaseContorller {
 	@Autowired
 	private CommonsMultipartResolver multipartResolver;
 
+	@Autowired
+	private ILocationService locationService;
+
 
 	@RequestMapping("/insert")
 	@ResponseBody
@@ -78,6 +81,7 @@ public class NoteController extends BaseContorller {
 					ERRORCODE.CIRCLE_IS_NULL.getIndex(),
 					ERRORCODE.CIRCLE_IS_NULL.getReason());
 		}
+		updateHistory(userBo.getId(), circleid, locationService, circleService);
 		NoteBo noteBo = new NoteBo();
 		noteBo.setPosition(new double[] { px, py });
 		noteBo.setLandmark(landmark);
@@ -103,10 +107,13 @@ public class NoteController extends BaseContorller {
 		}
 		noteBo.setPhotos(photos);
 		noteService.insert(noteBo);
-		HashSet<String> notes = circleBo.getNotes();
-		notes.add(noteBo.getId());
-		circleService.updateNotes(circleBo.getId(), notes);
-
+		RLock lock = redisServer.getRLock("noteSize");
+		try {
+			lock.lock(2,TimeUnit.SECONDS);
+			circleService.updateNotes(circleid, circleBo.getNoteSize() + 1);
+		} finally {
+			lock.unlock();
+		}
 		NoteVo noteVo = new NoteVo();
 		boToVo(noteBo, noteVo, userBo);
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -167,10 +174,6 @@ public class NoteController extends BaseContorller {
 		}
 		noteBo.setPhotos(photos);
 		noteService.insert(noteBo);
-		HashSet<String> notes = circleBo.getNotes();
-		notes.add(noteBo.getId());
-		circleService.updateNotes(circleBo.getId(), notes);
-
 		NoteVo noteVo = new NoteVo();
 		boToVo(noteBo, noteVo, userBo);
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -226,18 +229,31 @@ public class NoteController extends BaseContorller {
 		} catch (MyException e) {
 			return e.getMessage();
 		}
-		ThumbsupBo thumbsupBo = new ThumbsupBo();
-		thumbsupBo.setOwner_id(noteid);
-		thumbsupBo.setVisitor_id(userBo.getId());
-		thumbsupBo.setType(Constant.NOTE_TYPE);
-		thumbsupBo.setImage(userBo.getHeadPictureName());
-		thumbsupService.insert(thumbsupBo);
-		RLock lock = redisServer.getRLock(Constant.THUMB_LOCK);
-		try {
-			lock.lock(2,TimeUnit.SECONDS);
-			noteService.updateThumpsubCount(noteid, 1);
-		} finally {
-			lock.unlock();
+		ThumbsupBo thumbsupBo = thumbsupService.findHaveOwenidAndVisitorid(noteid, userBo.getId());
+		boolean isThumsup = false;
+		if (null == thumbsupBo) {
+			thumbsupBo = new ThumbsupBo();
+			thumbsupBo.setType(Constant.NOTE_TYPE);
+			thumbsupBo.setOwner_id(noteid);
+			thumbsupBo.setImage(userBo.getHeadPictureName());
+			thumbsupBo.setVisitor_id(userBo.getId());
+			thumbsupBo.setCreateuid(userBo.getId());
+			thumbsupService.insert(thumbsupBo);
+			isThumsup = true;
+		} else {
+			if (thumbsupBo.getDeleted() == Constant.DELETED) {
+				thumbsupService.udateDeleteById(thumbsupBo.getId());
+				isThumsup = true;
+			}
+		}
+		if (isThumsup) {
+			RLock lock = redisServer.getRLock(Constant.THUMB_LOCK);
+			try {
+				lock.lock(2,TimeUnit.SECONDS);
+				noteService.updateThumpsubCount(noteid, 1);
+			} finally {
+				lock.unlock();
+			}
 		}
 		return Constant.COM_RESP;
 	}
@@ -280,7 +296,7 @@ public class NoteController extends BaseContorller {
 					ERRORCODE.NOTE_IS_NULL.getIndex(),
 					ERRORCODE.NOTE_IS_NULL.getReason());
 		}
-
+		updateHistory(userBo.getId(), noteBo.getCircleId(), locationService, circleService);
 		RLock lock = redisServer.getRLock(Constant.VISIT_LOCK);
 		try {
 			lock.lock(3,TimeUnit.SECONDS);
@@ -402,6 +418,7 @@ public class NoteController extends BaseContorller {
 					ERRORCODE.NOTE_IS_NULL.getIndex(),
 					ERRORCODE.NOTE_IS_NULL.getReason());
 		}
+		updateHistory(userBo.getId(), noteBo.getCircleId(), locationService, circleService);
 		Date currentDate = new Date();
 		CommentBo commentBo = new CommentBo();
 		commentBo.setNoteid(noteBo.getId());
@@ -513,7 +530,7 @@ public class NoteController extends BaseContorller {
 					ERRORCODE.NOTE_IS_NULL.getIndex(),
 					ERRORCODE.NOTE_IS_NULL.getReason());
 		}
-
+		updateHistory(userBo.getId(), noteBo.getCircleId(), locationService, circleService);
 		List<CommentBo> commentBos = commentService.selectByNoteid(noteid, start_id, gt, limit);
 		List<CommentVo> commentVos = new ArrayList<>();
 		for (CommentBo commentBo : commentBos) {
@@ -600,14 +617,20 @@ public class NoteController extends BaseContorller {
 		} catch (MyException e) {
 			return e.getMessage();
 		}
-
-		ThumbsupBo thumbsupBo = new ThumbsupBo();
-		thumbsupBo.setType(Constant.NOTE_COM_TYPE);
-		thumbsupBo.setOwner_id(commentid);thumbsupBo.setImage(userBo.getHeadPictureName());
-		thumbsupBo.setVisitor_id(userBo.getId());
-		thumbsupBo.setCreateuid(userBo.getId());
-
-		thumbsupService.insert(thumbsupBo);
+		ThumbsupBo thumbsupBo = thumbsupService.findHaveOwenidAndVisitorid(commentid, userBo.getId());
+		if (null == thumbsupBo) {
+			thumbsupBo = new ThumbsupBo();
+			thumbsupBo.setType(Constant.NOTE_COM_TYPE);
+			thumbsupBo.setOwner_id(commentid);
+			thumbsupBo.setImage(userBo.getHeadPictureName());
+			thumbsupBo.setVisitor_id(userBo.getId());
+			thumbsupBo.setCreateuid(userBo.getId());
+			thumbsupService.insert(thumbsupBo);
+		} else {
+			if (thumbsupBo.getDeleted() == Constant.DELETED) {
+				thumbsupService.udateDeleteById(thumbsupBo.getId());
+			}
+		}
 		return Constant.COM_RESP;
 	}
 
@@ -686,6 +709,9 @@ public class NoteController extends BaseContorller {
 			return e.getMessage();
 		}
 		List<NoteBo> noteBos = noteService.selectMyNotes(userBo.getId(), start_id, gt, limit);
+		if (noteBos != null && !noteBos.isEmpty()){
+			updateHistory(userBo.getId(), noteBos.get(0).getCircleId(), locationService, circleService);
+		}
 		List<NoteVo> noteVoList = new LinkedList<>();
 		NoteVo noteVo = null;
 		for (NoteBo noteBo : noteBos) {
@@ -720,6 +746,7 @@ public class NoteController extends BaseContorller {
 					ERRORCODE.CIRCLE_IS_NULL.getIndex(),
 					ERRORCODE.CIRCLE_IS_NULL.getReason());
 		}
+		updateHistory(userBo.getId(), circleBo.getId(), locationService, circleService);
 		String[] ids = CommonUtil.getIds(noteids);
 		if (circleBo.getCreateuid().equals(userBo.getId())) {
 			for (String id : ids) {
@@ -728,6 +755,13 @@ public class NoteController extends BaseContorller {
 					//圈主删除帖子
 					noteService.deleteNote(id);
 				}
+			}
+			RLock lock = redisServer.getRLock("noteSize");
+			try {
+				lock.lock(2,TimeUnit.SECONDS);
+				circleService.updateNotes(circleid, circleBo.getNoteSize() - ids.length);
+			} finally {
+				lock.unlock();
 			}
 		}  else {
 			return CommonUtil.toErrorResult(
@@ -756,6 +790,7 @@ public class NoteController extends BaseContorller {
 		for (String id : ids) {
 			NoteBo noteBo = noteService.selectById(id);
 			if (null != noteBo) {
+				CircleBo circleBo = circleService.selectById(noteBo.getCircleId());
 				//删除帖子
 				if (noteBo.getCreateuid().equals(userBo.getId())) {
 					noteService.deleteNote(id);

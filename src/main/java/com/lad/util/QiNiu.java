@@ -31,7 +31,10 @@ public class QiNiu {
 		Auth auth = Auth.create(accessKey, secretKey);
 		String upToken = auth.uploadToken(bucket, key);
 		try {
+			long start = System.currentTimeMillis();
 		    uploadManager.put(localFilePath, key, upToken);
+		    long end =  System.currentTimeMillis();
+			System.out.println("update time millis : =======" + (end-start));
 		} catch (QiniuException ex) {
 		    Response r = ex.response;
 			logger.error(r.toString());
@@ -55,7 +58,10 @@ public class QiNiu {
 		Auth auth = Auth.create(accessKey, secretKey);
 		String upToken = auth.uploadToken(bucket, key);
 		try {
-		    uploadManager.put(localFilePath, key, upToken);
+			long start = System.currentTimeMillis();
+			uploadManager.put(localFilePath, key, upToken);
+			long end =  System.currentTimeMillis();
+			System.out.println("update time millis due : =======" + (end-start));
 		} catch (QiniuException ex) {
 		    Response r = ex.response;
 		    System.err.println(r.toString());

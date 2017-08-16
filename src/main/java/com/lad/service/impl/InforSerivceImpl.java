@@ -1,5 +1,6 @@
 package com.lad.service.impl;
 
+import com.lad.bo.InforReadNumBo;
 import com.lad.bo.InforSubscriptionBo;
 import com.lad.dao.IInforDao;
 import com.lad.dao.IInforReadNumDao;
@@ -54,7 +55,6 @@ public class InforSerivceImpl implements IInforService {
 
     @Override
     public InforBo findById(String id) {
-        inforReadNumDao.update(id);
         return inforDao.findById(id);
     }
 
@@ -80,7 +80,15 @@ public class InforSerivceImpl implements IInforService {
 
     @Override
     public Long findReadNum(String inforid) {
-        return inforReadNumDao.findByInforid(inforid).getVisitNum();
+        InforReadNumBo readNumBo = inforReadNumDao.findByInforid(inforid);
+        if (readNumBo != null) {
+            return readNumBo.getVisitNum();
+        }
+        return 0L;
+    }
+
+    public InforReadNumBo findReadByid(String inforid){
+       return inforReadNumDao.findByInforid(inforid);
     }
 
     @Override
@@ -101,5 +109,15 @@ public class InforSerivceImpl implements IInforService {
     @Override
     public InforSubscriptionBo findByUserid(String userid) {
         return null;
+    }
+
+    @Override
+    public InforReadNumBo addReadNum(InforReadNumBo readNumBo) {
+        return inforReadNumDao.insert(readNumBo);
+    }
+
+    @Override
+    public void updateReadNum(String inforid) {
+        inforReadNumDao.update(inforid);
     }
 }

@@ -81,4 +81,9 @@ public class CommentService implements ICommentService {
     public List<CommentBo> selectCommentByType(int type, String id, String startId, boolean gt, int limit) {
         return commentDao.selectCommentByType(type, id, startId, gt, limit);
     }
+
+    @Override
+    public long selectCommentByTypeCount(int type, String id) {
+        return commentDao.selectCommentByTypeCount(type, id);
+    }
 }

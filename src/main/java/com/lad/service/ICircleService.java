@@ -1,6 +1,7 @@
 package com.lad.service;
 
 import com.lad.bo.CircleBo;
+import com.lad.bo.CircleHistoryBo;
 import com.lad.bo.ReasonBo;
 import com.mongodb.WriteResult;
 
@@ -28,7 +29,7 @@ public interface ICircleService extends IBaseService {
 
 	public WriteResult updateHeadPicture(String circleBoId, String headPicture);
 
-	public WriteResult updateNotes(String circleBoId, HashSet<String> notes);
+	public WriteResult updateNotes(String circleBoId, long noteSize);
 
 	/**
 	 * 根据创建者查询
@@ -65,4 +66,27 @@ public interface ICircleService extends IBaseService {
 	ReasonBo findByUserAndCircle(String userid, String circleid);
 
 	WriteResult updateApply(String reasonId, int status, String refuse);
+
+
+	WriteResult updateCreateUser(CircleBo circleBo);
+
+	/**
+	 * 关键字搜索
+	 * @param keyword
+	 * @return
+	 */
+	List<CircleBo> findBykeyword(String keyword);
+
+	
+	List<CircleHistoryBo> findNearPeople(double[] position, double maxDistance);
+
+
+	CircleHistoryBo insertHistory(CircleHistoryBo circleHistoryBo);
+
+
+	WriteResult updateHistory(String id, double[] position);
+
+	
+	CircleHistoryBo findByUserIdAndCircleId(String userid, String circleid);
+	
 }

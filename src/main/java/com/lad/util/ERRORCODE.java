@@ -1,7 +1,7 @@
 package com.lad.util;
 
 public enum ERRORCODE {
-	ACCOUNT_NAME(10001, "用户名错误"),
+	ACCOUNT_NAME_PASSWORD(10001, "用户名或密码错误"),
 	ACCOUNT_PASSWORD(10002, "密码错误"),
 	ACCOUNT_PHONE_REPEAT(10003, "手机号码重复"),
 	ACCOUNT_PHONE_ERROR(10004, "手机号码错误"),
@@ -61,17 +61,20 @@ public enum ERRORCODE {
 	CIRCLE_APPLY_USER_NULL(110002, "该用户没有申请加入此圈子"),
 	CIRCLE_USER_EXIST(110003, "该用户已经加入此圈子"),
 	CIRCLE_MASTER_NULL(110004, "没有权限"),
-	CIRCLE_IS_SELF(100005, "群主不能转给自己"),
+	CIRCLE_IS_SELF(110005, "群主不能转给自己"),
 	CIRCLE_NOT_MASTER(110006, "没有权限"),
 	CIRCLE_USER_MAX(110007, "圈子人数已到达上限"),
 	CIRCLE_CREATE_MAX(110008, "圈子创建数已到达上限"),
 	CIRCLE_USER_NULL(110009, "该用户不在此圈子"),
 	CIRCLE_TOP_EXIST(110010, "圈子已经置顶"),
+	CIRCLE_NOT_QUIT(110011, "群主不能直接退出群"),
 
 	INFOR_IS_NULL(130001, "资讯不存在"),
 	
 	NOTE_IS_NULL(120001, "帖子不存在"),
-	NOTE_NOT_MASTER(120002, "没有权限");
+	NOTE_NOT_MASTER(120002, "没有权限"),
+	TYPE_ERROR(120004, "类型错误"),
+	COMMENT_IS_NULL(120003, "评论不存在");
 
 
 

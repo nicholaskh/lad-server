@@ -20,7 +20,7 @@ public interface IThumbsupDao extends IBaseDao {
 
 	WriteResult delete(String thumbsupId);
 
-	ThumbsupBo findIsDelete(ThumbsupBo thumbsupBo);
+	ThumbsupBo findIsDelete(String owendi, String visitorid);
 
 	WriteResult updateDelete(String thumbsupId);
 

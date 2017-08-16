@@ -1,9 +1,6 @@
 package com.lad.controller;
 
-import com.lad.bo.CommentBo;
-import com.lad.bo.InforSubscriptionBo;
-import com.lad.bo.ThumbsupBo;
-import com.lad.bo.UserBo;
+import com.lad.bo.*;
 import com.lad.redis.RedisServer;
 import com.lad.scrapybo.InforBo;
 import com.lad.service.ICommentService;
@@ -16,11 +13,14 @@ import com.lad.util.ERRORCODE;
 import com.lad.util.MyException;
 import com.lad.vo.CommentVo;
 import com.lad.vo.InforVo;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.redisson.api.RMapCache;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 功能描述： 资讯接口
@@ -38,6 +39,7 @@ import java.util.*;
  */
 @Controller
 @RequestMapping("infor")
+@CrossOrigin
 public class InforController extends BaseContorller {
 
     @Autowired
@@ -59,35 +61,45 @@ public class InforController extends BaseContorller {
     @ResponseBody
     public String inforGroups(HttpServletRequest request, HttpServletResponse response){
         HttpSession session = request.getSession();
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map<String, Object> map = new HashMap<>();
         map.put("ret", 0);
+        boolean isGetType = false;
         if (!session.isNew() && session.getAttribute("isLogin") != null) {
             UserBo userBo = (UserBo) session.getAttribute("userBo");
             InforSubscriptionBo mySub = inforService.findMySubs(userBo.getId());
             if (mySub != null && !mySub.getSubscriptions().isEmpty()) {
-                map.put("groupTypes", mySub.getSubscriptions());
+                map.put("healthTypes", mySub.getSubscriptions());
+                map.put("securityTypes", mySub.getSubscriptions());
+                isGetType  = true;
+            }
+        }
+        if (!isGetType) {
+            RMapCache<String, Object> cache = redisServer.getCacheMap(Constant.TEST_CACHE);
+            if (cache.containsKey("healthTypes")) {
+                Object groupTypes = cache.get("healthTypes");
+                map.put("healthTypes", groupTypes);
+                map.put("securityTypes", "");
             } else {
                 List<InforBo> inforBos = inforService.findAllGroups();
-                String[] groupTypes = new String[inforBos.size()];
-                for (int i = 0; i< inforBos.size(); i++) {
-                    groupTypes[i] = inforBos.get(i).getClassName();
+                int size =  inforBos.size();
+                HashSet<String> groupTypes = new LinkedHashSet<>();
+                for (int i = 0; i< size; i++) {
+                    //聚合查询后，分类名称值被放置到id上了
+                    groupTypes.add(inforBos.get(i).getClassName());
                 }
-                map.put("groupTypes", groupTypes);
+                cache.put("healthTypes", groupTypes, 0, TimeUnit.MINUTES);
+                map.put("healthTypes", groupTypes);
+                map.put("securityTypes", "");
             }
-        } else {
-            List<InforBo> inforBos = inforService.findAllGroups();
-            String[] groupTypes = new String[inforBos.size()];
-            for (int i = 0; i< inforBos.size(); i++) {
-                groupTypes[i] = inforBos.get(i).getClassName();
-            }
-            map.put("groupTypes", groupTypes);
         }
         return JSONObject.fromObject(map).toString();
     }
 
     @RequestMapping("/group-infors")
     @ResponseBody
-    public String groupInfors(String groupName, String inforTime, int limit,
+    public String groupInfors(@RequestParam String groupName,
+                              @RequestParam(required = false)String inforTime,
+                              @RequestParam int limit,
                               HttpServletRequest request, HttpServletResponse response){
         List<InforBo> inforBos = inforService.findClassInfos(groupName, inforTime, limit);
         LinkedList<InforVo> inforVos = new LinkedList<>();
@@ -98,6 +110,7 @@ public class InforController extends BaseContorller {
             inforVo.setImageUrls(inforBo.getImageUrls());
             inforVo.setSource(inforBo.getSource());
             inforVo.setTitle(inforBo.getTitle());
+            inforVo.setTime(inforBo.getTime());
             Long readNum = inforService.findReadNum(inforBo.getId());
             inforVo.setReadNum(readNum);
             inforVos.add(inforVo);
@@ -123,15 +136,20 @@ public class InforController extends BaseContorller {
         LinkedList<String> mySubs = mySub.getSubscriptions();
         map.put("mySubTypes", mySub.getSubscriptions());
         
-        List<InforBo> inforBos = inforService.findAllGroups();
-        String[] groupTypes = new String[inforBos.size()];
-        for (int i = 0; i< inforBos.size(); i++) {
-            String groupName = inforBos.get(i).getClassName();
-            if (!mySubs.contains(groupName)) {
-                groupTypes[i] =groupName;
+        RMapCache<String, Object> cache = redisServer.getCacheMap(Constant.TEST_CACHE);
+        List<String> groupList = new ArrayList<>();
+        if (cache.containsKey("healthTypes")) {
+            String groupTypes = (String)cache.get("healthTypes");
+            JSONArray array = JSONArray.fromObject(groupTypes);
+            int size = array.size();
+            for (int i = 0; i < size; i++) {
+                String groupName = (String)array.get(i);
+                if (!mySubs.contains(groupName)) {
+                    groupList.add(groupName);
+                } 
             }
         }
-        map.put("recoTypes", groupTypes);
+        map.put("recoTypes", groupList);
         return JSONObject.fromObject(map).toString();
     }
 
@@ -165,25 +183,40 @@ public class InforController extends BaseContorller {
     @RequestMapping("/news-infor")
     @ResponseBody
     public String infor(String inforid, HttpServletRequest request, HttpServletResponse response){
-        UserBo userBo;
-        try {
-            userBo = checkSession(request, userService);
-        } catch (MyException e) {
-            return e.getMessage();
-        }
 
         InforBo inforBo = inforService.findById(inforid);
+        if (inforBo == null) {
+            return CommonUtil.toErrorResult(
+                    ERRORCODE.INFOR_IS_NULL.getIndex(),
+                    ERRORCODE.INFOR_IS_NULL.getReason());
+        }
 
+        InforReadNumBo readNumBo = inforService.findReadByid(inforid);
+        if (readNumBo == null) {
+            readNumBo = new InforReadNumBo();
+            readNumBo.setClassName(inforBo.getClassName());
+            readNumBo.setInforid(inforBo.getId());
+            readNumBo.setVisitNum(1);
+            inforService.addReadNum(readNumBo);
+        } else {
+            inforService.updateReadNum(inforid);
+            readNumBo.setVisitNum(readNumBo.getVisitNum() + 1);
+        }
         InforVo inforVo = new InforVo();
+
+        HttpSession session = request.getSession();
+
+        if (!session.isNew() && session.getAttribute("isLogin") != null) {
+            UserBo userBo = (UserBo) session.getAttribute("userBo");
+            ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(inforBo.getId(), userBo.getId());
+            inforVo.setSelfSub(thumbsupBo != null);
+        }
         inforVo.setInforid(inforBo.getId());
         BeanUtils.copyProperties(inforBo, inforVo);
-        Long readNum = inforService.findReadNum(inforBo.getId());
-        inforVo.setReadNum(readNum);
-        ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(inforBo.getId(), userBo.getId());
-        inforVo.setSelfSub(thumbsupBo != null);
         long thuSupNum = thumbsupService.selectByOwnerIdCount(inforBo.getId());
         inforVo.setThumpsubNum(thuSupNum);
-
+        inforVo.setCommentNum(commentService.selectCommentByTypeCount(Constant.INFOR_TYPE, inforid));
+        inforVo.setReadNum(readNumBo.getVisitNum());
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("ret", 0);
         map.put("inforVo", inforVo);
@@ -229,8 +262,6 @@ public class InforController extends BaseContorller {
         return JSONObject.fromObject(map).toString();
     }
 
-
-
     @RequestMapping("/get-comments")
     @ResponseBody
     public String getComment(@RequestParam String inforid, String start_id, boolean gt, int limit,
@@ -252,6 +283,70 @@ public class InforController extends BaseContorller {
         map.put("ret", 0);
         map.put("commentVoList", commentVos);
         return JSONObject.fromObject(map).toString();
+    }
+
+
+    @RequestMapping("/thumbsup")
+    @ResponseBody
+    public String inforThumbsup(@RequestParam String targetid, @RequestParam int type,
+            HttpServletRequest request, HttpServletResponse response){
+        UserBo userBo;
+        try {
+            userBo = checkSession(request, userService);
+        } catch (MyException e) {
+            return e.getMessage();
+        }
+        ThumbsupBo thumbsupBo = thumbsupService.findHaveOwenidAndVisitorid(targetid, userBo.getId());
+        if (null == thumbsupBo) {
+            thumbsupBo = new ThumbsupBo();
+            if (type == 0) {
+                thumbsupBo.setType(Constant.INFOR_TYPE);
+                InforBo inforBo = inforService.findById(targetid);
+                if (inforBo == null ) {
+                    return CommonUtil.toErrorResult(
+                            ERRORCODE.INFOR_IS_NULL.getIndex(),
+                            ERRORCODE.INFOR_IS_NULL.getReason());
+                }
+            } else if (type == 1) {
+                thumbsupBo.setType(Constant.INFOR_COM_TYPE);
+                CommentBo commentBo = commentService.findById(targetid);
+                if (commentBo == null) {
+                    return CommonUtil.toErrorResult(
+                            ERRORCODE.COMMENT_IS_NULL.getIndex(),
+                            ERRORCODE.COMMENT_IS_NULL.getReason());
+                }
+            } else {
+                return CommonUtil.toErrorResult(
+                        ERRORCODE.TYPE_ERROR.getIndex(),
+                        ERRORCODE.TYPE_ERROR.getReason());
+            }
+            thumbsupBo.setOwner_id(targetid);
+            thumbsupBo.setImage(userBo.getHeadPictureName());
+            thumbsupBo.setVisitor_id(userBo.getId());
+            thumbsupBo.setCreateuid(userBo.getId());
+            thumbsupService.insert(thumbsupBo);
+        } else {
+            if (thumbsupBo.getDeleted() == Constant.DELETED) {
+                thumbsupService.udateDeleteById(thumbsupBo.getId());
+            }
+        }
+        return Constant.COM_RESP;
+    }
+
+    @RequestMapping("/cancal-thumbsup")
+    @ResponseBody
+    public String cancelThumbsup(@RequestParam String targetid, @RequestParam int type, HttpServletRequest request, HttpServletResponse response){
+        UserBo userBo;
+        try {
+            userBo = checkSession(request, userService);
+        } catch (MyException e) {
+            return e.getMessage();
+        }
+        ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(targetid, userBo.getId());
+        if (thumbsupBo != null) {
+            thumbsupService.deleteById(thumbsupBo.getId());
+        }
+        return Constant.COM_RESP;
     }
 
 

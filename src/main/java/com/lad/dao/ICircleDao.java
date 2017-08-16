@@ -30,7 +30,7 @@ public interface ICircleDao extends IBaseDao {
 
 	public WriteResult updateHeadPicture(String circleBoId, String headPicture);
 
-	public WriteResult updateNotes(String circleBoId, HashSet<String> notes);
+	public WriteResult updateNotes(String circleBoId, long noteSize);
 
 	WriteResult uddateName(String userid, String name);
 
@@ -42,11 +42,18 @@ public interface ICircleDao extends IBaseDao {
 	List<CircleBo> findByCreateid(String createid);
 
 	/**
+	 * 更新管理员
+	 * @param circleBo  更新管理员
+	 * @return
+	 */
+	WriteResult updateMaster(CircleBo circleBo);
+
+	/**
 	 * 更新群主
 	 * @param circleBo  更新为群主的用户
 	 * @return
 	 */
-	WriteResult updateMaster(CircleBo circleBo);
+	WriteResult updateCreateUser(CircleBo circleBo);
 
 	/**
 	 * 返回用户数最多前十圈子
@@ -63,5 +70,12 @@ public interface ICircleDao extends IBaseDao {
 	 * @return
 	 */
 	List<CircleBo> findMyCircles(String userid, String startId, boolean gt, int limit);
+
+	/**
+	 * 关键字搜索
+	 * @param keyword
+	 * @return
+	 */
+	List<CircleBo> findBykeyword(String keyword);
 
 }

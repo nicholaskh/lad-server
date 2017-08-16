@@ -106,4 +106,12 @@ public interface ICommentService {
      */
     WriteResult addRadstarCount(String userid, String circleid);
 
+    /**
+     * 查询置顶类型下 置顶 id 下的评论
+     * @param type
+     * @param id
+     * @return
+     */
+    long selectCommentByTypeCount(int type, String id);
+
 }

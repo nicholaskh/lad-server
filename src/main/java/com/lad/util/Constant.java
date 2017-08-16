@@ -36,6 +36,11 @@ public class Constant {
 	public static final String COMOMENT_LOCK = "commentLock";
 
 	/**
+	 * 缓存
+	 */
+	public static final String TEST_CACHE = "testCache";
+
+	/**
 	 * 转发量lock
 	 */
 	public static final String TRANS_LOCK = "transLock";

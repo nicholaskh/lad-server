@@ -96,7 +96,6 @@ public class LoginController extends BaseContorller {
 						@RequestParam("password")String password,
 						HttpServletRequest request, HttpServletResponse response) {
 
-		System.out.println(phone + " login ： ================" + password);
 		HttpSession session = request.getSession();
 		if (!StringUtils.hasLength(phone)) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PHONE_ERROR.getIndex(),

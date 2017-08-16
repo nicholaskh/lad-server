@@ -1,11 +1,16 @@
 package com.lad.controller;
 
 
+import com.lad.bo.CircleHistoryBo;
+import com.lad.bo.LocationBo;
 import com.lad.bo.UserBo;
+import com.lad.service.ICircleService;
+import com.lad.service.ILocationService;
 import com.lad.service.IUserService;
 import com.lad.util.CommonUtil;
 import com.lad.util.ERRORCODE;
 import com.lad.util.MyException;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.ui.ModelMap;
 
 import javax.servlet.http.HttpServletRequest;
@@ -65,6 +70,33 @@ public abstract class BaseContorller {
 					ERRORCODE.USER_NULL.getReason()));
 		}
 		return userBo;
+	}
+
+	/**
+	 * 更新圈子访问记录信息
+	 * @param userid
+	 * @param circleid
+	 * @param locationService
+	 * @param circleService
+	 */
+	@Async
+	public void updateHistory(String userid, String circleid,
+							  ILocationService locationService, ICircleService circleService){
+		try {
+			CircleHistoryBo circleHistoryBo = circleService.findByUserIdAndCircleId(userid,circleid);
+			LocationBo locationBo = locationService.getLocationBoByUserid(userid);
+			if (circleHistoryBo == null) {
+				circleHistoryBo = new CircleHistoryBo();
+				circleHistoryBo.setCircleid(circleid);
+				circleHistoryBo.setUserid(userid);
+				circleHistoryBo.setPosition(locationBo.getPosition());
+				circleService.insertHistory(circleHistoryBo);
+			} else {
+				circleService.updateHistory(circleHistoryBo.getId(), locationBo.getPosition());
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 }

@@ -63,4 +63,12 @@ public interface ICommentDao {
      * @return
      */
     List<CommentBo> selectCommentByType(int type, String id, String startId, boolean gt, int limit);
+
+    /**
+     * 查询置顶类型下 置顶 id 下的评论
+     * @param type
+     * @param id
+     * @return
+     */
+    long selectCommentByTypeCount(int type, String id);
 }

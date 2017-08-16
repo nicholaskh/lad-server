@@ -221,4 +221,15 @@ public class CommonUtil {
 	}
 
 
+	public static String ff(String inFile, String outFile){
+
+
+		String command = "ffmpeg -i " + inFile + " -y -f image2 -ss 00:00:10 -t 00:00:01 -s 176x144 " + outFile;
+
+
+		return "";
+
+	}
+
+
 }

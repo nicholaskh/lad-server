@@ -1,8 +1,10 @@
 package com.lad.service.impl;
 
 import com.lad.bo.CircleBo;
+import com.lad.bo.CircleHistoryBo;
 import com.lad.bo.ReasonBo;
 import com.lad.dao.ICircleDao;
+import com.lad.dao.ICircleHistoryDao;
 import com.lad.dao.IReasonDao;
 import com.lad.service.ICircleService;
 import com.mongodb.WriteResult;
@@ -20,6 +22,9 @@ public class CircleServiceImpl implements ICircleService {
 
 	@Autowired
 	private IReasonDao reasonDao;
+	
+	@Autowired
+	private ICircleHistoryDao circleHistoryDao;
 
 	public CircleBo insert(CircleBo circleBo) {
 		return circleDao.insert(circleBo);
@@ -60,8 +65,8 @@ public class CircleServiceImpl implements ICircleService {
 		return circleDao.selectByType(tag, sub_tag, category);
 	}
 
-	public WriteResult updateNotes(String circleBoId, HashSet<String> notes) {
-		return circleDao.updateNotes(circleBoId, notes);
+	public WriteResult updateNotes(String circleBoId, long noteSize) {
+		return circleDao.updateNotes(circleBoId, noteSize);
 	}
 
 	@Override
@@ -96,4 +101,34 @@ public class CircleServiceImpl implements ICircleService {
 		return reasonDao.updateApply(reasonId, status,refuse);
 	}
 
+	@Override
+	public WriteResult updateCreateUser(CircleBo circleBo) {
+		return circleDao.updateCreateUser(circleBo);
+	}
+
+
+	@Override
+	public List<CircleBo> findBykeyword(String keyword) {
+		return circleDao.findBykeyword(keyword);
+	}
+
+	@Override
+	public List<CircleHistoryBo> findNearPeople(double[] position, double maxDistance) {
+		return circleHistoryDao.findNear(position, maxDistance);
+	}
+
+	@Override
+	public CircleHistoryBo insertHistory(CircleHistoryBo circleHistoryBo) {
+		return circleHistoryDao.insert(circleHistoryBo);
+	}
+
+	@Override
+	public WriteResult updateHistory(String id, double[] position) {
+		return circleHistoryDao.updateHistory(id, position);
+	}
+
+	@Override
+	public CircleHistoryBo findByUserIdAndCircleId(String userid, String circleid) {
+		return circleHistoryDao.findByUserIdAndCircleId(userid, circleid);
+	}
 }

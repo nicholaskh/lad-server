@@ -125,4 +125,11 @@ public interface INoteService extends IBaseService {
 	 * @return
 	 */
 	List<NoteBo> finyMyNoteByComment(String userid, String startId, boolean gt, int limit);
+
+	/**
+	 * 查找圈子类所有帖子
+	 * @param circleid
+	 * @return
+	 */
+	long finyNotesNum(String circleid);
 }

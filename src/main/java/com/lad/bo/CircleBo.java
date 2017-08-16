@@ -3,6 +3,7 @@ package com.lad.bo;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 
 /**
  * 删除圈子中的群组，圈子代替群组
@@ -20,17 +21,21 @@ public class CircleBo extends BaseBo {
 	private String headPicture;
 	private int usernum;
 
+	private LinkedHashSet<String> masters = new LinkedHashSet<>();
+
 	private String description;
 
 	//圈子5公里是否加入
 	private boolean isOpen;
 
+	private long noteSize;
+
+	//总人数=圈子内总评论+总阅读+总点赞+总转发
+	private long total;
+
 	private HashSet<String> users = new HashSet<String>();
 	private HashSet<String> usersApply = new HashSet<String>();
 	private HashSet<String> usersRefuse = new HashSet<String>();
-
-	//帖子
-	private HashSet<String> notes = new HashSet<String>();
 
 	public double[] getPosition() {
 		return position;
@@ -112,14 +117,6 @@ public class CircleBo extends BaseBo {
 		this.headPicture = headPicture;
 	}
 
-	public HashSet<String> getNotes() {
-		return notes;
-	}
-
-	public void setNotes(HashSet<String> notes) {
-		this.notes = notes;
-	}
-
 	public int getUsernum() {
 		return usernum;
 	}
@@ -135,11 +132,35 @@ public class CircleBo extends BaseBo {
 		this.description = description;
 	}
 
+	public LinkedHashSet<String> getMasters() {
+		return masters;
+	}
+
+	public void setMasters(LinkedHashSet<String> masters) {
+		this.masters = masters;
+	}
+
 	public boolean isOpen() {
 		return isOpen;
 	}
 
 	public void setOpen(boolean open) {
 		isOpen = open;
+	}
+
+	public long getNoteSize() {
+		return noteSize;
+	}
+
+	public void setNoteSize(long noteSize) {
+		this.noteSize = noteSize;
+	}
+
+	public long getTotal() {
+		return total;
+	}
+
+	public void setTotal(long total) {
+		this.total = total;
 	}
 }

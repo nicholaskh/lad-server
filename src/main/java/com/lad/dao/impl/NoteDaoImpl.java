@@ -108,7 +108,6 @@ public class NoteDaoImpl implements INoteDao {
 	public List<NoteBo> finyMyNoteByComment(String userid, String startId, boolean gt, int limit){
 		Query query = new Query();
 		query.addCriteria(new Criteria("createuid").is(userid));
-		query.addCriteria(new Criteria("deleted").is(0));
 		query.addCriteria(new Criteria("commentcount").gt(0));
 		return findNotesByPage(query, startId, gt, limit);
 	}
@@ -117,6 +116,13 @@ public class NoteDaoImpl implements INoteDao {
 		Query query = new Query();
 		query.addCriteria(new Criteria("circleId").is(circleid));
 		return findNotesByPage(query, startId, gt, limit);
+	}
+
+	public long finyNotesNum(String circleid){
+		Query query = new Query();
+		query.addCriteria(new Criteria("circleId").is(circleid));
+		query.addCriteria(new Criteria("deleted").is(0));
+		return mongoTemplate.count(query, NoteBo.class);
 	}
 
 	public List<NoteBo> selectHotNotes(String circleid){
@@ -159,6 +165,23 @@ public class NoteDaoImpl implements INoteDao {
 		Query query = new Query();
 		query.addCriteria(new Criteria("createuid").is(userid));
 		return findNotesByPage(query, startId, gt, limit);
+	}
+
+
+	public List<NoteBo> selectAllPeoples(String circleid){
+
+		Criteria criteria = new Criteria("circleId").is(circleid);
+		criteria.and("deleted").is(0);
+		AggregationOperation match = Aggregation.match(criteria);
+
+		AggregationOperation project = Aggregation.project(fields).and("temp")
+				.plus("visitcount").plus("transcount").plus("commentcount").plus("thumpsubcount").as("result");
+
+		Aggregation aggregation = Aggregation.newAggregation(match,
+				project, Aggregation.sort(Sort.Direction.DESC, "result"),
+				Aggregation.limit(10));
+		AggregationResults<NoteBo> results = mongoTemplate.aggregate(aggregation, "note", NoteBo.class);
+		return results.getMappedResults();
 	}
 
 	/**

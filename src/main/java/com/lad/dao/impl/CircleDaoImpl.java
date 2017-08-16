@@ -103,12 +103,12 @@ public class CircleDaoImpl implements ICircleDao {
 		return mongoTemplate.find(query, CircleBo.class);
 	}
 
-	public WriteResult updateNotes(String circleBoId, HashSet<String> notes) {
+	public WriteResult updateNotes(String circleBoId, long noteSize) {
 		Query query = new Query();
 		query.addCriteria(new Criteria("_id").is(circleBoId));
 		query.addCriteria(new Criteria("deleted").is(0));
 		Update update = new Update();
-		update.set("notes", notes);
+		update.set("noteSize", noteSize);
 		return mongoTemplate.updateFirst(query, update, CircleBo.class);
 	}
 
@@ -120,8 +120,26 @@ public class CircleDaoImpl implements ICircleDao {
 		return mongoTemplate.find(query, CircleBo.class);
 	}
 
+	public List<CircleBo> findBykeyword(String keyword) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("name").regex(keyword));
+		query.limit(10);
+		return mongoTemplate.find(query, CircleBo.class);
+	}
+
 	@Override
 	public WriteResult updateMaster(CircleBo circleBo) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("_id").is(circleBo.getId()));
+		query.addCriteria(new Criteria("deleted").is(0));
+		Update update = new Update();
+		update.set("masters", circleBo.getMasters());
+		update.set("updateTime", circleBo.getUpdateTime());
+		update.set("updateuid", circleBo.getUpdateuid());
+		return mongoTemplate.updateFirst(query, update, CircleBo.class);
+	}
+
+	public WriteResult updateCreateUser(CircleBo circleBo) {
 		Query query = new Query();
 		query.addCriteria(new Criteria("_id").is(circleBo.getId()));
 		query.addCriteria(new Criteria("deleted").is(0));
@@ -129,6 +147,8 @@ public class CircleDaoImpl implements ICircleDao {
 		//创建者默认为群主，后续修改需要更改群主字段
 		update.set("createuid", circleBo.getCreateuid());
 		update.set("usernum", circleBo.getUsers().size());
+		update.set("updateTime", circleBo.getUpdateTime());
+		update.set("updateuid", circleBo.getUpdateuid());
 		return mongoTemplate.updateFirst(query, update, CircleBo.class);
 	}
 

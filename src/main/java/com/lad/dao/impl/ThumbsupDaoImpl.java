@@ -23,7 +23,7 @@ public class ThumbsupDaoImpl implements IThumbsupDao {
 	private MongoTemplate mongoTemplate;
 
 	public ThumbsupBo insert(ThumbsupBo thumbsupBo) {
-		mongoTemplate.insert(thumbsupBo);
+		mongoTemplate.insert(thumbsupBo, "thumbsup");
 		return thumbsupBo;
 	}
 
@@ -36,10 +36,10 @@ public class ThumbsupDaoImpl implements IThumbsupDao {
 	}
 
 	@Override
-	public ThumbsupBo findIsDelete(ThumbsupBo thumbsupBo) {
+	public ThumbsupBo findIsDelete(String ownerid, String visitorid) {
 		Query query = new Query();
-		query.addCriteria(new Criteria("owner_id").is(thumbsupBo.getOwner_id()));
-		query.addCriteria(new Criteria("visitor_id").is(thumbsupBo.getVisitor_id()));
+		query.addCriteria(new Criteria("owner_id").is(ownerid));
+		query.addCriteria(new Criteria("visitor_id").is(visitorid));
 		return mongoTemplate.findOne(query, ThumbsupBo.class);
 	}
 
