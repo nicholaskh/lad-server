@@ -28,10 +28,10 @@ public class CircleBo extends BaseBo {
 	//圈子5公里是否加入
 	private boolean isOpen;
 
-	private long noteSize;
+	private int noteSize;
 
 	//总人数=圈子内总评论+总阅读+总点赞+总转发
-	private long total;
+	private int total;
 
 	private HashSet<String> users = new HashSet<String>();
 	private HashSet<String> usersApply = new HashSet<String>();
@@ -148,19 +148,19 @@ public class CircleBo extends BaseBo {
 		isOpen = open;
 	}
 
-	public long getNoteSize() {
+	public int getNoteSize() {
 		return noteSize;
 	}
 
-	public void setNoteSize(long noteSize) {
+	public void setNoteSize(int noteSize) {
 		this.noteSize = noteSize;
 	}
 
-	public long getTotal() {
+	public int getTotal() {
 		return total;
 	}
 
-	public void setTotal(long total) {
+	public void setTotal(int total) {
 		this.total = total;
 	}
 }

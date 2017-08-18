@@ -78,4 +78,6 @@ public interface ICircleDao extends IBaseDao {
 	 */
 	List<CircleBo> findBykeyword(String keyword);
 
+	WriteResult updateTotal(String circleid, int total);
+
 }

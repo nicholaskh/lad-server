@@ -16,8 +16,8 @@ public class CircleVo extends BaseVo {
 	private HashSet<String> usersApply = new HashSet<String>();
 	private HashSet<String> usersRefuse = new HashSet<String>();
 	private HashSet<String> notes = new HashSet<String>();
-	private Long notesSize;
-	private Long usersSize;
+	private int notesSize;
+	private int usersSize;
 
 	// 置顶标识，1置顶
 	private int top = 0;
@@ -118,22 +118,6 @@ public class CircleVo extends BaseVo {
 		this.notes = notes;
 	}
 
-	public Long getNotesSize() {
-		return notesSize;
-	}
-
-	public void setNotesSize(Long notesSize) {
-		this.notesSize = notesSize;
-	}
-
-	public Long getUsersSize() {
-		return usersSize;
-	}
-
-	public void setUsersSize(Long usersSize) {
-		this.usersSize = usersSize;
-	}
-
 	public int getTop() {
 		return top;
 	}
@@ -144,6 +128,22 @@ public class CircleVo extends BaseVo {
 
 	public String getCreateuid() {
 		return createuid;
+	}
+
+	public int getNotesSize() {
+		return notesSize;
+	}
+
+	public void setNotesSize(int notesSize) {
+		this.notesSize = notesSize;
+	}
+
+	public int getUsersSize() {
+		return usersSize;
+	}
+
+	public void setUsersSize(int usersSize) {
+		this.usersSize = usersSize;
 	}
 
 	public void setCreateuid(String createuid) {

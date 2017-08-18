@@ -186,4 +186,14 @@ public class CircleDaoImpl implements ICircleDao {
 		}
 		return mongoTemplate.find(query, CircleBo.class);
 	}
+
+	@Override
+	public WriteResult updateTotal(String circleid, int total) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("_id").is(circleid));
+		Update update = new Update();
+		//创建者默认为群主，后续修改需要更改群主字段
+		update.set("total", total);
+		return mongoTemplate.updateFirst(query, update, CircleBo.class);
+	}
 }

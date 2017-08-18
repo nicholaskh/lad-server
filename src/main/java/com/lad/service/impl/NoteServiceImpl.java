@@ -2,7 +2,6 @@ package com.lad.service.impl;
 
 import com.lad.bo.CommentBo;
 import com.lad.bo.NoteBo;
-import com.lad.dao.ICommentDao;
 import com.lad.dao.INoteDao;
 import com.lad.service.INoteService;
 import com.mongodb.WriteResult;
@@ -16,9 +15,6 @@ import java.util.List;
 public class NoteServiceImpl implements INoteService {
 	@Autowired
 	private INoteDao noteDao;
-
-	@Autowired
-	private ICommentDao commentDao;
 
 	public NoteBo insert(NoteBo noteBo) {
 		return noteDao.insert(noteBo);
@@ -106,5 +102,10 @@ public class NoteServiceImpl implements INoteService {
 	@Override
 	public long finyNotesNum(String circleid) {
 		return noteDao.finyNotesNum(circleid);
+	}
+
+	@Override
+	public int selectPeopleNum(String circleid) {
+		return noteDao.selectPeopleNum(circleid);
 	}
 }

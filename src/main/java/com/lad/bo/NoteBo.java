@@ -24,7 +24,7 @@ public class NoteBo extends BaseBo {
 	//上传的文件类型，前端传值
 	private String type;
 
-	//用于聚合查询的临时值，不用于数据保存
+	//总数
 	private long temp;
 
 	public String getSubject() {
@@ -122,4 +122,5 @@ public class NoteBo extends BaseBo {
 	public void setType(String type) {
 		this.type = type;
 	}
+
 }

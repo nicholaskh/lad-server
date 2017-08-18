@@ -132,4 +132,9 @@ public interface INoteService extends IBaseService {
 	 * @return
 	 */
 	long finyNotesNum(String circleid);
+
+
+	int selectPeopleNum(String circleid);
+
 }
+

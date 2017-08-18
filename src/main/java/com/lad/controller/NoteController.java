@@ -91,6 +91,8 @@ public class NoteController extends BaseContorller {
 		noteBo.setCreateuid(userBo.getId());
 		noteBo.setCircleId(circleid);
 		noteBo.setType(type);
+		noteBo.setVisitcount(1);
+		noteBo.setTemp(1);
 		LinkedList<String> photos = new LinkedList<>();
 		String userId =  userBo.getId();
 		if (pictures != null) {
@@ -98,6 +100,7 @@ public class NoteController extends BaseContorller {
 			for (MultipartFile file : pictures) {
 				String fileName = userId + "-" + time + "-"
 						+ file.getOriginalFilename();
+				System.out.println("----file: " + file.getOriginalFilename() + ",  size: " + file.getSize());
 				logger.info(fileName);
 				String path = CommonUtil.upload(file, Constant.NOTE_PICTURE_PATH,
 						fileName, 0);
@@ -501,6 +504,14 @@ public class NoteController extends BaseContorller {
 		if (commentBo != null) {
 			if (userBo.getId().equals(commentBo.getCreateuid())) {
 				commentService.delete(commentid);
+				RLock lock = redisServer.getRLock(Constant.COMOMENT_LOCK);
+				try {
+					lock.lock(2, TimeUnit.SECONDS);
+					//更新帖子评论数
+					noteService.updateCommentCount(commentBo.getNoteid(), -1);
+				} finally {
+					lock.unlock();
+				}
 			} else {
 				return CommonUtil.toErrorResult(
 						ERRORCODE.NOTE_NOT_MASTER.getIndex(),
@@ -748,18 +759,20 @@ public class NoteController extends BaseContorller {
 		}
 		updateHistory(userBo.getId(), circleBo.getId(), locationService, circleService);
 		String[] ids = CommonUtil.getIds(noteids);
+		int notes = 0;
 		if (circleBo.getCreateuid().equals(userBo.getId())) {
 			for (String id : ids) {
 				NoteBo noteBo = noteService.selectById(id);
 				if (null != noteBo) {
 					//圈主删除帖子
 					noteService.deleteNote(id);
+					notes ++;
 				}
 			}
 			RLock lock = redisServer.getRLock("noteSize");
 			try {
 				lock.lock(2,TimeUnit.SECONDS);
-				circleService.updateNotes(circleid, circleBo.getNoteSize() - ids.length);
+				circleService.updateNotes(circleid, circleBo.getNoteSize() - notes);
 			} finally {
 				lock.unlock();
 			}
@@ -787,14 +800,28 @@ public class NoteController extends BaseContorller {
 			return e.getMessage();
 		}
 		String[] ids = CommonUtil.getIds(noteids);
+		int notes = 0;
+		CircleBo circleBo = null;
 		for (String id : ids) {
 			NoteBo noteBo = noteService.selectById(id);
 			if (null != noteBo) {
-				CircleBo circleBo = circleService.selectById(noteBo.getCircleId());
+				if (circleBo == null) {
+					circleBo = circleService.selectById(noteBo.getCircleId());
+				}
 				//删除帖子
 				if (noteBo.getCreateuid().equals(userBo.getId())) {
 					noteService.deleteNote(id);
+					notes ++;
 				}
+			}
+		}
+		if (circleBo != null) {
+			RLock lock = redisServer.getRLock("noteSize");
+			try {
+				lock.lock(2,TimeUnit.SECONDS);
+				circleService.updateNotes(circleBo.getId(), circleBo.getNoteSize() - notes);
+			} finally {
+				lock.unlock();
 			}
 		}
 		return Constant.COM_RESP;

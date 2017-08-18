@@ -4,6 +4,7 @@ import com.lad.bo.CircleBo;
 import com.lad.bo.CircleHistoryBo;
 import com.lad.bo.ReasonBo;
 import com.mongodb.WriteResult;
+import org.springframework.scheduling.annotation.Async;
 
 import java.util.HashSet;
 import java.util.List;
@@ -88,5 +89,8 @@ public interface ICircleService extends IBaseService {
 
 	
 	CircleHistoryBo findByUserIdAndCircleId(String userid, String circleid);
+
+	@Async
+	WriteResult updateTotal(String circleid, int total);
 	
 }

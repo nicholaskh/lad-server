@@ -115,4 +115,17 @@ public interface INoteDao extends IBaseDao {
 	 * @return
 	 */
 	long finyNotesNum(String circleid);
+
+	/**
+	 * 更新总数
+	 * @param id
+	 * @param number
+	 * @return
+	 */
+	WriteResult updateTemp(String id, long number);
+
+	int selectPeopleNum(String circleid);
+
+
+	List<NoteBo> selectCircleNotes(String circleId, String startId, boolean gt, int limit);
 }

@@ -89,7 +89,11 @@ public abstract class BaseContorller {
 				circleHistoryBo = new CircleHistoryBo();
 				circleHistoryBo.setCircleid(circleid);
 				circleHistoryBo.setUserid(userid);
-				circleHistoryBo.setPosition(locationBo.getPosition());
+				if (null != locationBo.getPosition()) {
+					circleHistoryBo.setPosition(locationBo.getPosition());
+				} else {
+					circleHistoryBo.setPosition(new double[]{0, 0});
+				}
 				circleService.insertHistory(circleHistoryBo);
 			} else {
 				circleService.updateHistory(circleHistoryBo.getId(), locationBo.getPosition());

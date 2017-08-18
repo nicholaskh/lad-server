@@ -3,6 +3,8 @@ package com.lad.dao.impl;
 import com.lad.bo.NoteBo;
 import com.lad.dao.INoteDao;
 import com.lad.util.CommonUtil;
+import com.lad.util.Constant;
+import com.mongodb.BasicDBObject;
 import com.mongodb.WriteResult;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +13,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
+import org.springframework.data.mongodb.core.aggregation.GroupOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
@@ -23,9 +26,6 @@ import java.util.List;
 public class NoteDaoImpl implements INoteDao {
 	@Autowired
 	private MongoTemplate mongoTemplate;
-
-	private String[] fields = new String[]{"subject", "_id", "visitcount", "transcount",
-			"commentcount", "thumpsubcount", "result", "createTime"};
 
 	public NoteBo insert(NoteBo noteBo) {
 		mongoTemplate.insert(noteBo);
@@ -45,6 +45,7 @@ public class NoteDaoImpl implements INoteDao {
 		Query query = new Query();
 		Update update = new Update();
 		update.inc("visitcount", 1);
+		update.inc("temp",1);
 		query.addCriteria(new Criteria("_id").is(noteId));
 		query.addCriteria(new Criteria("deleted").is(0));
 		return mongoTemplate.updateFirst(query, update, NoteBo.class);
@@ -55,7 +56,8 @@ public class NoteDaoImpl implements INoteDao {
 		Update update = new Update();
 		query.addCriteria(new Criteria("_id").is(noteId));
 		query.addCriteria(new Criteria("deleted").is(0));
-		update.set("commentcount", commentcount);
+		update.inc("commentcount", commentcount);
+		update.inc("temp", commentcount);
 		return mongoTemplate.updateFirst(query, update, NoteBo.class);
 	}
 
@@ -75,6 +77,7 @@ public class NoteDaoImpl implements INoteDao {
 		query.addCriteria(new Criteria("_id").is(noteId));
 		query.addCriteria(new Criteria("deleted").is(0));
 		update.inc("thumpsubcount", thumpsubcount);
+		update.inc("temp",thumpsubcount);
 		return mongoTemplate.updateFirst(query, update, NoteBo.class);
 	}
 
@@ -126,20 +129,13 @@ public class NoteDaoImpl implements INoteDao {
 	}
 
 	public List<NoteBo> selectHotNotes(String circleid){
-
-		Criteria criteria = new Criteria("createTime").gte(CommonUtil.getBeforeWeekDate());
-		criteria.and("circleId").is(circleid);
-		criteria.and("deleted").is(0);
-		AggregationOperation match = Aggregation.match(criteria);
-
-		AggregationOperation project = Aggregation.project(fields).and("temp")
-				.plus("visitcount").plus("transcount").plus("commentcount").plus("thumpsubcount").as("result");
-
-		Aggregation aggregation = Aggregation.newAggregation(match,
-				project, Aggregation.sort(Sort.Direction.DESC, "result"),
-				Aggregation.limit(10));
-		AggregationResults<NoteBo> results = mongoTemplate.aggregate(aggregation, "note", NoteBo.class);
-		return results.getMappedResults();
+		Query query = new Query();
+		query.addCriteria(new Criteria("createTime").gte(CommonUtil.getBeforeWeekDate()));
+		query.addCriteria(new Criteria("circleId").is(circleid));
+		query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "temp")));
+		query.limit(10);
+		return mongoTemplate.find(query, NoteBo.class);
 	}
 
 	public List<NoteBo> selectTopNotes(String circleid){
@@ -167,21 +163,27 @@ public class NoteDaoImpl implements INoteDao {
 		return findNotesByPage(query, startId, gt, limit);
 	}
 
+	public List<NoteBo> selectCircleNotes(String circleId, String startId, boolean gt, int limit){
+		Query query = new Query();
+		query.addCriteria(new Criteria("circleId").is(circleId));
+		return findNotesByPage(query, startId, gt, limit);
+	}
 
-	public List<NoteBo> selectAllPeoples(String circleid){
-
+	public int selectPeopleNum(String circleid){
 		Criteria criteria = new Criteria("circleId").is(circleid);
-		criteria.and("deleted").is(0);
+		criteria.and("deleted").is(Constant.ACTIVITY);
 		AggregationOperation match = Aggregation.match(criteria);
+		GroupOperation group = Aggregation.group("circleId").sum("temp").as("totals");
 
-		AggregationOperation project = Aggregation.project(fields).and("temp")
-				.plus("visitcount").plus("transcount").plus("commentcount").plus("thumpsubcount").as("result");
+		Aggregation aggregation = Aggregation.newAggregation(match, group);
 
-		Aggregation aggregation = Aggregation.newAggregation(match,
-				project, Aggregation.sort(Sort.Direction.DESC, "result"),
-				Aggregation.limit(10));
-		AggregationResults<NoteBo> results = mongoTemplate.aggregate(aggregation, "note", NoteBo.class);
-		return results.getMappedResults();
+		AggregationResults<BasicDBObject> results = mongoTemplate.aggregate(aggregation, "note", BasicDBObject.class);
+
+		List<BasicDBObject> dbObjects = results.getMappedResults();
+		for (BasicDBObject dbObject : dbObjects) {
+			return Integer.valueOf(dbObject.get("totals").toString());
+		}
+		return 0;
 	}
 
 	/**
@@ -204,6 +206,15 @@ public class NoteDaoImpl implements INoteDao {
 		}
 		query.limit(limit);
 		return mongoTemplate.find(query, NoteBo.class);
+	}
+
+	public WriteResult updateTemp(String id, long number){
+		Query query = new Query();
+		Update update = new Update();
+		update.inc("temp",number);
+		query.addCriteria(new Criteria("_id").is(id));
+		query.addCriteria(new Criteria("deleted").is(0));
+		return mongoTemplate.updateFirst(query, update,NoteBo.class);
 	}
 
 }

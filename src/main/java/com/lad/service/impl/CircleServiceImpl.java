@@ -131,4 +131,10 @@ public class CircleServiceImpl implements ICircleService {
 	public CircleHistoryBo findByUserIdAndCircleId(String userid, String circleid) {
 		return circleHistoryDao.findByUserIdAndCircleId(userid, circleid);
 	}
+
+
+	@Override
+	public WriteResult updateTotal(String circleid, int total) {
+		return circleDao.updateTotal(circleid, total);
+	}
 }

@@ -6,6 +6,7 @@ import com.lad.bo.RedstarBo;
 import com.lad.bo.UserBo;
 import com.lad.service.ICircleService;
 import com.lad.service.ILocationService;
+import com.lad.service.INoteService;
 import com.lad.service.IUserService;
 import com.lad.util.CommonUtil;
 import com.lad.util.Constant;
@@ -45,6 +46,9 @@ public class CircleController extends BaseContorller {
 
 	@Autowired
 	private ILocationService locationService;
+
+	@Autowired
+	private INoteService noteService;
 
 	@RequestMapping("/insert")
 	@ResponseBody
@@ -575,6 +579,11 @@ public class CircleController extends BaseContorller {
 		List<CircleVo> voList = new LinkedList<>();
 		//筛选出置顶的圈子
 		for (CircleBo circleBo : circleBos) {
+			if (circleBo.getTotal() == 0) {
+				int number = noteService.selectPeopleNum(circleBo.getId());
+				circleBo.setTotal(number);
+				circleService.updateTotal(circleBo.getId(), number);
+			}
 			if (myCircles.contains(circleBo.getId())) {
 				voList.add(bo2vo(circleBo, 1));
 			} else {
@@ -588,6 +597,10 @@ public class CircleController extends BaseContorller {
 		map.put("ret", 0);
 		map.put("circleVoList", voList);
 		return JSONObject.fromObject(map).toString();
+	}
+
+	private void saveTotal(){
+
 
 	}
 
@@ -627,12 +640,14 @@ public class CircleController extends BaseContorller {
 		}
 		//更新访问记录
 		updateHistory(userBo.getId(), circleid, locationService, circleService);
-		
+
+		int number = noteService.selectPeopleNum(circleid);
+
 		CircleVo circleVo = new CircleVo();
 		BeanUtils.copyProperties(circleBo, circleVo);
 		circleVo.setName(circleBo.getName());
-		circleVo.setUsersSize((long) circleBo.getUsers().size());
-		circleVo.setNotesSize(circleBo.getNoteSize());
+		circleVo.setUsersSize(circleBo.getTotal());
+		circleVo.setNotesSize(number);
 		Map<String, Object> map = new HashMap<String, Object>();
 		LinkedHashSet<String> masters = circleBo.getMasters();
 		//管理员
@@ -741,16 +756,11 @@ public class CircleController extends BaseContorller {
 
 
 	/**
-	 * 取消置顶圈子
+	 * 搜索圈子
 	 */
 	@RequestMapping("/search")
 	@ResponseBody
 	public String search(String keyword, HttpServletRequest request, HttpServletResponse response) {
-		try {
-			checkSession(request, userService);
-		} catch (MyException e) {
-			return e.getMessage();
-		}
 		if (StringUtils.isNotEmpty(keyword)) {
 			List<CircleBo> circleBos = circleService.findBykeyword(keyword);
 			return bo2vos(circleBos);
@@ -799,8 +809,8 @@ public class CircleController extends BaseContorller {
 		BeanUtils.copyProperties(circleBo, circleVo);
 		circleVo.setId(circleBo.getId());
 		circleVo.setName(circleBo.getName());
-		circleVo.setUsersSize((long) circleBo.getUsers().size());
 		circleVo.setNotesSize(circleBo.getNoteSize());
+		circleVo.setUsersSize(circleBo.getTotal());
 		circleVo.setTop(top);
 		return circleVo;
 	}
