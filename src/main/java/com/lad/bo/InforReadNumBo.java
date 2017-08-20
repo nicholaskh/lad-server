@@ -6,7 +6,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.io.Serializable;
 
 /**
- * 功能描述： 咨询阅读数量表，由于之前咨询的是在另外一张表
+ * 功能描述： 咨询阅读数量表、评论、点赞、转发
  * Copyright: Copyright (c) 2017
  * Version: 1.0
  * Time:2017/8/5
@@ -22,6 +22,10 @@ public class InforReadNumBo implements Serializable{
     private String className;
 
     private long visitNum;
+
+    private int commentNum;
+
+    private int thumpsubNum;
 
     public String getId() {
         return id;
@@ -53,5 +57,21 @@ public class InforReadNumBo implements Serializable{
 
     public void setVisitNum(long visitNum) {
         this.visitNum = visitNum;
+    }
+
+    public int getCommentNum() {
+        return commentNum;
+    }
+
+    public void setCommentNum(int commentNum) {
+        this.commentNum = commentNum;
+    }
+
+    public int getThumpsubNum() {
+        return thumpsubNum;
+    }
+
+    public void setThumpsubNum(int thumpsubNum) {
+        this.thumpsubNum = thumpsubNum;
     }
 }
