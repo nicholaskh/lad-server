@@ -20,10 +20,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -111,8 +108,8 @@ public class InforController extends BaseContorller {
             inforVo.setSource(inforBo.getSource());
             inforVo.setTitle(inforBo.getTitle());
             inforVo.setTime(inforBo.getTime());
-            Long readNum = inforService.findReadNum(inforBo.getId());
-            inforVo.setReadNum(readNum);
+            inforVo.setSourceUrl(inforBo.getSourceUrl());
+            inforVo.setText(inforBo.getText());
             inforVos.add(inforVo);
         }
         Map<String, Object> map = new HashMap<String, Object>();
@@ -255,6 +252,8 @@ public class InforController extends BaseContorller {
         commentBo.setType(Constant.INFOR_TYPE);
         commentService.insert(commentBo);
 
+        inforService.updateComment(inforid, 1);
+
         CommentVo commentVo = comentBo2Vo(commentBo);
         Map<String, Object> map = new HashMap<>();
         map.put("ret", 0);
@@ -307,6 +306,7 @@ public class InforController extends BaseContorller {
                             ERRORCODE.INFOR_IS_NULL.getIndex(),
                             ERRORCODE.INFOR_IS_NULL.getReason());
                 }
+                inforService.updateThumpsub(targetid, 1);
             } else if (type == 1) {
                 thumbsupBo.setType(Constant.INFOR_COM_TYPE);
                 CommentBo commentBo = commentService.findById(targetid);
@@ -315,6 +315,7 @@ public class InforController extends BaseContorller {
                             ERRORCODE.COMMENT_IS_NULL.getIndex(),
                             ERRORCODE.COMMENT_IS_NULL.getReason());
                 }
+                inforService.updateThumpsub(commentBo.getTargetid(), 1);
             } else {
                 return CommonUtil.toErrorResult(
                         ERRORCODE.TYPE_ERROR.getIndex(),
@@ -325,10 +326,12 @@ public class InforController extends BaseContorller {
             thumbsupBo.setVisitor_id(userBo.getId());
             thumbsupBo.setCreateuid(userBo.getId());
             thumbsupService.insert(thumbsupBo);
+
         } else {
             if (thumbsupBo.getDeleted() == Constant.DELETED) {
                 thumbsupService.udateDeleteById(thumbsupBo.getId());
             }
+            inforService.updateThumpsub(thumbsupBo.getOwner_id(), 1);
         }
         return Constant.COM_RESP;
     }
@@ -346,6 +349,15 @@ public class InforController extends BaseContorller {
         if (thumbsupBo != null) {
             thumbsupService.deleteById(thumbsupBo.getId());
         }
+        if (type == 0) {
+            inforService.updateThumpsub(targetid, -1);
+        }else if (type == 1) {
+            CommentBo commentBo = commentService.findById(targetid);
+            if (commentBo != null) {
+                inforService.updateThumpsub(commentBo.getTargetid(), 1);
+            }
+        }
+
         return Constant.COM_RESP;
     }
 

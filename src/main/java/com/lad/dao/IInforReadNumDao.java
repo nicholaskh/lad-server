@@ -21,4 +21,8 @@ public interface IInforReadNumDao {
     WriteResult update(String inforid);
 
     InforReadNumBo findByInforid(String inforid);
+
+    WriteResult updateComment(String inforid, int number);
+
+    WriteResult updateThumpsub(String inforid, int number);
 }

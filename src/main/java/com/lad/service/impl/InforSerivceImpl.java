@@ -120,4 +120,14 @@ public class InforSerivceImpl implements IInforService {
     public void updateReadNum(String inforid) {
         inforReadNumDao.update(inforid);
     }
+
+    @Override
+    public void updateComment(String inforid, int number) {
+        inforReadNumDao.updateComment(inforid, number);
+    }
+
+    @Override
+    public void updateThumpsub(String inforid, int number) {
+        inforReadNumDao.updateThumpsub(inforid, number);
+    }
 }

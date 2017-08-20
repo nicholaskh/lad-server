@@ -111,4 +111,8 @@ public interface IInforService {
     InforReadNumBo addReadNum(InforReadNumBo readNumBo);
 
     void updateReadNum(String inforid);
+
+    void updateComment(String inforid, int number);
+
+    void updateThumpsub(String inforid, int number);
 }

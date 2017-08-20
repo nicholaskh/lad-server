@@ -45,4 +45,20 @@ public class InforReadNumDaoImpl implements IInforReadNumDao {
         query.addCriteria(new Criteria("inforid").is(inforid));
         return mongoTemplate.findOne(query, InforReadNumBo.class);
     }
+
+    public WriteResult updateComment(String inforid, int number) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("inforid").is(inforid));
+        Update update = new Update();
+        update.inc("commentNum", number);
+        return mongoTemplate.updateFirst(query, update, InforReadNumBo.class);
+    }
+
+    public WriteResult updateThumpsub(String inforid, int number) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("inforid").is(inforid));
+        Update update = new Update();
+        update.inc("thumpsubNum", number);
+        return mongoTemplate.updateFirst(query, update, InforReadNumBo.class);
+    }
 }
