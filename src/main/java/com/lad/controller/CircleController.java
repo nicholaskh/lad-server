@@ -54,7 +54,6 @@ public class CircleController extends BaseContorller {
 	@ResponseBody
 	public String isnert(@RequestParam(required = true) double px,
 			@RequestParam(required = true) double py,
-			@RequestParam(required = true) String landmark,
 			@RequestParam(required = true) String name,
 			@RequestParam(required = true) String tag,
 			@RequestParam(required = true) String sub_tag,
@@ -73,7 +72,6 @@ public class CircleController extends BaseContorller {
 		CircleBo circleBo = new CircleBo();
 		circleBo.setCreateuid(userBo.getId());
 		circleBo.setCategory(category);
-		circleBo.setLandmark(landmark);
 		circleBo.setPosition(new double[] { px, py });
 		circleBo.setName(name);
 		circleBo.setTag(tag);
@@ -765,6 +763,55 @@ public class CircleController extends BaseContorller {
 			List<CircleBo> circleBos = circleService.findBykeyword(keyword);
 			return bo2vos(circleBos);
 		}
+		return Constant.COM_RESP;
+	}
+
+	/**
+	 *
+	 */
+	@RequestMapping("/get-creater")
+	@ResponseBody
+	public String getCreater(String circleid, HttpServletRequest request, HttpServletResponse response) {
+
+		CircleBo circleBo = circleService.selectById(circleid);
+		if (null == circleBo) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CIRCLE_IS_NULL.getIndex(),
+					ERRORCODE.CIRCLE_IS_NULL.getReason());
+		}
+		//圈主
+		UserBo hostBo = userService.getUser(circleBo.getCreateuid());
+		UserBaseVo userHostVo = new UserBaseVo();
+		BeanUtils.copyProperties(hostBo, userHostVo);
+		Map<String, Object> map = new HashMap<>();
+		map.put("ret", 0);
+		map.put("creater", userHostVo);
+		return Constant.COM_RESP;
+	}
+	/**
+	 *
+	 */
+	@RequestMapping("/get-master")
+	@ResponseBody
+	public String getMaster(String circleid, HttpServletRequest request, HttpServletResponse response) {
+		CircleBo circleBo = circleService.selectById(circleid);
+		if (null == circleBo) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CIRCLE_IS_NULL.getIndex(),
+					ERRORCODE.CIRCLE_IS_NULL.getReason());
+		}
+		LinkedHashSet<String> masters = circleBo.getMasters();
+		//管理员
+		List<UserBaseVo> mastersList = new ArrayList<>();
+		for (String master : masters) {
+			UserBo masterBo = userService.getUser(master);
+			UserBaseVo userVo = new UserBaseVo();
+			BeanUtils.copyProperties(masterBo, userVo);
+			mastersList.add(userVo);
+		}
+		Map<String, Object> map = new HashMap<>();
+		map.put("ret", 0);
+		map.put("masters", mastersList);
 		return Constant.COM_RESP;
 	}
 
