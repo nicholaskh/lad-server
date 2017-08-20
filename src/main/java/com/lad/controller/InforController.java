@@ -198,6 +198,8 @@ public class InforController extends BaseContorller {
         } else {
             inforService.updateReadNum(inforid);
             readNumBo.setVisitNum(readNumBo.getVisitNum() + 1);
+            readNumBo.setCommentNum(readNumBo.getCommentNum());
+            readNumBo.setThumpsubNum(readNumBo.getThumpsubNum());
         }
         InforVo inforVo = new InforVo();
 
