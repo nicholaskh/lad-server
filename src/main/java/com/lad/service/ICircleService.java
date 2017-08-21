@@ -2,6 +2,7 @@ package com.lad.service;
 
 import com.lad.bo.CircleBo;
 import com.lad.bo.CircleHistoryBo;
+import com.lad.bo.CircleTypeBo;
 import com.lad.bo.ReasonBo;
 import com.mongodb.WriteResult;
 import org.springframework.scheduling.annotation.Async;
@@ -78,6 +79,12 @@ public interface ICircleService extends IBaseService {
 	 */
 	List<CircleBo> findBykeyword(String keyword);
 
+	/**
+	 * 根据分类查询
+	 * @return
+	 */
+	List<CircleBo> findByType(String type, int level, String startId,  boolean gt,int limit);
+
 	
 	List<CircleHistoryBo> findNearPeople(double[] position, double maxDistance);
 
@@ -92,5 +99,17 @@ public interface ICircleService extends IBaseService {
 
 	@Async
 	WriteResult updateTotal(String circleid, int total);
+
+	List<CircleTypeBo> selectByLevel(int level);
+
+	List<CircleTypeBo> selectByParent(String name);
+
+	CircleTypeBo addCircleType(CircleTypeBo circleTypeBo);
+
+	List<CircleTypeBo> selectByPage(int start, int limit);
+
+	CircleTypeBo findByName(String name, int level);
+
+	List<CircleTypeBo> findAllCircleTypes();
 	
 }

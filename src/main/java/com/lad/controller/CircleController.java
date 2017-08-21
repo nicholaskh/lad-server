@@ -1,9 +1,6 @@
 package com.lad.controller;
 
-import com.lad.bo.CircleBo;
-import com.lad.bo.ReasonBo;
-import com.lad.bo.RedstarBo;
-import com.lad.bo.UserBo;
+import com.lad.bo.*;
 import com.lad.service.ICircleService;
 import com.lad.service.ILocationService;
 import com.lad.service.INoteService;
@@ -226,6 +223,13 @@ public class CircleController extends BaseContorller {
 					ERRORCODE.CIRCLE_IS_NULL.getIndex(),
 					ERRORCODE.CIRCLE_IS_NULL.getReason());
 		}
+		if (!circleBo.getCreateuid().equals(userBo.getId()) &&
+				circleBo.getMasters().contains(userBo.getId())) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CIRCLE_NOT_MASTER.getIndex(),
+					ERRORCODE.CIRCLE_NOT_MASTER.getReason());
+		}
+		
 		HashSet<String> usersApply = circleBo.getUsersApply();
 		List<UserApplyVo> userApplyVos = new ArrayList<>();
 
@@ -767,6 +771,17 @@ public class CircleController extends BaseContorller {
 	}
 
 	/**
+	 * 根据类型获取圈子
+	 */
+	@RequestMapping("/get-by-type")
+	@ResponseBody
+	public String getByType(String type, int level, String start_id, boolean gt, int limit,
+							HttpServletRequest request, HttpServletResponse response) {
+		List<CircleBo> circleBos = circleService.findByType(type, level, start_id, gt, limit);
+		return bo2vos(circleBos);
+	}
+
+	/**
 	 *
 	 */
 	@RequestMapping("/get-creater")
@@ -786,7 +801,7 @@ public class CircleController extends BaseContorller {
 		Map<String, Object> map = new HashMap<>();
 		map.put("ret", 0);
 		map.put("creater", userHostVo);
-		return Constant.COM_RESP;
+		return JSONObject.fromObject(map).toString();
 	}
 	/**
 	 *
@@ -812,7 +827,76 @@ public class CircleController extends BaseContorller {
 		Map<String, Object> map = new HashMap<>();
 		map.put("ret", 0);
 		map.put("masters", mastersList);
+		return JSONObject.fromObject(map).toString();
+	}
+
+
+	/**
+	 * 获取圈子分类
+	 */
+	@RequestMapping("/circle-type")
+	@ResponseBody
+	public String circleType(HttpServletRequest request, HttpServletResponse response) {
+
+		List<CircleTypeBo> typeBos = circleService.selectByLevel(1);
+		Map<String, List<String>> maps = new LinkedHashMap<>();
+		for (CircleTypeBo typeBo : typeBos) {
+			List<CircleTypeBo> bos = circleService.selectByParent(typeBo.getCategory());
+			List<String> boList = new ArrayList<>();
+			for (CircleTypeBo bo : bos) {
+				boList.add(bo.getCategory());
+			}
+			maps.put(typeBo.getCategory(), boList);
+		}
+		Map<String, Object> map = new HashMap<>();
+		map.put("ret", 0);
+		map.put("types", maps);
+		return JSONObject.fromObject(map).toString();
+	}
+
+	/**
+	 *添加圈子分类
+	 */
+	@RequestMapping("/add-circle-type")
+	@ResponseBody
+	public String addCircleType(String name, String parent, int level, HttpServletRequest request,
+								HttpServletResponse response) {
+		UserBo userBo;
+		try {
+			userBo = checkSession(request, userService);
+		} catch (MyException e) {
+			return e.getMessage();
+		}
+		CircleTypeBo typeBo = circleService.findByName(name, level);
+		if (typeBo == null) {
+			typeBo = new CircleTypeBo();
+			typeBo.setCategory(name);
+			typeBo.setLevel(level);
+			typeBo.setPreCateg(parent);
+			typeBo.setCreateuid(userBo.getId());
+		} else {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CIRCLE_TYPE_EXIST.getIndex(),
+					ERRORCODE.CIRCLE_TYPE_EXIST.getReason());
+		}
 		return Constant.COM_RESP;
+	}
+
+	/**
+	 * 更多圈子时，获取所有分类
+	 */
+	@RequestMapping("/circle-type-search")
+	@ResponseBody
+	public String circleTypeSearch(HttpServletRequest request, HttpServletResponse response) {
+		List<CircleTypeBo> typeBos = circleService.findAllCircleTypes();
+		List<String> types = new ArrayList<>();
+		for (CircleTypeBo typeBo : typeBos) {
+			types.add(typeBo.getCategory());
+		}
+		Map<String, Object> map = new HashMap<>();
+		map.put("ret", 0);
+		map.put("types", types);
+		return JSONObject.fromObject(map).toString();
 	}
 
 	

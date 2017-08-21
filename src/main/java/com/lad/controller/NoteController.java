@@ -848,6 +848,7 @@ public class NoteController extends BaseContorller {
 			noteVo.setHeadPictureName(userBo.getHeadPictureName());
 			noteVo.setUsername(userBo.getUserName());
 		}
+		noteVo.setPosition(noteBo.getPosition());
 		noteVo.setCommontCount(noteBo.getCommentcount());
 		noteVo.setVisitCount(noteBo.getVisitcount());
 		noteVo.setNodeid(noteBo.getId());

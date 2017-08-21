@@ -22,6 +22,8 @@ public class CircleVo extends BaseVo {
 	// 置顶标识，1置顶
 	private int top = 0;
 
+	private String description;
+
 	public String getId() {
 		return id;
 	}
@@ -148,5 +150,13 @@ public class CircleVo extends BaseVo {
 
 	public void setCreateuid(String createuid) {
 		this.createuid = createuid;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
 	}
 }

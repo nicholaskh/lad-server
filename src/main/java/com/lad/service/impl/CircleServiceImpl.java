@@ -2,9 +2,11 @@ package com.lad.service.impl;
 
 import com.lad.bo.CircleBo;
 import com.lad.bo.CircleHistoryBo;
+import com.lad.bo.CircleTypeBo;
 import com.lad.bo.ReasonBo;
 import com.lad.dao.ICircleDao;
 import com.lad.dao.ICircleHistoryDao;
+import com.lad.dao.ICircleTypeDao;
 import com.lad.dao.IReasonDao;
 import com.lad.service.ICircleService;
 import com.mongodb.WriteResult;
@@ -25,6 +27,9 @@ public class CircleServiceImpl implements ICircleService {
 	
 	@Autowired
 	private ICircleHistoryDao circleHistoryDao;
+
+	@Autowired
+	private ICircleTypeDao circleTypeDao;
 
 	public CircleBo insert(CircleBo circleBo) {
 		return circleDao.insert(circleBo);
@@ -113,6 +118,11 @@ public class CircleServiceImpl implements ICircleService {
 	}
 
 	@Override
+	public List<CircleBo> findByType(String type, int level, String startId, boolean gt, int limit) {
+		return circleDao.findByType(type, level, startId, gt, limit);
+	}
+
+	@Override
 	public List<CircleHistoryBo> findNearPeople(double[] position, double maxDistance) {
 		return circleHistoryDao.findNear(position, maxDistance);
 	}
@@ -136,5 +146,35 @@ public class CircleServiceImpl implements ICircleService {
 	@Override
 	public WriteResult updateTotal(String circleid, int total) {
 		return circleDao.updateTotal(circleid, total);
+	}
+
+	@Override
+	public List<CircleTypeBo> selectByLevel(int level) {
+		return circleTypeDao.selectByLevel(level);
+	}
+
+	@Override
+	public List<CircleTypeBo> selectByParent(String name) {
+		return circleTypeDao.selectByParent(name);
+	}
+
+	@Override
+	public CircleTypeBo addCircleType(CircleTypeBo circleTypeBo) {
+		return circleTypeDao.insert(circleTypeBo);
+	}
+
+	@Override
+	public List<CircleTypeBo> selectByPage(int start, int limit) {
+		return circleTypeDao.findAll(start, limit);
+	}
+
+	@Override
+	public CircleTypeBo findByName(String name, int level) {
+		return circleTypeDao.selectByNameLevel(name, level);
+	}
+
+	@Override
+	public List<CircleTypeBo> findAllCircleTypes() {
+		return circleTypeDao.findAll();
 	}
 }

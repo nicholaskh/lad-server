@@ -80,4 +80,11 @@ public interface ICircleDao extends IBaseDao {
 
 	WriteResult updateTotal(String circleid, int total);
 
+
+	/**
+	 * 根据分类查询
+	 * @return
+	 */
+	List<CircleBo> findByType(String type, int level, String startId,  boolean gt,int limit);
+
 }

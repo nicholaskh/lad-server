@@ -14,6 +14,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.regex.Pattern;
 
 @Repository("circleDao")
 public class CircleDaoImpl implements ICircleDao {
@@ -122,7 +123,8 @@ public class CircleDaoImpl implements ICircleDao {
 
 	public List<CircleBo> findBykeyword(String keyword) {
 		Query query = new Query();
-		query.addCriteria(new Criteria("name").regex(keyword));
+		Pattern pattern = Pattern.compile("^.*"+keyword+".*$", Pattern.CASE_INSENSITIVE);
+		query.addCriteria(new Criteria("name").regex(pattern));
 		query.limit(10);
 		return mongoTemplate.find(query, CircleBo.class);
 	}
@@ -195,5 +197,26 @@ public class CircleDaoImpl implements ICircleDao {
 		//创建者默认为群主，后续修改需要更改群主字段
 		update.set("total", total);
 		return mongoTemplate.updateFirst(query, update, CircleBo.class);
+	}
+
+	@Override
+	public List<CircleBo> findByType(String type, int level, String startId,  boolean gt,int limit) {
+		Query query = new Query();
+		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
+		if (level == 1) {
+			query.addCriteria(new Criteria("tag").is(type));
+		} else if (level == 2) {
+			query.addCriteria(new Criteria("sub_tag").is(type));
+		}
+		query.addCriteria(new Criteria("deleted").is(0));
+		if (!StringUtils.isEmpty(startId)) {
+			if (gt) {
+				query.addCriteria(new Criteria("_id").gt(startId));
+			} else {
+				query.addCriteria(new Criteria("_id").lt(startId));
+			}
+		}
+		query.limit(limit);
+		return mongoTemplate.find(query, CircleBo.class);
 	}
 }
