@@ -30,6 +30,8 @@ public class UserBo extends BaseBo {
 
 	private List<String> circleTops = new LinkedList<>();
 
+	private int level = 1;
+
 	/**
 	 * 面对面群聊
 	 */
@@ -141,5 +143,13 @@ public class UserBo extends BaseBo {
 
 	public void setCircleTops(List<String> circleTops) {
 		this.circleTops = circleTops;
+	}
+
+	public int getLevel() {
+		return level;
+	}
+
+	public void setLevel(int level) {
+		this.level = level;
 	}
 }

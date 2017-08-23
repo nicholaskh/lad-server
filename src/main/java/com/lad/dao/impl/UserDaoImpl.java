@@ -199,4 +199,13 @@ public class UserDaoImpl implements IUserDao {
         return mongoTemplate.findAll(UserBo.class);
     }
 
+    @Override
+    public WriteResult updateLevel(String id, int level) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("_id").is(id));
+        query.addCriteria(new Criteria("deleted").is(0));
+        Update update = new Update();
+        update.set("level", level);
+        return mongoTemplate.updateFirst(query, update, UserBo.class);
+    }
 }

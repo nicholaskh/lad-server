@@ -101,8 +101,8 @@ public class CircleController extends BaseContorller {
 			return e.getMessage();
 		}
 		List<CircleBo> circleBos = circleService.findByCreateid(userBo.getId());
-		int initNum = 5;
-		int userLevel = 1;
+		int initNum = 5 * userBo.getLevel();
+		int userLevel = userBo.getLevel();
 		int createNum = 0;
 		if (circleBos != null) {
 			createNum = circleBos.size();

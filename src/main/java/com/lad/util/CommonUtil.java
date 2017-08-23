@@ -89,7 +89,7 @@ public class CommonUtil {
 			message = URLEncoder.encode(message, "UTF-8");
 		} catch (UnsupportedEncodingException ex) {
 		}
-		String url = "http://118.145.22.174/http20/access/SendMt.do?UserId=1005&Password=MhHv6XuPZr&Mobiles="+mobile+"&Content="+message+"&ExtNo=35";
+		String url = "http://sms-gw.bjedu.cloud:9888/smsservice/SendSMS?UserId=100535&Password=ttlyyl_2017&Mobiles="+mobile+"&Content="+message+"&ExtNo=35";
 		String responseString = HttpClientUtil.getInstance().doGetRequest(url);
 		if (responseString.trim().equals(Constant.RESPONSE)) {
 			return 0;
@@ -218,6 +218,11 @@ public class CommonUtil {
 			limit = 10;
 		}
 		query.limit(limit);
+	}
+
+	public static void main(String[] args) {
+		int res = CommonUtil.sendSMS2("15320542105", "this is message");
+		System.out.println(res);
 	}
 
 

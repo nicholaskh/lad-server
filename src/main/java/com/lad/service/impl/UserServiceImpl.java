@@ -3,9 +3,12 @@ package com.lad.service.impl;
 import com.lad.bo.Pager;
 import com.lad.bo.RedstarBo;
 import com.lad.bo.UserBo;
+import com.lad.bo.UserLevelBo;
 import com.lad.dao.IRedstarDao;
 import com.lad.dao.IUserDao;
+import com.lad.dao.IUserLevelDao;
 import com.lad.service.IUserService;
+import com.lad.util.Constant;
 import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,6 +27,9 @@ public class UserServiceImpl implements IUserService{
 
 	@Autowired
 	private IRedstarDao redstarDao;
+
+	@Autowired
+	private IUserLevelDao userLevelDao;
 
 	public UserBo save(UserBo userBo){
 		userBo = userDao.save(userBo);
@@ -105,5 +111,92 @@ public class UserServiceImpl implements IUserService{
 	@Override
 	public WriteResult updateTopCircles(String userid, List<String> topCircles) {
 		return userDao.updateTopCircles(userid, topCircles);
+	}
+
+	@Override
+	public void addUserLevel(String userid, long num, int type) {
+		UserLevelBo userLevelBo = userLevelDao.findByUserid(userid);
+		int level = 1;
+		if (userLevelBo == null) {
+			userLevelBo = new UserLevelBo();
+			userLevelBo.setUserid(userid);
+			switch (type){
+				case Constant.LEVEL_HOUR:
+					userLevelBo.setOnlineHours(num);
+				case Constant.LEVEL_PARTY:
+					userLevelBo.setLaunchPartys((int) num);
+				case Constant.LEVEL_NOTE:
+					userLevelBo.setNoteNum((int) num);
+				case Constant.LEVEL_COMMENT:
+					userLevelBo.setCommentNum((int) num);
+				case Constant.LEVEL_TRANS:
+					userLevelBo.setTransmitNum((int) num);
+				case Constant.LEVEL_SHARE:
+					userLevelBo.setShareNum((int) num);
+				default:
+					break;
+			}
+		} else {
+			switch (type){
+				case Constant.LEVEL_HOUR:
+					userLevelBo.setOnlineHours(userLevelBo.getOnlineHours() + num);
+				case Constant.LEVEL_PARTY:
+					userLevelBo.setLaunchPartys(userLevelBo.getLaunchPartys() + (int)num);
+				case Constant.LEVEL_NOTE:
+					userLevelBo.setNoteNum(userLevelBo.getNoteNum() + (int) num);
+				case Constant.LEVEL_COMMENT:
+					userLevelBo.setCommentNum(userLevelBo.getCommentNum () + (int) num);
+				case Constant.LEVEL_TRANS:
+					userLevelBo.setTransmitNum(userLevelBo.getTransmitNum() + (int) num);
+				case Constant.LEVEL_SHARE:
+					userLevelBo.setShareNum(userLevelBo.getShareNum() + (int) num);
+				default:
+					break;
+			}
+			userLevelDao.update(userLevelBo.getId(), num, type);
+			level = getLevel(userLevelBo);
+		}
+		userDao.updateLevel(userLevelBo.getUserid(), level);
+	}
+
+
+	private int getLevel(UserLevelBo userLevelBo){
+
+		long times = userLevelBo.getOnlineHours();
+
+		long hours = times / 3600000;
+
+		int partys = userLevelBo.getLaunchPartys();
+
+		int notes = userLevelBo.getNoteNum();
+
+		int comments = userLevelBo.getCommentNum();
+
+		int trans = userLevelBo.getTransmitNum();
+
+		int shares = userLevelBo.getShareNum();
+
+
+		if (hours >= 300 && partys >= 30 && notes >= 150
+				&& comments >= 200 && trans >=200 && shares >= 300 ) {
+			return 6;
+		}
+		if (hours >= 150 && partys >= 15 && notes >= 100
+				&& comments >= 150 && trans >=150 && shares >= 200 ) {
+			return 5;
+		}
+		if (hours >= 100 && partys >= 10 && notes >= 50
+				&& comments >= 80 && trans >=100 && shares >= 150 ) {
+			return 4;
+		}
+		if (hours >= 60 && partys >= 6 && notes >= 30
+				&& comments >= 50 && trans >=60 && shares >= 100 ) {
+			return 3;
+		}
+		if (hours >= 30 && partys >= 3 && notes >= 10
+				&& comments >= 20 && trans >=30 && shares >= 50 ) {
+			return 2;
+		}
+		return 1;
 	}
 }

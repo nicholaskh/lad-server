@@ -24,6 +24,8 @@ public class UserBaseVo implements Serializable {
 
     private String personalizedSignature;
 
+    private int level;
+
     public String getId() {
         return id;
     }
@@ -78,5 +80,13 @@ public class UserBaseVo implements Serializable {
 
     public void setPersonalizedSignature(String personalizedSignature) {
         this.personalizedSignature = personalizedSignature;
+    }
+
+    public int getLevel() {
+        return level;
+    }
+
+    public void setLevel(int level) {
+        this.level = level;
     }
 }

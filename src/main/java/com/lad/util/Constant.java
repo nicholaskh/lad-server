@@ -97,6 +97,31 @@ public class Constant {
 	 * 反馈
 	 */
 	public static final int FEED_BACK= 0;
+	/**
+	 *
+	 */
+	public static final int LEVEL_HOUR= 0;
+	/**
+	 *
+	 */
+	public static final int LEVEL_PARTY= 1;
+	/**
+	 *
+	 */
+	public static final int LEVEL_NOTE= 2;
+	/**
+	 *
+	 */
+	public static final int LEVEL_COMMENT= 3;
+	/**
+	 *
+	 */
+	public static final int LEVEL_TRANS= 4;
+	/**
+	 *
+	 */
+	public static final int LEVEL_SHARE= 5;
+
 
 
 }

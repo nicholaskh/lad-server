@@ -58,4 +58,13 @@ public interface IUserDao extends IBaseDao {
     WriteResult updateLocation(String phone, String locationid);
 
     List<UserBo> getAllUser();
+
+    /**
+     * 更新用户等级
+     * @param id
+     * @param level
+     * @return
+     */
+    WriteResult updateLevel(String id, int level);
+
 }

@@ -1,20 +1,12 @@
 package com.lad.util;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
+import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
 import org.slf4j.LoggerFactory;
+
+import java.io.*;
 
 
 public class HttpClientUtil {
@@ -73,8 +65,10 @@ public class HttpClientUtil {
                 response = GetResponseString(_InputStream, "UTF-8");
             }
         } catch (HttpException e) {
+            e.printStackTrace();
             logger.error("获取响应错误，原因：" + e.getMessage());
         } catch (IOException e) {
+            e.printStackTrace();
             logger.error("获取响应错误，原因1：" + e.getMessage());
         } finally {
             httpmethod.releaseConnection();

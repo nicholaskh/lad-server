@@ -3,6 +3,7 @@ package com.lad.service;
 import com.lad.bo.RedstarBo;
 import com.lad.bo.UserBo;
 import com.mongodb.WriteResult;
+import org.springframework.scheduling.annotation.Async;
 
 import java.util.List;
 
@@ -59,5 +60,9 @@ public interface IUserService extends IBaseService {
 	 * @return
 	 */
 	WriteResult updateTopCircles(String userid, List<String> topCircles);
+
+	@Async
+	void addUserLevel(String userid , long num, int type);
+
 
 }

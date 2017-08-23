@@ -254,6 +254,8 @@ public class InforController extends BaseContorller {
         commentBo.setType(Constant.INFOR_TYPE);
         commentService.insert(commentBo);
 
+        userService.addUserLevel(userBo.getId(),1, Constant.LEVEL_COMMENT);
+
         inforService.updateComment(inforid, 1);
 
         CommentVo commentVo = comentBo2Vo(commentBo);

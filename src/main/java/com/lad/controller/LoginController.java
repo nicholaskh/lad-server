@@ -95,7 +95,6 @@ public class LoginController extends BaseContorller {
 	public String login(@RequestParam("phone")String phone,
 						@RequestParam("password")String password,
 						HttpServletRequest request, HttpServletResponse response) {
-
 		HttpSession session = request.getSession();
 		if (!StringUtils.hasLength(phone)) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PHONE_ERROR.getIndex(),
@@ -112,6 +111,7 @@ public class LoginController extends BaseContorller {
 			map.put("ret", 0);
 			session.setAttribute("isLogin", true);
 			session.setAttribute("userBo", userBo);
+			session.setAttribute("loginTime", System.currentTimeMillis());
 			ImAssistant assistent = ImAssistant.init("180.76.138.200", 2222);
 			if(assistent == null){
 				return CommonUtil.toErrorResult(ERRORCODE.PUSHED_CONNECT_ERROR.getIndex(),
@@ -214,6 +214,10 @@ public class LoginController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		UserBo userBo = (UserBo) session.getAttribute("userBo");
+		long loginTime = (long)session.getAttribute("loginTime");
+		long time = System.currentTimeMillis() - loginTime;
+		userService.addUserLevel(userBo.getId(), time, Constant.LEVEL_HOUR);
 		session.invalidate();
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);

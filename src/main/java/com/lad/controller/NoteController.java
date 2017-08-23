@@ -117,6 +117,7 @@ public class NoteController extends BaseContorller {
 		} finally {
 			lock.unlock();
 		}
+		userService.addUserLevel(userBo.getId(), 1, Constant.LEVEL_NOTE);
 		NoteVo noteVo = new NoteVo();
 		boToVo(noteBo, noteVo, userBo);
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -422,6 +423,7 @@ public class NoteController extends BaseContorller {
 					ERRORCODE.NOTE_IS_NULL.getReason());
 		}
 		updateHistory(userBo.getId(), noteBo.getCircleId(), locationService, circleService);
+		userService.addUserLevel(userBo.getId(),1, Constant.LEVEL_COMMENT);
 		Date currentDate = new Date();
 		CommentBo commentBo = new CommentBo();
 		commentBo.setNoteid(noteBo.getId());
