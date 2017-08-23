@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.geo.Point;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.*;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
@@ -46,21 +45,16 @@ public class CircleHistoryDaoImpl implements ICircleHistoryDao {
     }
 
     @Override
-    public List<CircleHistoryBo> findNear(double[] position, double maxDistance) {
+    public List<CircleHistoryBo> findNear(String cirlcid, String userid, double[] position, double maxDistance) {
         Point point = new Point(position[0],position[1]);
-        Criteria criteria1 = Criteria.where("position").nearSphere(point).maxDistance(maxDistance);
 
-        MatchOperation match = Aggregation.match(criteria1);
-
-        ProjectionOperation project = Aggregation.project(new String[]{"updateTime","userid", "circleid"});
-        GroupOperation group = Aggregation.group("userid").count().as("nums");
-
-        Aggregation aggregation = Aggregation.newAggregation(match, project, group,
-                Aggregation.sort(Sort.Direction.DESC, "updateTime"),
-                Aggregation.limit(20));
-
-        AggregationResults<CircleHistoryBo> results = mongoTemplate.aggregate(aggregation, "circleHistory", CircleHistoryBo.class);
-        return results.getMappedResults();
+        Query query = new Query();
+        Criteria criteria = Criteria.where("position").nearSphere(point).maxDistance(maxDistance/6378137.0);
+        query.addCriteria(criteria);
+        query.addCriteria(new Criteria("circleid").is(cirlcid).and("userid").ne(userid));
+        query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "updateTime")));
+        query.limit(20);
+        return mongoTemplate.find(query, CircleHistoryBo.class);
     }
 
     @Override

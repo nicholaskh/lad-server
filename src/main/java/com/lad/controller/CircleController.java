@@ -9,10 +9,7 @@ import com.lad.util.CommonUtil;
 import com.lad.util.Constant;
 import com.lad.util.ERRORCODE;
 import com.lad.util.MyException;
-import com.lad.vo.CircleVo;
-import com.lad.vo.UserApplyVo;
-import com.lad.vo.UserBaseVo;
-import com.lad.vo.UserStarVo;
+import com.lad.vo.*;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -899,6 +896,52 @@ public class CircleController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
+	/**
+	 * 附近活跃人员
+	 */
+	@RequestMapping("/near-people")
+	@ResponseBody
+	public String nearPeopel(String circleid, double px, double py, HttpServletRequest request, HttpServletResponse
+			response) {
+		UserBo userBo;
+		try {
+			userBo = checkSession(request, userService);
+		} catch (MyException e) {
+			return e.getMessage();
+		}
+		double[] position = new double[]{px, py};
+		List<CircleHistoryBo> historyBos = circleService.findNearPeople(circleid,
+				userBo.getId(),position, 20000);
+		List<UserBaseVo> userVos = new ArrayList<>();
+		for (CircleHistoryBo historyBo : historyBos) {
+			UserBo user = userService.getUser(historyBo.getUserid());
+			UserBaseVo baseVo = new UserBaseVo();
+			BeanUtils.copyProperties(user, baseVo);
+			userVos.add(baseVo);
+		}
+		Map<String, Object> map = new HashMap<>();
+		map.put("ret", 0);
+		map.put("userVoList", userVos);
+		return JSONObject.fromObject(map).toString();
+	}
+
+	/**
+	 * 附近圈子
+	 */
+	@RequestMapping("/near-circle")
+	@ResponseBody
+	public String nearPeopel(double px, double py, HttpServletRequest request, HttpServletResponse
+			response) {
+		UserBo userBo;
+		try {
+			userBo = checkSession(request, userService);
+		} catch (MyException e) {
+			return e.getMessage();
+		}
+		double[] position = new double[]{px, py};
+		List<CircleBo> circleBos = circleService.findNearCircle(position, 10000, 5);
+		return bo2vos(circleBos);
+	}
 	
 
 

@@ -6,6 +6,7 @@ import com.mongodb.WriteResult;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.geo.Point;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -216,6 +217,16 @@ public class CircleDaoImpl implements ICircleDao {
 				query.addCriteria(new Criteria("_id").lt(startId));
 			}
 		}
+		query.limit(limit);
+		return mongoTemplate.find(query, CircleBo.class);
+	}
+
+	public List<CircleBo> findNearCircle(double[] position, int maxDistance, int limit){
+		Point point = new Point(position[0],position[1]);
+		Query query = new Query();
+		Criteria criteria1 = Criteria.where("position").nearSphere(point)
+				.maxDistance(maxDistance/6378137.0);
+		query.addCriteria(criteria1);
 		query.limit(limit);
 		return mongoTemplate.find(query, CircleBo.class);
 	}

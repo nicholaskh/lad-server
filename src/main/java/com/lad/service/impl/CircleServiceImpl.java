@@ -118,13 +118,19 @@ public class CircleServiceImpl implements ICircleService {
 	}
 
 	@Override
+	public List<CircleBo> findNearCircle(double[] position, int maxDistance, int limit) {
+		return circleDao.findNearCircle(position, maxDistance, limit);
+	}
+
+	@Override
 	public List<CircleBo> findByType(String type, int level, String startId, boolean gt, int limit) {
 		return circleDao.findByType(type, level, startId, gt, limit);
 	}
 
 	@Override
-	public List<CircleHistoryBo> findNearPeople(double[] position, double maxDistance) {
-		return circleHistoryDao.findNear(position, maxDistance);
+	public List<CircleHistoryBo> findNearPeople(String circleid, String userid, double[] position, double
+			maxDistance) {
+		return circleHistoryDao.findNear(circleid, userid, position, maxDistance);
 	}
 
 	@Override

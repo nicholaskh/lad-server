@@ -79,6 +79,12 @@ public interface ICircleService extends IBaseService {
 	 */
 	List<CircleBo> findBykeyword(String keyword);
 
+
+	/**
+	 * 查询附近的圈子
+	 */
+	List<CircleBo> findNearCircle(double[] position, int maxDistance, int limit);
+
 	/**
 	 * 根据分类查询
 	 * @return
@@ -86,7 +92,7 @@ public interface ICircleService extends IBaseService {
 	List<CircleBo> findByType(String type, int level, String startId,  boolean gt,int limit);
 
 	
-	List<CircleHistoryBo> findNearPeople(double[] position, double maxDistance);
+	List<CircleHistoryBo> findNearPeople(String cirlcid, String userid, double[] position, double maxDistance);
 
 
 	CircleHistoryBo insertHistory(CircleHistoryBo circleHistoryBo);
@@ -111,5 +117,5 @@ public interface ICircleService extends IBaseService {
 	CircleTypeBo findByName(String name, int level);
 
 	List<CircleTypeBo> findAllCircleTypes();
-	
+
 }

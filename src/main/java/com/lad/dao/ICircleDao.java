@@ -87,4 +87,7 @@ public interface ICircleDao extends IBaseDao {
 	 */
 	List<CircleBo> findByType(String type, int level, String startId,  boolean gt,int limit);
 
+	//查询附近的圈子
+	List<CircleBo> findNearCircle(double[] position, int maxDistance, int limit);
+
 }

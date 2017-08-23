@@ -19,7 +19,7 @@ public interface ICircleHistoryDao {
 
     WriteResult updateHistory(String id, double[] position);
 
-    List<CircleHistoryBo> findNear(double[] position, double maxDistance);
+    List<CircleHistoryBo> findNear(String cirlcid, String userid, double[] position, double maxDistance);
 
     List<CircleHistoryBo> findByCricleId(String circleid, Date time, int limit);
 
