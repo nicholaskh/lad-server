@@ -1,7 +1,7 @@
 package com.lad.dao.impl;
 
-import com.lad.dao.IInforDao;
-import com.lad.scrapybo.InforBo;
+import com.lad.dao.ISecurityDao;
+import com.lad.scrapybo.SecurityBo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Sort;
@@ -21,55 +21,54 @@ import java.util.List;
  * 功能描述：
  * Copyright: Copyright (c) 2017
  * Version: 1.0
- * Time:2017/8/1
+ * Time:2017/8/26
  */
-@Repository("inforDao")
-public class InforDaoImpl implements IInforDao {
-    
+@Repository("securityDao")
+public class SecurityDaoImpl implements ISecurityDao {
+
     @Autowired
     @Qualifier("mongoTemplateTwo")
     private MongoTemplate mongoTemplateTwo;
 
     @Override
-    public List<InforBo> selectAllInfos() {
-        ProjectionOperation project = Aggregation.project("_id","className", "classNum");
-        GroupOperation groupOperation = Aggregation.group("className", "classNum").count().as("nums");
+    public List<SecurityBo> findAllTypes() {
+        ProjectionOperation project = Aggregation.project("_id","newsType");
+        GroupOperation groupOperation = Aggregation.group("newsType").count().as("nums");
         Aggregation aggregation = Aggregation.newAggregation(project, groupOperation,
                 Aggregation.sort(Sort.Direction.DESC, "_id"));
-        AggregationResults<InforBo> results = mongoTemplateTwo.aggregate(aggregation, "health", InforBo.class);
+        AggregationResults<SecurityBo> results = mongoTemplateTwo.aggregate(aggregation, "security", SecurityBo
+                .class);
         return results.getMappedResults();
     }
 
-
-
-
-    public List<InforBo> selectByLike(){
-
-
-        return null;
-    }
-
-    public List<InforBo> findGroups(String module){
-        return null;
-    }
-
-    public List<InforBo> findByList(String className, String createTime, int limit){
+    @Override
+    public List<SecurityBo> findByCity(String cityName, String createTime, int limit) {
         Query query = new Query();
-        query.addCriteria(new Criteria("className").is(className));
+        query.addCriteria(new Criteria("city").is(cityName));
         query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "time")));
         if (!StringUtils.isEmpty(createTime)) {
             query.addCriteria(new Criteria("time").lt(createTime));
         }
         query.limit(limit);
-        return mongoTemplateTwo.find(query, InforBo.class);
+        return mongoTemplateTwo.find(query, SecurityBo.class);
     }
 
-    public InforBo findById(String id){
+    @Override
+    public List<SecurityBo> findByType(String typeName, String createTime, int limit) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("newsType").is(typeName));
+        query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "time")));
+        if (!StringUtils.isEmpty(createTime)) {
+            query.addCriteria(new Criteria("time").lt(createTime));
+        }
+        query.limit(limit);
+        return mongoTemplateTwo.find(query, SecurityBo.class);
+    }
+
+    @Override
+    public SecurityBo findById(String id) {
         Query query = new Query();
         query.addCriteria(new Criteria("_id").is(id));
-        return mongoTemplateTwo.findOne(query, InforBo.class);
+        return mongoTemplateTwo.findOne(query, SecurityBo.class);
     }
-
-
-    
 }

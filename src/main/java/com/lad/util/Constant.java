@@ -123,5 +123,13 @@ public class Constant {
 	public static final int LEVEL_SHARE= 5;
 
 
+	/**
+	 * 资讯 健康
+	 */
+	public static final int HEALTH = 0;
+	/**
+	 * 资讯 安防
+	 */
+	public static final int SECURITY = 1;
 
 }

@@ -3,6 +3,7 @@ package com.lad.service;
 import com.lad.bo.InforReadNumBo;
 import com.lad.bo.InforSubscriptionBo;
 import com.lad.scrapybo.InforBo;
+import com.lad.scrapybo.SecurityBo;
 import com.mongodb.WriteResult;
 
 import java.util.LinkedHashSet;
@@ -90,6 +91,14 @@ public interface IInforService {
     WriteResult updateSub(String userid, LinkedList<String> subscriptions);
 
     /**
+     *
+     * @param userid
+     * @param securitys
+     * @return
+     */
+    WriteResult updateSecuritys(String userid, LinkedList<String> securitys);
+
+    /**
      * 更新咨询收藏
      * @param userid
      * @param collects
@@ -115,4 +124,36 @@ public interface IInforService {
     void updateComment(String inforid, int number);
 
     void updateThumpsub(String inforid, int number);
+    /**
+     * 获取安全类型
+     * @return
+     */
+    List<SecurityBo> findSecurityTypes();
+    /**
+     * 根据类型查找
+     * @param typeName
+     * @param createTime
+     * @param limit
+     * @return
+     */
+    List<SecurityBo> findSecurityByType(String typeName, String createTime, int limit);
+    /**
+     * 根据城市查询
+     * @param typeName
+     * @param createTime
+     * @param limit
+     * @return
+     */
+    List<SecurityBo> findSecurityByCity(String typeName, String createTime, int limit);
+
+    /**
+     * 根据ID查询
+     * @param id
+     * @return
+     */
+    SecurityBo findSecurityById(String id);
+
+
+
+
 }

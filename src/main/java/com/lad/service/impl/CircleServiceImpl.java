@@ -107,6 +107,11 @@ public class CircleServiceImpl implements ICircleService {
 	}
 
 	@Override
+	public long findCreateCricles(String createuid) {
+		return 0;
+	}
+
+	@Override
 	public WriteResult updateCreateUser(CircleBo circleBo) {
 		return circleDao.updateCreateUser(circleBo);
 	}

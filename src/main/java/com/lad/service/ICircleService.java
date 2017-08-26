@@ -116,6 +116,12 @@ public interface ICircleService extends IBaseService {
 
 	CircleTypeBo findByName(String name, int level);
 
+	/**
+	 * 查找所有圈子类型
+	 * @return
+	 */
 	List<CircleTypeBo> findAllCircleTypes();
+
+	long findCreateCricles(String createuid);
 
 }

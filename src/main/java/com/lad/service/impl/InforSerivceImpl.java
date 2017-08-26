@@ -5,7 +5,9 @@ import com.lad.bo.InforSubscriptionBo;
 import com.lad.dao.IInforDao;
 import com.lad.dao.IInforReadNumDao;
 import com.lad.dao.IInforSubDao;
+import com.lad.dao.ISecurityDao;
 import com.lad.scrapybo.InforBo;
+import com.lad.scrapybo.SecurityBo;
 import com.lad.service.IInforService;
 import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +34,9 @@ public class InforSerivceImpl implements IInforService {
 
     @Autowired
     private IInforDao inforDao;
+
+    @Autowired
+    private ISecurityDao securityDao;
 
     @Override
     public List<InforBo> findAllGroups() {
@@ -102,6 +107,11 @@ public class InforSerivceImpl implements IInforService {
     }
 
     @Override
+    public WriteResult updateSecuritys(String userid, LinkedList<String> securitys) {
+        return inforSubDao.updateSecuritys(userid, securitys);
+    }
+
+    @Override
     public WriteResult updateCollect(String userid, LinkedHashSet<String> collects) {
         return inforSubDao.updateCollect(userid, collects);
     }
@@ -129,5 +139,25 @@ public class InforSerivceImpl implements IInforService {
     @Override
     public void updateThumpsub(String inforid, int number) {
         inforReadNumDao.updateThumpsub(inforid, number);
+    }
+
+    @Override
+    public List<SecurityBo> findSecurityTypes() {
+        return securityDao.findAllTypes();
+    }
+
+    @Override
+    public List<SecurityBo> findSecurityByType(String typeName, String createTime, int limit) {
+        return securityDao.findByType(typeName, createTime, limit);
+    }
+
+    @Override
+    public List<SecurityBo> findSecurityByCity(String cityName, String createTime, int limit) {
+        return securityDao.findByCity(cityName, createTime, limit);
+    }
+
+    @Override
+    public SecurityBo findSecurityById(String id) {
+        return securityDao.findById(id);
     }
 }

@@ -26,6 +26,14 @@ public interface IInforSubDao {
     WriteResult updateSub(String userid, LinkedList<String> subscriptions);
 
     /**
+     * 更新安全分类订阅
+     * @param userid
+     * @param securitys
+     * @return
+     */
+    WriteResult updateSecuritys(String userid, LinkedList<String> securitys);
+
+    /**
      * 更新咨询收藏
      * @param userid
      * @param collects

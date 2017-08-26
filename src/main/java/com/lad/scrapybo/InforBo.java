@@ -12,7 +12,7 @@ import java.util.LinkedList;
  * Version: 1.0
  * Time:2017/7/31
  */
-@Document(collection = "test")
+@Document(collection = "health")
 public class InforBo implements Serializable {
 
     @Id

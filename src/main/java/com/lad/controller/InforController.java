@@ -3,6 +3,7 @@ package com.lad.controller;
 import com.lad.bo.*;
 import com.lad.redis.RedisServer;
 import com.lad.scrapybo.InforBo;
+import com.lad.scrapybo.SecurityBo;
 import com.lad.service.ICommentService;
 import com.lad.service.IInforService;
 import com.lad.service.IThumbsupService;
@@ -13,6 +14,7 @@ import com.lad.util.ERRORCODE;
 import com.lad.util.MyException;
 import com.lad.vo.CommentVo;
 import com.lad.vo.InforVo;
+import com.lad.vo.SecurityVo;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.redisson.api.RMapCache;
@@ -53,6 +55,35 @@ public class InforController extends BaseContorller {
     @Autowired
     private IInforService inforService;
 
+    @RequestMapping("/init-cache")
+    @ResponseBody
+    public String initCache(HttpServletRequest request, HttpServletResponse response) {
+        Map<String, Object> map = new HashMap<>();
+
+        RMapCache<String, Object> cache = redisServer.getCacheMap(Constant.TEST_CACHE);
+
+        List<InforBo> inforBos = inforService.findAllGroups();
+        int size =  inforBos.size();
+        HashSet<String> groupTypes = new LinkedHashSet<>();
+        for (int i = 0; i< size; i++) {
+            //聚合查询后，分类名称值被放置到id上了
+            groupTypes.add(inforBos.get(i).getClassName());
+        }
+
+        List<SecurityBo> securityBos = inforService.findSecurityTypes();
+
+        HashSet<String> securityTypes = new LinkedHashSet<>();
+        for (SecurityBo securityBo : securityBos) {
+            securityTypes.add(securityBo.getId());
+        }
+        cache.clear();
+        cache.put("securityTypes", securityTypes, 0, TimeUnit.MINUTES);
+        cache.put("healthTypes", groupTypes, 0, TimeUnit.MINUTES);
+        map.put("healthTypes", groupTypes);
+        map.put("securityTypes", securityTypes);
+        return JSONObject.fromObject(map).toString();
+    }
+
 
     @RequestMapping("/group-types")
     @ResponseBody
@@ -66,7 +97,7 @@ public class InforController extends BaseContorller {
             InforSubscriptionBo mySub = inforService.findMySubs(userBo.getId());
             if (mySub != null && !mySub.getSubscriptions().isEmpty()) {
                 map.put("healthTypes", mySub.getSubscriptions());
-                map.put("securityTypes", mySub.getSubscriptions());
+                map.put("securityTypes", mySub.getSecuritys());
                 isGetType  = true;
             }
         }
@@ -74,8 +105,9 @@ public class InforController extends BaseContorller {
             RMapCache<String, Object> cache = redisServer.getCacheMap(Constant.TEST_CACHE);
             if (cache.containsKey("healthTypes")) {
                 Object groupTypes = cache.get("healthTypes");
+                Object securityTypes = cache.get("securityTypes");
                 map.put("healthTypes", groupTypes);
-                map.put("securityTypes", "");
+                map.put("securityTypes", securityTypes);
             } else {
                 List<InforBo> inforBos = inforService.findAllGroups();
                 int size =  inforBos.size();
@@ -84,9 +116,15 @@ public class InforController extends BaseContorller {
                     //聚合查询后，分类名称值被放置到id上了
                     groupTypes.add(inforBos.get(i).getClassName());
                 }
+                List<SecurityBo> securityBos = inforService.findSecurityTypes();
+                HashSet<String> securityTypes = new LinkedHashSet<>();
+                for (SecurityBo securityBo : securityBos) {
+                    securityTypes.add(securityBo.getId());
+                }
+                cache.put("securityTypes", securityTypes, 0, TimeUnit.MINUTES);
                 cache.put("healthTypes", groupTypes, 0, TimeUnit.MINUTES);
                 map.put("healthTypes", groupTypes);
-                map.put("securityTypes", "");
+                map.put("securityTypes", securityTypes);
             }
         }
         return JSONObject.fromObject(map).toString();
@@ -109,7 +147,8 @@ public class InforController extends BaseContorller {
             inforVo.setTitle(inforBo.getTitle());
             inforVo.setTime(inforBo.getTime());
             inforVo.setSourceUrl(inforBo.getSourceUrl());
-            inforVo.setText(inforBo.getText());
+            //list不需要获取正文
+//            inforVo.setText(inforBo.getText());
             inforVos.add(inforVo);
         }
         Map<String, Object> map = new HashMap<String, Object>();
@@ -150,7 +189,7 @@ public class InforController extends BaseContorller {
         return JSONObject.fromObject(map).toString();
     }
 
-
+    
     @RequestMapping("/update-groups")
     @ResponseBody
     public String updateGroups(String[] groupNames, HttpServletRequest request, HttpServletResponse response){
@@ -198,8 +237,6 @@ public class InforController extends BaseContorller {
         } else {
             inforService.updateReadNum(inforid);
             readNumBo.setVisitNum(readNumBo.getVisitNum() + 1);
-            readNumBo.setCommentNum(readNumBo.getCommentNum());
-            readNumBo.setThumpsubNum(readNumBo.getThumpsubNum());
         }
         InforVo inforVo = new InforVo();
 
@@ -222,6 +259,131 @@ public class InforController extends BaseContorller {
         return JSONObject.fromObject(map).toString();
     }
 
+    @RequestMapping("/security-infor")
+    @ResponseBody
+    public String securitys(String inforid, HttpServletRequest request, HttpServletResponse response){
+
+        SecurityBo securityBo = inforService.findSecurityById(inforid);
+        if (securityBo == null) {
+            return CommonUtil.toErrorResult(
+                    ERRORCODE.INFOR_IS_NULL.getIndex(),
+                    ERRORCODE.INFOR_IS_NULL.getReason());
+        }
+
+        InforReadNumBo readNumBo = inforService.findReadByid(inforid);
+        if (readNumBo == null) {
+            readNumBo = new InforReadNumBo();
+            readNumBo.setClassName(securityBo.getNewsType());
+            readNumBo.setInforid(securityBo.getId());
+            readNumBo.setVisitNum(1);
+            inforService.addReadNum(readNumBo);
+        } else {
+            inforService.updateReadNum(inforid);
+        }
+        SecurityVo securityVo = new SecurityVo();
+
+        HttpSession session = request.getSession();
+
+        if (!session.isNew() && session.getAttribute("isLogin") != null) {
+            UserBo userBo = (UserBo) session.getAttribute("userBo");
+            ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(inforid, userBo.getId());
+            securityVo.setSelfSub(thumbsupBo != null);
+        }
+        securityVo.setInforid(securityBo.getId());
+        BeanUtils.copyProperties(securityBo, securityVo);
+        long thuSupNum = thumbsupService.selectByOwnerIdCount(inforid);
+        securityVo.setThumpsubNum(thuSupNum);
+        securityVo.setCommentNum(commentService.selectCommentByTypeCount(Constant.INFOR_TYPE, inforid));
+        securityVo.setReadNum(readNumBo.getVisitNum());
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("ret", 0);
+        map.put("securityVo", securityVo);
+        return JSONObject.fromObject(map).toString();
+    }
+
+    @RequestMapping("/security-list")
+    @ResponseBody
+    public String securityList(@RequestParam String newsType,
+                              @RequestParam(required = false)String inforTime,
+                              @RequestParam int limit,
+                              HttpServletRequest request, HttpServletResponse response){
+        List<SecurityBo> securityBos = inforService.findSecurityByType(newsType, inforTime, limit);
+
+        LinkedList<SecurityVo> vos = new LinkedList<>();
+        for (SecurityBo securityBo : securityBos) {
+            SecurityVo securityVo = new SecurityVo();
+            securityVo.setCity(securityBo.getId());
+            securityVo.setInforid(securityBo.getId());
+            securityVo.setNewsType(newsType);
+            securityVo.setTime(securityBo.getTime());
+            securityVo.setTitle(securityBo.getTitle());
+            //list不需要获取正文
+//            inforVo.setText(inforBo.getText());
+            vos.add(securityVo);
+        }
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("ret", 0);
+        map.put("securityVoList", vos);
+        return JSONObject.fromObject(map).toString();
+    }
+
+    @RequestMapping("/recommend-securitys")
+    @ResponseBody
+    public String recommendSecuritys(HttpServletRequest request, HttpServletResponse response){
+        UserBo userBo;
+        try {
+            userBo = checkSession(request, userService);
+        } catch (MyException e) {
+            return e.getMessage();
+        }
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("ret", 0);
+        InforSubscriptionBo mySub = inforService.findMySubs(userBo.getId());
+        LinkedList<String> mySubs = mySub.getSecuritys();
+        map.put("mySubSecuritys", mySub.getSecuritys());
+
+        RMapCache<String, Object> cache = redisServer.getCacheMap(Constant.TEST_CACHE);
+        List<String> groupList = new ArrayList<>();
+        if (cache.containsKey("securityTypes")) {
+            String groupTypes = (String)cache.get("securityTypes");
+            JSONArray array = JSONArray.fromObject(groupTypes);
+            int size = array.size();
+            for (int i = 0; i < size; i++) {
+                String groupName = (String)array.get(i);
+                if (!mySubs.contains(groupName)) {
+                    groupList.add(groupName);
+                }
+            }
+        }
+        map.put("recoSecuritys", groupList);
+        return JSONObject.fromObject(map).toString();
+    }
+
+    @RequestMapping("/update-securitys")
+    @ResponseBody
+    public String updateSecuritys(String[] securityNames, HttpServletRequest request, HttpServletResponse response){
+        UserBo userBo;
+        try {
+            userBo = checkSession(request, userService);
+        } catch (MyException e) {
+            return e.getMessage();
+        }
+
+        InforSubscriptionBo mySub = inforService.findMySubs(userBo.getId());
+
+        LinkedList<String> securitys = (LinkedList<String>) Arrays.asList(securityNames);
+        if (null == mySub) {
+            mySub = new InforSubscriptionBo();
+            mySub.setUserid(userBo.getId());
+            mySub.setCreateuid(userBo.getId());
+            mySub.setSecuritys(securitys);
+            inforService.insertSub(mySub);
+        } else {
+            inforService.updateSecuritys(userBo.getId(), securitys);
+        }
+        return Constant.COM_RESP;
+    }
+
 
     @RequestMapping("/add-comment")
     @ResponseBody
@@ -234,13 +396,6 @@ public class InforController extends BaseContorller {
             userBo = checkSession(request, userService);
         } catch (MyException e) {
             return e.getMessage();
-        }
-
-        InforBo inforBo = inforService.findById(inforid);
-        if (inforBo == null) {
-            return CommonUtil.toErrorResult(
-                    ERRORCODE.INFOR_IS_NULL.getIndex(),
-                    ERRORCODE.INFOR_IS_NULL.getReason());
         }
 
         Date currentDate = new Date();
@@ -269,13 +424,6 @@ public class InforController extends BaseContorller {
     @ResponseBody
     public String getComment(@RequestParam String inforid, String start_id, boolean gt, int limit,
                              HttpServletRequest request, HttpServletResponse response){
-        UserBo userBo;
-        try {
-            userBo = checkSession(request, userService);
-        } catch (MyException e) {
-            return e.getMessage();
-        }
-
         List<CommentBo> commentBos = commentService.selectCommentByType(Constant.INFOR_TYPE, inforid,
                 start_id, gt, limit);
         List<CommentVo> commentVos = new ArrayList<>();
@@ -287,7 +435,7 @@ public class InforController extends BaseContorller {
         map.put("commentVoList", commentVos);
         return JSONObject.fromObject(map).toString();
     }
-
+   
 
     @RequestMapping("/thumbsup")
     @ResponseBody
@@ -304,12 +452,6 @@ public class InforController extends BaseContorller {
             thumbsupBo = new ThumbsupBo();
             if (type == 0) {
                 thumbsupBo.setType(Constant.INFOR_TYPE);
-                InforBo inforBo = inforService.findById(targetid);
-                if (inforBo == null ) {
-                    return CommonUtil.toErrorResult(
-                            ERRORCODE.INFOR_IS_NULL.getIndex(),
-                            ERRORCODE.INFOR_IS_NULL.getReason());
-                }
                 inforService.updateThumpsub(targetid, 1);
             } else if (type == 1) {
                 thumbsupBo.setType(Constant.INFOR_COM_TYPE);
@@ -334,8 +476,8 @@ public class InforController extends BaseContorller {
         } else {
             if (thumbsupBo.getDeleted() == Constant.DELETED) {
                 thumbsupService.udateDeleteById(thumbsupBo.getId());
+                inforService.updateThumpsub(thumbsupBo.getOwner_id(), 1);
             }
-            inforService.updateThumpsub(thumbsupBo.getOwner_id(), 1);
         }
         return Constant.COM_RESP;
     }

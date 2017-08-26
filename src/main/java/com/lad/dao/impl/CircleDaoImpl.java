@@ -122,6 +122,14 @@ public class CircleDaoImpl implements ICircleDao {
 		return mongoTemplate.find(query, CircleBo.class);
 	}
 
+	@Override
+	public long findCreateCricles(String createuid) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("createuid").is(createuid));
+		query.addCriteria(new Criteria("deleted").is(0));
+		return mongoTemplate.count(query, CircleBo.class);
+	}
+
 	public List<CircleBo> findBykeyword(String keyword) {
 		Query query = new Query();
 		Pattern pattern = Pattern.compile("^.*"+keyword+".*$", Pattern.CASE_INSENSITIVE);

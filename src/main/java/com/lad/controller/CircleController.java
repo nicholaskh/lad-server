@@ -63,6 +63,12 @@ public class CircleController extends BaseContorller {
 			return e.getMessage();
 		}
 		//每人最多创建三个群
+		long circleNum = circleService.findCreateCricles(userBo.getId());
+		if (circleNum > userBo.getLevel() * 5) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CIRCLE_CREATE_MAX.getIndex(),
+					ERRORCODE.CIRCLE_CREATE_MAX.getReason());
+		}
 		CircleBo circleBo = new CircleBo();
 		circleBo.setCreateuid(userBo.getId());
 		circleBo.setCategory(category);

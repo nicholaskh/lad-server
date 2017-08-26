@@ -90,4 +90,11 @@ public interface ICircleDao extends IBaseDao {
 	//查询附近的圈子
 	List<CircleBo> findNearCircle(double[] position, int maxDistance, int limit);
 
+	/**
+	 * 查找创建圈子数量
+	 * @param createuid
+	 * @return
+	 */
+	long findCreateCricles(String createuid);
+
 }

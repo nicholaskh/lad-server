@@ -16,10 +16,12 @@ public class InforSubscriptionBo extends BaseBo {
     private String userid;
     //咨询订阅, 订阅是小分类
     private LinkedList<String> subscriptions = new LinkedList<>();
-
+    //安全订阅
     private LinkedList<String> securitys = new LinkedList<>();
     //咨询收藏，收藏是单条咨询
     private LinkedHashSet<String> collects = new LinkedHashSet<>();
+
+    private int type;
 
     public String getUserid() {
         return userid;
@@ -51,5 +53,13 @@ public class InforSubscriptionBo extends BaseBo {
 
     public void setSecuritys(LinkedList<String> securitys) {
         this.securitys = securitys;
+    }
+
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
     }
 }

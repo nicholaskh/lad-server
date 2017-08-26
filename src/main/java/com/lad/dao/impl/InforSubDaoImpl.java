@@ -41,6 +41,15 @@ public class InforSubDaoImpl implements IInforSubDao {
         return mongoTemplate.updateFirst(query, update, InforSubscriptionBo.class);
     }
 
+    public WriteResult updateSecuritys(String userid, LinkedList<String> securitys){
+        Query query = new Query();
+        query.addCriteria(new Criteria("userid").is(userid));
+        query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+        Update update = new Update();
+        update.set("securitys", securitys);
+        return mongoTemplate.updateFirst(query, update, InforSubscriptionBo.class);
+    }
+
     public WriteResult updateCollect(String userid, LinkedHashSet<String> collects){
         Query query = new Query();
         query.addCriteria(new Criteria("userid").is(userid));
