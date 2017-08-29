@@ -32,8 +32,6 @@ public interface ICircleDao extends IBaseDao {
 
 	public WriteResult updateNotes(String circleBoId, long noteSize);
 
-	WriteResult uddateName(String userid, String name);
-
 	/**
 	 * 根据创建者查询
 	 * @param createid

@@ -108,4 +108,19 @@ public class NoteServiceImpl implements INoteService {
 	public int selectPeopleNum(String circleid) {
 		return noteDao.selectPeopleNum(circleid);
 	}
+
+	@Override
+	public List<NoteBo> selectCircleNotes(String circleId, String startId, int limit) {
+		return noteDao.selectCircleNotes(circleId, startId, limit);
+	}
+
+	@Override
+	public WriteResult updateToporEssence(String noteid, int status, int type) {
+		return noteDao.updateToporEssence(noteid, status, type);
+	}
+
+	@Override
+	public List<NoteBo> findByTopEssence(String circleid, int type, String startId, int limit) {
+		return noteDao.findByTopEssence(circleid, type, startId, limit);
+	}
 }

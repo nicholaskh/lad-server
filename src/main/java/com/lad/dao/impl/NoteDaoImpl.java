@@ -163,11 +163,6 @@ public class NoteDaoImpl implements INoteDao {
 		return findNotesByPage(query, startId, gt, limit);
 	}
 
-	public List<NoteBo> selectCircleNotes(String circleId, String startId, boolean gt, int limit){
-		Query query = new Query();
-		query.addCriteria(new Criteria("circleId").is(circleId));
-		return findNotesByPage(query, startId, gt, limit);
-	}
 
 	public int selectPeopleNum(String circleid){
 		Criteria criteria = new Criteria("circleId").is(circleid);
@@ -217,4 +212,48 @@ public class NoteDaoImpl implements INoteDao {
 		return mongoTemplate.updateFirst(query, update,NoteBo.class);
 	}
 
+	@Override
+	public List<NoteBo> selectCircleNotes(String circleId, String startId, int limit) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("circleId").is(circleId));
+		query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
+		if (!StringUtils.isEmpty(startId)) {
+			query.addCriteria(new Criteria("_id").gt(startId));
+		}
+		query.limit(limit);
+		return mongoTemplate.find(query, NoteBo.class);
+	}
+
+	@Override
+	public WriteResult updateToporEssence(String noteid, int status, int type) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("_id").is(noteid));
+		query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+		Update update = new Update();
+		if (type == Constant.NOTE_TOP) {
+			update.set("top",status);
+		} else if (type == Constant.NOTE_JIAJING) {
+			update.set("essence",status);
+		}
+		return mongoTemplate.updateFirst(query, update, NoteBo.class);
+	}
+
+	@Override
+	public List<NoteBo> findByTopEssence(String circleid, int type, String startId, int limit) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("circleId").is(circleid));
+		query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
+		if (type == Constant.NOTE_TOP) {
+			query.addCriteria(new Criteria("top").is(1));
+		} else if (type == Constant.NOTE_JIAJING) {
+			query.addCriteria(new Criteria("essence").is(1));
+		}
+		if (!StringUtils.isEmpty(startId)) {
+			query.addCriteria(new Criteria("_id").gt(startId));
+		}
+		query.limit(limit);
+		return mongoTemplate.find(query, NoteBo.class);
+	}
 }

@@ -20,8 +20,6 @@ import java.util.regex.Pattern;
 @Repository("circleDao")
 public class CircleDaoImpl implements ICircleDao {
 
-	private String collectionName = "circle";
-
 	@Autowired
 	private MongoTemplate mongoTemplate;
 
@@ -172,16 +170,6 @@ public class CircleDaoImpl implements ICircleDao {
 		return mongoTemplate.find(query, CircleBo.class);
 	}
 
-	public WriteResult uddateName(String userid, String name){
-		Query query = new Query();
-		query.addCriteria(new Criteria("deleted").is(0));
-		query.addCriteria(new Criteria("_id").is(userid));
-		Update update = new Update();
-		//创建者默认为群主，后续修改需要更改群主字段
-		update.set("name", name);
-		return mongoTemplate.updateFirst(query, update, CircleBo.class);
-	}
-
 	public List<CircleBo> findMyCircles(String userid, String startId, boolean gt, int limit) {
 		Query query = new Query();
 		query.limit(limit);
@@ -253,6 +241,7 @@ public class CircleDaoImpl implements ICircleDao {
 	public WriteResult updateCircleName(String circleid, String name) {
 		Query query = new Query();
 		query.addCriteria(new Criteria("_id").is(circleid));
+		query.addCriteria(new Criteria("deleted").is(0));
 		Update update = new Update();
 		update.set("name", name);
 		return mongoTemplate.updateFirst(query, update, CircleBo.class);

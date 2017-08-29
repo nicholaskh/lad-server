@@ -136,5 +136,30 @@ public interface INoteService extends IBaseService {
 
 	int selectPeopleNum(String circleid);
 
+	/**
+	 * 获取圈子内所有帖子
+	 * @param circleId
+	 * @param startId
+	 * @param limit
+	 * @return
+	 */
+	List<NoteBo> selectCircleNotes(String circleId, String startId, int limit);
+
+	/**
+	 * 给帖子加精或置顶
+	 * @param status
+	 * @param type
+	 * @return
+	 */
+	WriteResult updateToporEssence(String noteid, int status, int type);
+
+	/**
+	 * 查找加精或置顶帖子
+	 * @param circleid
+	 * @param type
+	 * @return
+	 */
+	List<NoteBo> findByTopEssence(String circleid, int type, String startId, int limit);
+
 }
 

@@ -36,6 +36,11 @@ public class NoteVo extends BaseVo {
 
     private String type;
 
+    //精华  管理员操作
+    private int essence;
+    //置顶  管理员操作
+    private int top;
+
     public Boolean getMyThumbsup() {
         return isMyThumbsup;
     }
@@ -197,5 +202,21 @@ public class NoteVo extends BaseVo {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public int getEssence() {
+        return essence;
+    }
+
+    public void setEssence(int essence) {
+        this.essence = essence;
+    }
+
+    public int getTop() {
+        return top;
+    }
+
+    public void setTop(int top) {
+        this.top = top;
     }
 }

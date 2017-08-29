@@ -829,6 +829,84 @@ public class NoteController extends BaseContorller {
 		return Constant.COM_RESP;
 	}
 
+	/**
+	 * 圈子内帖子
+	 */
+	@RequestMapping("/circle-notes")
+	@ResponseBody
+	public String ciecleNotes(@RequestParam String circleid,
+							  String start_id, int limit,
+							  HttpServletRequest request, HttpServletResponse response) {
+		CircleBo circleBo = circleService.selectById(circleid);
+		if (circleBo == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CIRCLE_IS_NULL.getIndex(),
+					ERRORCODE.CIRCLE_IS_NULL.getReason());
+		}
+		List<NoteBo> noteBos = noteService.selectCircleNotes(circleid, start_id, limit);
+		List<NoteVo> noteVoList = new LinkedList<>();
+		for (NoteBo noteBo : noteBos) {
+			NoteVo noteVo = new NoteVo();
+			boToVo(noteBo, noteVo, userService.getUser(noteBo.getCreateuid()));
+			noteVoList.add(noteVo);
+		}
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("noteVoList", noteVoList);
+		return JSONObject.fromObject(map).toString();
+	}
+
+	/**
+	 * 圈子管理员加精帖子
+	 */
+	@RequestMapping("/set-essence")
+	@ResponseBody
+	public String setEssence(@RequestParam String circleid, @RequestParam String noteid, int essence,
+							  HttpServletRequest request, HttpServletResponse response) {
+		UserBo userBo;
+		try {
+			userBo = checkSession(request, userService);
+		} catch (MyException e) {
+			return e.getMessage();
+		}
+		CircleBo circleBo = circleService.selectById(circleid);
+		if (circleBo.getCreateuid().equals(userBo.getId()) ||
+				circleBo.getMasters().contains(userBo.getId())) {
+			noteService.updateToporEssence(noteid, essence, Constant.NOTE_JIAJING);
+		} else {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CIRCLE_MASTER_NULL.getIndex(),
+					ERRORCODE.CIRCLE_MASTER_NULL.getReason());
+		}
+		return Constant.COM_RESP;
+	}
+
+
+	/**
+	 * 圈子管理员置顶帖子
+	 */
+	@RequestMapping("/set-top")
+	@ResponseBody
+	public String setTopNotes(@RequestParam String circleid, @RequestParam String noteid, int top,
+							  HttpServletRequest request, HttpServletResponse response) {
+		UserBo userBo;
+		try {
+			userBo = checkSession(request, userService);
+		} catch (MyException e) {
+			return e.getMessage();
+		}
+		CircleBo circleBo = circleService.selectById(circleid);
+		if (circleBo.getCreateuid().equals(userBo.getId()) ||
+				circleBo.getMasters().contains(userBo.getId())) {
+			noteService.updateToporEssence(noteid, top, Constant.NOTE_TOP);
+		} else {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CIRCLE_MASTER_NULL.getIndex(),
+					ERRORCODE.CIRCLE_MASTER_NULL.getReason());
+		}
+		return Constant.COM_RESP;
+	}
+
 	private RedstarBo setRedstarBo(String userid, String circleid, int weekNo, int year){
 		RedstarBo redstarBo = new RedstarBo();
 		redstarBo.setUserid(userid);

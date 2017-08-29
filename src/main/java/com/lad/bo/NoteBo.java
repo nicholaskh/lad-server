@@ -21,6 +21,11 @@ public class NoteBo extends BaseBo {
 	//点赞数
 	private long thumpsubcount;
 
+	//精华  管理员操作
+	private int essence;
+	//置顶  管理员操作
+	private int top;
+
 	//上传的文件类型，前端传值
 	private String type;
 
@@ -123,4 +128,19 @@ public class NoteBo extends BaseBo {
 		this.type = type;
 	}
 
+    public int getEssence() {
+        return essence;
+    }
+
+    public void setEssence(int essence) {
+        this.essence = essence;
+    }
+
+	public int getTop() {
+		return top;
+	}
+
+	public void setTop(int top) {
+		this.top = top;
+	}
 }

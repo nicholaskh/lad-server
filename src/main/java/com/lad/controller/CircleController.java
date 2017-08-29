@@ -991,7 +991,6 @@ public class CircleController extends BaseContorller {
 					ERRORCODE.CIRCLE_IS_NULL.getIndex(),
 					ERRORCODE.CIRCLE_IS_NULL.getReason());
 		}
-		
 		HashSet<String> users = circleBo.getUsers();
 		List<UserBaseVo> userList = new ArrayList<>();
 		for (String userId : users) {
@@ -1011,7 +1010,7 @@ public class CircleController extends BaseContorller {
 	 */
 	@RequestMapping("/update-name")
 	@ResponseBody
-	public String updateName(@RequestParam String circleid, String name,
+	public String updateName(@RequestParam String circleid, @RequestParam String name,
 							   HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
 		try {
@@ -1040,12 +1039,73 @@ public class CircleController extends BaseContorller {
 		return Constant.COM_RESP;
 	}
 
+
+    /**
+     * 是否允许加入
+     */
+    @RequestMapping("/open")
+    @ResponseBody
+    public String updateOpen(@RequestParam String circleid, boolean open,
+                             HttpServletRequest request, HttpServletResponse response) {
+        UserBo userBo;
+        try {
+            userBo = checkSession(request, userService);
+        } catch (MyException e) {
+            return e.getMessage();
+        }
+        CircleBo circleBo = circleService.selectById(circleid);
+        if (circleBo == null) {
+            return CommonUtil.toErrorResult(
+                    ERRORCODE.CIRCLE_IS_NULL.getIndex(),
+                    ERRORCODE.CIRCLE_IS_NULL.getReason());
+        }
+        if (circleBo.getCreateuid().equals(userBo.getId()) ||
+                circleBo.getMasters().contains(userBo.getId())) {
+            circleService.updateOpen(circleid, open);
+        } else {
+            return CommonUtil.toErrorResult(
+                    ERRORCODE.CIRCLE_MASTER_NULL.getIndex(),
+                    ERRORCODE.CIRCLE_MASTER_NULL.getReason());
+        }
+        return Constant.COM_RESP;
+    }
+
+    /**
+     * 是否允许加入
+     */
+    @RequestMapping("/verify")
+    @ResponseBody
+    public String updateVerify(@RequestParam String circleid, boolean verify,
+                             HttpServletRequest request, HttpServletResponse response) {
+        UserBo userBo;
+        try {
+            userBo = checkSession(request, userService);
+        } catch (MyException e) {
+            return e.getMessage();
+        }
+        CircleBo circleBo = circleService.selectById(circleid);
+        if (circleBo == null) {
+            return CommonUtil.toErrorResult(
+                    ERRORCODE.CIRCLE_IS_NULL.getIndex(),
+                    ERRORCODE.CIRCLE_IS_NULL.getReason());
+        }
+        if (circleBo.getCreateuid().equals(userBo.getId()) ||
+                circleBo.getMasters().contains(userBo.getId())) {
+            circleService.updateisVerify(circleid, verify);
+        } else {
+            return CommonUtil.toErrorResult(
+                    ERRORCODE.CIRCLE_MASTER_NULL.getIndex(),
+                    ERRORCODE.CIRCLE_MASTER_NULL.getReason());
+        }
+        return Constant.COM_RESP;
+    }
+
 	/**
 	 * 添加或修改公告
 	 */
 	@RequestMapping("/notice")
 	@ResponseBody
-	public String cieclePerson(@RequestParam String circleid,
+	public String ciecleNotice(@RequestParam String circleid,
 							   String title, String content,
 							   HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
@@ -1097,7 +1157,7 @@ public class CircleController extends BaseContorller {
 		feedbackBo.setCreateuid(userBo.getId());
 		feedbackBo.setTargetId(circleid);
 		feedbackBo.setType(Constant.FEED_TIPS);
-		feedbackBo.setSubType(Constant.FEED_CIRCLE);
+		feedbackBo.setSubType(Constant.CIRCLE_TYPE);
 		feedbackBo.setTargetTitle(title);
 		feedbackBo.setContent(content);
 		feedbackBo.setContactInfo(contact);

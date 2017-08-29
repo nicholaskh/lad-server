@@ -28,10 +28,10 @@ public class CircleBo extends BaseBo {
 	private String description;
 
 	//圈子5公里是否加入
-	private boolean isOpen = true;
+	private boolean isOpen;
 
 	//圈子加入是否需要校验
-	private boolean isVerify = true;
+	private boolean isVerify;
 
 	private int noteSize;
 

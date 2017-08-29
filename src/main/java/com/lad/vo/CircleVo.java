@@ -18,6 +18,14 @@ public class CircleVo extends BaseVo {
 	private HashSet<String> notes = new HashSet<String>();
 	private int notesSize;
 	private int usersSize;
+	//圈子是否加入
+	private boolean isOpen;
+	//圈子加入是否需要校验
+	private boolean isVerify;
+	//圈子公告标题
+	private String noticeTitle;
+	//圈子公告
+	private String notice;
 
 	// 置顶标识，1置顶
 	private int top = 0;
@@ -158,5 +166,37 @@ public class CircleVo extends BaseVo {
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public boolean isOpen() {
+		return isOpen;
+	}
+
+	public void setOpen(boolean open) {
+		isOpen = open;
+	}
+
+	public boolean isVerify() {
+		return isVerify;
+	}
+
+	public void setVerify(boolean verify) {
+		isVerify = verify;
+	}
+
+	public String getNoticeTitle() {
+		return noticeTitle;
+	}
+
+	public void setNoticeTitle(String noticeTitle) {
+		this.noticeTitle = noticeTitle;
+	}
+
+	public String getNotice() {
+		return notice;
+	}
+
+	public void setNotice(String notice) {
+		this.notice = notice;
 	}
 }

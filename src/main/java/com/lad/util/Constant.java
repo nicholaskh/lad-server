@@ -149,14 +149,13 @@ public class Constant {
 	 */
 	public static final int ROOM_FACE_2_FACE= 3;
 
-
 	/**
-	 * 资讯 健康
+	 * 置顶
 	 */
-	public static final int HEALTH = 0;
+	public static final int NOTE_TOP = 0;
 	/**
-	 * 资讯 安防
+	 * 加精
 	 */
-	public static final int SECURITY = 1;
+	public static final int NOTE_JIAJING = 1;
 
 }

@@ -207,6 +207,6 @@ public class CircleServiceImpl implements ICircleService {
 
 	@Override
 	public WriteResult updateCircleName(String circleid, String name) {
-		return circleDao.uddateName(circleid, name);
+		return circleDao.updateCircleName(circleid, name);
 	}
 }
