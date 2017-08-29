@@ -86,6 +86,10 @@ public class Constant {
 	 */
 	public static final int PAGE_TYPE = 2;
 	/**
+	 * 举报 圈子
+	 */
+	public static final int CIRCLE_TYPE = 3;
+	/**
 	 * 帖子评论点赞
 	 */
 	public static final int NOTE_COM_TYPE = 8;
@@ -102,22 +106,6 @@ public class Constant {
 	 * 反馈
 	 */
 	public static final int FEED_BACK= 0;
-
-	/**
-	 * 举报 帖子
-	 */
-	public static final int FEED_NOTE = 0;
-
-	/**
-	 * 举报 资讯
-	 */
-	public static final int FEED_INFOR = 1;
-
-	/**
-	 * 举报 圈子
-	 */
-	public static final int FEED_CIRCLE = 2;
-
 	/**
 	 *
 	 */

@@ -50,4 +50,9 @@ public class ChatroomServiceImpl implements IChatroomService {
 	public boolean withInRange(String chatroomId, double[] position, int radius) {
 		return chatroomDao.withInRange(chatroomId, position, radius);
 	}
+
+	@Override
+	public ChatroomBo selectBySeqInTen(int seq, double[] position, int radius) {
+		return chatroomDao.selectBySeqInTen(seq, position, radius);
+	}
 }

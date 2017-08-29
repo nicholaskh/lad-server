@@ -509,69 +509,39 @@ public class ChatroomController extends BaseContorller {
 
 	@RequestMapping("/factoface-create")
 	@ResponseBody
-	public String faceToFaceCreate(final int seq, double px, double py,
+	public String faceToFaceCreate(@RequestParam int seq, @RequestParam double px, @RequestParam double py,
 			HttpServletRequest request, HttpServletResponse response) {
-		HttpSession session = request.getSession();
-		if (session.isNew()) {
-			return CommonUtil.toErrorResult(
-					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		UserBo userBo;
+		try {
+			userBo = checkSession(request, userService);
+		} catch (MyException e) {
+			return e.getMessage();
 		}
-		if (session.getAttribute("isLogin") == null) {
-			return CommonUtil.toErrorResult(
-					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-		}
-		UserBo userBo = (UserBo) session.getAttribute("userBo");
-		if (userBo == null) {
-			return CommonUtil.toErrorResult(
-					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-		}
-		userBo = userService.getUser(userBo.getId());
-		HashSet<String> userSet = new HashSet<>();
-		ChatroomBo chatroom = null;
 		boolean isNew = false;
-		RLock lock = redisServer.getRLock(Constant.CHAT_LOCK);
 		double[] position = new double[]{px,py};
+        ChatroomBo chatroom = chatroomService.selectBySeqInTen(seq, position, 100);
+		if (null == chatroom) {
+			chatroom = getChatroomBo(chatroom, seq, position, userBo);
+			isNew = true;
+		} else {
+			//相同序列是否在10分钟内创建
+            if (0 == chatroom.getExpire()) {
+                return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_SEQ_EXPIRE.getIndex(),
+                        ERRORCODE.CHATROOM_SEQ_EXPIRE.getReason());
+            }
+            HashSet<String> userSet = chatroom.getUsers();
+			userSet.add(userBo.getId());
+			chatroom.setUsers(userSet);
+		}
+        RLock lock = redisServer.getRLock(Constant.CHAT_LOCK);
 		try {
 			//10s自动解锁
-			lock.lock(10, TimeUnit.SECONDS);
-			chatroom = chatroomService.selectBySeq(seq);
-			if (null == chatroom) {
-				chatroom = new ChatroomBo();
-				chatroom.setSeq(seq);
-				chatroom.setUserid(userBo.getId());
-				userSet.add(userBo.getId());
-				chatroom.setUsers(userSet);
-				chatroom.setName("FaceToFaceChatroom");
-				chatroom.setPosition(position);
-				chatroomService.insert(chatroom);
-				isNew = true;
-			} else {
-				if (0 == chatroom.getExpire()) {
-					return CommonUtil.toErrorResult(
-							ERRORCODE.CHATROOM_SEQ_EXPIRE.getIndex(),
-							ERRORCODE.CHATROOM_SEQ_EXPIRE.getReason());
-				}
-
-				if (!CommonUtil.isTimeInTen(chatroom.getCreateTime())) {
-					return CommonUtil.toErrorResult(
-							ERRORCODE.CHATROOM_TIME_OUT.getIndex(),
-							ERRORCODE.CHATROOM_TIME_OUT.getReason());
-				}
-				//聊天室位置是否在100m之内
-				boolean isRange = chatroomService.withInRange(
-						chatroom.getId(), position, 100);
-				if (!isRange) {
-					return CommonUtil.toErrorResult(
-							ERRORCODE.CHATROOM_RANGE_OUT.getIndex(),
-							ERRORCODE.CHATROOM_RANGE_OUT.getReason());
-				}
-				userSet.add(userBo.getId());
-				chatroom.setUsers(userSet);
-				chatroomService.updateUsers(chatroom);
-			}
+			lock.lock(3, TimeUnit.SECONDS);
+			if (isNew) {
+                chatroomService.insert(chatroom);
+            } else {
+                chatroomService.updateUsers(chatroom);
+            }
 		} finally {
 			lock.unlock();
 		}
@@ -598,6 +568,18 @@ public class ChatroomController extends BaseContorller {
 		map.put("ret", 0);
 		map.put("channelId", chatroom.getId());
 		return JSONObject.fromObject(map).toString();
+	}
+
+	private ChatroomBo getChatroomBo(ChatroomBo chatroom, int seq, double[] position, UserBo userBo){
+		chatroom = new ChatroomBo();
+		chatroom.setSeq(seq);
+		chatroom.setUserid(userBo.getId());
+		HashSet<String> userSet = chatroom.getUsers();
+		userSet.add(userBo.getId());
+		chatroom.setUsers(userSet);
+		chatroom.setName("FaceToFaceChatroom");
+		chatroom.setPosition(position);
+		return chatroom;
 	}
 
 

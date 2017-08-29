@@ -77,19 +77,19 @@ public class IMUtil {
 			term = getTerm(assistent);
 		}
 		assistent.setServerTerm(term);
-		Message message3 = assistent.unSubscribe(chatroomId, ids);
+		Message message = assistent.unSubscribe(chatroomId, ids);
 		try {
-			if (message3.getStatus() == Message.Status.termError) {
+			if (message.getStatus() == Message.Status.termError) {
 				term = getTerm(assistent);
 				assistent.setServerTerm(term);
-				Message message4 = assistent.unSubscribe(chatroomId, ids);
-				if (Message.Status.success != message4.getStatus()) {
-					res = CommonUtil.toErrorResult(message4.getStatus(),
-							message4.getMsg());
+				Message message2 = assistent.unSubscribe(chatroomId, ids);
+				if (Message.Status.success != message2.getStatus()) {
+					res = CommonUtil.toErrorResult(message2.getStatus(),
+							message2.getMsg());
 				}
-			} else if (Message.Status.success != message3.getStatus()) {
-				res = CommonUtil.toErrorResult(message3.getStatus(),
-						message3.getMsg());
+			} else if (Message.Status.success != message.getStatus()) {
+				res = CommonUtil.toErrorResult(message.getStatus(),
+						message.getMsg());
 			}
 		} finally {
 			assistent.close();

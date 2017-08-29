@@ -2,6 +2,7 @@ package com.lad.dao.impl;
 
 import com.lad.bo.ChatroomBo;
 import com.lad.dao.IChatroomDao;
+import com.lad.util.Constant;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
@@ -20,6 +21,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
 import java.util.List;
 
 @Repository("chatroomDao")
@@ -93,6 +95,7 @@ public class ChatroomDaoImpl implements IChatroomDao {
 		query.addCriteria(new Criteria("seq").is(seq));
 		query.addCriteria(new Criteria("type").is(3));
 		query.addCriteria(new Criteria("deleted").is(0));
+		query.addCriteria(new Criteria("expire").is(1));
 		return mongoTemplate.findOne(query, ChatroomBo.class);
 	}
 
@@ -138,4 +141,25 @@ public class ChatroomDaoImpl implements IChatroomDao {
 		return false;
 	}
 
+
+	@Override
+	public ChatroomBo selectBySeqInTen(int seq, double[] position, int radius) {
+		//主键筛选条件
+		Query query = new Query();
+		query.addCriteria(new Criteria("seq").is(seq));
+		query.addCriteria(new Criteria("type").is(Constant.ROOM_FACE_2_FACE));
+		query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+		query.addCriteria(new Criteria("expire").is(1));
+		long before = System.currentTimeMillis() - 10 * 60 *1000;
+		Date beforeTime = new Date(before);
+		query.addCriteria(new Criteria("createTime").gte(beforeTime));
+		//位置索引查询
+		Point location = new Point(position[0], position[1]);
+		NearQuery nearQuery = NearQuery.near(location)
+				.maxDistance(new Distance(radius/6378137.0)).spherical(true).query(query);
+		Aggregation aggregation = Aggregation.newAggregation(Aggregation.geoNear(nearQuery,"position"));
+		AggregationResults<ChatroomBo> results = mongoTemplate.aggregate(aggregation,collectionName,ChatroomBo.class);
+		List<ChatroomBo> list = results.getMappedResults();
+		return list != null ? list.get(0) : null;
+	}
 }
