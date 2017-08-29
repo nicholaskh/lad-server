@@ -4,8 +4,8 @@ public class Constant {
 	public static final String HEAD_PICTURE_PATH = "/opt/apps/lad-server/picture/head/";
 	public static final String FEEDBACK_PICTURE_PATH = "/opt/apps/lad-server/picture/feedback/";
 	public static final String IMFILE_PATH = "/opt/apps/lad-server/picture/imfile/";
-	public static final String CIRCLE_HEAD_PICTURE_PATH = "/opt/apps/lad-server/circle/picture/head/";
-	public static final String NOTE_PICTURE_PATH = "/opt/apps/lad-server/note/picture/";
+	public static final String CIRCLE_HEAD_PICTURE_PATH = "/opt/apps/lad-server/picture/circle/head/";
+	public static final String NOTE_PICTURE_PATH = "/opt/apps/lad-server/picture/note/";
 	public static final String QINIU_URL = "http://oojih7o1f.bkt.clouddn.com/";
 
 	public static final String RESPONSE = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><response><error>0</error><message></message></response>";
@@ -14,6 +14,11 @@ public class Constant {
 	 * 通用成功返回
 	 */
 	public static final String COM_RESP =  "{\"ret\":0}";
+
+	/**
+	 * 异常失败返回
+	 */
+	public static final String COM_FAIL_RESP =  "{\"ret\":-1}";
 
 	/**
 	 * 面对面建群lock
@@ -97,6 +102,22 @@ public class Constant {
 	 * 反馈
 	 */
 	public static final int FEED_BACK= 0;
+
+	/**
+	 * 举报 帖子
+	 */
+	public static final int FEED_NOTE = 0;
+
+	/**
+	 * 举报 资讯
+	 */
+	public static final int FEED_INFOR = 1;
+
+	/**
+	 * 举报 圈子
+	 */
+	public static final int FEED_CIRCLE = 2;
+
 	/**
 	 *
 	 */
@@ -121,6 +142,24 @@ public class Constant {
 	 *
 	 */
 	public static final int LEVEL_SHARE= 5;
+	/**
+	 *
+	 */
+	public static final int LEVEL_CIRCLE= 6;
+
+
+	/**
+	 * 单人聊天
+	 */
+	public static final int ROOM_SINGLE = 1;
+	/**
+	 * 群聊
+	 */
+	public static final int ROOM_MULIT = 2;
+	/**
+	 * 面对面聊
+	 */
+	public static final int ROOM_FACE_2_FACE= 3;
 
 
 	/**

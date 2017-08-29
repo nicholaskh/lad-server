@@ -14,28 +14,39 @@ public class CircleBo extends BaseBo {
 	//地标
 	private String landmark;
 	private String name;
+	//一级分类
 	private String tag;
+	//二级分类
 	private String sub_tag;
 	//类别
 	private String category;
 	private String headPicture;
 	private int usernum;
-
+	//管理员
 	private LinkedHashSet<String> masters = new LinkedHashSet<>();
-
+	//描述
 	private String description;
 
 	//圈子5公里是否加入
-	private boolean isOpen;
+	private boolean isOpen = true;
+
+	//圈子加入是否需要校验
+	private boolean isVerify = true;
 
 	private int noteSize;
 
 	//总人数=圈子内总评论+总阅读+总点赞+总转发
 	private int total;
 
-	private HashSet<String> users = new HashSet<String>();
-	private HashSet<String> usersApply = new HashSet<String>();
-	private HashSet<String> usersRefuse = new HashSet<String>();
+	//圈子公告标题
+	private String noticeTitle;
+	//圈子公告
+	private String notice;
+
+
+	private HashSet<String> users = new LinkedHashSet<>();
+	private HashSet<String> usersApply = new LinkedHashSet<>();
+	private HashSet<String> usersRefuse = new LinkedHashSet<>();
 
 	public double[] getPosition() {
 		return position;
@@ -162,5 +173,30 @@ public class CircleBo extends BaseBo {
 
 	public void setTotal(int total) {
 		this.total = total;
+	}
+
+
+	public boolean isVerify() {
+		return isVerify;
+	}
+
+	public void setVerify(boolean verify) {
+		isVerify = verify;
+	}
+
+	public String getNoticeTitle() {
+		return noticeTitle;
+	}
+
+	public void setNoticeTitle(String noticeTitle) {
+		this.noticeTitle = noticeTitle;
+	}
+
+	public String getNotice() {
+		return notice;
+	}
+
+	public void setNotice(String notice) {
+		this.notice = notice;
 	}
 }

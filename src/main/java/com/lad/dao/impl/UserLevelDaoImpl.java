@@ -54,6 +54,8 @@ public class UserLevelDaoImpl implements IUserLevelDao{
                 update.inc("transmitNum", num);
             case Constant.LEVEL_SHARE:
                 update.inc("shareNum", num);
+            case Constant.LEVEL_CIRCLE:
+                update.inc("circleNum", num);
             default:
                 break;
         }

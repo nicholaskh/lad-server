@@ -1,10 +1,7 @@
 package com.lad.controller;
 
 import com.lad.bo.*;
-import com.lad.service.ICircleService;
-import com.lad.service.ILocationService;
-import com.lad.service.INoteService;
-import com.lad.service.IUserService;
+import com.lad.service.*;
 import com.lad.util.CommonUtil;
 import com.lad.util.Constant;
 import com.lad.util.ERRORCODE;
@@ -44,6 +41,9 @@ public class CircleController extends BaseContorller {
 	@Autowired
 	private INoteService noteService;
 
+	@Autowired
+	private IFeedbackService feedbackService;
+
 	@RequestMapping("/insert")
 	@ResponseBody
 	public String isnert(@RequestParam(required = true) double px,
@@ -64,7 +64,7 @@ public class CircleController extends BaseContorller {
 		}
 		//每人最多创建三个群
 		long circleNum = circleService.findCreateCricles(userBo.getId());
-		if (circleNum > userBo.getLevel() * 5) {
+		if (circleNum >= userBo.getLevel() * 5) {
 			return CommonUtil.toErrorResult(
 					ERRORCODE.CIRCLE_CREATE_MAX.getIndex(),
 					ERRORCODE.CIRCLE_CREATE_MAX.getReason());
@@ -90,6 +90,7 @@ public class CircleController extends BaseContorller {
 		users.add(userBo.getId());
 		circleBo.setUsers(users);
 		circleService.insert(circleBo);
+		userService.addUserLevel(userBo.getId(), 1, Constant.LEVEL_CIRCLE);
 		updateHistory(userBo.getId(), circleBo.getId(), locationService, circleService);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
@@ -938,17 +939,186 @@ public class CircleController extends BaseContorller {
 	@ResponseBody
 	public String nearPeopel(double px, double py, HttpServletRequest request, HttpServletResponse
 			response) {
+		double[] position = new double[]{px, py};
+		List<CircleBo> circleBos = circleService.findNearCircle(position, 10000, 5);
+		return bo2vos(circleBos);
+	}
+
+
+	/**
+	 * 判断当前用户在圈子中的身份
+	 */
+	@RequestMapping("/circle-role")
+	@ResponseBody
+	public String ciecleRle(String circleid, HttpServletRequest request, HttpServletResponse
+			response) {
+		CircleBo circleBo = circleService.selectById(circleid);
+		if (circleBo == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CIRCLE_IS_NULL.getIndex(),
+					ERRORCODE.CIRCLE_IS_NULL.getReason());
+		}
+		Map<String, Object> map = new HashMap<>();
+		map.put("ret", 0);
+		//判断当前用户是否已经登录
+		UserBo userBo;
+		try {
+			userBo = checkSession(request, userService);
+		} catch (Exception e) {
+			map.put("role", 0);
+			return JSONObject.fromObject(map).toString();
+		}
+		if (circleBo.getCreateuid().equals(userBo.getId())) {
+			map.put("role", 2);
+		} else if (circleBo.getMasters().contains(userBo.getId())) {
+			map.put("role", 1);
+		} else {
+			map.put("role", 0);
+		}
+		return JSONObject.fromObject(map).toString();
+	}
+
+	/**
+	 * 圈子中的用户
+	 */
+	@RequestMapping("/persons")
+	@ResponseBody
+	public String cieclePerson(String circleid, HttpServletRequest request, HttpServletResponse
+			response) {
+		CircleBo circleBo = circleService.selectById(circleid);
+		if (circleBo == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CIRCLE_IS_NULL.getIndex(),
+					ERRORCODE.CIRCLE_IS_NULL.getReason());
+		}
+		
+		HashSet<String> users = circleBo.getUsers();
+		List<UserBaseVo> userList = new ArrayList<>();
+		for (String userId : users) {
+			UserBo user = userService.getUser(userId);
+			UserBaseVo userBaseVo = new UserBaseVo();
+			BeanUtils.copyProperties(user, userBaseVo);
+			userList.add(userBaseVo);
+		}
+		Map<String, Object> map = new HashMap<>();
+		map.put("ret", 0);
+		map.put("userVoList", userList);
+		return JSONObject.fromObject(map).toString();
+	}
+
+	/**
+	 * 修改圈子名称
+	 */
+	@RequestMapping("/update-name")
+	@ResponseBody
+	public String updateName(@RequestParam String circleid, String name,
+							   HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
 		try {
 			userBo = checkSession(request, userService);
 		} catch (MyException e) {
 			return e.getMessage();
 		}
-		double[] position = new double[]{px, py};
-		List<CircleBo> circleBos = circleService.findNearCircle(position, 10000, 5);
-		return bo2vos(circleBos);
+		CircleBo circleBo = circleService.selectById(circleid);
+		if (circleBo == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CIRCLE_IS_NULL.getIndex(),
+					ERRORCODE.CIRCLE_IS_NULL.getReason());
+		}
+		if (circleBo.getCreateuid().equals(userBo.getId()) ||
+				circleBo.getMasters().contains(userBo.getId())) {
+			if (StringUtils.isNotEmpty(name)){
+				circleService.updateCircleName(circleid, name);
+			} else {
+				return Constant.COM_FAIL_RESP;
+			}
+		} else {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CIRCLE_MASTER_NULL.getIndex(),
+					ERRORCODE.CIRCLE_MASTER_NULL.getReason());
+		}
+		return Constant.COM_RESP;
 	}
-	
+
+	/**
+	 * 添加或修改公告
+	 */
+	@RequestMapping("/notice")
+	@ResponseBody
+	public String cieclePerson(@RequestParam String circleid,
+							   String title, String content,
+							   HttpServletRequest request, HttpServletResponse response) {
+		UserBo userBo;
+		try {
+			userBo = checkSession(request, userService);
+		} catch (MyException e) {
+			return e.getMessage();
+		}
+		CircleBo circleBo = circleService.selectById(circleid);
+		if (circleBo == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CIRCLE_IS_NULL.getIndex(),
+					ERRORCODE.CIRCLE_IS_NULL.getReason());
+		}
+		if (circleBo.getCreateuid().equals(userBo.getId()) ||
+				circleBo.getMasters().contains(userBo.getId())) {
+			circleService.updateNotice(circleid, title, content);
+		} else {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CIRCLE_MASTER_NULL.getIndex(),
+					ERRORCODE.CIRCLE_MASTER_NULL.getReason());
+		}
+		return Constant.COM_RESP;
+	}
+
+	/**
+	 * 举报圈子
+	 */
+	@RequestMapping("/feed-tips")
+	@ResponseBody
+	public String feedTips(@RequestParam String circleid, @RequestParam String title,
+						   @RequestParam String content ,@RequestParam(required = false) String contact,
+						   @RequestParam(required = false) MultipartFile[] images,
+						   HttpServletRequest request, HttpServletResponse response) {
+		UserBo userBo;
+		try {
+			userBo = checkSession(request, userService);
+		} catch (MyException e) {
+			return e.getMessage();
+		}
+		CircleBo circleBo = circleService.selectById(circleid);
+		if (circleBo == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CIRCLE_IS_NULL.getIndex(),
+					ERRORCODE.CIRCLE_IS_NULL.getReason());
+		}
+		FeedbackBo feedbackBo = new FeedbackBo();
+		feedbackBo.setOwnerId(userBo.getId());
+		feedbackBo.setCreateuid(userBo.getId());
+		feedbackBo.setTargetId(circleid);
+		feedbackBo.setType(Constant.FEED_TIPS);
+		feedbackBo.setSubType(Constant.FEED_CIRCLE);
+		feedbackBo.setTargetTitle(title);
+		feedbackBo.setContent(content);
+		feedbackBo.setContactInfo(contact);
+		if (images != null) {
+			LinkedList<String> imagesList = new LinkedList<>();
+			Long time = Calendar.getInstance().getTimeInMillis();
+			for (MultipartFile file : images) {
+				String fileName = userBo.getId() + "-" + time + "-"
+						+ file.getOriginalFilename();
+				System.out.println("----file: " + file.getOriginalFilename() + ",  size: " + file.getSize());
+				logger.info(fileName);
+				String path = CommonUtil.upload(file, Constant.FEEDBACK_PICTURE_PATH,
+						fileName, 0);
+				logger.info(path);
+				imagesList.add(path);
+			}
+			feedbackBo.setImages(imagesList);
+		}
+		feedbackService.insert(feedbackBo);
+		return Constant.COM_RESP;
+	}
 
 
 	private List<UserStarVo> getStar(List<RedstarBo> redstarBos){

@@ -124,4 +124,35 @@ public interface ICircleService extends IBaseService {
 
 	long findCreateCricles(String createuid);
 
+	/**
+	 * 更新圈子开放
+	 * @param circleid
+	 * @param isOpen
+	 * @return
+	 */
+	WriteResult updateOpen(String circleid, boolean isOpen);
+	/**
+	 * 更新圈子验证
+	 * @param circleid
+	 * @param isVerify
+	 * @return
+	 */
+	WriteResult updateisVerify(String circleid, boolean isVerify);
+	/**
+	 * 更新公告
+	 * @param circleid
+	 * @param title
+	 * @param notice
+	 * @return
+	 */
+	WriteResult updateNotice(String circleid, String title, String notice);
+
+	/**
+	 * 更新圈子名称
+	 * @param circleid
+	 * @param name
+	 * @return
+	 */
+	WriteResult updateCircleName(String circleid, String name);
+
 }

@@ -220,12 +220,6 @@ public class CommonUtil {
 		query.limit(limit);
 	}
 
-	public static void main(String[] args) {
-		int res = CommonUtil.sendSMS2("15320542105", "this is message");
-		System.out.println(res);
-	}
-
-
 	public static String ff(String inFile, String outFile){
 
 

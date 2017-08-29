@@ -238,4 +238,41 @@ public class CircleDaoImpl implements ICircleDao {
 		query.limit(limit);
 		return mongoTemplate.find(query, CircleBo.class);
 	}
+
+	@Override
+	public WriteResult updateNotice(String circleid, String title, String notice) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("_id").is(circleid));
+		Update update = new Update();
+		update.set("notice", notice);
+		update.set("noticeTitle", title);
+		return mongoTemplate.updateFirst(query, update, CircleBo.class);
+	}
+
+	@Override
+	public WriteResult updateCircleName(String circleid, String name) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("_id").is(circleid));
+		Update update = new Update();
+		update.set("name", name);
+		return mongoTemplate.updateFirst(query, update, CircleBo.class);
+	}
+
+	@Override
+	public WriteResult updateOpen(String circleid, boolean isOpen) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("_id").is(circleid));
+		Update update = new Update();
+		update.set("isOpen", isOpen);
+		return mongoTemplate.updateFirst(query, update, CircleBo.class);
+	}
+
+	@Override
+	public WriteResult updateisVerify(String circleid, boolean isVerify) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("_id").is(circleid));
+		Update update = new Update();
+		update.set("isVerify", isVerify);
+		return mongoTemplate.updateFirst(query, update, CircleBo.class);
+	}
 }

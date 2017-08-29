@@ -188,4 +188,25 @@ public class CircleServiceImpl implements ICircleService {
 	public List<CircleTypeBo> findAllCircleTypes() {
 		return circleTypeDao.findAll();
 	}
+
+
+	@Override
+	public WriteResult updateOpen(String circleid, boolean isOpen) {
+		return circleDao.updateOpen(circleid, isOpen);
+	}
+
+	@Override
+	public WriteResult updateisVerify(String circleid, boolean isVerify) {
+		return circleDao.updateisVerify(circleid, isVerify);
+	}
+
+	@Override
+	public WriteResult updateNotice(String circleid, String title, String notice) {
+		return circleDao.updateNotice(circleid, title, notice);
+	}
+
+	@Override
+	public WriteResult updateCircleName(String circleid, String name) {
+		return circleDao.uddateName(circleid, name);
+	}
 }

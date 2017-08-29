@@ -133,6 +133,8 @@ public class UserServiceImpl implements IUserService{
 					userLevelBo.setTransmitNum((int) num);
 				case Constant.LEVEL_SHARE:
 					userLevelBo.setShareNum((int) num);
+				case Constant.LEVEL_CIRCLE:
+					userLevelBo.setCircleNum((int) num);
 				default:
 					break;
 			}
@@ -150,6 +152,8 @@ public class UserServiceImpl implements IUserService{
 					userLevelBo.setTransmitNum(userLevelBo.getTransmitNum() + (int) num);
 				case Constant.LEVEL_SHARE:
 					userLevelBo.setShareNum(userLevelBo.getShareNum() + (int) num);
+				case Constant.LEVEL_CIRCLE:
+					userLevelBo.setCircleNum(userLevelBo.getShareNum()+ (int) num);
 				default:
 					break;
 			}
@@ -176,24 +180,26 @@ public class UserServiceImpl implements IUserService{
 
 		int shares = userLevelBo.getShareNum();
 
+		int circles = userLevelBo.getCircleNum();
+
 
 		if (hours >= 300 && partys >= 30 && notes >= 150
-				&& comments >= 200 && trans >=200 && shares >= 300 ) {
+				&& comments >= 200 && trans >=200 && shares >= 300 && circles > 1 ) {
 			return 6;
 		}
-		if (hours >= 150 && partys >= 15 && notes >= 100
-				&& comments >= 150 && trans >=150 && shares >= 200 ) {
+		if (hours >= 150 && partys >= 20 && notes >= 100
+				&& comments >= 150 && trans >=150 && shares >= 200 && circles > 0  ) {
 			return 5;
 		}
 		if (hours >= 100 && partys >= 10 && notes >= 50
-				&& comments >= 80 && trans >=100 && shares >= 150 ) {
+				&& comments >= 80 && trans >=100 && shares >= 150 && circles > 0 ) {
 			return 4;
 		}
-		if (hours >= 60 && partys >= 6 && notes >= 30
-				&& comments >= 50 && trans >=60 && shares >= 100 ) {
+		if (hours >= 60 && partys >= 3 && notes >= 30
+				&& comments >= 50 && trans >=60 && shares >= 100 && circles > 0 ) {
 			return 3;
 		}
-		if (hours >= 30 && partys >= 3 && notes >= 10
+		if (hours >= 30 && partys >= 1 && notes >= 10
 				&& comments >= 20 && trans >=30 && shares >= 50 ) {
 			return 2;
 		}

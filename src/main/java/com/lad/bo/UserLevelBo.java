@@ -24,6 +24,8 @@ public class UserLevelBo extends BaseBo{
     private int transmitNum;
     //分享数
     private int shareNum;
+    //圈子数量
+    private int circleNum;
 
     public String getUserid() {
         return userid;
@@ -79,5 +81,13 @@ public class UserLevelBo extends BaseBo{
 
     public int getLaunchPartys() {
         return launchPartys;
+    }
+
+    public int getCircleNum() {
+        return circleNum;
+    }
+
+    public void setCircleNum(int circleNum) {
+        this.circleNum = circleNum;
     }
 }
