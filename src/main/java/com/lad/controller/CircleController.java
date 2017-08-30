@@ -653,7 +653,7 @@ public class CircleController extends BaseContorller {
 		BeanUtils.copyProperties(circleBo, circleVo);
 		circleVo.setName(circleBo.getName());
 		circleVo.setUsersSize(circleBo.getTotal());
-		circleVo.setNotesSize(number);
+		circleVo.setNotesSize(circleBo.getNoteSize());
 		Map<String, Object> map = new HashMap<String, Object>();
 		LinkedHashSet<String> masters = circleBo.getMasters();
 		//管理员
@@ -992,10 +992,18 @@ public class CircleController extends BaseContorller {
 					ERRORCODE.CIRCLE_IS_NULL.getReason());
 		}
 		HashSet<String> users = circleBo.getUsers();
+		HashSet<String> masters = circleBo.getMasters();
 		List<UserBaseVo> userList = new ArrayList<>();
 		for (String userId : users) {
 			UserBo user = userService.getUser(userId);
 			UserBaseVo userBaseVo = new UserBaseVo();
+			if (circleBo.getCreateuid().equals(userId)) {
+			   userBaseVo.setRole(2);
+			} else if (masters.contains(userId)){
+				userBaseVo.setRole(1);
+			} else {
+				userBaseVo.setRole(0);
+			}
 			BeanUtils.copyProperties(user, userBaseVo);
 			userList.add(userBaseVo);
 		}
