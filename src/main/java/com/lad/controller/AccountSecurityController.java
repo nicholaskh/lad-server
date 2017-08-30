@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Controller
+@RequestMapping("account-security")
 public class AccountSecurityController extends BaseContorller {
 
 	@Autowired

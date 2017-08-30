@@ -507,7 +507,7 @@ public class ChatroomController extends BaseContorller {
 		return Constant.COM_RESP;
 	}
 
-	@RequestMapping("/factoface-create")
+	@RequestMapping("/facetoface-create")
 	@ResponseBody
 	public String faceToFaceCreate(@RequestParam int seq, @RequestParam double px, @RequestParam double py,
 			HttpServletRequest request, HttpServletResponse response) {
