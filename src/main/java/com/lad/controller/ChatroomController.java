@@ -71,7 +71,7 @@ public class ChatroomController extends BaseContorller {
 		}
 		ChatroomBo chatroomBo = new ChatroomBo();
 		chatroomBo.setName(name);
-		chatroomBo.setType(2);
+		chatroomBo.setType(Constant.ROOM_MULIT);
 		chatroomBo.setCreateuid(userBo.getId());
 		chatroomService.insert(chatroomBo);
 		HashSet<String> chatrooms = userBo.getChatrooms();
@@ -579,6 +579,7 @@ public class ChatroomController extends BaseContorller {
 		chatroom.setUsers(userSet);
 		chatroom.setName("FaceToFaceChatroom");
 		chatroom.setPosition(position);
+		chatroom.setType(Constant.ROOM_FACE_2_FACE);
 		return chatroom;
 	}
 
