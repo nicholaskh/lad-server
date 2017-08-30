@@ -160,6 +160,6 @@ public class ChatroomDaoImpl implements IChatroomDao {
 		Aggregation aggregation = Aggregation.newAggregation(Aggregation.geoNear(nearQuery,"position"));
 		AggregationResults<ChatroomBo> results = mongoTemplate.aggregate(aggregation,collectionName,ChatroomBo.class);
 		List<ChatroomBo> list = results.getMappedResults();
-		return list != null ? list.get(0) : null;
+		return list != null && !list.isEmpty() ? list.get(0) : null;
 	}
 }
