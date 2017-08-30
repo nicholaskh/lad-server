@@ -26,6 +26,8 @@ public class UserBaseVo implements Serializable {
 
     private int level;
 
+    private int role;
+
     public String getId() {
         return id;
     }
@@ -88,5 +90,13 @@ public class UserBaseVo implements Serializable {
 
     public void setLevel(int level) {
         this.level = level;
+    }
+
+    public int getRole() {
+        return role;
+    }
+
+    public void setRole(int role) {
+        this.role = role;
     }
 }

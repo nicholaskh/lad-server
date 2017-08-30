@@ -65,4 +65,19 @@ public interface IUserService extends IBaseService {
 	void addUserLevel(String userid , long num, int type);
 
 
+	/**
+	 * 查找当前手机号是否已注册
+	 * @param phone
+	 * @return
+	 */
+	UserBo checkByPhone(String phone);
+
+	/**
+	 * 修改用户状态
+	 * @param id
+	 * @param status
+	 * @return
+	 */
+	WriteResult updateUserStatus(String id, int status);
+
 }

@@ -114,6 +114,16 @@ public class UserServiceImpl implements IUserService{
 	}
 
 	@Override
+	public UserBo checkByPhone(String phone) {
+		return userDao.checkByPhone(phone);
+	}
+
+	@Override
+	public WriteResult updateUserStatus(String id, int status) {
+		return userDao.updateUserStatus(id, status);
+	}
+
+	@Override
 	public void addUserLevel(String userid, long num, int type) {
 		UserLevelBo userLevelBo = userLevelDao.findByUserid(userid);
 		int level = 1;

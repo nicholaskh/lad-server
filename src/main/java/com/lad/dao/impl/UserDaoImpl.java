@@ -67,6 +67,13 @@ public class UserDaoImpl implements IUserDao {
         return mongoTemplate.findOne(query, UserBo.class);
     }
 
+    @Override
+    public UserBo checkByPhone(String phone) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("phone").is(phone));
+        return mongoTemplate.findOne(query, UserBo.class);
+    }
+
     public UserBo updatePhone(UserBo userBo) {
         Query query = new Query();
         query.addCriteria(new Criteria("_id").is(userBo.getId()));
@@ -206,6 +213,15 @@ public class UserDaoImpl implements IUserDao {
         query.addCriteria(new Criteria("deleted").is(0));
         Update update = new Update();
         update.set("level", level);
+        return mongoTemplate.updateFirst(query, update, UserBo.class);
+    }
+
+    @Override
+    public WriteResult updateUserStatus(String id, int status) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("_id").is(id));
+        Update update = new Update();
+        update.set("deleted", status);
         return mongoTemplate.updateFirst(query, update, UserBo.class);
     }
 }

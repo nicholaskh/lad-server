@@ -67,4 +67,19 @@ public interface IUserDao extends IBaseDao {
      */
     WriteResult updateLevel(String id, int level);
 
+    /**
+     * 查找当前手机号是否已注册
+     * @param phone
+     * @return
+     */
+    UserBo checkByPhone(String phone);
+
+    /**
+     * 修改用户状态
+     * @param id
+     * @param status
+     * @return
+     */
+    WriteResult updateUserStatus(String id, int status);
+
 }

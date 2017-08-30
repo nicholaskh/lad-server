@@ -9,6 +9,7 @@ public enum ERRORCODE {
 	ACCOUNT_NULL_BIRTHDAY(10005, "用户生日为空"),
 	ACCOUNT_ID(10006, "用户名ID错误"),
 	ACCOUNT_PHONE_NULL(10007, "手机号码为空"),
+	ACCOUNT_PHONE_EXIST(10008, "手机号未注册"),
 
 	USER_USERNAME(20001, "用户名错误"),
 	USER_SEX(20002, "性别错误"),

@@ -1,8 +1,10 @@
 package com.lad.controller;
 
+import com.lad.bo.HomepageBo;
 import com.lad.bo.IMTermBo;
 import com.lad.bo.UserBo;
 import com.lad.redis.RedisServer;
+import com.lad.service.IHomepageService;
 import com.lad.service.IIMTermService;
 import com.lad.service.ILoginService;
 import com.lad.service.IUserService;
@@ -37,6 +39,8 @@ public class LoginController extends BaseContorller {
 	private IIMTermService iMTermService;
 	@Autowired
 	private RedisServer redisServer;
+	@Autowired
+	private IHomepageService homepageService;
 
 	@Autowired
 	private IUserService userService;
@@ -48,12 +52,10 @@ public class LoginController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PHONE_ERROR.getIndex(),
 					ERRORCODE.ACCOUNT_PHONE_ERROR.getReason());
 		}
-		Map<String, Object> map = new HashMap<String, Object>();
 		HttpSession session = request.getSession();
 		session.setAttribute("phone", phone);
 		session.setAttribute("verification", "111111");
-		map.put("ret", 0);
-		return JSONObject.fromObject(map).toString();
+		return Constant.COM_RESP;
 	}
 
 	@RequestMapping("/login-quick")
@@ -66,8 +68,8 @@ public class LoginController extends BaseContorller {
 					ERRORCODE.SECURITY_WRONG_VERIFICATION.getReason());
 		}
 		if (!StringUtils.hasLength(phone)) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PHONE_ERROR.getIndex(),
-					ERRORCODE.ACCOUNT_PHONE_ERROR.getReason());
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PHONE_NULL.getIndex(),
+					ERRORCODE.ACCOUNT_PHONE_NULL.getReason());
 		}
 		if (!StringUtils.hasLength(verification)) {
 			return CommonUtil.toErrorResult(ERRORCODE.SECURITY_WRONG_VERIFICATION.getIndex(),
@@ -79,15 +81,31 @@ public class LoginController extends BaseContorller {
 					ERRORCODE.SECURITY_WRONG_VERIFICATION.getReason());
 		}
 		String phone_session = (String) session.getAttribute("phone");
-		Map<String, Object> map = new HashMap<String, Object>();
 		if (verification_session.equals(verification) && phone_session.equals(phone)) {
-			map.put("ret", 0);
+			UserBo userBo = userService.checkByPhone(phone);
+			if (userBo == null) {
+				userBo = new UserBo();
+				Long time = System.currentTimeMillis()/1000;
+				userBo.setUserName("user"+time);
+				userBo.setPhone(phone);
+				String initPass = phone.substring(phone.length() - 6);
+				userBo.setPassword(CommonUtil.getSHA256(initPass));
+				userService.save(userBo);
+				HomepageBo homepageBo = new HomepageBo();
+				homepageBo.setOwner_id(userBo.getId());
+				homepageService.insert(homepageBo);
+			} else if (userBo.getDeleted() == Constant.DELETED) {
+				userBo.setDeleted(Constant.ACTIVITY);
+				userService.updateUserStatus(userBo.getId(), Constant.ACTIVITY);
+			}
 			session.setAttribute("isLogin", true);
+			session.setAttribute("loginTime", System.currentTimeMillis());
+			session.setAttribute("userBo", userBo);
 		} else {
 			return CommonUtil.toErrorResult(ERRORCODE.SECURITY_WRONG_VERIFICATION.getIndex(),
 					ERRORCODE.SECURITY_WRONG_VERIFICATION.getReason());
 		}
-		return JSONObject.fromObject(map).toString();
+		return Constant.COM_RESP;
 	}
 
 	@RequestMapping("/login")
