@@ -2,6 +2,8 @@ package com.lad.controller;
 
 import com.lad.bo.UserBo;
 import com.lad.service.IUserService;
+import com.lad.util.CommonUtil;
+import com.lad.util.ERRORCODE;
 import net.sf.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -37,8 +39,10 @@ public class AccountSecurityController extends BaseContorller {
 			return "{\"ret\":-1,\"error\":\"login error\"}";
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
-		session.setAttribute("account-security.verification-send", "111111");
-		
+		String code = CommonUtil.getRandom();
+		CommonUtil.sendSMS2(userBo.getPhone(), CommonUtil.buildCodeMsg(code));
+		session.setAttribute("account-security.verification-send", code);
+		session.setAttribute("account-security.verification-send-time", System.currentTimeMillis());
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();
 	}
@@ -57,13 +61,19 @@ public class AccountSecurityController extends BaseContorller {
 			return "{\"ret\":-1,\"error\":\"verification is null\"}";
 		}
 		String verification_session = (String) session.getAttribute("account-security.verification-send");
+		long time = (long)session.getAttribute("account-security.verification-send-time");
 		Map<String, Object> map = new HashMap<String, Object>();
-		if (verification_session.equals(verification)) {
-			map.put("ret", 0);
-			session.setAttribute("isVerificationRight", true);
+		if (CommonUtil.isTimeIn(time)){
+			if (verification_session.equals(verification)) {
+				map.put("ret", 0);
+				session.setAttribute("isVerificationRight", true);
+			} else {
+				return CommonUtil.toErrorResult(ERRORCODE.SECURITY_WRONG_VERIFICATION.getIndex(),
+						ERRORCODE.SECURITY_WRONG_VERIFICATION.getReason());
+			}
 		} else {
-			map.put("ret", -1);
-			map.put("error", "verification error");
+			return CommonUtil.toErrorResult(ERRORCODE.SECURITY_VERIFICATION_TIMEOUT.getIndex(),
+					ERRORCODE.SECURITY_VERIFICATION_TIMEOUT.getReason());
 		}
 		return JSONObject.fromObject(map).toString();
 	}
@@ -82,7 +92,10 @@ public class AccountSecurityController extends BaseContorller {
 			return "{\"ret\":-1,\"error\":\"error session\"}";
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
-		session.setAttribute("account-security.verification-send-phone", "111111");
+		String code = CommonUtil.getRandom();
+		CommonUtil.sendSMS2(phone, CommonUtil.buildCodeMsg(code));
+		session.setAttribute("account-security.verification-send-phone", code);
+		session.setAttribute("account-security.verification-send-phone-time", System.currentTimeMillis());
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();
@@ -106,18 +119,24 @@ public class AccountSecurityController extends BaseContorller {
 			return "{\"ret\":-1,\"error\":\"verification is null\"}";
 		}
 		String verification_session = (String) session.getAttribute("account-security.verification-send-phone");
-		Map<String, Object> map = new HashMap<String, Object>();
-		if (verification_session.equals(verification)) {
-			map.put("ret", 0);
-			if (session.getAttribute("userBo") == null) {
-				return "{\"ret\":-1,\"error\":\"error session\"}";
+		Map<String, Object> map = new HashMap<>();
+		long time = (long)session.getAttribute("account-security.verification-send-phone-time");
+		if (CommonUtil.isTimeIn(time)) {
+			if (verification_session.equals(verification)) {
+				map.put("ret", 0);
+				if (session.getAttribute("userBo") == null) {
+					return "{\"ret\":-1,\"error\":\"error session\"}";
+				}
+				UserBo userBo = (UserBo) session.getAttribute("userBo");
+				userBo.setPhone(phone);
+				userService.updatePhone(userBo);
+			} else {
+				return CommonUtil.toErrorResult(ERRORCODE.SECURITY_WRONG_VERIFICATION.getIndex(),
+						ERRORCODE.SECURITY_WRONG_VERIFICATION.getReason());
 			}
-			UserBo userBo = (UserBo) session.getAttribute("userBo");
-			userBo.setPhone(phone);
-			userService.updatePhone(userBo);
 		} else {
-			map.put("ret", -1);
-			map.put("error", "verification error");
+			return CommonUtil.toErrorResult(ERRORCODE.SECURITY_VERIFICATION_TIMEOUT.getIndex(),
+					ERRORCODE.SECURITY_VERIFICATION_TIMEOUT.getReason());
 		}
 		session.invalidate();
 		return JSONObject.fromObject(map).toString();

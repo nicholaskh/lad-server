@@ -30,14 +30,14 @@ public class UploadController extends BaseContorller {
 			HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return "{\"ret\":20002,\"error\":\":譛ｪ逋ｻ蠖表"}";
+			return "{\"ret\":20002,\"error\":\":ﾎｴｵﾇﾂｼ\"}";
 		}
 		if (session.getAttribute("isLogin") == null) {
-			return "{\"ret\":20002,\"error\":\":譛ｪ逋ｻ蠖表"}";
+			return "{\"ret\":20002,\"error\":\":ﾎｴｵﾇﾂｼ\"}";
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
 		if (userBo == null) {
-			return "{\"ret\":20002,\"error\":\":譛ｪ逋ｻ蠖表"}";
+			return "{\"ret\":20002,\"error\":\":ﾎｴｵﾇﾂｼ\"}";
 		}
 		userBo = userService.getUser(userBo.getId());
 		String userId = userBo.getId();
@@ -57,14 +57,14 @@ public class UploadController extends BaseContorller {
 			HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return "{\"ret\":20002,\"error\":\":譛ｪ逋ｻ蠖表"}";
+			return "{\"ret\":20002,\"error\":\":ﾎｴｵﾇﾂｼ\"}";
 		}
 		if (session.getAttribute("isLogin") == null) {
-			return "{\"ret\":20002,\"error\":\":譛ｪ逋ｻ蠖表"}";
+			return "{\"ret\":20002,\"error\":\":ﾎｴｵﾇﾂｼ\"}";
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
 		if (userBo == null) {
-			return "{\"ret\":20002,\"error\":\":譛ｪ逋ｻ蠖表"}";
+			return "{\"ret\":20002,\"error\":\":ﾎｴｵﾇﾂｼ\"}";
 		}
 		userBo = userService.getUser(userBo.getId());
 		String userId = userBo.getId();
@@ -82,14 +82,14 @@ public class UploadController extends BaseContorller {
 			HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
-			return "{\"ret\":20002,\"error\":\":譛ｪ逋ｻ蠖表"}";
+			return "{\"ret\":20002,\"error\":\":ﾎｴｵﾇﾂｼ\"}";
 		}
 		if (session.getAttribute("isLogin") == null) {
-			return "{\"ret\":20002,\"error\":\":譛ｪ逋ｻ蠖表"}";
+			return "{\"ret\":20002,\"error\":\":ﾎｴｵﾇﾂｼ\"}";
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
 		if (userBo == null) {
-			return "{\"ret\":20002,\"error\":\":譛ｪ逋ｻ蠖表"}";
+			return "{\"ret\":20002,\"error\":\":ﾎｴｵﾇﾂｼ\"}";
 		}
 		String fileName = imfile.getOriginalFilename();
 		String path = CommonUtil.upload(imfile, Constant.IMFILE_PATH, fileName, 1);

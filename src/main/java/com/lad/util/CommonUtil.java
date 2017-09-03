@@ -6,6 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -83,14 +84,16 @@ public class CommonUtil {
 		}
 		return -1;
 	}
-	
+
+	@Async
 	public static int sendSMS2(String mobile, String message) {
 		try {
-			message = URLEncoder.encode(message, "UTF-8");
+			message = URLEncoder.encode(message, "GBK");
 		} catch (UnsupportedEncodingException ex) {
 		}
 		String url = "http://sms-gw.bjedu.cloud:9888/smsservice/SendSMS?UserId=100535&Password=ttlyyl_2017&Mobiles="+mobile+"&Content="+message+"&ExtNo=35";
 		String responseString = HttpClientUtil.getInstance().doGetRequest(url);
+		System.out.println(mobile + " : =====message send result : " + responseString);
 		if (responseString.trim().equals(Constant.RESPONSE)) {
 			return 0;
 		}
@@ -100,6 +103,38 @@ public class CommonUtil {
 	public static int getRandom1() {
 		return (int) (1 + Math.random() * (10));
 	}
+
+	public static String getRandom() {
+		return String.valueOf((int) ((Math.random() * 9 + 1) * 100000));
+	}
+
+
+	public static String buildCodeMsg(String number) {
+		String msg = "";
+		try {
+			String new1 =  new String("您的验证码为：".getBytes(), "GBK");
+			String new2 =  new String("，该验证码5分钟内有效，如非本人操作，请忽略。".getBytes(), "GBK");
+			StringBuilder builder = new StringBuilder();
+			builder.append(new1).append(number).append(new2);
+			msg = builder.toString();
+		} catch (Exception e) {
+			System.out.println("send Msg exception " + e.getMessage());
+		}
+		return msg;
+	}
+
+	public static String buildPassMsg(String number) {
+		String msg = "";
+		try {
+			StringBuilder builder = new StringBuilder();
+			builder.append("您正在修改密码，验证码为：").append(number).append("，该验证码5分钟内有效，如非本人操作，请忽略。");
+			msg = new String(builder.toString().getBytes(), "GBK");
+		} catch (Exception e) {
+			System.out.println("send Msg exception " + e.getMessage());
+		}
+		return msg;
+	}
+
 	
 	/**
 	 * 将时间转成字符串
@@ -149,6 +184,15 @@ public class CommonUtil {
 	public static boolean isTimeInTen(Date beforeDate){
 		return isTimeOut(beforeDate, 10*60*1000);
 	}
+
+	/**
+	 * @param time 目标时间
+	 * @return ture
+	 */
+	public static boolean isTimeIn(long time){
+		return (System.currentTimeMillis() - time) <= 300000;
+	}
+
 
 	/**
 	 * 获取当前时间一周以前时期

@@ -24,15 +24,15 @@ public class RedissonTest {
 //        System.out.println(cache.get("user1"));
 
 
-        String st = "5954f7d831f0a503a5a4225a,594f5bb931f0a567340921e8";
-
-        System.out.println(st.indexOf(','));
-
-        String[] useridArr = st.split(",");
-
-        for (String str : useridArr) {
-            System.out.println(str +"-----");
-        }
+//        String st = "5954f7d831f0a503a5a4225a,594f5bb931f0a567340921e8";
+//
+//        System.out.println(st.indexOf(','));
+//
+//        String[] useridArr = st.split(",");
+//
+//        for (String str : useridArr) {
+//            System.out.println(str +"-----");
+//        }
 
 
     }

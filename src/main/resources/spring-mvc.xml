@@ -1,16 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:p="http://www.springframework.org/schema/p" xmlns:context="http://www.springframework.org/schema/context"
-    xsi:schemaLocation="http://www.springframework.org/schema/beans 
-        http://www.springframework.org/schema/beans/spring-beans-4.2.xsd 
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:task="http://www.springframework.org/schema/task"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
         http://www.springframework.org/schema/context 
-        http://www.springframework.org/schema/context/spring-context-4.2.xsd 
+        http://www.springframework.org/schema/context/spring-context-4.3.xsd
         http://www.springframework.org/schema/mvc 
-        http://www.springframework.org/schema/mvc/spring-mvc-4.2.xsd">
+        http://www.springframework.org/schema/mvc/spring-mvc-4.3.xsd
+        http://www.springframework.org/schema/task
+        http://www.springframework.org/schema/task/spring-task-4.3.xsd">
 
-    <!-- 自动扫描controller包下的所有类，如果@Controller注入为bean -->
-    <context:component-scan base-package="com.lad" />
+    <mvc:annotation-driven>
+        <mvc:message-converters register-defaults="true">
+            <bean class="org.springframework.http.converter.StringHttpMessageConverter">
+                <constructor-arg>
+                    <value>UTF-8</value>
+                </constructor-arg>
+            </bean>
+        </mvc:message-converters>
+    </mvc:annotation-driven>
+
+    <!--注意web。xml中配置欢迎的首页时，一定要配置这个默认的handler功能 -->
+    <mvc:default-servlet-handler />
+
+    <context:annotation-config />
+    <!-- 扫描controller，如果@Controller注入为bean -->
+    <context:component-scan base-package="com.lad.controller" use-default-filters="false" >
+        <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller" />
+    </context:component-scan>
+
+    <!--  异步方法支持  -->
+    <task:annotation-driven />
 
     <!-- 避免IE执行AJAX时,返回JSON出现下载文件 -->
     <bean id="mappingJacksonHttpMessageConverter"
@@ -54,15 +77,5 @@
             <value>4096</value>
         </property>
     </bean>
-    
-    <mvc:annotation-driven>
-	    <mvc:message-converters register-defaults="true">  
-	        <bean class="org.springframework.http.converter.StringHttpMessageConverter">  
-	           <constructor-arg>
-	               <value>UTF-8</value>
-	           </constructor-arg>
-	        </bean>  
-	     </mvc:message-converters>  
-    </mvc:annotation-driven>
     
 </beans>

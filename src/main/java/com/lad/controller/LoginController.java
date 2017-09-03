@@ -8,10 +8,7 @@ import com.lad.service.IHomepageService;
 import com.lad.service.IIMTermService;
 import com.lad.service.ILoginService;
 import com.lad.service.IUserService;
-import com.lad.util.CommonUtil;
-import com.lad.util.Constant;
-import com.lad.util.ERRORCODE;
-import com.lad.util.IMUtil;
+import com.lad.util.*;
 import com.pushd.ImAssistant;
 import com.pushd.Message;
 import net.sf.json.JSONObject;
@@ -54,7 +51,10 @@ public class LoginController extends BaseContorller {
 		}
 		HttpSession session = request.getSession();
 		session.setAttribute("phone", phone);
-		session.setAttribute("verification", "111111");
+		String code = CommonUtil.getRandom();
+		CommonUtil.sendSMS2(phone, CommonUtil.buildCodeMsg(code));
+		session.setAttribute("verification", code);
+		session.setAttribute("verification-time", System.currentTimeMillis());
 		return Constant.COM_RESP;
 	}
 
@@ -63,10 +63,6 @@ public class LoginController extends BaseContorller {
 	public String login_quick(String phone, String verification, HttpServletRequest request,
 			HttpServletResponse response) {
 		HttpSession session = request.getSession();
-		if (session.isNew()) {
-			return CommonUtil.toErrorResult(ERRORCODE.SECURITY_WRONG_VERIFICATION.getIndex(),
-					ERRORCODE.SECURITY_WRONG_VERIFICATION.getReason());
-		}
 		if (!StringUtils.hasLength(phone)) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PHONE_NULL.getIndex(),
 					ERRORCODE.ACCOUNT_PHONE_NULL.getReason());
@@ -81,8 +77,21 @@ public class LoginController extends BaseContorller {
 					ERRORCODE.SECURITY_WRONG_VERIFICATION.getReason());
 		}
 		String phone_session = (String) session.getAttribute("phone");
+		Map<String, Object> map = new HashMap<>();
+		long codeTime = (long)session.getAttribute("verification-time");
+		if (!CommonUtil.isTimeIn(codeTime)){
+			return CommonUtil.toErrorResult(ERRORCODE.SECURITY_VERIFICATION_TIMEOUT.getIndex(),
+					ERRORCODE.SECURITY_VERIFICATION_TIMEOUT.getReason());
+		}
 		if (verification_session.equals(verification) && phone_session.equals(phone)) {
+			map.put("ret", 0);
 			UserBo userBo = userService.checkByPhone(phone);
+			boolean isNew = false;
+			ImAssistant assistent = ImAssistant.init("180.76.138.200", 2222);
+			if (null == assistent) {
+				return CommonUtil.toErrorResult(ERRORCODE.PUSHED_CONNECT_ERROR.getIndex(),
+						ERRORCODE.PUSHED_CONNECT_ERROR.getReason());
+			}
 			if (userBo == null) {
 				userBo = new UserBo();
 				Long time = System.currentTimeMillis()/1000;
@@ -94,10 +103,53 @@ public class LoginController extends BaseContorller {
 				HomepageBo homepageBo = new HomepageBo();
 				homepageBo.setOwner_id(userBo.getId());
 				homepageService.insert(homepageBo);
+				try {
+					String term = IMUtil.getTerm(assistent);
+					IMTermBo iMTermBo = new IMTermBo();
+					iMTermBo.setUserid(userBo.getId());
+					iMTermBo.setTerm(term);
+					iMTermService.insert(iMTermBo);
+					assistent.setServerTerm(term);
+					Message messageUser = assistent.createUser(userBo.getId());
+
+					Message token = assistent.getToken();
+					if (messageUser.getStatus() == Message.Status.termError) {
+						term = IMUtil.getTerm(assistent);
+						iMTermService.updateByUserid(userBo.getId(), term);
+						messageUser = assistent.createUser(userBo.getId());
+						token = assistent.getToken();
+						if (Message.Status.success != messageUser.getStatus()) {
+							return CommonUtil.toErrorResult(messageUser.getStatus(), messageUser.getMsg());
+						}
+					} else if (Message.Status.success != messageUser.getStatus()) {
+						return CommonUtil.toErrorResult(messageUser.getStatus(), messageUser.getMsg());
+					}
+					map.put("token",token.getMsg());
+				} finally {
+					assistent.close();
+				}
+				String msg = "";
+				try {
+					msg = new String(Constant.QUICK_LOGIN.getBytes(), "GBK");
+				} catch (Exception e) {
+					System.out.println( "msg : " + e.getMessage());
+				}
+				int res = CommonUtil.sendSMS2(phone, msg);
+				System.out.println(phone + "; quick_login msg : " + res);
+				isNew = true;
 			} else if (userBo.getDeleted() == Constant.DELETED) {
 				userBo.setDeleted(Constant.ACTIVITY);
 				userService.updateUserStatus(userBo.getId(), Constant.ACTIVITY);
 			}
+			if (!isNew){
+				try {
+					String token = update(assistent, userBo);
+					map.put("token",token);
+				} catch (MyException e) {
+					return e.getMessage();
+				}
+			}
+			map.put("userid",userBo.getId());
 			session.setAttribute("isLogin", true);
 			session.setAttribute("loginTime", System.currentTimeMillis());
 			session.setAttribute("userBo", userBo);
@@ -105,7 +157,37 @@ public class LoginController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.SECURITY_WRONG_VERIFICATION.getIndex(),
 					ERRORCODE.SECURITY_WRONG_VERIFICATION.getReason());
 		}
-		return Constant.COM_RESP;
+		return JSONObject.fromObject(map).toString();
+	}
+
+	private String update(ImAssistant assistent, UserBo userBo) throws MyException{
+		IMTermBo iMTermBo = iMTermService.selectByUserid(userBo.getId());
+		if(iMTermBo == null){
+			iMTermBo = new IMTermBo();
+			iMTermBo.setUserid(userBo.getId());
+			String term =IMUtil.getTerm(assistent);
+			iMTermBo.setTerm(term);
+			iMTermService.insert(iMTermBo);
+		}
+		assistent.setServerTerm(iMTermBo.getTerm());
+		Message message3 = assistent.getToken();
+		if(message3.getStatus() == Message.Status.termError){
+			String term =IMUtil.getTerm(assistent);
+			iMTermService.updateByUserid(userBo.getId(), term);
+			message3 = assistent.getToken();
+			if(Message.Status.success != message3.getStatus()){
+				assistent.close();
+				throw new MyException(CommonUtil.toErrorResult(message3.getStatus(),
+						message3.getMsg()));
+			}
+			return message3.getMsg();
+
+		}else if (Message.Status.success != message3.getStatus()) {
+			assistent.close();
+			throw new MyException(CommonUtil.toErrorResult(message3.getStatus(),
+					message3.getMsg()));
+		}
+		return message3.getMsg();
 	}
 
 	@RequestMapping("/login")
@@ -237,9 +319,7 @@ public class LoginController extends BaseContorller {
 		long time = System.currentTimeMillis() - loginTime;
 		userService.addUserLevel(userBo.getId(), time, Constant.LEVEL_HOUR);
 		session.invalidate();
-		Map<String, Object> map = new HashMap<String, Object>();
-		map.put("ret", 0);
-		return JSONObject.fromObject(map).toString();
+		return Constant.COM_RESP;
 	}
 
 }

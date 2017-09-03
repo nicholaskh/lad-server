@@ -56,7 +56,10 @@ public class RegistController extends BaseContorller {
 		case 0:
 			HttpSession session = request.getSession();
 			session.setAttribute("phone", phone);
-			session.setAttribute("verification", "111111");
+			String code = CommonUtil.getRandom();
+			CommonUtil.sendSMS2(phone, CommonUtil.buildCodeMsg(code));
+			session.setAttribute("verification", code);
+			session.setAttribute("verification-time", System.currentTimeMillis());
 			map.put("ret", 0);
 			break;
 		case -1:
@@ -81,6 +84,11 @@ public class RegistController extends BaseContorller {
 		if (session.getAttribute("verification") == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.SECURITY_WRONG_VERIFICATION.getIndex(),
 					ERRORCODE.SECURITY_WRONG_VERIFICATION.getReason());
+		}
+		long codeTime = (long)session.getAttribute("verification-time");
+		if (!CommonUtil.isTimeIn(codeTime)){
+			return CommonUtil.toErrorResult(ERRORCODE.SECURITY_VERIFICATION_TIMEOUT.getIndex(),
+					ERRORCODE.SECURITY_VERIFICATION_TIMEOUT.getReason());
 		}
 		String verification_session = (String) session.getAttribute("verification");
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -107,15 +115,10 @@ public class RegistController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.SECURITY_WRONG_VERIFICATION.getIndex(),
 					ERRORCODE.SECURITY_WRONG_VERIFICATION.getReason());
 		}
-		if (session.getAttribute("isVerificationRight") == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.SECURITY_WRONG_VERIFICATION.getIndex(),
-					ERRORCODE.SECURITY_WRONG_VERIFICATION.getReason());
-		}
 		if (!StringUtils.hasLength(password1) || !StringUtils.hasLength(password2) || !(password1.equals(password2))) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PASSWORD.getIndex(),
 					ERRORCODE.ACCOUNT_PASSWORD.getReason());
 		}
-
 		String phone = (String) session.getAttribute("phone");
 		if(registService.is_phone_repeat(phone)){
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PHONE_REPEAT.getIndex(),

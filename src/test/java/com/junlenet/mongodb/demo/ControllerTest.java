@@ -1,6 +1,7 @@
 package com.junlenet.mongodb.demo;
 
 import com.lad.controller.AccountSecurityController;
+import com.lad.controller.InforController;
 import com.lad.controller.LoginController;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,6 +38,9 @@ public class ControllerTest {
 
     @Autowired
     private AccountSecurityController accountSecurityController;
+
+    @Autowired
+    private InforController inforController;
 
     private MockMvc mockMvc;
 
@@ -88,6 +92,23 @@ public class ControllerTest {
     public void testAcc() throws Exception {
         request.setMethod("GET");
         String res = accountSecurityController.verification_send( request, response);
+        System.out.println(res);
+    }
+
+
+
+    @Test
+    public void testInforget() throws Exception {
+        request.setMethod("GET");
+        String res = loginController.verification_send("15320542105", request, response);
+        System.out.println(res);
+    }
+
+
+    @Test
+    public void testLoginQuick() throws Exception {
+        request.setMethod("GET");
+        String res = loginController.login_quick("15320542105","111111", request, response);
         System.out.println(res);
     }
 

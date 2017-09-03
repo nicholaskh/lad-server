@@ -158,4 +158,7 @@ public class Constant {
 	 */
 	public static final int NOTE_JIAJING = 1;
 
+	public static final String QUICK_LOGIN =
+			"您已成功登录天天老友，登录账号为您本次登录使用的手机号码，登录初始密码为您本次登录使用的手机号码后6位。为了您的账户安全，天天老友建议您及时修改登录密码";
+
 }

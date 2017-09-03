@@ -1,26 +1,23 @@
 package com.lad.controller;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
+import com.lad.bo.UserBo;
+import com.lad.service.IRegistService;
+import com.lad.service.IUserService;
+import com.lad.util.CommonUtil;
+import com.lad.util.ERRORCODE;
+import net.sf.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.lad.bo.UserBo;
-import com.lad.service.IRegistService;
-import com.lad.service.IUserService;
-import com.lad.util.CommonUtil;
-import com.lad.util.ERRORCODE;
-
-import net.sf.json.JSONObject;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import java.util.HashMap;
+import java.util.Map;
 
 @Controller
 @RequestMapping("password")
@@ -61,7 +58,10 @@ public class PasswordController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.SECURITY_WRONG_VERIFICATION.getIndex(),
 					ERRORCODE.SECURITY_WRONG_VERIFICATION.getReason());
 		}
-		session.setAttribute("verification", "111111");
+		String code = CommonUtil.getRandom();
+		session.setAttribute("verification", code);
+		session.setAttribute("verification-time", System.currentTimeMillis());
+		CommonUtil.sendSMS2(phone, CommonUtil.buildPassMsg(code));
 		session.setAttribute("phone", phone);
 		Cookie cookie = new Cookie("sessionId", session.getId());
 		response.addCookie(cookie);
@@ -88,6 +88,11 @@ public class PasswordController extends BaseContorller {
 		if (!verification_session.equals(verification)) {
 			return "{\"ret\":30003,\"error\":\"验证码错误\"}";
 		}
+		long codeTime = (long)session.getAttribute("verification-time");
+		if (!CommonUtil.isTimeIn(codeTime)){
+			return CommonUtil.toErrorResult(ERRORCODE.SECURITY_VERIFICATION_TIMEOUT.getIndex(),
+					ERRORCODE.SECURITY_VERIFICATION_TIMEOUT.getReason());
+		}
 		session.setAttribute("isVerification", true);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
@@ -110,6 +115,11 @@ public class PasswordController extends BaseContorller {
 		if (session.getAttribute("isVerification") == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.SECURITY_WRONG_VERIFICATION.getIndex(),
 					ERRORCODE.SECURITY_WRONG_VERIFICATION.getReason());
+		}
+		long codeTime = (long)session.getAttribute("verification-time");
+		if (!CommonUtil.isTimeIn(codeTime)){
+			return CommonUtil.toErrorResult(ERRORCODE.SECURITY_VERIFICATION_TIMEOUT.getIndex(),
+					ERRORCODE.SECURITY_VERIFICATION_TIMEOUT.getReason());
 		}
 		String phone = (String) session.getAttribute("phone");
 		UserBo userBo = new UserBo();

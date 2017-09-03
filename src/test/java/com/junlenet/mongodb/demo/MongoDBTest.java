@@ -4,8 +4,8 @@ import com.alibaba.fastjson.JSON;
 import com.lad.bo.*;
 import com.lad.dao.*;
 import com.lad.scrapybo.InforBo;
-import com.lad.service.ICircleService;
-import com.lad.service.IUserService;
+import com.lad.scrapybo.SecurityBo;
+import com.lad.service.*;
 import com.lad.util.Constant;
 import com.lad.vo.CircleVo;
 import net.sf.json.JSONObject;
@@ -32,29 +32,48 @@ public class MongoDBTest {
 	@Qualifier("mongoTemplateTwo")
 	private MongoTemplate mongoTemplateTwo;
 
-    @Autowired
-    private IChatroomDao chatroomDao;
+	@Autowired
+	private MongoTemplate mongoTemplate;
 
-    @Autowired
-    private ICircleDao circleDao;
+	@Autowired
+	private IChatroomDao chatroomDao;
 
-    @Autowired
-    private IUserDao userDao;
+	@Autowired
+	private ICircleDao circleDao;
+
+	@Autowired
+	private IUserDao userDao;
 
 	@Autowired
 	private IUserService userService;
 
-    @Autowired
-    private INoteDao noteDao;
+	@Autowired
+	private INoteDao noteDao;
 
-    @Autowired
-    private IRedstarDao redstarDao;
+	@Autowired
+	private IRedstarDao redstarDao;
 
-    @Autowired
-    private ICircleService circleService;
+	@Autowired
+	private ICircleService circleService;
 
-    @Autowired
-    private IInforDao inforDao;
+	@Autowired
+	private IInforService inforService;
+
+	@Autowired
+	private ICommentService commentService;
+
+	@Autowired
+	private INoteService noteService;
+
+	@Autowired
+	private IThumbsupService thumbsupService;
+
+
+	@Autowired
+	private ILocationService locationService;
+
+	@Autowired
+	private IUserLevelDao userLevelDao;
 
 
 	@Before
@@ -62,26 +81,26 @@ public class MongoDBTest {
 
 	}
 
-    @Test
-    public void getUsers(){
-        List<UserBo> userBos = userDao.getAllUser();
+	@Test
+	public void getUsers() {
+		List<UserBo> userBos = userDao.getAllUser();
 
-        for (UserBo userBo:userBos) {
-            System.out.println(JSON.toJSONString(userBo));
-        }
+		for (UserBo userBo : userBos) {
+			System.out.println(JSON.toJSONString(userBo));
+		}
 
-    }
+	}
 
 	@Test
-	public void addReds(){
+	public void addReds() {
 		List<RedstarBo> redstarBos = redstarDao.findRedTotal("594d364f31f0a560fb6a4b5f");
 		for (RedstarBo redstarBo : redstarBos) {
-			redstarDao.updateRedWeekByUser(redstarBo.getUserid(),redstarBo.getWeekNo(), 2017 );
+			redstarDao.updateRedWeekByUser(redstarBo.getUserid(), redstarBo.getWeekNo(), 2017);
 		}
 	}
 
 	@Test
-	public void getReds(){
+	public void getReds() {
 
 		List<RedstarBo> redstarBos = userService.findRedUserTotal("594d364f31f0a560fb6a4b5f");
 		for (RedstarBo redstarBo : redstarBos) {
@@ -93,18 +112,15 @@ public class MongoDBTest {
 	}
 
 	@Test
-	public void addNote(){
+	public void addNote() {
 		NoteBo noteBo = new NoteBo();
-		noteBo.setCircleId("594d364f31f0a560fb6a4b5f");
-		noteBo.setCreateuid("594f5bb931f0a567340921e8");
+		noteBo.setCircleId("599314b131f0a579c692e5cf");
+		noteBo.setCreateuid("5989cb6231f0a569e1dbfee3");
 		noteBo.setSubject("redis user and hahah");
-		noteBo.setContent("BSON documents may have more than one field with the same name. Most MongoDB interfaces, " +
-				"however, represent MongoDB with a structure (e.g. a hash table) that does not support duplicate field " +
-				"names. If you need to manipulate documents that have more than one field with the same name, see the driver documentation for your driver.\n"
-				+ "\n" + "Some documents created by internal MongoDB processes may have duplicate fields, but no MongoDB process will ever add duplicate fields to an existing user document.");
-		noteBo.setVisitcount(1999);
-		noteBo.setCommentcount(104);
-		noteBo.setThumpsubcount(18);
+		noteBo.setContent("BSON documents may have more than one field with the same name. Most MongoDB interfaces, " + "however, represent MongoDB with a structure (e.g. a hash table) that does not support duplicate field " + "names. If you need to manipulate documents that have more than one field with the same name, see the driver documentation for your driver.\n" + "\n" + "Some documents created by internal MongoDB processes may have duplicate fields, but no MongoDB process will ever add duplicate fields to an existing user document.");
+		noteBo.setVisitcount(20);
+		noteBo.setCommentcount(10);
+		noteBo.setThumpsubcount(12);
 
 		LinkedList<String> photos = new LinkedList<>();
 		photos.add("picture1.jsp");
@@ -117,36 +133,27 @@ public class MongoDBTest {
 
 
 	@Test
-	public void getNote(){
+	public void getNote() {
 
-//		List<NoteBo> noteBos = noteDao.selectHotNotes("594d364f31f0a560fb6a4b5f");
 
-		noteDao.deleteNote("5975a62531f0a5576088996e");
-		
-		List<NoteBo> noteBos = noteDao.selectHotNotes("594f765a31f0a567340921f3");
-		for (NoteBo noteB : noteBos) {
-			System.out.println(JSON.toJSONString(noteB));
-		}
-
-//		NoteBo noteBo = noteDao.selectById("596cf26431f0a515641c5c8b");
-//		System.out.println(JSON.toJSONString(noteBo));
-
-		List<NoteBo> noteBoss = noteDao.finyByCreateTime("594f765a31f0a567340921f3","", false, 10);
-		for (NoteBo noteB : noteBoss) {
-			System.out.println("============");
-			System.out.println(JSON.toJSONString(noteB));
-		}
-
-//		List<NoteBo> noteBoss = noteDao.selectByComment("596cf2a831f0a515641c5c8e");
-////
-//		List<NoteBo> noteBoss = noteDao.selectByVisit("594d364f31f0a560fb6a4b5f");
-//		for (NoteBo noteBo : noteBoss) {
-//			System.out.println(JSON.toJSONString(noteBo));
+//		List<CommentBo> commentBos = commentService.selectByNoteid("5989cc2e31f0a569e1dbfee7", "", true, 10);
+//
+//		for (CommentBo commentBo : commentBos) {
+//			System.out.println(JSON.toJSONString(commentBo));
+//
 //		}
 
+//		List<NoteBo> noteBoss = noteService.finyMyNoteByComment("5989cb6231f0a569e1dbfee3","",false, 10);
+
+
+//		List<NoteBo> noteBoss = noteDao.selectByVisit("594d364f31f0a560fb6a4b5f");
+
+		List<NoteBo> noteBos = noteService.selectHotNotes("599314b131f0a579c692e5cf");
+		for (NoteBo noteBo : noteBos) {
+			System.out.println(JSON.toJSONString(noteBo));
+		}
 
 	}
-
 
 
 	/**
@@ -158,7 +165,7 @@ public class MongoDBTest {
 		chatroomBo.setName("face4");
 		chatroomBo.setSeq(0);
 		chatroomBo.setType(3);
-		chatroomBo.setPosition(new double[]{118.639523,32.070078});
+		chatroomBo.setPosition(new double[]{118.639523, 32.070078});
 		chatroomDao.insert(chatroomBo);
 		System.out.println(chatroomBo.getId());
 
@@ -215,27 +222,26 @@ public class MongoDBTest {
 //			}
 //		}
 
-		double[] position = new double[]{118.788135,32.029064};
+		double[] position = new double[]{118.788135, 32.029064};
 		boolean res = chatroomDao.withInRange("59451b49d75bc2118c082c6c", position, 2000);
 		System.out.println(res);
 	}
 
 	@Test
-	public void circleTest(){
-        List<CircleBo> circleBos = circleDao.selectUsersPre("");
-        System.out.println(circleBos.size());
-        for (CircleBo circleBo : circleBos) {
-            System.out.println(JSON.toJSONString(circleBo));
-        }
-    }
+	public void circleTest() {
+		List<CircleBo> circleBos = circleDao.selectUsersPre("");
+		System.out.println(circleBos.size());
+		for (CircleBo circleBo : circleBos) {
+			System.out.println(JSON.toJSONString(circleBo));
+		}
+	}
 
-    @Test
-    public void myCircleTest(){
-        List<CircleBo> circleBos = circleDao.findMyCircles(
-                "595514db31f0a503a5a4225d", "", false, 10);
-        System.out.println(circleBos.size());
-        for (CircleBo circleBo : circleBos) {
-            System.out.println(JSON.toJSONString(circleBo));
+	@Test
+	public void myCircleTest() {
+		List<CircleBo> circleBos = circleDao.findMyCircles("595514db31f0a503a5a4225d", "", false, 10);
+		System.out.println(circleBos.size());
+		for (CircleBo circleBo : circleBos) {
+			System.out.println(JSON.toJSONString(circleBo));
 
 //            if (!circleBo.getId().equals("594f765a31f0a567340921f3")) {
 //				Query query = new Query();
@@ -246,19 +252,19 @@ public class MongoDBTest {
 //				update.set("deleted", 1);
 //				mongoTemplate.updateFirst(query, update, CircleBo.class);
 //			}
-        }
+		}
 
-    }
+	}
 
 
-    @Test
-    public void addApply(){
+	@Test
+	public void addApply() {
 
 		HashSet<String> usersApply = new HashSet<>();
 
-    	String circleid = "594f765a31f0a567340921f3";
+		String circleid = "594f765a31f0a567340921f3";
 
-    	String userid = "594daa0e31f0a560fb6a4b73";
+		String userid = "594daa0e31f0a560fb6a4b73";
 		ReasonBo reasonBo = new ReasonBo();
 		reasonBo.setCircleid(circleid);
 		reasonBo.setReason("我要加入群");
@@ -315,15 +321,15 @@ public class MongoDBTest {
 	public void getUserapply() {
 
 		String circleid = "594f765a31f0a567340921f3";
-    	CircleBo circleBo = circleService.selectById("5969c10b31f0a515641c5c82");
+		CircleBo circleBo = circleService.selectById("5969c10b31f0a515641c5c82");
 		System.out.println(JSON.toJSONString(circleBo));
-		
+
 		CircleVo circleVo = new CircleVo();
 		BeanUtils.copyProperties(circleBo, circleVo);
 		circleVo.setId(circleBo.getId());
 		circleVo.setName(circleBo.getName());
-		circleVo.setUsersSize((long) circleBo.getUsers().size());
-		circleVo.setNotesSize((long) circleBo.getNotes().size());
+		circleVo.setUsersSize(circleBo.getUsers().size());
+		circleVo.setNotesSize(circleBo.getNoteSize());
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("circleVo", circleVo);
@@ -340,9 +346,7 @@ public class MongoDBTest {
 	}
 
 	@Test
-    public void addPe(){
-
-
+	public void addPe() {
 
 
 //        CircleBo circleBo =  circleDao.selectById("594f765a31f0a567340921f3");
@@ -353,7 +357,7 @@ public class MongoDBTest {
 //		circleBo.setUsers(users);
 //		circleDao.uddateName(circleBo.getId(),circleBo.getName());
 
-		CircleBo circleBo =  circleDao.selectById("594f765a31f0a567340921f3");
+		CircleBo circleBo = circleDao.selectById("594f765a31f0a567340921f3");
 		HashSet<String> users = circleBo.getUsers();
 		List<UserBo> userBos = userDao.getAllUser();
 		HashSet<String> usersApply = circleBo.getUsersApply();
@@ -371,11 +375,11 @@ public class MongoDBTest {
 			System.out.println(JSON.toJSONString(userBo));
 		}
 
-    }
+	}
 
 
-    @Test
-    public void tst(){
+	@Test
+	public void tst() {
 //
 //    	UserBo userBo = userDao.getUser("595514db31f0a503a5a4225d");
 //		System.out.println(JSON.toJSONString(userBo));
@@ -395,21 +399,149 @@ public class MongoDBTest {
 
 
 	@Test
-	public void infos(){
-		List<InforBo> inforBos = inforDao.selectAllInfos();
+	public void infos() {
+//		List<InforBo> inforBos = inforService.findAllGroups();
+//
+//		for (InforBo inforBo : inforBos) {
+//			System.out.println(JSON.toJSONString(inforBo));
+//		}
+//		System.out.println("----------------------");
 
-		for (InforBo inforBo : inforBos) {
-			System.out.println(JSON.toJSONString(inforBo));
-		}
-		System.out.println("----------------------");
-//		List<InforBo> infors = inforDao.findByList("健康新知");
+//		List<InforBo> infors = inforService.findClassInfos("疾病预防", "", 10);
 //
 //		for (InforBo inforBo : infors) {
 //			System.out.println(JSON.toJSONString(inforBo));
 //		}
 
+//		List<InforBo> infors = inforDao.findByList("健康新知");
+
+		List<SecurityBo> securityBos = inforService.findSecurityTypes();
+		for (SecurityBo inforBo : securityBos) {
+			System.out.println(JSON.toJSONString(inforBo));
+		}
+
+
+	}
+
+	@Test
+	public void test1() {
+
+//		List<CircleBo> circleBos = mongoTemplate.findAll(CircleBo.class);
+//
+//		for (CircleBo circleBo : circleBos) {
+//			System.out.println(JSON.toJSONString(circleBo));
+//		}
+
+//		List<CircleBo> circleBos = circleService.findByType("运动", 1, "", false, 10);
+//		for (CircleBo circleBo : circleBos) {
+//			System.out.println(JSON.toJSONString(circleBo));
+//		}
+
+		List<NoteBo> noteBos = noteService.finyByCreateTime("599314b131f0a579c692e5cf", "", false, 10);
+		for (NoteBo noteBo : noteBos) {
+			System.out.println(JSON.toJSONString(noteBo));
+		}
+
+
+//		List<NoteBo> noteBos = noteDao.selectCircleNotes(circleBo.getId(), "", false, 200);
+//		System.out.println(noteBos.size() + ",=== " + circleBo.getNoteSize());
+//
+//		String circleid = "599314b131f0a579c692e5cf";
+//
+//		System.out.println("-----------------");
+//		CircleBo circleBo = circleService.selectById(circleid);
+//		System.out.println(circleBo.getNoteSize());
 	}
 
 
+	@Test
+	public void delete() {
+		List<CircleTypeBo> typeBos = mongoTemplate.findAll(CircleTypeBo.class);
+		for (CircleTypeBo typeBo : typeBos) {
+			mongoTemplate.remove(typeBo);
+		}
+	}
+
+	@Test
+	public void add() {
+			CircleTypeBo circleTypeBo = new CircleTypeBo();
+			circleTypeBo.setLevel(2);
+			circleTypeBo.setPreCateg("行业");
+			circleTypeBo.setCategory("销售");
+			circleService.addCircleType(circleTypeBo);
+	}
+
+	@Test
+	public void addLocation() {
+
+		List<UserBo> userBos = userDao.getAllUser();
+
+		for (int i = 0; i < userBos.size(); i++) {
+			UserBo userBo = userBos.get(i);
+			if (!userBo.getId().equals("5989cb6231f0a569e1dbfee3")) {
+				System.out.println(JSON.toJSONString(userBo));
+				LocationBo locationBo = new LocationBo();
+				locationBo.setUserid(userBo.getId());
+				locationBo.setCreateuid(userBo.getId());
+				locationBo.setPosition(new double[]{116.307629 + 0.02 * i, 40.069359 + 0.1 * i});
+				locationService.insertUserPoint(locationBo);
+			}
+		}
+	}
+
+	@Test
+	public void addhis() {
+
+//		userDao.updateLevel("5989cb6231f0a569e1dbfee3", 3);
+
+		UserBo userBo = userDao.getUserByPhone("15901546925");
+		System.out.println(JSON.toJSONString(userBo));
+
+//		List<UserBo> userBos = userDao.getAllUser();
+//		for (UserBo userBo : userBos) {
+//			if (!userBo.getId().equals("5989cb6231f0a569e1dbfee3")) {
+//				userDao.updateLevel(userBo.getId(), 1);
+//			}
+//		}
+
+	}
+
+	@Test
+	public void findNear() {
+
+
+		double[] position = new double[]{116.855425465695, 40.3682890329198};
+
+		List<CircleBo> circleBos = circleDao.findNearCircle(position, 10000, 10);
+
+		for (CircleBo circleBo: circleBos) {
+			System.out.println(JSON.toJSONString(circleBo));
+		}
+
+		List<CircleHistoryBo> historyBos = circleService.findNearPeople("5989cbd631f0a569e1dbfee6",
+				"5989cb6231f0a569e1dbfee3", position, 10000);
+
+		for (CircleHistoryBo circleBo: historyBos) {
+			System.out.println(JSON.toJSONString(circleBo));
+		}
+
+	}
+
+	@Test
+	public void  level(){
+
+		UserLevelBo userLevelBo = new UserLevelBo();
+
+		userLevelBo.setUserid("5989cb6231f0a569e1dbfee3");
+		userLevelBo.setShareNum(103);
+		userLevelBo.setOnlineHours(62*60*60*1000);
+		userLevelBo.setTransmitNum(71);
+		userLevelBo.setLaunchPartys(8);
+		userLevelBo.setNoteNum(35);
+		userLevelBo.setCommentNum(88);
+
+		userLevelDao.insert(userLevelBo);
+
+	}
 
 }

@@ -6,7 +6,7 @@ import com.mongodb.WriteResult;
 import java.util.List;
 
 /**
- * åŠŸèƒ½æè¿°ï¼š
+ * ¹¦ÄÜÃèÊö£º
  * Copyright: Copyright (c) 2017
  * Version: 1.0
  * Time:2017/8/20
@@ -14,28 +14,28 @@ import java.util.List;
 public interface IPartyDao {
 
     /**
-     * æ·»åŠ èšä¼š
+     * Ìí¼Ó¾Û»á
      * @param partyBo
      * @return
      */
     PartyBo insert(PartyBo partyBo);
 
     /**
-     * ä¿®æ”¹èšä¼š
+     * ĞŞ¸Ä¾Û»á
      * @param partyBo
      * @return
      */
     WriteResult update(PartyBo partyBo);
 
     /**
-     * åˆ é™¤èšä¼š
+     * É¾³ı¾Û»á
      * @param id
      * @return
      */
     WriteResult delete(String id);
 
     /**
-     * æŸ¥æ‰¾æˆ‘å‘èµ·çš„èšä¼š
+     * ²éÕÒÎÒ·¢ÆğµÄ¾Û»á
      * @param createid
      * @return
      */

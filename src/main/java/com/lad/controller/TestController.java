@@ -15,7 +15,8 @@ public class TestController extends BaseContorller {
 	@RequestMapping("/send")
 	@ResponseBody
 	public void setTag(HttpServletRequest request, HttpServletResponse response) {
-		int res = CommonUtil.sendSMS2("15320542105", "test sms2");
+		String code = CommonUtil.getRandom();
+		int res = CommonUtil.sendSMS2("15320542105", CommonUtil.buildCodeMsg(code));
 		System.out.println("SMS  message : ====== "  + res);
 	}
 
