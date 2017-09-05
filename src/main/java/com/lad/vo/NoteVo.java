@@ -41,6 +41,12 @@ public class NoteVo extends BaseVo {
     //置顶  管理员操作
     private int top;
 
+    //圈子名字
+    private String cirName;
+
+    ///圈子头像
+    private String cirHeadPic;
+
     public Boolean getMyThumbsup() {
         return isMyThumbsup;
     }
@@ -218,5 +224,21 @@ public class NoteVo extends BaseVo {
 
     public void setTop(int top) {
         this.top = top;
+    }
+
+    public String getCirName() {
+        return cirName;
+    }
+
+    public void setCirName(String cirName) {
+        this.cirName = cirName;
+    }
+
+    public String getCirHeadPic() {
+        return cirHeadPic;
+    }
+
+    public void setCirHeadPic(String cirHeadPic) {
+        this.cirHeadPic = cirHeadPic;
     }
 }
