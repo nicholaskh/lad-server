@@ -3,7 +3,7 @@ package com.lad.bo;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
- * ¹¦ÄÜÃèÊö£ºÈ¦×Ó·ÃÎÊÀúÊ·
+ * åŠŸèƒ½æè¿°ï¼šåœˆå­è®¿é—®å†å²
  * Version: 1.0
  * Time:2017/8/16
  */
@@ -15,7 +15,7 @@ public class CircleHistoryBo extends BaseBo {
     private String circleid;
 
     private double[] position;
-    //·ÃÎÊ¼ÇÂ¼ÀàĞÍ£¬ 0È¦×Ó£¬ 1 Ìû×Ó
+    //è®¿é—®è®°å½•ç±»å‹ï¼Œ 0åœˆå­ï¼Œ 1 å¸–å­
     private int type;
 
     public String getUserid() {

@@ -11,8 +11,7 @@ import java.util.LinkedHashSet;
 @Document(collection = "circle")
 public class CircleBo extends BaseBo {
 	private double[] position;
-	//地标
-	private String landmark;
+	
 	private String name;
 	//一级分类
 	private String tag;
@@ -38,10 +37,39 @@ public class CircleBo extends BaseBo {
 	//总人数=圈子内总评论+总阅读+总点赞+总转发
 	private int total;
 
+	//评论数
+	private int commentNum;
+	//转发数
+	private int transmitNum;
+	//访问
+	private int visitNum;
+	//点赞
+	private int thumpNum;
+
 	//圈子公告标题
 	private String noticeTitle;
 	//圈子公告
 	private String notice;
+
+	//圈子总聚会数
+	private int partyNum;
+	//圈子发帖数
+	private int noteNum;
+
+	private int partyVisit;
+
+	private int partyThump;
+
+	private int partyShare;
+
+
+	//圈子热度=发帖+活动+阅读+点赞+分享
+	private long hotNum;
+
+	//省市区 ，直辖市 省市一样
+	private String province;
+	private String city;
+	private String district;
 
 
 	private HashSet<String> users = new LinkedHashSet<>();
@@ -54,14 +82,6 @@ public class CircleBo extends BaseBo {
 
 	public void setPosition(double[] position) {
 		this.position = position;
-	}
-
-	public String getLandmark() {
-		return landmark;
-	}
-
-	public void setLandmark(String landmark) {
-		this.landmark = landmark;
 	}
 
 	public String getName() {
@@ -198,5 +218,109 @@ public class CircleBo extends BaseBo {
 
 	public void setNotice(String notice) {
 		this.notice = notice;
+	}
+
+	public int getPartyNum() {
+		return partyNum;
+	}
+
+	public void setPartyNum(int partyNum) {
+		this.partyNum = partyNum;
+	}
+
+	public int getNoteNum() {
+		return noteNum;
+	}
+
+	public void setNoteNum(int noteNum) {
+		this.noteNum = noteNum;
+	}
+
+	public int getCommentNum() {
+		return commentNum;
+	}
+
+	public void setCommentNum(int commentNum) {
+		this.commentNum = commentNum;
+	}
+
+	public int getTransmitNum() {
+		return transmitNum;
+	}
+
+	public void setTransmitNum(int transmitNum) {
+		this.transmitNum = transmitNum;
+	}
+
+	public int getVisitNum() {
+		return visitNum;
+	}
+
+	public void setVisitNum(int visitNum) {
+		this.visitNum = visitNum;
+	}
+
+	public int getThumpNum() {
+		return thumpNum;
+	}
+
+	public void setThumpNum(int thumpNum) {
+		this.thumpNum = thumpNum;
+	}
+
+	public long getHotNum() {
+		return hotNum;
+	}
+
+	public void setHotNum(long hotNum) {
+		this.hotNum = hotNum;
+	}
+
+	public int getPartyVisit() {
+		return partyVisit;
+	}
+
+	public void setPartyVisit(int partyVisit) {
+		this.partyVisit = partyVisit;
+	}
+
+	public int getPartyThump() {
+		return partyThump;
+	}
+
+	public void setPartyThump(int partyThump) {
+		this.partyThump = partyThump;
+	}
+
+	public int getPartyShare() {
+		return partyShare;
+	}
+
+	public void setPartyShare(int partyShare) {
+		this.partyShare = partyShare;
+	}
+
+	public String getProvince() {
+		return province;
+	}
+
+	public void setProvince(String province) {
+		this.province = province;
+	}
+
+	public String getCity() {
+		return city;
+	}
+
+	public void setCity(String city) {
+		this.city = city;
+	}
+
+	public String getDistrict() {
+		return district;
+	}
+
+	public void setDistrict(String district) {
+		this.district = district;
 	}
 }
