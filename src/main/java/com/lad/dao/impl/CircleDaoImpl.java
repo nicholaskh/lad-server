@@ -314,4 +314,26 @@ public class CircleDaoImpl implements ICircleDao {
 		}
 		return mongoTemplate.updateFirst(query, update, CircleBo.class);
 	}
+
+	@Override
+	public List<CircleBo> findByCitys(String province, String city, String district, int page, int limit) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+		if (StringUtils.isNotEmpty(province)) {
+			query.addCriteria(new Criteria("province").is(province));
+		}
+		if (StringUtils.isNotEmpty(city)) {
+			query.addCriteria(new Criteria("city").is(city));
+		}
+		if (StringUtils.isNotEmpty(district)) {
+			query.addCriteria(new Criteria("district").is(district));
+		}
+		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "hotNum")));
+		if (page == 0){
+			page = 1;
+		}
+		query.skip((page - 1)*limit);
+		query.limit(limit);
+		return mongoTemplate.find(query, CircleBo.class);
+	}
 }

@@ -1253,9 +1253,24 @@ public class CircleController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
+	/**
+	 * 根据城市位置搜索圈子
+	 */
+	@RequestMapping("/search-city")
+	@ResponseBody
+	public String searchCitys(String province, String city, String district , int page, int limit,
+							  HttpServletRequest request, HttpServletResponse response) {
+
+		List<CircleBo> circleBos = circleService.findByCitys(province, city, district, page, limit);
+		return bo2vos(circleBos);
+	}
 
 
-
+	/**
+	 * 红人列表实体类转换
+	 * @param redstarBos
+	 * @return
+	 */
 	private List<UserStarVo> getStar(List<RedstarBo> redstarBos){
 		List<UserStarVo>  userStarVos = new ArrayList<>();
 		for (RedstarBo redstarBo : redstarBos) {
@@ -1272,9 +1287,8 @@ public class CircleController extends BaseContorller {
 		}
 		return  userStarVos;
 	}
-
 	/**
-	 * 
+	 * 实体类转换
 	 * @param circleBos
 	 * @return
 	 */

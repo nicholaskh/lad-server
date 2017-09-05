@@ -214,4 +214,9 @@ public class CircleServiceImpl implements ICircleService {
 	public WriteResult updateCircleHot(String circleid, int num, int type) {
 		return circleDao.updateCircleHot(circleid, num, type);
 	}
+
+	@Override
+	public List<CircleBo> findByCitys(String province, String city, String district, int page, int limit) {
+		return circleDao.findByCitys(province, city, district, page, limit);
+	}
 }
