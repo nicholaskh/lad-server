@@ -5,6 +5,7 @@ import com.lad.bo.RedstarBo;
 import com.lad.dao.ICommentDao;
 import com.lad.dao.IRedstarDao;
 import com.lad.service.ICommentService;
+import com.mongodb.BasicDBObject;
 import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -85,5 +86,15 @@ public class CommentService implements ICommentService {
     @Override
     public long selectCommentByTypeCount(int type, String id) {
         return commentDao.selectCommentByTypeCount(type, id);
+    }
+
+    @Override
+    public List<BasicDBObject> selectMyNoteReply(String userid, String startId, int limit) {
+        return commentDao.selectMyNoteReply(userid, startId, limit);
+    }
+
+    @Override
+    public WriteResult deleteByNote(String noteid) {
+        return commentDao.deleteByNote(noteid);
     }
 }

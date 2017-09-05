@@ -256,4 +256,5 @@ public class NoteDaoImpl implements INoteDao {
 		query.limit(limit);
 		return mongoTemplate.find(query, NoteBo.class);
 	}
+	
 }

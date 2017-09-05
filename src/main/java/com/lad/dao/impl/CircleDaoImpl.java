@@ -2,6 +2,7 @@ package com.lad.dao.impl;
 
 import com.lad.bo.CircleBo;
 import com.lad.dao.ICircleDao;
+import com.lad.util.Constant;
 import com.mongodb.WriteResult;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -132,6 +133,7 @@ public class CircleDaoImpl implements ICircleDao {
 		Query query = new Query();
 		Pattern pattern = Pattern.compile("^.*"+keyword+".*$", Pattern.CASE_INSENSITIVE);
 		query.addCriteria(new Criteria("name").regex(pattern));
+		query.with(new Sort(new Sort.Order(Sort.Direction.DESC,"hotNum")));
 		query.limit(10);
 		return mongoTemplate.find(query, CircleBo.class);
 	}
@@ -262,6 +264,54 @@ public class CircleDaoImpl implements ICircleDao {
 		query.addCriteria(new Criteria("_id").is(circleid));
 		Update update = new Update();
 		update.set("isVerify", isVerify);
+		return mongoTemplate.updateFirst(query, update, CircleBo.class);
+	}
+
+	@Override
+	public WriteResult updateCircleHot(String circleid, int num, int type) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("_id").is(circleid));
+		Update update = new Update();
+		switch (type){
+			case Constant.CIRCLE_VISIT :
+				update.inc("visitNum", num);
+				update.inc("total", num);
+				break;
+			case Constant.CIRCLE_COMMENT:
+				update.inc("commentNum", num);
+				update.inc("total", num);
+				break;
+			case Constant.CIRCLE_TRANS:
+				update.inc("transmitNum", num);
+				update.inc("total", num);
+				break;
+			case Constant.CIRCLE_THUMP:
+				update.inc("thumpNum", num);
+				update.inc("total", num);
+				break;
+			case Constant.CIRCLE_NOTE_VISIT:
+				update.inc("visitNum", num);
+				update.inc("total", num);
+				break;
+			case Constant.CIRCLE_NOTE:
+				update.inc("noteNum", num);
+				update.inc("hotNum", num);
+				break;
+			case Constant.CIRCLE_PARTY_VISIT:
+				update.inc("partyVisit", num);
+				update.inc("hotNum", num);
+				break;
+			case Constant.CIRCLE_PARTY_THUMP:
+				update.inc("partyThump", num);
+				update.inc("hotNum", num);
+				break;
+			case Constant.CIRCLE_PARTY_SHARE:
+				update.inc("partyShare", num);
+				update.inc("hotNum", num);
+				break;
+			default:
+				break;
+		}
 		return mongoTemplate.updateFirst(query, update, CircleBo.class);
 	}
 }

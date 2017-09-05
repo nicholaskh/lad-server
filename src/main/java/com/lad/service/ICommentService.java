@@ -2,6 +2,7 @@ package com.lad.service;
 
 import com.lad.bo.CommentBo;
 import com.lad.bo.RedstarBo;
+import com.mongodb.BasicDBObject;
 import com.mongodb.WriteResult;
 import org.springframework.scheduling.annotation.Async;
 
@@ -68,6 +69,13 @@ public interface ICommentService {
     WriteResult delete(String commentId);
 
     /**
+     * 删除帖子下所有评论
+     * @param noteid
+     * @return
+     */
+    WriteResult deleteByNote(String noteid);
+
+    /**
      * 查到用户所有的评论
      * @param userid
      * @return
@@ -113,5 +121,14 @@ public interface ICommentService {
      * @return
      */
     long selectCommentByTypeCount(int type, String id);
+
+    /**
+     * 获取用户评论别人的帖子
+     * @param userid
+     * @param startId
+     * @param limit
+     * @return
+     */
+    List<BasicDBObject> selectMyNoteReply(String userid, String startId, int limit);
 
 }

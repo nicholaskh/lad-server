@@ -155,4 +155,13 @@ public interface ICircleService extends IBaseService {
 	 */
 	WriteResult updateCircleName(String circleid, String name);
 
+	/**
+	 * 更新圈子热度及人员信息
+	 * @param circleid
+	 * @param num
+	 * @param type
+	 * @return
+	 */
+	WriteResult updateCircleHot(String circleid, int num, int type);
+
 }

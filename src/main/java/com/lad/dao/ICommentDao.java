@@ -1,6 +1,7 @@
 package com.lad.dao;
 
 import com.lad.bo.CommentBo;
+import com.mongodb.BasicDBObject;
 import com.mongodb.WriteResult;
 
 import java.util.List;
@@ -47,6 +48,13 @@ public interface ICommentDao {
     WriteResult delete(String commentId);
 
     /**
+     * 删除帖子下所有评论
+     * @param noteid
+     * @return
+     */
+    WriteResult deleteByNote(String noteid);
+
+    /**
      * 查到用户所有的帖子
      * @param userid
      * @return
@@ -71,4 +79,13 @@ public interface ICommentDao {
      * @return
      */
     long selectCommentByTypeCount(int type, String id);
+
+    /**
+     * 获取用户评论别人的帖子
+     * @param userid
+     * @param startId
+     * @param limit
+     * @return
+     */
+    List<BasicDBObject> selectMyNoteReply(String userid, String startId, int limit);
 }

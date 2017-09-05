@@ -128,4 +128,14 @@ public interface ICircleDao extends IBaseDao {
 	 */
 	WriteResult updateisVerify(String circleid, boolean isVerify);
 
+
+	/**
+	 * 更新圈子热度及人员信息
+	 * @param circleid
+	 * @param num
+	 * @param type
+	 * @return
+	 */
+	WriteResult updateCircleHot(String circleid, int num, int type);
+
 }

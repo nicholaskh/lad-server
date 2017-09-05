@@ -1,6 +1,7 @@
 package com.lad.controller;
 
 import com.lad.bo.*;
+import com.lad.redis.RedisServer;
 import com.lad.service.*;
 import com.lad.util.CommonUtil;
 import com.lad.util.Constant;
@@ -43,16 +44,25 @@ public class CircleController extends BaseContorller {
 
 	@Autowired
 	private IFeedbackService feedbackService;
+	
+	@Autowired
+	private ISearchService searchService;
+
+	@Autowired
+	private RedisServer redisServer;
 
 	@RequestMapping("/insert")
 	@ResponseBody
 	public String isnert(@RequestParam(required = true) double px,
-			@RequestParam(required = true) double py,
-			@RequestParam(required = true) String name,
-			@RequestParam(required = true) String tag,
-			@RequestParam(required = true) String sub_tag,
-			@RequestParam(required = true) String category,
-			@RequestParam(required = true) String description,
+						 @RequestParam(required = true) double py,
+						 @RequestParam(required = true) String name,
+						 @RequestParam(required = true) String tag,
+						 @RequestParam(required = true) String sub_tag,
+						 @RequestParam(required = true) String category,
+						 @RequestParam(required = true) String description,
+						 @RequestParam(required = true) String province,
+						 @RequestParam(required = true) String city,
+						 @RequestParam(required = true) String district,
 						 @RequestParam(required = true) boolean isOpen,
 						 @RequestParam("head_picture") MultipartFile file,
 			HttpServletRequest request, HttpServletResponse response) {
@@ -79,6 +89,9 @@ public class CircleController extends BaseContorller {
 		circleBo.setSub_tag(sub_tag);
 		circleBo.setDescription(description);
 		circleBo.setOpen(isOpen);
+		circleBo.setProvince(province);
+		circleBo.setCity(city);
+		circleBo.setDistrict(district);
 		//圈子头像
 		String userId = userBo.getId();
 		String fileName = userId + file.getOriginalFilename();
@@ -515,6 +528,12 @@ public class CircleController extends BaseContorller {
 		LinkedHashSet<String> masters = circleBo.getMasters();
 		HashSet<String> users = circleBo.getUsers();
 		if (isAdd) {
+			//判断圈子人数与管理员关系
+			if (!hasMasterMax(users.size(), masters.size(), ids.length)) {
+				return CommonUtil.toErrorResult(
+						ERRORCODE.CIRCLE_MASTER_MAX.getIndex(),
+						ERRORCODE.CIRCLE_MASTER_MAX.getReason());
+			}
 			for (String id : ids) {
 				if (users.contains(id)) {
 					masters.add(id);
@@ -533,6 +552,26 @@ public class CircleController extends BaseContorller {
 		}
 		circleService.updateMaster(circleBo);
 		return Constant.COM_RESP;
+	}
+
+	/**
+	 * 判断圈子管理员是否已到上线
+	 * @param userNum
+	 * @param masterNum
+	 * @param addNum
+	 * @return
+	 */
+	private boolean hasMasterMax(int userNum, int masterNum, int addNum){
+		if (userNum<= 100  &&  masterNum + addNum > 5) {
+			return true;
+		}
+		if (userNum <= 250  &&  masterNum + addNum > 10) {
+			return true;
+		}
+		if (userNum <= 500  &&  masterNum + addNum > 15) {
+			return true;
+		}
+		return true;
 	}
 
 	@RequestMapping("/quit")
@@ -605,11 +644,6 @@ public class CircleController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	private void saveTotal(){
-
-
-	}
-
 	/**
 	 * 返回10个热门圈子（以圈子内人数排序，人数最多的10个圈子）
 	 */
@@ -646,8 +680,8 @@ public class CircleController extends BaseContorller {
 		}
 		//更新访问记录
 		updateHistory(userBo.getId(), circleid, locationService, circleService);
-
-		int number = noteService.selectPeopleNum(circleid);
+		//圈子访问
+		updateCircleHot(circleService, redisServer, circleid, 1, Constant.CIRCLE_VISIT);
 
 		CircleVo circleVo = new CircleVo();
 		BeanUtils.copyProperties(circleBo, circleVo);
@@ -768,6 +802,17 @@ public class CircleController extends BaseContorller {
 	@ResponseBody
 	public String search(String keyword, HttpServletRequest request, HttpServletResponse response) {
 		if (StringUtils.isNotEmpty(keyword)) {
+			SearchBo searchBo = searchService.findByKeyword(keyword, 0);
+			if (searchBo == null) {
+				searchBo = new SearchBo();
+				searchBo.setKeyword(keyword);
+				searchBo.setType(0);
+				searchBo.setTimes(1);
+				searchService.insert(searchBo);
+			} else {
+				searchService.update(searchBo.getId());
+			}
+
 			List<CircleBo> circleBos = circleService.findBykeyword(keyword);
 			return bo2vos(circleBos);
 		}
@@ -1187,6 +1232,28 @@ public class CircleController extends BaseContorller {
 		feedbackService.insert(feedbackBo);
 		return Constant.COM_RESP;
 	}
+
+
+	/**
+	 * 获取热门搜索关键词
+	 */
+	@RequestMapping("/hot-searchs")
+	@ResponseBody
+	public String hotSearchs(HttpServletRequest request, HttpServletResponse response) {
+
+		List<SearchBo> searchBos = searchService.findByTimes(0);
+
+		List<String> words = new ArrayList<>();
+		for (SearchBo searchBo : searchBos) {
+			words.add(searchBo.getKeyword());
+		}
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("hotWords", words);
+		return JSONObject.fromObject(map).toString();
+	}
+
+
 
 
 	private List<UserStarVo> getStar(List<RedstarBo> redstarBos){

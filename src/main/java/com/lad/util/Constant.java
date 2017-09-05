@@ -158,6 +158,50 @@ public class Constant {
 	 */
 	public static final int NOTE_JIAJING = 1;
 
+
+
+	public static final int CIRCLE_VISIT= 0;
+	/**
+	 *
+	 */
+	public static final int CIRCLE_PARTY= 1;
+	/**
+	 *
+	 */
+	public static final int CIRCLE_NOTE= 2;
+	/**
+	 *
+	 */
+	public static final int CIRCLE_COMMENT= 3;
+	/**
+	 *
+	 */
+	public static final int CIRCLE_TRANS= 4;
+	/**
+	 *
+	 */
+	public static final int CIRCLE_SHARE= 5;
+	/**
+	 *
+	 */
+	public static final int CIRCLE_THUMP= 6;
+	/**
+	 *
+	 */
+	public static final int CIRCLE_PARTY_VISIT= 7;
+	/**
+	 *
+	 */
+	public static final int CIRCLE_PARTY_SHARE = 8;
+	/**
+	 *
+	 */
+	public static final int CIRCLE_PARTY_THUMP= 9;
+
+	public static final int CIRCLE_NOTE_VISIT =10;
+
+
+
 	public static final String QUICK_LOGIN =
 			"您已成功登录天天老友，登录账号为您本次登录使用的手机号码，登录初始密码为您本次登录使用的手机号码后6位。为了您的账户安全，天天老友建议您及时修改登录密码";
 

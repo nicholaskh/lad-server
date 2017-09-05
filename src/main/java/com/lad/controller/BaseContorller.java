@@ -4,17 +4,21 @@ package com.lad.controller;
 import com.lad.bo.CircleHistoryBo;
 import com.lad.bo.LocationBo;
 import com.lad.bo.UserBo;
+import com.lad.redis.RedisServer;
 import com.lad.service.ICircleService;
 import com.lad.service.ILocationService;
 import com.lad.service.IUserService;
 import com.lad.util.CommonUtil;
+import com.lad.util.Constant;
 import com.lad.util.ERRORCODE;
 import com.lad.util.MyException;
+import org.redisson.api.RLock;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.ui.ModelMap;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.util.concurrent.TimeUnit;
 
 public abstract class BaseContorller {
 
@@ -100,6 +104,27 @@ public abstract class BaseContorller {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * 更新圈子中各种访问信息或者人气等等
+	 * @param circleService
+	 * @param redisServer
+	 * @param circleid
+	 * @param num
+	 * @param type
+	 */
+	@Async
+	public void updateCircleHot(ICircleService circleService, RedisServer redisServer,
+								String circleid, int num, int type){
+		RLock lock = redisServer.getRLock(Constant.CHAT_LOCK);
+		try {
+			//3s自动解锁
+			lock.lock(3, TimeUnit.SECONDS);
+			circleService.updateCircleHot(circleid, num, type);
+		} finally {
+			lock.unlock();
 		}
 	}
 

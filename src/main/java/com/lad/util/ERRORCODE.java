@@ -71,6 +71,7 @@ public enum ERRORCODE {
 	CIRCLE_TOP_EXIST(110010, "圈子已经置顶"),
 	CIRCLE_NOT_QUIT(110011, "群主不能直接退出群"),
 	CIRCLE_TYPE_EXIST(110012, "圈子分类已经存在"),
+	CIRCLE_MASTER_MAX(110013, "管理员人数已达上限"),
 
 	INFOR_IS_NULL(130001, "资讯不存在"),
 	

@@ -151,4 +151,6 @@ public interface INoteDao extends IBaseDao {
 	 */
 	List<NoteBo> findByTopEssence(String circleid, int type, String startId, int limit);
 
+
+
 }

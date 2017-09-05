@@ -10,20 +10,20 @@ import com.lad.util.MyException;
 import com.lad.vo.CommentVo;
 import com.lad.vo.NoteVo;
 import com.lad.vo.UserBaseVo;
+import com.mongodb.BasicDBObject;
 import net.sf.json.JSONObject;
 import org.apache.log4j.Logger;
 import org.apache.log4j.spi.RootLogger;
 import org.redisson.api.RLock;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
-import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -50,9 +50,6 @@ public class NoteController extends BaseContorller {
 	private IThumbsupService thumbsupService;
 	@Autowired
 	private RedisServer redisServer;
-
-	@Autowired
-	private CommonsMultipartResolver multipartResolver;
 
 	@Autowired
 	private ILocationService locationService;
@@ -118,6 +115,8 @@ public class NoteController extends BaseContorller {
 			lock.unlock();
 		}
 		userService.addUserLevel(userBo.getId(), 1, Constant.LEVEL_NOTE);
+		updateCircleHot(circleService, redisServer, circleid, 1, Constant.CIRCLE_NOTE);
+		updateCircleHot(circleService, redisServer, circleid, 1, Constant.CIRCLE_NOTE_VISIT);
 		NoteVo noteVo = new NoteVo();
 		boToVo(noteBo, noteVo, userBo);
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -127,65 +126,6 @@ public class NoteController extends BaseContorller {
 	}
 
 
-	@RequestMapping("/insert2")
-	@ResponseBody
-	public String isnert2(@RequestParam double px,
-						 @RequestParam double py,
-						 @RequestParam String subject,
-						 @RequestParam(required = false)String landmark,
-						 @RequestParam String content,
-						 @RequestParam String circleid,
-						 @RequestParam(required = false) MultipartFile pictures,
-						 HttpServletRequest request, HttpServletResponse response) {
-
-		UserBo userBo;
-		try {
-			userBo = checkSession(request, userService);
-		} catch (MyException e) {
-			return e.getMessage();
-		}
-		CircleBo circleBo = circleService.selectById(circleid);
-		if (null == circleBo) {
-			return CommonUtil.toErrorResult(
-					ERRORCODE.CIRCLE_IS_NULL.getIndex(),
-					ERRORCODE.CIRCLE_IS_NULL.getReason());
-		}
-		NoteBo noteBo = new NoteBo();
-		noteBo.setPosition(new double[] { px, py });
-		noteBo.setLandmark(landmark);
-		noteBo.setSubject(subject);
-		noteBo.setContent(content);
-		noteBo.setVisitcount(1);
-		noteBo.setCreateuid(userBo.getId());
-		noteBo.setCircleId(circleid);
-		LinkedList<String> photos = new LinkedList<>();
-		String userId =  userBo.getId();
-
-		Long time = Calendar.getInstance().getTimeInMillis();
-		if (multipartResolver.isMultipart(request)){
-			//转换成多部分request
-			MultipartHttpServletRequest multiRequest = (MultipartHttpServletRequest)request;
-			//取得request中的所有文件名
-			Iterator<String> iter = multiRequest.getFileNames();
-			while (iter.hasNext()){
-				MultipartFile file = multiRequest.getFile(iter.next());
-				String fileName = userId + "-" + time + "-"
-						+ file.getOriginalFilename();
-				String path = CommonUtil.upload(file, Constant.NOTE_PICTURE_PATH,
-						fileName, 0);
-				photos.add(path);
-			}
-		}
-		noteBo.setPhotos(photos);
-		noteService.insert(noteBo);
-		NoteVo noteVo = new NoteVo();
-		boToVo(noteBo, noteVo, userBo);
-		Map<String, Object> map = new HashMap<String, Object>();
-		map.put("ret", 0);
-		map.put("noteVo", noteVo);
-		return JSONObject.fromObject(map).toString();
-
-	}
 
 
 	@RequestMapping("/photo")
@@ -250,6 +190,8 @@ public class NoteController extends BaseContorller {
 				isThumsup = true;
 			}
 		}
+		NoteBo noteBo = noteService.selectById(noteid);
+		updateCircleHot(circleService, redisServer, noteBo.getCircleId(), 1, Constant.CIRCLE_THUMP );
 		if (isThumsup) {
 			RLock lock = redisServer.getRLock(Constant.THUMB_LOCK);
 			try {
@@ -274,6 +216,8 @@ public class NoteController extends BaseContorller {
 		ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(noteid, userBo.getId());
 		if (thumbsupBo != null) {
 			thumbsupService.deleteById(thumbsupBo.getId());
+			NoteBo noteBo = noteService.selectById(noteid);
+			updateCircleHot(circleService, redisServer, noteBo.getCircleId(), -1, Constant.CIRCLE_THUMP );
 			RLock lock = redisServer.getRLock(Constant.THUMB_LOCK);
 			try {
 				lock.lock(2,TimeUnit.SECONDS);
@@ -301,6 +245,7 @@ public class NoteController extends BaseContorller {
 					ERRORCODE.NOTE_IS_NULL.getReason());
 		}
 		updateHistory(userBo.getId(), noteBo.getCircleId(), locationService, circleService);
+		updateCircleHot(circleService, redisServer, noteBo.getCircleId(), 1, Constant.CIRCLE_NOTE_VISIT);
 		RLock lock = redisServer.getRLock(Constant.VISIT_LOCK);
 		try {
 			lock.lock(3,TimeUnit.SECONDS);
@@ -423,7 +368,6 @@ public class NoteController extends BaseContorller {
 					ERRORCODE.NOTE_IS_NULL.getReason());
 		}
 		updateHistory(userBo.getId(), noteBo.getCircleId(), locationService, circleService);
-		userService.addUserLevel(userBo.getId(),1, Constant.LEVEL_COMMENT);
 		Date currentDate = new Date();
 		CommentBo commentBo = new CommentBo();
 		commentBo.setNoteid(noteBo.getId());
@@ -431,16 +375,37 @@ public class NoteController extends BaseContorller {
 		commentBo.setUserName(userBo.getUserName());
 		commentBo.setContent(countent);
 		commentBo.setCreateuid(userBo.getId());
+		commentBo.setOwnerid(noteBo.getCreateuid());
 		commentBo.setCreateTime(currentDate);
 		commentService.insert(commentBo);
 
+		userService.addUserLevel(userBo.getId(),1, Constant.LEVEL_COMMENT);
+		updateCircleHot(circleService, redisServer, noteBo.getCircleId(), 1, Constant.CIRCLE_COMMENT);
+
+		updateRedStar(userBo, noteBo, circleid, currentDate);
+
+		Map<String, Object> map = new HashMap<>();
+		map.put("ret", 0);
+		map.put("commentVo", comentBo2Vo(commentBo));
+		return JSONObject.fromObject(map).toString();
+	}
+
+	/**
+	 * 更新红人信息
+	 * @param userBo
+	 * @param noteBo
+	 * @param circleid
+	 * @param currentDate
+	 */
+	@Async
+	private void updateRedStar(UserBo userBo, NoteBo noteBo, String circleid, Date currentDate){
 		RedstarBo redstarBo = commentService.findRedstarBo(userBo.getId(), circleid);
 		int curretWeekNo = CommonUtil.getWeekOfYear(currentDate);
 		int year = CommonUtil.getYear(currentDate);
 		if (redstarBo == null) {
 			redstarBo = setRedstarBo(userBo.getId(), circleid, curretWeekNo, year);
 			commentService.insertRedstar(redstarBo);
-		} 
+		}
 		//判断贴的作者是不是自己
 		boolean isNotSelf = !userBo.getId().equals(noteBo.getCreateuid());
 		boolean isNoteUserCurrWeek = true;
@@ -463,7 +428,7 @@ public class NoteController extends BaseContorller {
 		try {
 			lock.lock(5, TimeUnit.SECONDS);
 			//更新帖子评论数
-			noteService.updateCommentCount(noteid,1);
+			noteService.updateCommentCount(noteBo.getId(),1);
 			//更新自己的红人信息
 			if (isCurrentWeek) {
 				commentService.addRadstarCount(userBo.getId(), circleid);
@@ -481,10 +446,6 @@ public class NoteController extends BaseContorller {
 		} finally {
 			lock.unlock();
 		}
-		Map<String, Object> map = new HashMap<>();
-		map.put("ret", 0);
-		map.put("commentVo", comentBo2Vo(commentBo));
-		return JSONObject.fromObject(map).toString();
 	}
 
 
@@ -591,7 +552,7 @@ public class NoteController extends BaseContorller {
 	}
 
 	/**
-	 * 获取自己被评论过的帖子
+	 * 获取自己评论过别人的帖子
 	 * @return
 	 */
 	@RequestMapping("/my-comment-notes")
@@ -605,12 +566,22 @@ public class NoteController extends BaseContorller {
 			return e.getMessage();
 		}
 		List<NoteBo> noteBos = noteService.finyMyNoteByComment(userBo.getId(), start_id, gt, limit);
+		List<BasicDBObject> objects = commentService.selectMyNoteReply(userBo.getId(),start_id,limit );
+
 		List<NoteVo> noteVoList = new LinkedList<>();
-		for (NoteBo noteBo : noteBos) {
+
+		for (BasicDBObject object : objects) {
+			String id = object.get("noteid").toString();
+			NoteBo noteBo = noteService.selectById(id);
+
+			CircleBo circleBo = circleService.selectById(noteBo.getCircleId());
 			NoteVo noteVo = new NoteVo();
+			noteVo.setCirName(circleBo.getName());
+			noteVo.setCirHeadPic(circleBo.getHeadPicture());
 			boToVo(noteBo, noteVo, userBo);
 			noteVoList.add(noteVo);
 		}
+
 		Map<String, Object> map = new HashMap<>();
 		map.put("ret", 0);
 		map.put("noteVoList", noteVoList);
@@ -729,6 +700,9 @@ public class NoteController extends BaseContorller {
 		NoteVo noteVo = null;
 		for (NoteBo noteBo : noteBos) {
 			noteVo = new NoteVo();
+			CircleBo circleBo = circleService.selectById(noteBo.getCircleId());
+			noteVo.setCirName(circleBo.getName());
+			noteVo.setCirHeadPic(circleBo.getHeadPicture());
 			userBo = userService.getUser(noteBo.getCreateuid());
 			boToVo(noteBo, noteVo, userBo);
 			noteVoList.add(noteVo);
@@ -768,15 +742,18 @@ public class NoteController extends BaseContorller {
 				if (null != noteBo) {
 					//圈主删除帖子
 					noteService.deleteNote(id);
+					commentService.deleteByNote(id);
 					notes ++;
 				}
 			}
-			RLock lock = redisServer.getRLock("noteSize");
-			try {
-				lock.lock(2,TimeUnit.SECONDS);
-				circleService.updateNotes(circleid, circleBo.getNoteSize() - notes);
-			} finally {
-				lock.unlock();
+			if (notes != 0) {
+				RLock lock = redisServer.getRLock("noteSize");
+				try {
+					lock.lock(2,TimeUnit.SECONDS);
+					circleService.updateNotes(circleid, circleBo.getNoteSize() - notes);
+				} finally {
+					lock.unlock();
+				}
 			}
 		}  else {
 			return CommonUtil.toErrorResult(
@@ -813,11 +790,12 @@ public class NoteController extends BaseContorller {
 				//删除帖子
 				if (noteBo.getCreateuid().equals(userBo.getId())) {
 					noteService.deleteNote(id);
+					commentService.deleteByNote(id);
 					notes ++;
 				}
 			}
 		}
-		if (circleBo != null) {
+		if (circleBo != null && notes != 0) {
 			RLock lock = redisServer.getRLock("noteSize");
 			try {
 				lock.lock(2,TimeUnit.SECONDS);
@@ -917,7 +895,6 @@ public class NoteController extends BaseContorller {
 		redstarBo.setYear(year);
 		return redstarBo;
 	}
-
 
 
 	private void boToVo(NoteBo noteBo, NoteVo noteVo, UserBo userBo){
