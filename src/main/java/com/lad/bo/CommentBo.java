@@ -24,6 +24,9 @@ public class CommentBo extends BaseBo{
     //评论的类型 0 帖子评论； 1 资讯评论
     private int type;
 
+    //贴子的发帖人
+    private String ownerid;
+
     public String getUserName() {
         return userName;
     }
@@ -70,5 +73,13 @@ public class CommentBo extends BaseBo{
 
     public void setType(int type) {
         this.type = type;
+    }
+
+    public String getOwnerid() {
+        return ownerid;
+    }
+
+    public void setOwnerid(String ownerid) {
+        this.ownerid = ownerid;
     }
 }
