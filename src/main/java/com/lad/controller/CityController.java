@@ -1,9 +1,13 @@
 package com.lad.controller;
 
 import com.lad.bo.CityBo;
+import com.lad.redis.RedisServer;
 import com.lad.service.ICityService;
+import com.lad.util.Constant;
 import com.mongodb.BasicDBObject;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.redisson.api.RMapCache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,10 +15,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 功能描述：
@@ -28,6 +29,9 @@ public class CityController extends BaseContorller {
 
     @Autowired
     private ICityService cityService;
+
+    @Autowired
+    private RedisServer redisServer;
 
     /**
      * 获取省市
@@ -97,5 +101,70 @@ public class CityController extends BaseContorller {
         return JSONObject.fromObject(map).toString();
     }
 
+    /**
+     * 获取城市和区
+     */
+    @RequestMapping("/get-all")
+    @ResponseBody
+    public String getAlls(HttpServletRequest request, HttpServletResponse response) {
+        RMapCache<String, Object> cache = redisServer.getCacheMap(Constant.TEST_CACHE);
+        String cityJson = "";
+        if (cache.containsKey("citys")) {
+            cityJson = (String) cache.get("citys");
+            return cityJson;
+        } else {
+            cityJson =  getAllCitys();
+            cache.put("citys",cityJson);
+        }
+        return cityJson ;
+    }
+
+    /**
+     * 获取城市和区
+     */
+    @RequestMapping("/init")
+    @ResponseBody
+    public String init(HttpServletRequest request, HttpServletResponse response) {
+        RMapCache<String, Object> cache = redisServer.getCacheMap(Constant.TEST_CACHE);
+        cache.clear();
+        String res = getAllCitys();
+        cache.put("citys",res);
+        return res ;
+    }
+
+    private String getAllCitys(){
+        List<BasicDBObject> objects = cityService.findProvince();
+        JSONObject proObject = new JSONObject();
+        for (BasicDBObject object : objects) {
+            String province = object.get("province").toString();
+            Map<String , ArrayList<String>> citys = new LinkedHashMap<>();
+            JSONArray ciArr = new JSONArray();
+            if (province.equals("北京市") || province.equals("天津市") || province.equals("上海市")
+                    || province.equals("重庆市")) {
+                List<CityBo> cityBos = cityService.findByParams(province, "");
+                for (CityBo cityBo : cityBos) {
+                    ciArr.add(cityBo.getDistrit());
+                }
+                proObject.put(province, ciArr);
+            } else if (province.equals("台湾省") || province.contains("香港") || province.equals("澳门")) {
+                proObject.put(province, ciArr);
+            }  else {
+                List<BasicDBObject> citObjs = cityService.findCitys(province);
+                JSONObject disObject = new JSONObject();
+                for (BasicDBObject basicDBObject : citObjs) {
+                    String city = basicDBObject.get("city").toString();
+                    List<CityBo> cityBoDis = cityService.findByParams(province, city, "");
+                    JSONArray disArr= new JSONArray();
+                    for (CityBo cityBo : cityBoDis) {
+                        disArr.add(cityBo.getDistrit());
+                    }
+                    disObject.put(city, disArr);
+                }
+                ciArr.add(disObject);
+                proObject.put(province, ciArr);
+            }
+        }
+        return  proObject.toString();
+    }
 
 }
