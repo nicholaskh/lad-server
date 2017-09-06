@@ -50,7 +50,7 @@ public class CityController extends BaseContorller {
     /**
      * 获取城市和区
      */
-    @RequestMapping("/get-citys")
+    @RequestMapping("/get-city")
     @ResponseBody
     public String getCitys(String province, HttpServletRequest request, HttpServletResponse response) {
 
@@ -81,7 +81,13 @@ public class CityController extends BaseContorller {
     public String getDistrict(String province,String city, HttpServletRequest request, HttpServletResponse response) {
 
         List<String> district = new ArrayList<>();
-        List<CityBo> cityBos = cityService.findByParams(province, city);
+        List<CityBo> cityBos = null;
+        if (province.equals("北京市") || province.equals("天津市") || province.equals("上海市")
+                || province.equals("重庆市")) {
+            cityBos = cityService.findByParams(province, "");
+        } else {
+            cityBos = cityService.findByParams(province, city);
+        }
         for (CityBo cityBo : cityBos) {
             district.add(cityBo.getDistrit());
         }

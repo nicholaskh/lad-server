@@ -2,13 +2,15 @@ package com.lad.dao.impl;
 
 import com.lad.bo.CityBo;
 import com.lad.dao.ICityDao;
-import com.lad.util.Constant;
 import com.mongodb.BasicDBObject;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.*;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationResults;
+import org.springframework.data.mongodb.core.aggregation.GroupOperation;
+import org.springframework.data.mongodb.core.aggregation.ProjectionOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
@@ -35,7 +37,6 @@ public class CityDaoImpl implements ICityDao {
     @Override
     public List<CityBo> findByParams(String province, String city, String distrit) {
         Query query = new Query();
-        query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
         if (StringUtils.isNotEmpty(province)) {
             query.addCriteria(new Criteria("province").is(province));
         }
@@ -57,7 +58,6 @@ public class CityDaoImpl implements ICityDao {
     @Override
     public List<CityBo> findByParams(String province, String distrit) {
         Query query = new Query();
-        query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
         if (StringUtils.isNotEmpty(province)) {
             query.addCriteria(new Criteria("province").is(province));
         }
