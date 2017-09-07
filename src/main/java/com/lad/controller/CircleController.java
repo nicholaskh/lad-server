@@ -58,7 +58,6 @@ public class CircleController extends BaseContorller {
 						 @RequestParam(required = true) String name,
 						 @RequestParam(required = true) String tag,
 						 @RequestParam(required = true) String sub_tag,
-						 @RequestParam(required = true) String category,
 						 @RequestParam(required = true) String description,
 						 @RequestParam(required = true) String province,
 						 @RequestParam(required = true) String city,
@@ -81,7 +80,6 @@ public class CircleController extends BaseContorller {
 		}
 		CircleBo circleBo = new CircleBo();
 		circleBo.setCreateuid(userBo.getId());
-		circleBo.setCategory(category);
 		circleBo.setPosition(new double[] { px, py });
 		circleBo.setName(name);
 		circleBo.setTag(tag);
@@ -563,13 +561,13 @@ public class CircleController extends BaseContorller {
 	 */
 	private boolean hasMasterMax(int userNum, int masterNum, int addNum){
 		if (userNum<= 100  &&  masterNum + addNum > 5) {
-			return true;
+			return false;
 		}
 		if (userNum <= 250  &&  masterNum + addNum > 10) {
-			return true;
+			return false;
 		}
 		if (userNum <= 500  &&  masterNum + addNum > 15) {
-			return true;
+			return false;
 		}
 		return true;
 	}
