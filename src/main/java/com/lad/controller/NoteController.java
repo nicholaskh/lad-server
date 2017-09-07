@@ -565,11 +565,8 @@ public class NoteController extends BaseContorller {
 		} catch (MyException e) {
 			return e.getMessage();
 		}
-		List<NoteBo> noteBos = noteService.finyMyNoteByComment(userBo.getId(), start_id, gt, limit);
 		List<BasicDBObject> objects = commentService.selectMyNoteReply(userBo.getId(),start_id,limit );
-
 		List<NoteVo> noteVoList = new LinkedList<>();
-
 		for (BasicDBObject object : objects) {
 			String id = object.get("noteid").toString();
 			NoteBo noteBo = noteService.selectById(id);
@@ -578,10 +575,10 @@ public class NoteController extends BaseContorller {
 			NoteVo noteVo = new NoteVo();
 			noteVo.setCirName(circleBo.getName());
 			noteVo.setCirHeadPic(circleBo.getHeadPicture());
+			noteVo.setCirNoteNum(circleBo.getNoteSize());
 			boToVo(noteBo, noteVo, userBo);
 			noteVoList.add(noteVo);
 		}
-
 		Map<String, Object> map = new HashMap<>();
 		map.put("ret", 0);
 		map.put("noteVoList", noteVoList);
@@ -702,6 +699,7 @@ public class NoteController extends BaseContorller {
 			noteVo = new NoteVo();
 			CircleBo circleBo = circleService.selectById(noteBo.getCircleId());
 			noteVo.setCirName(circleBo.getName());
+			noteVo.setCirNoteNum(circleBo.getNoteSize());
 			noteVo.setCirHeadPic(circleBo.getHeadPicture());
 			userBo = userService.getUser(noteBo.getCreateuid());
 			boToVo(noteBo, noteVo, userBo);
