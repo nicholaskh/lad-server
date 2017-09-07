@@ -21,6 +21,10 @@ public class PartyUserBo extends BaseBo {
 
     private String refuseInfo;
 
+    private String amount;
+
+    private int userNum;
+
     // 0 申请， 1已加入 -1 拒绝
     private int status;
 
@@ -70,5 +74,21 @@ public class PartyUserBo extends BaseBo {
 
     public void setStatus(int status) {
         this.status = status;
+    }
+
+    public String getAmount() {
+        return amount;
+    }
+
+    public void setAmount(String amount) {
+        this.amount = amount;
+    }
+
+    public int getUserNum() {
+        return userNum;
+    }
+
+    public void setUserNum(int userNum) {
+        this.userNum = userNum;
     }
 }

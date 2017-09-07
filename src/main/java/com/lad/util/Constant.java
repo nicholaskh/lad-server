@@ -86,6 +86,10 @@ public class Constant {
 	 */
 	public static final int PAGE_TYPE = 2;
 	/**
+	 * 聚会评论
+	 */
+	public static final int PARTY_TYPE = 3;
+	/**
 	 * 举报 圈子
 	 */
 	public static final int CIRCLE_TYPE = 3;

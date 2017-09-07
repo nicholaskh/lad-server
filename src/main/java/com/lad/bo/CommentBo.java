@@ -21,7 +21,7 @@ public class CommentBo extends BaseBo{
     //评论的 目标ID，根据评论类型而定，note为noteid，不算在里面
     private String targetid;
 
-    //评论的类型 0 帖子评论； 1 资讯评论
+    //评论的类型 0 帖子评论； 1 资讯评论  2聚会评论
     private int type;
 
     //贴子的发帖人
