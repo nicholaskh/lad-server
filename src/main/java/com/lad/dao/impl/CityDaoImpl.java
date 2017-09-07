@@ -44,7 +44,7 @@ public class CityDaoImpl implements ICityDao {
             query.addCriteria(new Criteria("city").is(city));
         }
         if (StringUtils.isNotEmpty(distrit)) {
-            query.addCriteria(new Criteria("district").is(distrit));
+            query.addCriteria(new Criteria("distrit").is(distrit));
         }
         return mongoTemplate.find(query, CityBo.class);
     }
@@ -62,7 +62,7 @@ public class CityDaoImpl implements ICityDao {
             query.addCriteria(new Criteria("province").is(province));
         }
         if (StringUtils.isNotEmpty(distrit)) {
-            query.addCriteria(new Criteria("district").is(distrit));
+            query.addCriteria(new Criteria("distrit").is(distrit));
         }
         return mongoTemplate.find(query, CityBo.class);
     }

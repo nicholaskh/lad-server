@@ -329,7 +329,7 @@ public class CircleDaoImpl implements ICircleDao {
 			query.addCriteria(new Criteria("district").is(district));
 		}
 		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "hotNum")));
-		if (page == 0){
+		if (page <= 0){
 			page = 1;
 		}
 		query.skip((page - 1)*limit);
