@@ -4,9 +4,11 @@ import com.lad.bo.CityBo;
 import com.lad.redis.RedisServer;
 import com.lad.service.ICityService;
 import com.lad.util.Constant;
+import com.lad.util.PinyinComparator;
 import com.mongodb.BasicDBObject;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import net.sourceforge.pinyin4j.PinyinHelper;
 import org.redisson.api.RMapCache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -54,9 +56,9 @@ public class CityController extends BaseContorller {
     /**
      * 获取城市和区
      */
-    @RequestMapping("/get-city")
+    @RequestMapping("/get-province-city")
     @ResponseBody
-    public String getCitys(String province, HttpServletRequest request, HttpServletResponse response) {
+    public String getProvinceCitys(String province, HttpServletRequest request, HttpServletResponse response) {
 
         List<String> citys = new ArrayList<>();
         if (province.equals("北京市") || province.equals("天津市") || province.equals("上海市")
@@ -78,6 +80,29 @@ public class CityController extends BaseContorller {
     }
 
     /**
+     * 获取城市和区
+     */
+    @RequestMapping("/get-city")
+    @ResponseBody
+    public String getCitys(String city, HttpServletRequest request, HttpServletResponse response) {
+        List<String> district = new ArrayList<>();
+        List<CityBo> cityBos = null;
+        if (city.equals("北京市") || city.equals("天津市") || city.equals("上海市")
+                || city.equals("重庆市")) {
+            cityBos = cityService.findByParams(city, "");
+        } else {
+            cityBos = cityService.findByParams("", city, "");
+        }
+        for (CityBo cityBo : cityBos) {
+            district.add(cityBo.getDistrit());
+        }
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("ret", 0);
+        map.put("citys", district);
+        return JSONObject.fromObject(map).toString();
+    }
+
+    /**
      * 获取区县
      */
     @RequestMapping("/get-district")
@@ -90,7 +115,7 @@ public class CityController extends BaseContorller {
                 || province.equals("重庆市")) {
             cityBos = cityService.findByParams(province, "");
         } else {
-            cityBos = cityService.findByParams(province, city);
+            cityBos = cityService.findByParams(province, city, "");
         }
         for (CityBo cityBo : cityBos) {
             district.add(cityBo.getDistrit());
@@ -113,7 +138,7 @@ public class CityController extends BaseContorller {
             cityJson = (String) cache.get("citys");
             return cityJson;
         } else {
-            cityJson =  getAllCitys();
+            cityJson = getOrderCitys();
             cache.put("citys",cityJson);
         }
         return cityJson ;
@@ -127,7 +152,7 @@ public class CityController extends BaseContorller {
     public String init(HttpServletRequest request, HttpServletResponse response) {
         RMapCache<String, Object> cache = redisServer.getCacheMap(Constant.TEST_CACHE);
         cache.clear();
-        String res = getAllCitys();
+        String res = getOrderCitys();
         cache.put("citys",res);
         return res ;
     }
@@ -145,8 +170,6 @@ public class CityController extends BaseContorller {
                 for (CityBo cityBo : cityBos) {
                     ciArr.add(cityBo.getDistrit());
                 }
-                proObject.put(province, ciArr);
-            } else if (province.equals("台湾省") || province.contains("香港") || province.equals("澳门")) {
                 proObject.put(province, ciArr);
             }  else {
                 List<BasicDBObject> citObjs = cityService.findCitys(province);
@@ -166,5 +189,58 @@ public class CityController extends BaseContorller {
         }
         return  proObject.toString();
     }
+
+
+    /**
+     * 获取市和县
+     * @return
+     */
+    private String getOrderCitys(){
+        List<String> citys = new ArrayList<>();
+        List<BasicDBObject> objects = cityService.findProvince();
+        for (BasicDBObject object : objects) {
+            String province = object.get("province").toString();
+            if (province.equals("北京市") || province.equals("天津市") || province.equals("上海市")
+                    || province.equals("重庆市")) {
+                citys.add(province);
+            } else {
+                List<BasicDBObject> citObjs = cityService.findCitys(province);
+                for (BasicDBObject basicDBObject : citObjs) {
+                    String city = basicDBObject.get("city").toString();
+                    if (city.contains("地区")) {
+                        continue;
+                    }
+                    citys.add(city);
+                    List<CityBo> cityBoDis = cityService.findByParams(province, city, "");
+                    for (CityBo cityBo : cityBoDis) {
+                        if (!cityBo.getDistrit().contains("区")) {
+                            citys.add(cityBo.getDistrit());
+                        }
+                    }
+                }
+            }
+        }
+
+        Map<String, List<String>> map = new LinkedHashMap<>();
+        Collections.sort(citys,new PinyinComparator());
+        for (String string : citys) {
+            String[] arrs = PinyinHelper.toHanyuPinyinStringArray(string.charAt(0));
+            String first = String.valueOf(arrs[0].toUpperCase().charAt(0));
+            if (string.contains("重庆")) {
+                map.get("C").add(string);
+                continue;
+            }
+            if (map.containsKey(first)) {
+                map.get(first).add(string);
+            } else {
+                List<String> city = new ArrayList<>();
+                city.add(string);
+                map.put(first, city);
+            }
+            System.out.println(string);
+        }
+        return  JSONObject.fromObject(map).toString();
+    }
+
 
 }
