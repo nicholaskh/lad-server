@@ -44,6 +44,60 @@ public class CommonUtil {
 		return output;
 	}
 
+	/**
+	 * 上传video是，获取缩略图
+	 * @param file
+	 * @param path
+	 * @param filename
+	 * @param due
+	 * @return 0 是video 的路径， 1 是缩略图路径
+	 */
+	public static String[] uploadVedio(MultipartFile file, String path, String filename, int due) {
+		File targetFile = new File(path, filename);
+		String vedio = "";
+		String pic = "";
+		try {
+			if (!targetFile.exists()) {
+				targetFile.mkdirs();
+				file.transferTo(targetFile);
+			}
+			String outName = FFmpegUtil.transfer(targetFile, path);
+			if (StringUtils.isEmpty(outName)) {
+				outName = FFmpegUtil.transfer(targetFile, path);
+			}
+			if (StringUtils.isNotEmpty(outName)) {
+				if (due == 0) {
+					pic = QiNiu.uploadToQiNiu(path, outName);
+				} else {
+					pic = QiNiu.uploadToQiNiuDue(path, outName, due);
+				}
+				File picfile = new File(path, outName);
+				picfile.delete();
+			}
+			if (due == 0) {
+				vedio = QiNiu.uploadToQiNiu(path, filename);
+			} else {
+				vedio = QiNiu.uploadToQiNiuDue(path, filename, due);
+			}
+			targetFile.delete();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		String[] res = new String[]{
+				Constant.QINIU_URL + vedio + "?v=" + CommonUtil.getRandom1(),
+				Constant.QINIU_URL + pic + "?v=" + CommonUtil.getRandom1()
+		};
+		return res;
+	}
+
+	/**
+	 * 上传图片
+	 * @param file
+	 * @param path
+	 * @param filename
+	 * @param due
+	 * @return
+	 */
 	public static String upload(MultipartFile file, String path, String filename, int due) {
 		File targetFile = new File(path, filename);
 		String result = "";

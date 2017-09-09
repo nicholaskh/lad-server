@@ -99,10 +99,16 @@ public class NoteController extends BaseContorller {
 						+ file.getOriginalFilename();
 				System.out.println("----file: " + file.getOriginalFilename() + ",  size: " + file.getSize());
 				logger.info(fileName);
-				String path = CommonUtil.upload(file, Constant.NOTE_PICTURE_PATH,
-						fileName, 0);
-				logger.info(path);
-				photos.add(path);
+				if ("video".equals(type)) {
+					String[] paths = CommonUtil.uploadVedio(file, Constant.NOTE_PICTURE_PATH, fileName, 0);
+					photos.add(paths[0]);
+					noteBo.setVideoPic(paths[1]);
+				} else {
+					String path = CommonUtil.upload(file, Constant.NOTE_PICTURE_PATH,
+							fileName, 0);
+					logger.info(path);
+					photos.add(path);
+				}
 			}
 		}
 		noteBo.setPhotos(photos);
