@@ -47,6 +47,11 @@ public class NoteVo extends BaseVo {
     ///圈子头像
     private String cirHeadPic;
 
+    ///当前帖子所在圈子的帖子数量
+    private int cirNoteNum;
+    //视频缩略图
+    private String videoPic;
+
     public Boolean getMyThumbsup() {
         return isMyThumbsup;
     }
@@ -240,5 +245,21 @@ public class NoteVo extends BaseVo {
 
     public void setCirHeadPic(String cirHeadPic) {
         this.cirHeadPic = cirHeadPic;
+    }
+
+    public int getCirNoteNum() {
+        return cirNoteNum;
+    }
+
+    public void setCirNoteNum(int cirNoteNum) {
+        this.cirNoteNum = cirNoteNum;
+    }
+
+    public String getVideoPic() {
+        return videoPic;
+    }
+
+    public void setVideoPic(String videoPic) {
+        this.videoPic = videoPic;
     }
 }

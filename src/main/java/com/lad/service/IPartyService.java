@@ -1,4 +1,4 @@
-package com.lad.dao;
+package com.lad.service;
 
 import com.lad.bo.PartyBo;
 import com.mongodb.WriteResult;
@@ -9,9 +9,9 @@ import java.util.List;
  * 功能描述：
  * Copyright: Copyright (c) 2017
  * Version: 1.0
- * Time:2017/8/20
+ * Time:2017/9/7
  */
-public interface IPartyDao {
+public interface IPartyService {
 
     /**
      * 添加聚会
@@ -35,13 +35,6 @@ public interface IPartyDao {
     WriteResult delete(String id);
 
     /**
-     * 查找聚会
-     * @param id
-     * @return
-     */
-    PartyBo findById(String id);
-
-    /**
      * 查找我发起的聚会
      * @param createid
      * @return
@@ -54,5 +47,11 @@ public interface IPartyDao {
      */
     List<PartyBo> findByMyJoin(String userid, String start_id, int limit);
 
+    /**
+     * 查找聚会
+     * @param id
+     * @return
+     */
+    PartyBo findById(String id);
 
 }

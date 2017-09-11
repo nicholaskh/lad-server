@@ -4,7 +4,6 @@ import com.lad.bo.CommentBo;
 import com.lad.bo.RedstarBo;
 import com.mongodb.BasicDBObject;
 import com.mongodb.WriteResult;
-import org.springframework.scheduling.annotation.Async;
 
 import java.util.List;
 
@@ -87,7 +86,6 @@ public interface ICommentService {
      * @param weekNo
      * @return
      */
-    @Async
     WriteResult updateRedWeek(int weekNo);
 
     /**

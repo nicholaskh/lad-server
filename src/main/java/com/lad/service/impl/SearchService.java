@@ -42,7 +42,7 @@ public class SearchService implements ISearchService {
     }
 
     @Override
-    public List<SearchBo> findByTimes(int type) {
-        return searchDao.findByTimes(type);
+    public List<SearchBo> findByTimes(int type, int limit) {
+        return searchDao.findByTimes(type, limit);
     }
 }

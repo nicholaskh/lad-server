@@ -5,11 +5,9 @@ import java.util.HashSet;
 public class CircleVo extends BaseVo {
 	private String id;
 	private double[] position;
-	private String landmark;
 	private String name;
 	private String tag;
 	private String sub_tag;
-	private String category;
 	private String headPicture;
 	private String createuid;
 	private HashSet<String> users = new HashSet<String>();
@@ -50,13 +48,6 @@ public class CircleVo extends BaseVo {
 		this.position = position;
 	}
 
-	public String getLandmark() {
-		return landmark;
-	}
-
-	public void setLandmark(String landmark) {
-		this.landmark = landmark;
-	}
 
 	public String getName() {
 		return name;
@@ -80,14 +71,6 @@ public class CircleVo extends BaseVo {
 
 	public void setSub_tag(String sub_tag) {
 		this.sub_tag = sub_tag;
-	}
-
-	public String getCategory() {
-		return category;
-	}
-
-	public void setCategory(String category) {
-		this.category = category;
 	}
 
 	public String getHeadPicture() {

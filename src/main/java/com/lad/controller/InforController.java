@@ -8,15 +8,14 @@ import com.lad.service.ICommentService;
 import com.lad.service.IInforService;
 import com.lad.service.IThumbsupService;
 import com.lad.service.IUserService;
-import com.lad.util.CommonUtil;
-import com.lad.util.Constant;
-import com.lad.util.ERRORCODE;
-import com.lad.util.MyException;
+import com.lad.util.*;
 import com.lad.vo.CommentVo;
 import com.lad.vo.InforVo;
 import com.lad.vo.SecurityVo;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.apache.log4j.Logger;
+import org.apache.log4j.spi.RootLogger;
 import org.redisson.api.RMapCache;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +40,8 @@ import java.util.concurrent.TimeUnit;
 @CrossOrigin
 public class InforController extends BaseContorller {
 
+    private static Logger logger = RootLogger.getLogger(InforController.class);
+
     @Autowired
     private IUserService userService;
 
@@ -61,6 +62,8 @@ public class InforController extends BaseContorller {
         Map<String, Object> map = new HashMap<>();
 
         RMapCache<String, Object> cache = redisServer.getCacheMap(Constant.TEST_CACHE);
+
+        logger.info(cache.get("securityTypes"));
 
         List<InforBo> inforBos = inforService.findAllGroups();
         int size =  inforBos.size();

@@ -54,12 +54,12 @@ public class SearchDaoImpl implements ISearchDao {
     }
 
     @Override
-    public List<SearchBo> findByTimes(int type) {
+    public List<SearchBo> findByTimes(int type, int limit) {
         Query query = new Query();
         query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "times")));
         //圈子
         query.addCriteria(new Criteria("type").is(type));
-        query.limit(12);
+        query.limit(limit);
         return mongoTemplate.find(query, SearchBo.class);
     }
 }

@@ -1239,7 +1239,7 @@ public class CircleController extends BaseContorller {
 	@ResponseBody
 	public String hotSearchs(HttpServletRequest request, HttpServletResponse response) {
 
-		List<SearchBo> searchBos = searchService.findByTimes(0);
+		List<SearchBo> searchBos = searchService.findByTimes(0, 12);
 
 		List<String> words = new ArrayList<>();
 		for (SearchBo searchBo : searchBos) {
@@ -1259,8 +1259,47 @@ public class CircleController extends BaseContorller {
 	public String searchCitys(String province, String city, String district , int page, int limit,
 							  HttpServletRequest request, HttpServletResponse response) {
 
+		if (StringUtils.isNotEmpty(city)){
+			seveKeys(city);
+		}
+		if (StringUtils.isNotEmpty(district)){
+			seveKeys(district);
+		}
 		List<CircleBo> circleBos = circleService.findByCitys(province, city, district, page, limit);
 		return bo2vos(circleBos);
+	}
+
+	private void seveKeys(String value){
+		SearchBo searchBo = searchService.findByKeyword(value, 0);
+		if (searchBo == null) {
+			searchBo = new SearchBo();
+			searchBo.setKeyword(value);
+			searchBo.setType(4);
+			searchBo.setTimes(1);
+			searchService.insert(searchBo);
+		} else {
+			searchService.update(searchBo.getId());
+		}
+
+	}
+
+	/**
+	 * 热门城市
+	 */
+	@RequestMapping("/hot-citys")
+	@ResponseBody
+	public String hotCitys(HttpServletRequest request, HttpServletResponse response) {
+
+		List<SearchBo> searchBos = searchService.findByTimes(4, 9);
+
+		List<String> words = new ArrayList<>();
+		for (SearchBo searchBo : searchBos) {
+			words.add(searchBo.getKeyword());
+		}
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("hotCitys", words);
+		return JSONObject.fromObject(map).toString();
 	}
 
 

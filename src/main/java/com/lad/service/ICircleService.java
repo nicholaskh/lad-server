@@ -5,7 +5,6 @@ import com.lad.bo.CircleHistoryBo;
 import com.lad.bo.CircleTypeBo;
 import com.lad.bo.ReasonBo;
 import com.mongodb.WriteResult;
-import org.springframework.scheduling.annotation.Async;
 
 import java.util.HashSet;
 import java.util.List;
@@ -103,7 +102,12 @@ public interface ICircleService extends IBaseService {
 	
 	CircleHistoryBo findByUserIdAndCircleId(String userid, String circleid);
 
-	@Async
+	/**
+	 * 更新圈子人气
+	 * @param circleid
+	 * @param total
+	 * @return
+	 */
 	WriteResult updateTotal(String circleid, int total);
 
 	List<CircleTypeBo> selectByLevel(int level);

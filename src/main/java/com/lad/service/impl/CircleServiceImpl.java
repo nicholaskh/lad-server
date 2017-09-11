@@ -11,6 +11,7 @@ import com.lad.dao.IReasonDao;
 import com.lad.service.ICircleService;
 import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
@@ -154,7 +155,7 @@ public class CircleServiceImpl implements ICircleService {
 	}
 
 
-	@Override
+	@Async
 	public WriteResult updateTotal(String circleid, int total) {
 		return circleDao.updateTotal(circleid, total);
 	}

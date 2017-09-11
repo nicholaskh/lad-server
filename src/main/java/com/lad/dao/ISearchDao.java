@@ -21,6 +21,6 @@ public interface ISearchDao {
 
     WriteResult delete(String id);
 
-    List<SearchBo> findByTimes(int type);
+    List<SearchBo> findByTimes(int type, int limit);
 
 }

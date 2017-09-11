@@ -84,4 +84,12 @@ public class PartyDaoImpl implements IPartyDao {
     public List<PartyBo> findByMyJoin(String userid, String start_id, int limit) {
         return null;
     }
+
+    @Override
+    public PartyBo findById(String id) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("_id").is(id));
+        query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+        return mongoTemplate.findOne(query, PartyBo.class);
+    }
 }
