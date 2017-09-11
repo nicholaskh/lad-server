@@ -29,6 +29,9 @@ public class NoteBo extends BaseBo {
 	//上传的文件类型，前端传值
 	private String type;
 
+	//视频缩略图
+	private String videoPic;
+
 	//总数
 	private long temp;
 
@@ -142,5 +145,13 @@ public class NoteBo extends BaseBo {
 
 	public void setTop(int top) {
 		this.top = top;
+	}
+
+	public String getVideoPic() {
+		return videoPic;
+	}
+
+	public void setVideoPic(String videoPic) {
+		this.videoPic = videoPic;
 	}
 }

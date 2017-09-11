@@ -20,15 +20,14 @@ public class PartyManageBo extends BaseBo {
     private LinkedHashSet<String> users;
 
     private LinkedHashSet<String> refuseUsers;
-
-    private int readNum;
-
+    //访问数量
+    private int visitNum;
+    //分享数量
     private int shareNum;
     //收藏数量
     private int keepNum;
     //举报数量
     private int reportNum;
-
 
     public String getPartyid() {
         return partyid;
@@ -62,12 +61,12 @@ public class PartyManageBo extends BaseBo {
         this.refuseUsers = refuseUsers;
     }
 
-    public int getReadNum() {
-        return readNum;
+    public int getVisitNum() {
+        return visitNum;
     }
 
-    public void setReadNum(int readNum) {
-        this.readNum = readNum;
+    public void setVisitNum(int visitNum) {
+        this.visitNum = visitNum;
     }
 
     public int getShareNum() {

@@ -24,7 +24,7 @@ public class SearchBo implements Serializable {
     //0  未删除 ； 1 删除
     private Integer deleted = 0;
 
-    //0 圈子， 1帖子， 2 资讯
+    //0 圈子， 1帖子， 2 资讯, 4 城市
     private Integer type;
 
     public String getId() {
