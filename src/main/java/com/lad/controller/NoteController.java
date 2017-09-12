@@ -515,7 +515,7 @@ public class NoteController extends BaseContorller {
 		List<CommentVo> commentVos = new ArrayList<>();
 		for (CommentBo commentBo : commentBos) {
 			CommentVo commentVo = comentBo2Vo(commentBo);
-			ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(noteid, userBo.getId());
+			ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(commentBo.getId(), userBo.getId());
 			commentVo.setMyThumbsup(thumbsupBo != null);
 			long thums = thumbsupService.selectByOwnerIdCount(noteid);
 			commentVo.setThumpsubCount(thums);
@@ -523,6 +523,11 @@ public class NoteController extends BaseContorller {
 				CommentBo parent = commentService.findById(commentBo.getParentid());
 				commentVo.setParentUserName(parent.getUserName());
 				commentVo.setParentUserid(parent.getCreateuid());
+				UserBo comUser = userService.getUser(commentBo.getCreateuid());
+				commentVo.setUserHeadPic(comUser.getHeadPictureName());
+				commentVo.setUserid(commentBo.getCreateuid());
+				commentVo.setUserBirth(comUser.getBirthDay());
+				commentVo.setUserSex(comUser.getSex());
 			}
 			commentVos.add(commentVo);
 		}

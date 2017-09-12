@@ -82,4 +82,5 @@ public class CommentBo extends BaseBo{
     public void setOwnerid(String ownerid) {
         this.ownerid = ownerid;
     }
+    
 }

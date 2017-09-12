@@ -30,6 +30,12 @@ public class CommentVo extends BaseVo {
 
     private Boolean isMyThumbsup;
 
+    private String userHeadPic;
+
+    private String userSex;
+
+    private String userBirth;
+
     public long getThumpsubCount() {
         return thumpsubCount;
     }
@@ -108,5 +114,29 @@ public class CommentVo extends BaseVo {
 
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
+    }
+
+    public String getUserHeadPic() {
+        return userHeadPic;
+    }
+
+    public void setUserHeadPic(String userHeadPic) {
+        this.userHeadPic = userHeadPic;
+    }
+
+    public String getUserSex() {
+        return userSex;
+    }
+
+    public void setUserSex(String userSex) {
+        this.userSex = userSex;
+    }
+
+    public String getUserBirth() {
+        return userBirth;
+    }
+
+    public void setUserBirth(String userBirth) {
+        this.userBirth = userBirth;
     }
 }
