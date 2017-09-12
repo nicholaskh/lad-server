@@ -30,7 +30,7 @@ public class CircleVo extends BaseVo {
 
 	private String description;
 
-	private String visitNum;
+	private int visitNum;
 
 	public String getId() {
 		return id;
@@ -185,11 +185,11 @@ public class CircleVo extends BaseVo {
 		this.notice = notice;
 	}
 
-	public String getVisitNum() {
+	public int getVisitNum() {
 		return visitNum;
 	}
 
-	public void setVisitNum(String visitNum) {
+	public void setVisitNum(int visitNum) {
 		this.visitNum = visitNum;
 	}
 }

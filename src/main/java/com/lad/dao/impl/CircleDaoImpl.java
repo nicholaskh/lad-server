@@ -273,38 +273,47 @@ public class CircleDaoImpl implements ICircleDao {
 		query.addCriteria(new Criteria("_id").is(circleid));
 		Update update = new Update();
 		switch (type){
+			//圈子阅读数量
 			case Constant.CIRCLE_VISIT :
 				update.inc("visitNum", num);
 				update.inc("total", num);
 				break;
+				//圈子评论数量
 			case Constant.CIRCLE_COMMENT:
 				update.inc("commentNum", num);
 				update.inc("total", num);
 				break;
+				//圈子转发数量
 			case Constant.CIRCLE_TRANS:
 				update.inc("transmitNum", num);
 				update.inc("total", num);
 				break;
+				//圈子点赞数量
 			case Constant.CIRCLE_THUMP:
 				update.inc("thumpNum", num);
 				update.inc("total", num);
 				break;
+				//圈子阅读数量包含帖子的阅读
 			case Constant.CIRCLE_NOTE_VISIT:
 				update.inc("visitNum", num);
 				update.inc("total", num);
 				break;
+				//圈子内帖子阅读数量
 			case Constant.CIRCLE_NOTE:
 				update.inc("noteNum", num);
 				update.inc("hotNum", num);
 				break;
+				//圈子聚会数量
 			case Constant.CIRCLE_PARTY_VISIT:
 				update.inc("partyVisit", num);
 				update.inc("hotNum", num);
 				break;
+				//圈子聚会点赞数量
 			case Constant.CIRCLE_PARTY_THUMP:
 				update.inc("partyThump", num);
 				update.inc("hotNum", num);
 				break;
+				//圈子聚会分享数量
 			case Constant.CIRCLE_PARTY_SHARE:
 				update.inc("partyShare", num);
 				update.inc("hotNum", num);

@@ -49,6 +49,8 @@ public class NoteVo extends BaseVo {
 
     ///当前帖子所在圈子的帖子数量
     private int cirNoteNum;
+    ///当前帖子所在圈子的阅读数量
+    private int cirVisitNum;
     //视频缩略图
     private String videoPic;
 
@@ -261,5 +263,13 @@ public class NoteVo extends BaseVo {
 
     public void setVideoPic(String videoPic) {
         this.videoPic = videoPic;
+    }
+
+    public int getCirVisitNum() {
+        return cirVisitNum;
+    }
+
+    public void setCirVisitNum(int cirVisitNum) {
+        this.cirVisitNum = cirVisitNum;
     }
 }

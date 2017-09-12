@@ -582,6 +582,7 @@ public class NoteController extends BaseContorller {
 			noteVo.setCirName(circleBo.getName());
 			noteVo.setCirHeadPic(circleBo.getHeadPicture());
 			noteVo.setCirNoteNum(circleBo.getNoteSize());
+			noteVo.setCirVisitNum(circleBo.getVisitNum());
 			boToVo(noteBo, noteVo, userBo);
 			noteVoList.add(noteVo);
 		}
@@ -707,6 +708,7 @@ public class NoteController extends BaseContorller {
 			noteVo.setCirName(circleBo.getName());
 			noteVo.setCirNoteNum(circleBo.getNoteSize());
 			noteVo.setCirHeadPic(circleBo.getHeadPicture());
+			noteVo.setCirVisitNum(circleBo.getVisitNum());
 			userBo = userService.getUser(noteBo.getCreateuid());
 			boToVo(noteBo, noteVo, userBo);
 			noteVoList.add(noteVo);
