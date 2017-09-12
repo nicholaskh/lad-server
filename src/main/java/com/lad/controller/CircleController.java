@@ -919,7 +919,10 @@ public class CircleController extends BaseContorller {
 			typeBo = new CircleTypeBo();
 			typeBo.setCategory(name);
 			typeBo.setLevel(level);
-			typeBo.setPreCateg(parent);
+			if (StringUtils.isNotEmpty(parent)) {
+				typeBo.setPreCateg(parent);
+			}
+			typeBo.setType(0);
 			typeBo.setCreateuid(userBo.getId());
 		} else {
 			return CommonUtil.toErrorResult(
