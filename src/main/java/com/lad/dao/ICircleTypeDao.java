@@ -14,13 +14,13 @@ public interface ICircleTypeDao {
 
     CircleTypeBo insert(CircleTypeBo circleTypeBo);
 
-    List<CircleTypeBo> selectByParent(String preCateg);
+    List<CircleTypeBo> selectByParent(String preCateg, int type);
 
-    CircleTypeBo selectByNameLevel(String name, int level);
+    CircleTypeBo selectByNameLevel(String name, int level, int type);
 
-    List<CircleTypeBo> findAll(int start, int limit);
+    List<CircleTypeBo> findAll(int start, int limit, int type);
 
-    List<CircleTypeBo> selectByLevel(int level);
+    List<CircleTypeBo> selectByLevel(int level, int type);
 
     List<CircleTypeBo> findAll();
 

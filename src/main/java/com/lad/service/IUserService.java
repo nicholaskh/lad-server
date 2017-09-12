@@ -1,5 +1,6 @@
 package com.lad.service;
 
+import com.lad.bo.CircleTypeBo;
 import com.lad.bo.RedstarBo;
 import com.lad.bo.UserBo;
 import com.mongodb.WriteResult;
@@ -79,5 +80,34 @@ public interface IUserService extends IBaseService {
 	 * @return
 	 */
 	WriteResult updateUserStatus(String id, int status);
+
+	/**
+	 * 获取等级兴趣分类
+	 * @param level
+	 * @return
+	 */
+	List<CircleTypeBo> selectByLevel(int level);
+
+	/**
+	 * 获取大分类下所有小分类兴趣
+	 * @param name
+	 * @return
+	 */
+	List<CircleTypeBo> selectByParent(String name);
+
+	/**
+	 * 添加兴趣分类
+	 * @param circleTypeBo
+	 * @return
+	 */
+	CircleTypeBo addCircleType(CircleTypeBo circleTypeBo);
+
+	/**
+	 * 根据分类和等级获取指定分类
+	 * @param name
+	 * @param level
+	 * @return
+	 */
+	CircleTypeBo findByName(String name, int level);
 
 }

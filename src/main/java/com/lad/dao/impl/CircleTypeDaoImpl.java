@@ -30,32 +30,36 @@ public class CircleTypeDaoImpl implements ICircleTypeDao {
         return circleTypeBo;
     }
 
-    public List<CircleTypeBo> selectByParent(String preCateg) {
+    public List<CircleTypeBo> selectByParent(String preCateg, int type) {
         Query query = new Query();
         query.addCriteria(new Criteria("preCateg").is(preCateg));
         query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+        query.addCriteria(new Criteria("type").is(type));
         return mongoTemplate.find(query, CircleTypeBo.class);
     }
 
-    public CircleTypeBo selectByNameLevel(String name, int level) {
+    public CircleTypeBo selectByNameLevel(String name, int level, int type) {
         Query query = new Query();
         query.addCriteria(new Criteria("category").is(name));
         query.addCriteria(new Criteria("level").is(level));
         query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+        query.addCriteria(new Criteria("type").is(type));
         return mongoTemplate.findOne(query, CircleTypeBo.class);
     }
 
-    public List<CircleTypeBo> selectByLevel(int level) {
+    public List<CircleTypeBo> selectByLevel(int level, int type) {
         Query query = new Query();
         query.addCriteria(new Criteria("level").is(level));
         query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+        query.addCriteria(new Criteria("type").is(type));
         return mongoTemplate.find(query, CircleTypeBo.class);
     }
 
     @Override
-    public List<CircleTypeBo> findAll(int start, int limit) {
+    public List<CircleTypeBo> findAll(int start, int limit, int type) {
         Query query = new Query();
         query.addCriteria(new Criteria("deleted").is(0));
+        query.addCriteria(new Criteria("type").is(type));
         query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
         query.skip(start);
         query.limit(limit);
@@ -65,4 +69,5 @@ public class CircleTypeDaoImpl implements ICircleTypeDao {
     public List<CircleTypeBo> findAll() {
         return mongoTemplate.findAll(CircleTypeBo.class);
     }
+
 }

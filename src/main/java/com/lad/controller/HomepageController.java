@@ -1,17 +1,21 @@
 package com.lad.controller;
 
+import com.lad.bo.CircleTypeBo;
 import com.lad.bo.HomepageBo;
 import com.lad.bo.ThumbsupBo;
 import com.lad.bo.UserBo;
+import com.lad.redis.RedisServer;
 import com.lad.service.IHomepageService;
 import com.lad.service.IThumbsupService;
 import com.lad.service.IUserService;
 import com.lad.util.CommonUtil;
 import com.lad.util.Constant;
 import com.lad.util.ERRORCODE;
+import com.lad.util.MyException;
 import com.lad.vo.ThumbsupVo;
 import net.sf.json.JSONObject;
 import org.apache.commons.beanutils.BeanUtils;
+import org.redisson.api.RMapCache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
@@ -35,6 +39,9 @@ public class HomepageController extends BaseContorller {
 	private IThumbsupService thumbsupService;
 	@Autowired
 	private IUserService userService;
+
+	@Autowired
+	private RedisServer redisServer;
 
 	@RequestMapping("/insert")
 	@ResponseBody
@@ -287,5 +294,58 @@ public class HomepageController extends BaseContorller {
 		map.put("ret", 0);
 		map.put("thumbsup_to_me", thumbsup_to_me_vo);
 		return JSONObject.fromObject(map).toString();
+	}
+
+	@RequestMapping("/interest")
+	@ResponseBody
+	public String userInterest(HttpServletRequest request, HttpServletResponse response) {
+		RMapCache<String, Object> cache = redisServer.getCacheMap("testCache");
+		Map<String, Object> map = new HashMap<>();
+		map.put("ret", 0);
+		if (cache.containsKey("interest")) {
+			Object types = cache.get("interest");
+			map.put("types", types);
+		} else {
+			Map<String, List<String>> maps = new LinkedHashMap<>();
+			List<CircleTypeBo> typeBos = userService.selectByLevel(1);
+			for (CircleTypeBo typeBo : typeBos) {
+				List<CircleTypeBo> sonTypeBos = userService.selectByParent(typeBo.getCategory());
+				List<String> sonList = new ArrayList<>();
+				for (CircleTypeBo bo : sonTypeBos) {
+					sonList.add(bo.getCategory());
+				}
+				maps.put(typeBo.getCategory(), sonList);
+			}
+			map.put("types", maps);
+		}
+		return JSONObject.fromObject(map).toString();
+	}
+
+	@RequestMapping("/add-interest")
+	@ResponseBody
+	public String addInterest(String name, String parent, int level, HttpServletRequest request,
+								HttpServletResponse response) {
+		UserBo userBo;
+		try {
+			userBo = checkSession(request, userService);
+		} catch (MyException e) {
+			return e.getMessage();
+		}
+		CircleTypeBo typeBo = userService.findByName(name, level);
+		if (typeBo == null) {
+			typeBo = new CircleTypeBo();
+			typeBo.setCategory(name);
+			typeBo.setLevel(level);
+			if (!StringUtils.isEmpty(parent)) {
+				typeBo.setPreCateg(parent);
+			}
+			typeBo.setType(1);
+			typeBo.setCreateuid(userBo.getId());
+		} else {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CIRCLE_TYPE_EXIST.getIndex(),
+					ERRORCODE.CIRCLE_TYPE_EXIST.getReason());
+		}
+		return Constant.COM_RESP;
 	}
 }

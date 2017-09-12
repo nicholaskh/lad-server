@@ -1,9 +1,7 @@
 package com.lad.service.impl;
 
-import com.lad.bo.Pager;
-import com.lad.bo.RedstarBo;
-import com.lad.bo.UserBo;
-import com.lad.bo.UserLevelBo;
+import com.lad.bo.*;
+import com.lad.dao.ICircleTypeDao;
 import com.lad.dao.IRedstarDao;
 import com.lad.dao.IUserDao;
 import com.lad.dao.IUserLevelDao;
@@ -30,6 +28,9 @@ public class UserServiceImpl implements IUserService{
 
 	@Autowired
 	private IUserLevelDao userLevelDao;
+
+	@Autowired
+	private ICircleTypeDao circleTypeDao;
 
 	public UserBo save(UserBo userBo){
 		userBo = userDao.save(userBo);
@@ -121,6 +122,26 @@ public class UserServiceImpl implements IUserService{
 	@Override
 	public WriteResult updateUserStatus(String id, int status) {
 		return userDao.updateUserStatus(id, status);
+	}
+
+	@Override
+	public List<CircleTypeBo> selectByLevel(int level) {
+		return circleTypeDao.selectByLevel(level, 1);
+	}
+
+	@Override
+	public List<CircleTypeBo> selectByParent(String name) {
+		return circleTypeDao.selectByParent(name, 1);
+	}
+
+	@Override
+	public CircleTypeBo addCircleType(CircleTypeBo circleTypeBo) {
+		return circleTypeDao.insert(circleTypeBo);
+	}
+
+	@Override
+	public CircleTypeBo findByName(String name, int level) {
+		return circleTypeDao.selectByNameLevel(name, level, 1);
 	}
 
 	@Override

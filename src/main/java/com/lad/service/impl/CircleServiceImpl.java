@@ -162,12 +162,12 @@ public class CircleServiceImpl implements ICircleService {
 
 	@Override
 	public List<CircleTypeBo> selectByLevel(int level) {
-		return circleTypeDao.selectByLevel(level);
+		return circleTypeDao.selectByLevel(level, 0);
 	}
 
 	@Override
 	public List<CircleTypeBo> selectByParent(String name) {
-		return circleTypeDao.selectByParent(name);
+		return circleTypeDao.selectByParent(name, 0);
 	}
 
 	@Override
@@ -177,12 +177,12 @@ public class CircleServiceImpl implements ICircleService {
 
 	@Override
 	public List<CircleTypeBo> selectByPage(int start, int limit) {
-		return circleTypeDao.findAll(start, limit);
+		return circleTypeDao.findAll(start, limit, 0);
 	}
 
 	@Override
 	public CircleTypeBo findByName(String name, int level) {
-		return circleTypeDao.selectByNameLevel(name, level);
+		return circleTypeDao.selectByNameLevel(name, level, 0);
 	}
 
 	@Override
