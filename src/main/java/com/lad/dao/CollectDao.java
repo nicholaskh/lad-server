@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * 收藏聊天记录
  */
-@Repository("collectionDao")
+@Repository("collectDao")
 public class CollectDao {
 	
 	@Autowired
@@ -52,7 +52,7 @@ public class CollectDao {
 		query.addCriteria(new Criteria("userid").is(userid));
 		query.addCriteria(new Criteria("deleted").is(0));
 		if (StringUtils.isNotEmpty(start_id)) {
-			query.addCriteria(new Criteria("_id").gt(start_id));
+			query.addCriteria(new Criteria("_id").lt(start_id));
 		}
 		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
 		query.limit(limit);
