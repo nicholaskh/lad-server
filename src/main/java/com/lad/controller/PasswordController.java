@@ -45,7 +45,7 @@ public class PasswordController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.SECURITY_WRONG_VERIFICATION.getIndex(),
 					ERRORCODE.SECURITY_WRONG_VERIFICATION.getReason());
 		}
-		if (!registService.is_phone_repeat(phone)) {
+		if (registService.is_phone_repeat(phone)) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PHONE_REPEAT.getIndex(),
 					ERRORCODE.ACCOUNT_PHONE_REPEAT.getReason());
 		}
