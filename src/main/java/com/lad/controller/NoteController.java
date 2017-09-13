@@ -523,12 +523,13 @@ public class NoteController extends BaseContorller {
 				CommentBo parent = commentService.findById(commentBo.getParentid());
 				commentVo.setParentUserName(parent.getUserName());
 				commentVo.setParentUserid(parent.getCreateuid());
-				UserBo comUser = userService.getUser(commentBo.getCreateuid());
-				commentVo.setUserHeadPic(comUser.getHeadPictureName());
-				commentVo.setUserid(commentBo.getCreateuid());
-				commentVo.setUserBirth(comUser.getBirthDay());
-				commentVo.setUserSex(comUser.getSex());
 			}
+			UserBo comUser = userService.getUser(commentBo.getCreateuid());
+			commentVo.setUserHeadPic(comUser.getHeadPictureName());
+			commentVo.setUserid(commentBo.getCreateuid());
+			commentVo.setUserBirth(comUser.getBirthDay());
+			commentVo.setUserSex(comUser.getSex());
+			commentVo.setUserLevel(comUser.getLevel());
 			commentVos.add(commentVo);
 		}
 		Map<String, Object> map = new HashMap<>();
@@ -915,6 +916,7 @@ public class NoteController extends BaseContorller {
 			noteVo.setBirthDay(userBo.getBirthDay());
 			noteVo.setHeadPictureName(userBo.getHeadPictureName());
 			noteVo.setUsername(userBo.getUserName());
+			noteVo.setUserLevel(userBo.getLevel());
 		}
 		noteVo.setPosition(noteBo.getPosition());
 		noteVo.setCommontCount(noteBo.getCommentcount());

@@ -18,6 +18,8 @@ public class NoteVo extends BaseVo {
 
     private String birthDay;
 
+    private int userLevel;
+
     private String nodeid;
 
     private String subject;
@@ -271,5 +273,13 @@ public class NoteVo extends BaseVo {
 
     public void setCirVisitNum(int cirVisitNum) {
         this.cirVisitNum = cirVisitNum;
+    }
+
+    public int getUserLevel() {
+        return userLevel;
+    }
+
+    public void setUserLevel(int userLevel) {
+        this.userLevel = userLevel;
     }
 }
