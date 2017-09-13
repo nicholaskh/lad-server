@@ -10,7 +10,7 @@ import java.util.LinkedList;
  */
 public class NoteVo extends BaseVo {
 
-    private String userName;
+    private String username;
 
     private String sex;
 
@@ -163,12 +163,12 @@ public class NoteVo extends BaseVo {
         this.circleId = circleId;
     }
 
-    public String getUserName() {
-        return userName;
+    public String getUsername() {
+        return username;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getSex() {
