@@ -134,8 +134,7 @@ public class LoginController extends BaseContorller {
 				} catch (Exception e) {
 					System.out.println( "msg : " + e.getMessage());
 				}
-				int res = CommonUtil.sendSMS2(phone, msg);
-				System.out.println(phone + "; quick_login msg : " + res);
+				CommonUtil.sendSMS2(phone, msg);
 				isNew = true;
 			} else if (userBo.getDeleted() == Constant.DELETED) {
 				userBo.setDeleted(Constant.ACTIVITY);
@@ -200,13 +199,18 @@ public class LoginController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PHONE_ERROR.getIndex(),
 					ERRORCODE.ACCOUNT_PHONE_ERROR.getReason());
 		}
+		UserBo userBo = userService.checkByPhone(phone);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PHONE_EXIST.getIndex(),
+					ERRORCODE.ACCOUNT_PHONE_EXIST.getReason());
+		}
 		if (!StringUtils.hasLength(password)) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PASSWORD.getIndex(),
 					ERRORCODE.ACCOUNT_PASSWORD.getReason());
 		}
 		password = CommonUtil.getSHA256(password);
 		Map<String, Object> map = new HashMap<String, Object>();
-		UserBo userBo = loginService.getUser(phone, password);
+		userBo = loginService.getUser(phone, password);
 		if (userBo != null) {
 			map.put("ret", 0);
 			session.setAttribute("isLogin", true);
