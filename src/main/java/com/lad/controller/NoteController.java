@@ -589,7 +589,8 @@ public class NoteController extends BaseContorller {
 			noteVo.setCirHeadPic(circleBo.getHeadPicture());
 			noteVo.setCirNoteNum(circleBo.getNoteSize());
 			noteVo.setCirVisitNum(circleBo.getVisitNum());
-			boToVo(noteBo, noteVo, userBo);
+			UserBo author = userService.getUser(noteBo.getCreateuid());
+			boToVo(noteBo, noteVo, author);
 			noteVoList.add(noteVo);
 		}
 		Map<String, Object> map = new HashMap<>();
