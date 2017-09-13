@@ -36,6 +36,8 @@ public class CommentVo extends BaseVo {
 
     private String userBirth;
 
+    private int userLevel;
+
     public long getThumpsubCount() {
         return thumpsubCount;
     }
@@ -138,5 +140,13 @@ public class CommentVo extends BaseVo {
 
     public void setUserBirth(String userBirth) {
         this.userBirth = userBirth;
+    }
+
+    public int getUserLevel() {
+        return userLevel;
+    }
+
+    public void setUserLevel(int userLevel) {
+        this.userLevel = userLevel;
     }
 }

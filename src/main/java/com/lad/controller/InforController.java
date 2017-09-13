@@ -521,6 +521,11 @@ public class InforController extends BaseContorller {
             commentVo.setParentUserName(parent.getUserName());
             commentVo.setParentUserid(parent.getCreateuid());
         }
+        UserBo userBo = userService.getUser(commentBo.getCreateuid());
+        commentVo.setUserHeadPic(userBo.getHeadPictureName());
+        commentVo.setUserBirth(userBo.getBirthDay());
+        commentVo.setUserSex(userBo.getSex());
+        commentVo.setUserLevel(userBo.getLevel());
         return commentVo;
     }
 }
