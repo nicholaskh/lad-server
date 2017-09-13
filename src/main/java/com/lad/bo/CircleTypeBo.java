@@ -3,7 +3,7 @@ package com.lad.bo;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
- * 功能描述：圈子分类
+ * 功能描述：圈子分类/个人兴趣分类
  * Copyright: Copyright (c) 2017
  * Version: 1.0
  * Time:2017/8/21
@@ -17,6 +17,9 @@ public class CircleTypeBo extends BaseBo {
     private String preCateg;
     //1 一级分类， 2 二级分类
     private int level;
+    
+    //0，圈子分类； 1 个人兴趣分类
+    private int type;
 
     public String getCategory() {
         return category;
@@ -40,5 +43,13 @@ public class CircleTypeBo extends BaseBo {
 
     public void setLevel(int level) {
         this.level = level;
+    }
+
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
     }
 }
