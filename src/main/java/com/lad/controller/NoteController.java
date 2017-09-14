@@ -299,18 +299,13 @@ public class NoteController extends BaseContorller {
 	}
 
 	/**
-	 * 精华帖子，字数100以上,按浏览量倒序排,取前10
+	 * 精华帖子，（字数100以上,按浏览量倒序，取消）,取前10
 	 */
     @RequestMapping("/essential-note")
     @ResponseBody
-    public String bestNote(String circleid,HttpServletRequest request,
+    public String bestNote(String circleid, String start_id, int limit, HttpServletRequest request,
                            HttpServletResponse response) {
-		try {
-			checkSession(request, userService);
-		} catch (MyException e) {
-			return e.getMessage();
-		}
-        List<NoteBo> noteBos = noteService.selectByVisit(circleid);
+		List<NoteBo> noteBos = noteService.findByTopEssence(circleid, Constant.NOTE_JIAJING, start_id, limit);
 		List<NoteVo> noteVoList = new LinkedList<>();
 		for (NoteBo noteBo : noteBos) {
 			NoteVo noteVo = new NoteVo();
@@ -323,6 +318,31 @@ public class NoteController extends BaseContorller {
         map.put("noteVoList", noteVoList);
         return JSONObject.fromObject(map).toString();
     }
+
+	/**
+	 * 获取置顶帖子，（置顶帖子条件，字数>=200, 图片>=3, 取消）时间倒序取前2
+	 * @return
+	 */
+	@RequestMapping("/top-notes")
+	@ResponseBody
+	public String topNotes(String circleid, String start_id, int limit, HttpServletRequest request,
+						   HttpServletResponse response) {
+		if (limit < 1) {
+			limit = 2;
+		}
+		List<NoteBo> noteBos = noteService.findByTopEssence(circleid, Constant.NOTE_TOP, start_id, limit);
+		List<NoteVo> noteVoList = new LinkedList<>();
+		for (NoteBo noteBo : noteBos) {
+			NoteVo noteVo = new NoteVo();
+			boToVo(noteBo, noteVo, userService.getUser(noteBo.getCreateuid()));
+			noteVoList.add(noteVo);
+		}
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("noteVoList", noteVoList);
+		return JSONObject.fromObject(map).toString();
+	}
+
 
 	/**
 	 * 热门详情；1周内帖子的阅读数+赞数+转发数+评论数最多的列表，取前10
@@ -662,32 +682,6 @@ public class NoteController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-
-	/**
-	 * 获取置顶帖子，置顶帖子条件，字数>=200, 图片>=3,时间倒序取前2
-	 * @return
-	 */
-	@RequestMapping("/top-notes")
-	@ResponseBody
-	public String topNotes(String circleid,HttpServletRequest request,
-						   HttpServletResponse response) {
-		try {
-			checkSession(request, userService);
-		} catch (MyException e) {
-			return e.getMessage();
-		}
-		List<NoteBo> noteBos = noteService.selectTopNotes(circleid);
-		List<NoteVo> noteVoList = new LinkedList<>();
-		for (NoteBo noteBo : noteBos) {
-			NoteVo noteVo = new NoteVo();
-			boToVo(noteBo, noteVo, userService.getUser(noteBo.getCreateuid()));
-			noteVoList.add(noteVo);
-		}
-		Map<String, Object> map = new HashMap<String, Object>();
-		map.put("ret", 0);
-		map.put("noteVoList", noteVoList);
-		return JSONObject.fromObject(map).toString();
-	}
 
 	/**
 	 * 我的帖子
