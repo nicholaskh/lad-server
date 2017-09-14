@@ -1,16 +1,14 @@
 package com.lad.service.impl;
 
 import com.lad.bo.*;
-import com.lad.dao.ICircleTypeDao;
-import com.lad.dao.IRedstarDao;
-import com.lad.dao.IUserDao;
-import com.lad.dao.IUserLevelDao;
+import com.lad.dao.*;
 import com.lad.service.IUserService;
 import com.lad.util.Constant;
 import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 
 /**
@@ -31,6 +29,9 @@ public class UserServiceImpl implements IUserService{
 
 	@Autowired
 	private ICircleTypeDao circleTypeDao;
+
+	@Autowired
+	private IUserTasteDao userTasteDao;
 
 	public UserBo save(UserBo userBo){
 		userBo = userDao.save(userBo);
@@ -235,5 +236,34 @@ public class UserServiceImpl implements IUserService{
 			return 2;
 		}
 		return 1;
+	}
+
+	@Override
+	public UserTasteBo addUserTaste(UserTasteBo tasteBo) {
+		return userTasteDao.add(tasteBo);
+	}
+
+	@Override
+	public UserTasteBo findByUserId(String userid) {
+		return userTasteDao.findByUserid(userid);
+	}
+
+	@Override
+	public WriteResult updateUserTaste(String id, LinkedHashSet<String> tastes, int type) {
+
+		switch (type){
+			case Constant.ONE:
+				return userTasteDao.updateSport(id, tastes);
+			case Constant.TWO:
+				return userTasteDao.updateMusic(id, tastes);
+			case Constant.THREE:
+				return userTasteDao.updateLife(id, tastes);
+			case Constant.FOUR:
+				return userTasteDao.updateTrip(id, tastes);
+			default:
+				break;
+		}
+		return null;
+
 	}
 }

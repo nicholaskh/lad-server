@@ -1,9 +1,6 @@
 package com.lad.controller;
 
-import com.lad.bo.CircleTypeBo;
-import com.lad.bo.HomepageBo;
-import com.lad.bo.ThumbsupBo;
-import com.lad.bo.UserBo;
+import com.lad.bo.*;
 import com.lad.redis.RedisServer;
 import com.lad.service.IHomepageService;
 import com.lad.service.IThumbsupService;
@@ -321,31 +318,77 @@ public class HomepageController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	@RequestMapping("/add-interest")
+	@RequestMapping("/get-interest")
 	@ResponseBody
-	public String addInterest(String name, String parent, int level, HttpServletRequest request,
-								HttpServletResponse response) {
+	public String getInterest(int type, HttpServletRequest request, HttpServletResponse response) {
+
+		String tasteType = "";
+		if (type == Constant.ONE) {
+			tasteType = "运动";
+		} else if (type == Constant.TWO) {
+			tasteType = "音乐";
+		} else if (type == Constant.THREE) {
+			tasteType = "生活";
+		} else if (type == Constant.FOUR) {
+			tasteType = "旅行足迹";
+		}
+		List<CircleTypeBo> typeBos = userService.selectByParent(tasteType);
+		List<String> interests = new ArrayList<>();
+		for (CircleTypeBo typeBo : typeBos) {
+			interests.add(typeBo.getCategory());
+		}
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put(tasteType, interests);
+		return JSONObject.fromObject(map).toString();
+	}
+
+
+	@RequestMapping("/my-interest")
+	@ResponseBody
+	public String getMyInterest(HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
 		try {
 			userBo = checkSession(request, userService);
 		} catch (MyException e) {
 			return e.getMessage();
 		}
-		CircleTypeBo typeBo = userService.findByName(name, level);
-		if (typeBo == null) {
-			typeBo = new CircleTypeBo();
-			typeBo.setCategory(name);
-			typeBo.setLevel(level);
-			if (!StringUtils.isEmpty(parent)) {
-				typeBo.setPreCateg(parent);
-			}
-			typeBo.setType(1);
-			typeBo.setCreateuid(userBo.getId());
-		} else {
-			return CommonUtil.toErrorResult(
-					ERRORCODE.CIRCLE_TYPE_EXIST.getIndex(),
-					ERRORCODE.CIRCLE_TYPE_EXIST.getReason());
+		UserTasteBo tasteBo = userService.findByUserId(userBo.getId());
+		if (tasteBo == null) {
+			tasteBo = new UserTasteBo();
+			tasteBo.setUserid(userBo.getId());
+			userService.addUserTaste(tasteBo);
 		}
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("sports", tasteBo.getSports());
+		map.put("musics", tasteBo.getMusics());
+		map.put("lifes", tasteBo.getLifes());
+		map.put("trips", tasteBo.getTrips());
+		return JSONObject.fromObject(map).toString();
+	}
+
+	@RequestMapping("/modify-interest")
+	@ResponseBody
+	public String addMyInterest(String interests, int type, HttpServletRequest request, HttpServletResponse
+			response) {
+		UserBo userBo;
+		try {
+			userBo = checkSession(request, userService);
+		} catch (MyException e) {
+			return e.getMessage();
+		}
+		UserTasteBo tasteBo = userService.findByUserId(userBo.getId());
+		LinkedHashSet<String> taste = new LinkedHashSet<>();
+		String[] ins = CommonUtil.getIds(interests);
+		taste.addAll(Arrays.asList(ins));
+		if (tasteBo == null) {
+			tasteBo = new UserTasteBo();
+			tasteBo.setUserid(userBo.getId());
+			userService.addUserTaste(tasteBo);
+		}
+		userService.updateUserTaste(tasteBo.getId(), taste, type);
 		return Constant.COM_RESP;
 	}
+
 }

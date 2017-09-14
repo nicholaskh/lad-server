@@ -3,9 +3,11 @@ package com.lad.service;
 import com.lad.bo.CircleTypeBo;
 import com.lad.bo.RedstarBo;
 import com.lad.bo.UserBo;
+import com.lad.bo.UserTasteBo;
 import com.mongodb.WriteResult;
 import org.springframework.scheduling.annotation.Async;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 
 public interface IUserService extends IBaseService {
@@ -109,5 +111,28 @@ public interface IUserService extends IBaseService {
 	 * @return
 	 */
 	CircleTypeBo findByName(String name, int level);
+
+	/**
+	 * 用户添加兴趣
+	 * @param tasteBo
+	 * @return
+	 */
+	UserTasteBo addUserTaste(UserTasteBo tasteBo);
+
+	/**
+	 * 根据用户id查找当前用户的兴趣
+	 * @param userid
+	 * @return
+	 */
+	UserTasteBo findByUserId(String userid);
+
+	/**
+	 * 用户修改个人兴趣
+	 * @param id
+	 * @param tastes
+	 * @param type
+	 * @return
+	 */
+	WriteResult updateUserTaste(String id, LinkedHashSet<String> tastes, int type);
 
 }
