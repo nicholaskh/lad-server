@@ -1305,6 +1305,29 @@ public class CircleController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
+	/**
+	 * 相关圈子
+	 */
+	@RequestMapping("/related")
+	@ResponseBody
+	public String relatedCircle(String circleid, int page, int limit, HttpServletRequest request, HttpServletResponse
+			response) {
+
+		CircleBo circleBo = circleService.selectById(circleid);
+		if (circleBo == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CIRCLE_IS_NULL.getIndex(),
+					ERRORCODE.CIRCLE_IS_NULL.getReason());
+		}
+		List<CircleBo> circleBos = circleService.findRelatedCircles(
+				circleid, circleBo.getTag(), circleBo.getSub_tag(), page, limit);
+		if (circleBos == null || circleBos.isEmpty()) {
+			circleBos = circleService.findRelatedCircles(
+					circleid, circleBo.getTag(), "", page, limit);
+		}
+		return bo2vos(circleBos);
+	}
+
 
 	/**
 	 * 红人列表实体类转换

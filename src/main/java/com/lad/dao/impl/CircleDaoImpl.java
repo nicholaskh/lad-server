@@ -345,4 +345,28 @@ public class CircleDaoImpl implements ICircleDao {
 		query.limit(limit);
 		return mongoTemplate.find(query, CircleBo.class);
 	}
+
+
+	@Override
+	public List<CircleBo> findRelatedCircles(String circleid, String tag, String sub_tag, int page, int limit) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+		query.addCriteria(new Criteria("_id").ne(circleid));
+		if (StringUtils.isNotEmpty(tag)) {
+			query.addCriteria(new Criteria("tag").is(tag));
+		}
+		if (StringUtils.isNotEmpty(sub_tag)) {
+			query.addCriteria(new Criteria("sub_tag").is(sub_tag));
+		}
+		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "hotNum")));
+		if (page <= 0){
+			page = 1;
+		}
+		if (limit < 1) {
+			limit = 2;
+		}
+		query.skip((page - 1)*limit);
+		query.limit(limit);
+		return mongoTemplate.find(query, CircleBo.class);
+	}
 }

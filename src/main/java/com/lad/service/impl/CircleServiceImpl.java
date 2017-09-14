@@ -220,4 +220,9 @@ public class CircleServiceImpl implements ICircleService {
 	public List<CircleBo> findByCitys(String province, String city, String district, int page, int limit) {
 		return circleDao.findByCitys(province, city, district, page, limit);
 	}
+
+	@Override
+	public List<CircleBo> findRelatedCircles(String circleid, String tag, String sub_tag, int page, int limit) {
+		return circleDao.findRelatedCircles(circleid, tag, sub_tag, page, limit);
+	}
 }
