@@ -81,11 +81,12 @@ public class ThumbsupDaoImpl implements IThumbsupDao {
 		return mongoTemplate.find(query, ThumbsupBo.class);
 	}
 
-	public List<ThumbsupBo> selectByVisitorIdPaged(String startId, boolean gt, int limit, String visitorId) {
+	public List<ThumbsupBo> selectByVisitorIdPaged(String startId, boolean gt, int limit, String visitorId,int type) {
 		Query query = new Query();
 		query.limit(limit);
 		query.with(new Sort(new Order(Direction.DESC, "_id")));
 		query.addCriteria(new Criteria("visitor_id").is(visitorId));
+		query.addCriteria(new Criteria("type").is(type));
 		query.addCriteria(new Criteria("deleted").is(0));
 		if (!StringUtils.isEmpty(startId)) {
 			if (gt) {

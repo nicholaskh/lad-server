@@ -280,7 +280,7 @@ public class HomepageController extends BaseContorller {
 		userBo = userService.getUser(userBo.getId());
 		String ownerId = userBo.getId();
 		List<ThumbsupBo> thumbsup_to_me = thumbsupService
-				.selectByVisitorIdPaged(start_id, gt, limit, ownerId);
+				.selectByVisitorIdPaged(start_id, gt, limit, ownerId, Constant.PAGE_TYPE);
 		List<ThumbsupVo> thumbsup_to_me_vo = new ArrayList<ThumbsupVo>();
 		for (ThumbsupBo item : thumbsup_to_me) {
 			ThumbsupVo vo = new ThumbsupVo();

@@ -31,8 +31,9 @@ public class ThumbsupService implements IThumbsupService {
 		return thumbsupDao.selectByOwnerIdPaged(startId, gt, limit, ownerId, type);
 	}
 
-	public List<ThumbsupBo> selectByVisitorIdPaged(String startId, boolean gt, int limit, String visitorId) {
-		return thumbsupDao.selectByVisitorIdPaged(startId, gt, limit, visitorId);
+	public List<ThumbsupBo> selectByVisitorIdPaged(String startId, boolean gt, int limit, String visitorId, int
+			type) {
+		return thumbsupDao.selectByVisitorIdPaged(startId, gt, limit, visitorId, type);
 	}
 
 	public ThumbsupBo getByVidAndVisitorid(String vid, String visitorid) {

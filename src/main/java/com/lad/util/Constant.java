@@ -82,7 +82,7 @@ public class Constant {
 	 */
 	public static final int INFOR_TYPE = 1;
 	/**
-	 * 主页评论或点赞型 homepage 资讯
+	 * 主页评论或点赞型 homepage
 	 */
 	public static final int PAGE_TYPE = 2;
 	/**
