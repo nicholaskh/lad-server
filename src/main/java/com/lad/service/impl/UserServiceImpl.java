@@ -6,6 +6,7 @@ import com.lad.service.IUserService;
 import com.lad.util.Constant;
 import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.LinkedHashSet;
@@ -146,6 +147,7 @@ public class UserServiceImpl implements IUserService{
 	}
 
 	@Override
+	@Async
 	public void addUserLevel(String userid, long num, int type) {
 		UserLevelBo userLevelBo = userLevelDao.findByUserid(userid);
 		int level = 1;

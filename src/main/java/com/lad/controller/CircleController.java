@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.spi.RootLogger;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.util.*;
 
 @Controller
@@ -101,6 +103,13 @@ public class CircleController extends BaseContorller {
 		users.add(userBo.getId());
 		circleBo.setUsers(users);
 		circleService.insert(circleBo);
+
+		CircleAddBo addBo = new CircleAddBo();
+		addBo.setUserid(userId);
+		addBo.setCircleid(circleBo.getId());
+		addBo.setStatus(1);
+		circleService.insertCircleAdd(addBo);
+
 		userService.addUserLevel(userBo.getId(), 1, Constant.LEVEL_CIRCLE);
 		updateHistory(userBo.getId(), circleBo.getId(), locationService, circleService);
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -338,6 +347,7 @@ public class CircleController extends BaseContorller {
 			}
 			usersApply.remove(userid);
 			users.add(userid);
+			userAddHis(userid, circleid, 1);
 			ReasonBo reasonBo = circleService.findByUserAndCircle(userid,circleid);
 			if (reasonBo != null) {
 				circleService.updateApply(reasonBo.getId(), Constant.ADD_AGREE, "");
@@ -345,6 +355,26 @@ public class CircleController extends BaseContorller {
 		}
 		circleService.updateApplyAgree(circleBo.getId(), users, usersApply);
 		return Constant.COM_RESP;
+	}
+
+	/**
+	 * 用户加入圈子记录
+	 * @param userid
+	 * @param circleid
+	 * @param status
+	 */
+	@Async
+	private void userAddHis(String userid, String circleid, int status){
+		CircleAddBo addBo = circleService.findHisByUserAndCircle(userid, circleid);
+		if (addBo == null) {
+			addBo = new CircleAddBo();
+			addBo.setUserid(userid);
+			addBo.setCircleid(circleid);
+			addBo.setStatus(status);
+			circleService.insertCircleAdd(addBo);
+		} else {
+			circleService.updateJoinStatus(addBo.getId(), status);
+		}
 	}
 
 	@RequestMapping("/user-apply-refuse")
@@ -459,6 +489,7 @@ public class CircleController extends BaseContorller {
 		if (users.contains(userid)) {
 			users.remove(userid);
 			circleService.updateUsers(circleBo.getId(), users);
+			userAddHis(userid, circleid, 2);
 		}
 
 		return Constant.COM_RESP;
@@ -613,6 +644,7 @@ public class CircleController extends BaseContorller {
 		HashSet<String> users = circleBo.getUsers();
 		users.remove(userBo.getId());
 		circleService.updateUsers(circleBo.getId(), users);
+		userAddHis(userBo.getId(), circleid, 2);
 		return Constant.COM_RESP;
 	}
 
@@ -837,7 +869,35 @@ public class CircleController extends BaseContorller {
 	public String getByType(String type, int level, String start_id, boolean gt, int limit,
 							HttpServletRequest request, HttpServletResponse response) {
 		List<CircleBo> circleBos = circleService.findByType(type, level, start_id, gt, limit);
-		return bo2vos(circleBos);
+		HttpSession session = request.getSession();
+		boolean isLogin;
+		UserBo userBo = null;
+		if (session.isNew() || session.getAttribute("isLogin") == null) {
+			isLogin = false;
+		} else {
+			userBo = (UserBo) session.getAttribute("userBo");
+			isLogin = userBo != null;
+		}
+		List<CircleVo> listVo = new LinkedList<>();
+		for (CircleBo circleBo: circleBos) {
+			CircleVo circleVo = new CircleVo();
+			BeanUtils.copyProperties(circleBo, circleVo);
+			circleVo.setId(circleBo.getId());
+			circleVo.setName(circleBo.getName());
+			circleVo.setNotesSize(circleBo.getNoteSize());
+			circleVo.setUsersSize(circleBo.getTotal());
+			if (isLogin) {
+				CircleAddBo addBo = circleService.findHisByUserAndCircle(userBo.getId(), circleBo.getId());
+				if (null != addBo) {
+					circleVo.setUserAdd(addBo.getStatus());
+				}
+			}
+			listVo.add(circleVo);
+		}
+		Map<String, Object> map = new HashMap<>();
+		map.put("ret", 0);
+		map.put("circleVoList", listVo);
+		return JSONObject.fromObject(map).toString();
 	}
 
 	/**

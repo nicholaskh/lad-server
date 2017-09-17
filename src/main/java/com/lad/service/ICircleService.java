@@ -1,9 +1,6 @@
 package com.lad.service;
 
-import com.lad.bo.CircleBo;
-import com.lad.bo.CircleHistoryBo;
-import com.lad.bo.CircleTypeBo;
-import com.lad.bo.ReasonBo;
+import com.lad.bo.*;
 import com.mongodb.WriteResult;
 
 import java.util.HashSet;
@@ -196,5 +193,29 @@ public interface ICircleService extends IBaseService {
 	 * @return
 	 */
 	CircleBo findByTagAndName(String name, String tag, String sub_tag);
+
+
+	/**
+	 * 添加用户加入圈子记录
+	 * @param addBo
+	 * @return
+	 */
+	CircleAddBo insertCircleAdd(CircleAddBo addBo);
+
+	/**
+	 *根据用户和圈子查找用户添加记录g
+	 * @param userid
+	 * @param circleid
+	 * @return
+	 */
+	CircleAddBo findHisByUserAndCircle(String userid, String circleid);
+
+	/**
+	 * 修改用户加入圈子记录
+	 * @param id
+	 * @param status
+	 * @return
+	 */
+	WriteResult updateJoinStatus(String id, int status);
 
 }

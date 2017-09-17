@@ -5,7 +5,6 @@ import com.lad.bo.RedstarBo;
 import com.lad.bo.UserBo;
 import com.lad.bo.UserTasteBo;
 import com.mongodb.WriteResult;
-import org.springframework.scheduling.annotation.Async;
 
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -64,7 +63,7 @@ public interface IUserService extends IBaseService {
 	 */
 	WriteResult updateTopCircles(String userid, List<String> topCircles);
 
-	@Async
+	
 	void addUserLevel(String userid , long num, int type);
 
 

@@ -1,13 +1,7 @@
 package com.lad.service.impl;
 
-import com.lad.bo.CircleBo;
-import com.lad.bo.CircleHistoryBo;
-import com.lad.bo.CircleTypeBo;
-import com.lad.bo.ReasonBo;
-import com.lad.dao.ICircleDao;
-import com.lad.dao.ICircleHistoryDao;
-import com.lad.dao.ICircleTypeDao;
-import com.lad.dao.IReasonDao;
+import com.lad.bo.*;
+import com.lad.dao.*;
 import com.lad.service.ICircleService;
 import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +25,9 @@ public class CircleServiceImpl implements ICircleService {
 
 	@Autowired
 	private ICircleTypeDao circleTypeDao;
+
+	@Autowired
+	private ICircleAddDao circleAddDao;
 
 	public CircleBo insert(CircleBo circleBo) {
 		return circleDao.insert(circleBo);
@@ -229,5 +226,20 @@ public class CircleServiceImpl implements ICircleService {
 	@Override
 	public CircleBo findByTagAndName(String name, String tag, String sub_tag) {
 		return circleDao.findByTagAndName(name, tag, sub_tag);
+	}
+
+	@Override
+	public CircleAddBo insertCircleAdd(CircleAddBo addBo) {
+		return circleAddDao.insert(addBo);
+	}
+
+	@Override
+	public CircleAddBo findHisByUserAndCircle(String userid, String circleid) {
+		return circleAddDao.findByUserAndCircle(userid, circleid);
+	}
+
+	@Override
+	public WriteResult updateJoinStatus(String id, int status) {
+		return circleAddDao.updateJoinStatus(id, status);
 	}
 }
