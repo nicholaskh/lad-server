@@ -376,7 +376,9 @@ public class CircleDaoImpl implements ICircleDao {
 		query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
 		query.addCriteria(new Criteria("name").ne(name));
 		query.addCriteria(new Criteria("tag").is(tag));
-		query.addCriteria(new Criteria("sub_tag").is(sub_tag));
+		if (StringUtils.isNotEmpty(sub_tag)) {
+			query.addCriteria(new Criteria("sub_tag").is(sub_tag));
+		}
 		return mongoTemplate.findOne(query, CircleBo.class);
 	}
 }
