@@ -159,4 +159,12 @@ public interface ICircleDao extends IBaseDao {
 	 */
 	List<CircleBo> findRelatedCircles(String circleid, String tag, String sub_tag, int page, int limit);
 
+	/**
+	 * 查找圈子类型下是否有相同名称的圈子
+	 * @param tag
+	 * @param sub_tag
+	 * @return
+	 */
+	CircleBo findByTagAndName(String name, String tag, String sub_tag);
+
 }

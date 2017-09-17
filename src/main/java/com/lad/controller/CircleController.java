@@ -133,6 +133,18 @@ public class CircleController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
+	@RequestMapping("/check-name")
+	@ResponseBody
+	public String preCreateCircle(String sub, String sub_tag, String name, HttpServletRequest request,
+								  HttpServletResponse response){
+		CircleBo circleBo = circleService.findByTagAndName(name, sub, sub_tag);
+		if (circleBo != null) {
+			return Constant.COM_FAIL_RESP;
+		} else {
+			return Constant.COM_RESP;
+		}
+	}
+
 
 	@RequestMapping("/head-picture")
 	@ResponseBody
