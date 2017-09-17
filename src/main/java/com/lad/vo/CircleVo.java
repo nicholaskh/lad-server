@@ -32,6 +32,8 @@ public class CircleVo extends BaseVo {
 
 	private int visitNum;
 
+	private int userAdd;
+
 	public String getId() {
 		return id;
 	}
@@ -191,5 +193,13 @@ public class CircleVo extends BaseVo {
 
 	public void setVisitNum(int visitNum) {
 		this.visitNum = visitNum;
+	}
+
+	public int getUserAdd() {
+		return userAdd;
+	}
+
+	public void setUserAdd(int userAdd) {
+		this.userAdd = userAdd;
 	}
 }
