@@ -866,9 +866,9 @@ public class CircleController extends BaseContorller {
 	 */
 	@RequestMapping("/get-by-type")
 	@ResponseBody
-	public String getByType(String type, int level, String start_id, boolean gt, int limit,
+	public String getByType(String tag, String sub_tag , int page, int limit,
 							HttpServletRequest request, HttpServletResponse response) {
-		List<CircleBo> circleBos = circleService.findByType(type, level, start_id, gt, limit);
+		List<CircleBo> circleBos = circleService.findByType(tag, sub_tag, page, limit);
 		HttpSession session = request.getSession();
 		boolean isLogin;
 		UserBo userBo = null;

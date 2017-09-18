@@ -199,22 +199,20 @@ public class CircleDaoImpl implements ICircleDao {
 	}
 
 	@Override
-	public List<CircleBo> findByType(String type, int level, String startId,  boolean gt,int limit) {
+	public List<CircleBo> findByType(String tag, String sub_tag ,int page,int limit) {
 		Query query = new Query();
-		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
-		if (level == 1) {
-			query.addCriteria(new Criteria("tag").is(type));
-		} else if (level == 2) {
-			query.addCriteria(new Criteria("sub_tag").is(type));
+		query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+		if (StringUtils.isNotEmpty(tag)) {
+			query.addCriteria(new Criteria("tag").is(tag));
 		}
-		query.addCriteria(new Criteria("deleted").is(0));
-		if (!StringUtils.isEmpty(startId)) {
-			if (gt) {
-				query.addCriteria(new Criteria("_id").gt(startId));
-			} else {
-				query.addCriteria(new Criteria("_id").lt(startId));
-			}
+		if (StringUtils.isNotEmpty(sub_tag)) {
+			query.addCriteria(new Criteria("sub_tag").is(sub_tag));
 		}
+		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "hotNum")));
+		if (page <= 0){
+			page = 1;
+		}
+		query.skip((page - 1)*limit);
 		query.limit(limit);
 		return mongoTemplate.find(query, CircleBo.class);
 	}
