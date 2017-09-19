@@ -73,6 +73,7 @@ public class CircleController extends BaseContorller {
 		} catch (MyException e) {
 			return e.getMessage();
 		}
+		System.out.println("circle   px : " + px + ";  py : " + py);
 		//每人最多创建三个群
 		long circleNum = circleService.findCreateCricles(userBo.getId());
 		if (circleNum >= userBo.getLevel() * 5) {
@@ -216,6 +217,35 @@ public class CircleController extends BaseContorller {
 		reasonBo.setStatus(Constant.ADD_APPLY);
 		circleService.updateUsersApply(circleid, usersApply);
 		circleService.insertApplyReason(reasonBo);
+		return Constant.COM_RESP;
+	}
+
+
+	@RequestMapping("/free-insert")
+	@ResponseBody
+	public String applyIsnert(@RequestParam(required = true) String circleid,
+							  HttpServletRequest request, HttpServletResponse response) {
+		UserBo userBo;
+		try {
+			userBo = checkSession(request, userService);
+		} catch (MyException e) {
+			return e.getMessage();
+		}
+		CircleBo circleBo = circleService.selectById(circleid);
+		if (circleBo == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CIRCLE_IS_NULL.getIndex(),
+					ERRORCODE.CIRCLE_IS_NULL.getReason());
+		}
+		updateHistory(userBo.getId(), circleid, locationService, circleService);
+		HashSet<String> users= circleBo.getUsers();
+		if (users.size() >= 500) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CIRCLE_USER_MAX.getIndex(),
+					ERRORCODE.CIRCLE_USER_MAX.getReason());
+		}
+		users.add(userBo.getId());
+		circleService.updateUsers(circleid, users);
 		return Constant.COM_RESP;
 	}
 
