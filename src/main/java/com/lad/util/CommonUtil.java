@@ -154,6 +154,24 @@ public class CommonUtil {
 		return -1;
 	}
 
+	/**
+	 * 获取短息发送list
+	 * @return
+	 */
+	public static String getSMSReport() {
+		String url = "http://sms-gw.bjedu.cloud:9888/smsservice/ReceiveReport?UserId=100535&Password=ttlyyl_2017&ExtNo=35";
+		return HttpClientUtil.getInstance().doGetRequest(url);
+	}
+
+	/**
+	 * 获取短息发送list
+	 * @return
+	 */
+	public static String getSMSReport2() {
+		String url = "http://sms-gw.bjedu.cloud:9888/smsservice/ReceiveReport?UserId=100535&Password=ttlyyl_2017";
+		return HttpClientUtil.getInstance().doGetRequest(url);
+	}
+
 	public static int getRandom1() {
 		return (int) (1 + Math.random() * (10));
 	}
