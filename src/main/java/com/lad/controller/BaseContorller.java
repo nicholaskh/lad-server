@@ -2,10 +2,12 @@ package com.lad.controller;
 
 
 import com.lad.bo.CircleHistoryBo;
+import com.lad.bo.DynamicMsgBo;
 import com.lad.bo.LocationBo;
 import com.lad.bo.UserBo;
 import com.lad.redis.RedisServer;
 import com.lad.service.ICircleService;
+import com.lad.service.IDynamicService;
 import com.lad.service.ILocationService;
 import com.lad.service.IUserService;
 import com.lad.util.CommonUtil;
@@ -126,6 +128,21 @@ public abstract class BaseContorller {
 		} finally {
 			lock.unlock();
 		}
+	}
+
+	/**
+	 * 添加 动态信息推送表
+	 * @param userid
+	 * @param tatgetid
+	 * @param type
+	 */
+	@Async
+	public void addDynamicMsgs(String userid, String tatgetid, int type, IDynamicService dynamicService){
+		DynamicMsgBo msgBo = new DynamicMsgBo();
+		msgBo.setUserid(userid);
+		msgBo.setTargetid(tatgetid);
+		msgBo.setDynamicType(type);
+		dynamicService.addDynamicMsg(msgBo);
 	}
 
 }
