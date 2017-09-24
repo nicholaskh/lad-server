@@ -3,6 +3,7 @@ package com.lad.bo;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 
 /**
  * 功能描述：个人动态 黑名单设置
@@ -16,10 +17,10 @@ public class DynamicBackBo extends BaseBo {
     private String userid;
 
     //我不看谁   黑名单
-    private HashSet<String> notSeeBacks = new HashSet<>();
+    private HashSet<String> notSeeBacks = new LinkedHashSet<>();
 
     //不让谁看我 黑名单
-    private HashSet<String> notAllowBacks = new HashSet<>();
+    private HashSet<String> notAllowBacks = new LinkedHashSet<>();
 
 
     public String getUserid() {
