@@ -84,6 +84,8 @@ public class InforController extends BaseContorller {
         cache.put("healthTypes", groupTypes, 0, TimeUnit.MINUTES);
         map.put("healthTypes", groupTypes);
         map.put("securityTypes", securityTypes);
+        map.put("videoTypes", new ArrayList<String>());
+        map.put("radioTypes", new ArrayList<String>());
         return JSONObject.fromObject(map).toString();
     }
 
@@ -128,6 +130,8 @@ public class InforController extends BaseContorller {
                 cache.put("healthTypes", groupTypes, 0, TimeUnit.MINUTES);
                 map.put("healthTypes", groupTypes);
                 map.put("securityTypes", securityTypes);
+                map.put("videoTypes", new ArrayList<String>());
+                map.put("radioTypes", new ArrayList<String>());
             }
         }
         return JSONObject.fromObject(map).toString();
@@ -163,6 +167,12 @@ public class InforController extends BaseContorller {
     @RequestMapping("/recommend-groups")
     @ResponseBody
     public String recommendGroups(HttpServletRequest request, HttpServletResponse response){
+
+        HttpSession session = request.getSession();
+        System.out.println("recommend-groups : =============" + session.getId());
+        System.out.println("recommend-groups is new : =============" + session.isNew());
+        System.out.println("recommend-groups is Login: =============" + session.getAttribute("isLogin"));
+        
         UserBo userBo;
         try {
             userBo = checkSession(request, userService);
@@ -196,6 +206,10 @@ public class InforController extends BaseContorller {
     @RequestMapping("/update-groups")
     @ResponseBody
     public String updateGroups(String[] groupNames, HttpServletRequest request, HttpServletResponse response){
+        HttpSession session = request.getSession();
+        System.out.println("update-groups : =============" + session.getId());
+        System.out.println("update-groups is new : =============" + session.isNew());
+        System.out.println("update-groupsis Login: =============" + session.getAttribute("isLogin"));
         UserBo userBo;
         try {
             userBo = checkSession(request, userService);
@@ -394,6 +408,11 @@ public class InforController extends BaseContorller {
                              @RequestParam String countent,
                              String parentid,
                              HttpServletRequest request, HttpServletResponse response){
+        HttpSession session = request.getSession();
+        System.out.println("add-comment : =============" + session.getId());
+        System.out.println("add-comment is new : =============" + session.isNew());
+        System.out.println("add-comment is Login: =============" + session.getAttribute("isLogin"));
+
         UserBo userBo;
         try {
             userBo = checkSession(request, userService);
@@ -444,6 +463,10 @@ public class InforController extends BaseContorller {
     @ResponseBody
     public String inforThumbsup(@RequestParam String targetid, @RequestParam int type,
             HttpServletRequest request, HttpServletResponse response){
+        HttpSession session = request.getSession();
+        System.out.println("thumbsup: =============" + session.getId());
+        System.out.println("thumbsup is new : =============" + session.isNew());
+        System.out.println("thumbsup Login: =============" + session.getAttribute("isLogin"));
         UserBo userBo;
         try {
             userBo = checkSession(request, userService);
