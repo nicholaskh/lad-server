@@ -29,6 +29,13 @@ public interface IDynamicMsgDao {
     DynamicMsgBo findByTargetid(String tragetid, int type);
 
     /**
+     * 查找
+     * @param msgid
+     * @return
+     */
+    DynamicMsgBo findByMsgid(String msgid);
+
+    /**
      * 查看所有好友的动态
      * @return
      */

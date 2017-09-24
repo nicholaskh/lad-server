@@ -54,6 +54,9 @@ public class NoteController extends BaseContorller {
 	@Autowired
 	private ILocationService locationService;
 
+	@Autowired
+	private IDynamicService dynamicService;
+
 
 	@RequestMapping("/insert")
 	@ResponseBody
@@ -120,9 +123,11 @@ public class NoteController extends BaseContorller {
 		} finally {
 			lock.unlock();
 		}
+		addDynamicMsgs(userId, noteBo.getId(), Constant.NOTE_TYPE, dynamicService);
 		userService.addUserLevel(userBo.getId(), 1, Constant.LEVEL_NOTE);
 		updateCircleHot(circleService, redisServer, circleid, 1, Constant.CIRCLE_NOTE);
 		updateCircleHot(circleService, redisServer, circleid, 1, Constant.CIRCLE_NOTE_VISIT);
+		updateDynamicNums(userId, 1, dynamicService, redisServer);
 		NoteVo noteVo = new NoteVo();
 		boToVo(noteBo, noteVo, userBo);
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -207,6 +212,7 @@ public class NoteController extends BaseContorller {
 				lock.unlock();
 			}
 		}
+		updateDynamicNums(noteBo.getCreateuid(), 1, dynamicService, redisServer);
 		return Constant.COM_RESP;
 	}
 
@@ -231,6 +237,7 @@ public class NoteController extends BaseContorller {
 			} finally {
 				lock.unlock();
 			}
+			updateDynamicNums(noteBo.getCreateuid(), -1, dynamicService, redisServer);
 		}
 		return Constant.COM_RESP;
 	}
@@ -407,8 +414,8 @@ public class NoteController extends BaseContorller {
 
 		userService.addUserLevel(userBo.getId(),1, Constant.LEVEL_COMMENT);
 		updateCircleHot(circleService, redisServer, noteBo.getCircleId(), 1, Constant.CIRCLE_COMMENT);
-
 		updateRedStar(userBo, noteBo, circleid, currentDate);
+		updateDynamicNums(noteBo.getCreateuid(), 1, dynamicService, redisServer);
 
 		Map<String, Object> map = new HashMap<>();
 		map.put("ret", 0);

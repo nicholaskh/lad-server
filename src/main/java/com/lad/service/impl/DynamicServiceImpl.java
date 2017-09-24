@@ -3,9 +3,11 @@ package com.lad.service.impl;
 import com.lad.bo.DynamicBackBo;
 import com.lad.bo.DynamicBo;
 import com.lad.bo.DynamicMsgBo;
+import com.lad.bo.DynamicNumBo;
 import com.lad.dao.IDynamicBackDao;
 import com.lad.dao.IDynamicDao;
 import com.lad.dao.IDynamicMsgDao;
+import com.lad.dao.IDynamicNumDao;
 import com.lad.service.IDynamicService;
 import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +33,9 @@ public class DynamicServiceImpl implements IDynamicService {
 
     @Autowired
     private IDynamicBackDao dynamicBackDao;
+
+    @Autowired
+    private IDynamicNumDao dynamicNumDao;
 
 
     @Override
@@ -101,5 +106,25 @@ public class DynamicServiceImpl implements IDynamicService {
     @Override
     public List<DynamicBackBo> findWhoBackMe(String userid) {
         return dynamicBackDao.findWhoBackMe(userid);
+    }
+
+    @Override
+    public DynamicMsgBo findByMsgid(String msgid) {
+        return dynamicMsgDao.findByMsgid(msgid);
+    }
+
+    @Override
+    public DynamicNumBo addNum(DynamicNumBo numBo) {
+        return dynamicNumDao.addNum(numBo);
+    }
+
+    @Override
+    public DynamicNumBo findNumByUserid(String userid) {
+        return dynamicNumDao.findByUserid(userid);
+    }
+
+    @Override
+    public WriteResult updateNumbers(String id, int addNum) {
+        return dynamicNumDao.updateNumbers(id, addNum);
     }
 }

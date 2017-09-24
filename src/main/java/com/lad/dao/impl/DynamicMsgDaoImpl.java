@@ -75,4 +75,12 @@ public class DynamicMsgDaoImpl implements IDynamicMsgDao {
         query.addCriteria(new Criteria("dynamicType").is(type));
         return mongoTemplate.findOne(query, DynamicMsgBo.class);
     }
+
+    @Override
+    public DynamicMsgBo findByMsgid(String msgid) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("_id").is(msgid));
+        query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+        return mongoTemplate.findOne(query, DynamicMsgBo.class);
+    }
 }

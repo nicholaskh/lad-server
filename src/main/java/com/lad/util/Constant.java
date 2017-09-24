@@ -6,6 +6,7 @@ public class Constant {
 	public static final String IMFILE_PATH = "/opt/apps/lad-server/picture/imfile/";
 	public static final String CIRCLE_HEAD_PICTURE_PATH = "/opt/apps/lad-server/picture/circle/head/";
 	public static final String NOTE_PICTURE_PATH = "/opt/apps/lad-server/picture/note/";
+	public static final String DYNAMIC_PICTURE_PATH = "/opt/apps/lad-server/picture/dynamic/";
 	public static final String QINIU_URL = "http://oojih7o1f.bkt.clouddn.com/";
 
 	public static final String RESPONSE = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><response><error>0</error><message></message></response>";
@@ -86,13 +87,17 @@ public class Constant {
 	 */
 	public static final int PAGE_TYPE = 2;
 	/**
-	 * 聚会评论
-	 */
-	public static final int PARTY_TYPE = 3;
-	/**
-	 * 举报 圈子
+	 * 举报 圈子类型
 	 */
 	public static final int CIRCLE_TYPE = 3;
+	/**
+	 * 聚会评论  party 类型
+	 */
+	public static final int PARTY_TYPE = 4;
+	/**
+	 * 动态 类型
+	 */
+	public static final int DYNAMIC_TYPE = 5;
 	/**
 	 * 帖子评论点赞
 	 */

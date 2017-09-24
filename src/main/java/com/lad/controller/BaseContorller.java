@@ -1,10 +1,7 @@
 package com.lad.controller;
 
 
-import com.lad.bo.CircleHistoryBo;
-import com.lad.bo.DynamicMsgBo;
-import com.lad.bo.LocationBo;
-import com.lad.bo.UserBo;
+import com.lad.bo.*;
 import com.lad.redis.RedisServer;
 import com.lad.service.ICircleService;
 import com.lad.service.IDynamicService;
@@ -143,6 +140,29 @@ public abstract class BaseContorller {
 		msgBo.setTargetid(tatgetid);
 		msgBo.setDynamicType(type);
 		dynamicService.addDynamicMsg(msgBo);
+	}
+
+	/**
+	 * 更新动态信息数量表
+	 * @param userid
+	 */
+	@Async
+	public void updateDynamicNums(String userid, int num, IDynamicService dynamicService, RedisServer server){
+		DynamicNumBo numBo = dynamicService.findNumByUserid(userid);
+		if (numBo == null) {
+			numBo = new DynamicNumBo();
+			numBo.setUserid(userid);
+			numBo.setNumber(1);
+			dynamicService.addNum(numBo);
+		} else {
+			RLock lock = server.getRLock("dynamicSize");
+			try {
+				lock.lock(2,TimeUnit.SECONDS);
+				dynamicService.updateNumbers(numBo.getId(), num);
+			} finally {
+				lock.unlock();
+			}
+		}
 	}
 
 }

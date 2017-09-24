@@ -3,6 +3,7 @@ package com.lad.service;
 import com.lad.bo.DynamicBackBo;
 import com.lad.bo.DynamicBo;
 import com.lad.bo.DynamicMsgBo;
+import com.lad.bo.DynamicNumBo;
 import com.mongodb.WriteResult;
 
 import java.util.HashSet;
@@ -51,6 +52,12 @@ public interface IDynamicService {
      */
     DynamicMsgBo addDynamicMsg(DynamicMsgBo msgBo);
     WriteResult deleteDynamicMsg(String id);
+    /**
+     * 查找
+     * @param msgid
+     * @return
+     */
+    DynamicMsgBo findByMsgid(String msgid);
     /**
      * 查找
      * @param tragetid
@@ -102,6 +109,27 @@ public interface IDynamicService {
      */
     WriteResult updateBackNotAllow(String id, HashSet<String> notAllowBacks);
 
+    /**
+     * 动态信息数字
+     * @param numBo
+     * @return
+     */
+    DynamicNumBo addNum(DynamicNumBo numBo);
+
+    /**
+     * 动态信息
+     * @param userid
+     * @return
+     */
+    DynamicNumBo findNumByUserid(String userid);
+
+    /**
+     * 更新
+     * @param id
+     * @param addNum
+     * @return
+     */
+    WriteResult updateNumbers(String id, int addNum);
 
 
 
