@@ -92,6 +92,14 @@ public class LoginController extends BaseContorller {
 				return CommonUtil.toErrorResult(ERRORCODE.PUSHED_CONNECT_ERROR.getIndex(),
 						ERRORCODE.PUSHED_CONNECT_ERROR.getReason());
 			}
+			String term = IMUtil.getTerm(assistent);
+			if ("timeout".equals(term)) {
+				term = IMUtil.getTerm(assistent);
+				if ("timeout".equals(term)) {
+					return CommonUtil.toErrorResult(ERRORCODE.PUSHED_CONNECT_ERROR.getIndex(),
+							ERRORCODE.PUSHED_CONNECT_ERROR.getReason());
+				}
+			}
 			if (userBo == null) {
 				userBo = new UserBo();
 				Long time = System.currentTimeMillis()/1000;
@@ -104,7 +112,6 @@ public class LoginController extends BaseContorller {
 				homepageBo.setOwner_id(userBo.getId());
 				homepageService.insert(homepageBo);
 				try {
-					String term = IMUtil.getTerm(assistent);
 					IMTermBo iMTermBo = new IMTermBo();
 					iMTermBo.setUserid(userBo.getId());
 					iMTermBo.setTerm(term);
@@ -142,7 +149,7 @@ public class LoginController extends BaseContorller {
 			}
 			if (!isNew){
 				try {
-					String token = update(assistent, userBo);
+					String token = update(assistent, userBo, term);
 					map.put("token",token);
 				} catch (MyException e) {
 					return e.getMessage();
@@ -152,6 +159,7 @@ public class LoginController extends BaseContorller {
 			session.setAttribute("isLogin", true);
 			session.setAttribute("loginTime", System.currentTimeMillis());
 			session.setAttribute("userBo", userBo);
+			System.out.println("==========" + phone +" ; sessionid :" + session.getId());
 		} else {
 			return CommonUtil.toErrorResult(ERRORCODE.SECURITY_WRONG_VERIFICATION.getIndex(),
 					ERRORCODE.SECURITY_WRONG_VERIFICATION.getReason());
@@ -159,19 +167,18 @@ public class LoginController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	private String update(ImAssistant assistent, UserBo userBo) throws MyException{
+	private String update(ImAssistant assistent, UserBo userBo, String term) throws MyException{
 		IMTermBo iMTermBo = iMTermService.selectByUserid(userBo.getId());
 		if(iMTermBo == null){
 			iMTermBo = new IMTermBo();
 			iMTermBo.setUserid(userBo.getId());
-			String term =IMUtil.getTerm(assistent);
 			iMTermBo.setTerm(term);
 			iMTermService.insert(iMTermBo);
 		}
 		assistent.setServerTerm(iMTermBo.getTerm());
 		Message message3 = assistent.getToken();
 		if(message3.getStatus() == Message.Status.termError){
-			String term =IMUtil.getTerm(assistent);
+			term =IMUtil.getTerm(assistent);
 			iMTermService.updateByUserid(userBo.getId(), term);
 			message3 = assistent.getToken();
 			if(Message.Status.success != message3.getStatus()){
@@ -221,18 +228,25 @@ public class LoginController extends BaseContorller {
 				return CommonUtil.toErrorResult(ERRORCODE.PUSHED_CONNECT_ERROR.getIndex(),
 						ERRORCODE.PUSHED_CONNECT_ERROR.getReason());
 			}
+			String term = IMUtil.getTerm(assistent);
+			if ("timeout".equals(term)) {
+				term = IMUtil.getTerm(assistent);
+				if ("timeout".equals(term)) {
+					return CommonUtil.toErrorResult(ERRORCODE.PUSHED_CONNECT_ERROR.getIndex(),
+							ERRORCODE.PUSHED_CONNECT_ERROR.getReason());
+				}
+			}
 			IMTermBo iMTermBo = iMTermService.selectByUserid(userBo.getId());
 			if(iMTermBo == null){
 				iMTermBo = new IMTermBo();
 				iMTermBo.setUserid(userBo.getId());
-				String term =IMUtil.getTerm(assistent);
 				iMTermBo.setTerm(term);
 				iMTermService.insert(iMTermBo);
 			}
 			assistent.setServerTerm(iMTermBo.getTerm());
 			Message message3 = assistent.getToken();
 			if(message3.getStatus() == Message.Status.termError){
-				String term =IMUtil.getTerm(assistent);
+				term =IMUtil.getTerm(assistent);
 				iMTermService.updateByUserid(userBo.getId(), term);
 			}else if (Message.Status.success != message3.getStatus()) {
 				assistent.close();
@@ -240,6 +254,7 @@ public class LoginController extends BaseContorller {
 			}
 			map.put("token", message3.getMsg());
 			map.put("userid",userBo.getId());
+			System.out.println("==========" + phone +" ; sessionid :" + session.getId());
 			assistent.close();
 		} else {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PASSWORD.getIndex(),
