@@ -23,8 +23,8 @@ public class CollectServiceImpl implements ICollectService {
 
 
 	@Override
-	public List<CollectBo> findMyChat(String userid) {
-		return collectDao.findChatByUserid(userid);
+	public List<CollectBo> findMyChat(String userid, int type) {
+		return collectDao.findChatByUserid(userid, type);
 	}
 
 
@@ -34,7 +34,7 @@ public class CollectServiceImpl implements ICollectService {
 	}
 
 	@Override
-	public List<CollectBo> findChatByUserid(String userid, String start_id, int limit) {
-		return collectDao.findChatByUserid(userid, start_id, limit);
+	public List<CollectBo> findChatByUserid(String userid, String start_id, int limit, int type) {
+		return collectDao.findChatByUserid(userid, start_id, limit, type);
 	}
 }

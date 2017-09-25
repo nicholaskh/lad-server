@@ -5,6 +5,7 @@ import com.lad.bo.UserBo;
 import com.lad.service.ICollectService;
 import com.lad.service.IUserService;
 import com.lad.util.CommonUtil;
+import com.lad.util.Constant;
 import com.lad.util.MyException;
 import net.sf.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +45,7 @@ public class CollectController extends BaseContorller {
 		chatBo.setUserid(userBo.getId());
 		chatBo.setContent(content);
 		chatBo.setTitle(title);
+		chatBo.setType(Constant.CHAT_TYPE);
 		chatBo = collectService.saveChat(chatBo);
 		
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -62,7 +64,8 @@ public class CollectController extends BaseContorller {
 		} catch (MyException e) {
 			return e.getMessage();
 		}
-		List<CollectBo> collectBos = collectService.findChatByUserid(userBo.getId(), start_id, limit);
+		List<CollectBo> collectBos = collectService.findChatByUserid(userBo.getId(),
+				start_id, limit, Constant.CHAT_TYPE);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("col-chats", collectBos);

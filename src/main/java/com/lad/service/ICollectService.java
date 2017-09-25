@@ -19,7 +19,7 @@ public interface ICollectService {
 	 * @param userid 聊天记录
 	 * @return 聊天信息
 	 */
-	List<CollectBo> findMyChat(String userid);
+	List<CollectBo> findMyChat(String userid, int type);
 	
 	WriteResult delete(String chatId);
 
@@ -30,6 +30,6 @@ public interface ICollectService {
 	 * @param limit
 	 * @return
 	 */
-	List<CollectBo> findChatByUserid(String userid, String start_id, int limit);
+	List<CollectBo> findChatByUserid(String userid, String start_id, int limit, int type);
 
 }

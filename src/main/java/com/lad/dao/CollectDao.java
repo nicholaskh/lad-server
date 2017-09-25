@@ -27,10 +27,11 @@ public class CollectDao {
 		return chatinfo;
 	}
 	
-	public List<CollectBo> findChatByUserid(String userid){
+	public List<CollectBo> findChatByUserid(String userid, int type){
 		Query query = new Query();
 		query.addCriteria(new Criteria("userid").is(userid));
 		query.addCriteria(new Criteria("deleted").is(0));
+		query.addCriteria(new Criteria("type").is(type));
 		return mongoTemplate.find(query, CollectBo.class);
 	}
 	/**
@@ -47,10 +48,11 @@ public class CollectDao {
 		return mongoTemplate.updateFirst(query, update, CollectBo.class);
 	}
 
-	public List<CollectBo> findChatByUserid(String userid, String start_id, int limit){
+	public List<CollectBo> findChatByUserid(String userid, String start_id, int limit, int type){
 		Query query = new Query();
 		query.addCriteria(new Criteria("userid").is(userid));
 		query.addCriteria(new Criteria("deleted").is(0));
+		query.addCriteria(new Criteria("type").is(type));
 		if (StringUtils.isNotEmpty(start_id)) {
 			query.addCriteria(new Criteria("_id").lt(start_id));
 		}
