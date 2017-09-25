@@ -193,7 +193,7 @@ public class InforController extends BaseContorller {
         RMapCache<String, Object> cache = redisServer.getCacheMap(Constant.TEST_CACHE);
         List<String> groupList = new ArrayList<>();
         if (cache.containsKey("healthTypes")) {
-            String groupTypes = (String)cache.get("healthTypes");
+            Object groupTypes = cache.get("healthTypes");
             JSONArray array = JSONArray.fromObject(groupTypes);
             int size = array.size();
             for (int i = 0; i < size; i++) {
@@ -372,7 +372,7 @@ public class InforController extends BaseContorller {
         RMapCache<String, Object> cache = redisServer.getCacheMap(Constant.TEST_CACHE);
         List<String> groupList = new ArrayList<>();
         if (cache.containsKey("securityTypes")) {
-            String groupTypes = (String)cache.get("securityTypes");
+            Object groupTypes = cache.get("securityTypes");
             JSONArray array = JSONArray.fromObject(groupTypes);
             int size = array.size();
             for (int i = 0; i < size; i++) {
