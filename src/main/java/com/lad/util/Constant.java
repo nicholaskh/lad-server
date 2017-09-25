@@ -98,6 +98,17 @@ public class Constant {
 	 * 动态 类型
 	 */
 	public static final int DYNAMIC_TYPE = 5;
+
+	/**
+	 * 聊天 类型
+	 */
+	public static final int CHAT_TYPE = 6;
+
+	/**
+	 * 文件 类型
+	 */
+	public static final int FILE_TYPE = 7;
+
 	/**
 	 * 帖子评论点赞
 	 */
@@ -106,6 +117,17 @@ public class Constant {
 	 * 资讯评论点赞
 	 */
 	public static final int INFOR_COM_TYPE = 9;
+
+	/**
+	 * 图片 类型
+	 */
+	public static final int PICTURE_TYPE = 10;
+
+	/**
+	 * 视频 类型
+	 */
+	public static final int VIDEO_TYPE = 11;
+
 
 	/**
 	 * 举报
