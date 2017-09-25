@@ -182,6 +182,11 @@ public class InforController extends BaseContorller {
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("ret", 0);
         InforSubscriptionBo mySub = inforService.findMySubs(userBo.getId());
+        if (mySub == null) {
+            mySub = new InforSubscriptionBo();
+            mySub.setUserid(userBo.getId());
+            inforService.insertSub(mySub);
+        }
         LinkedList<String> mySubs = mySub.getSubscriptions();
         map.put("mySubTypes", mySub.getSubscriptions());
         
@@ -356,6 +361,11 @@ public class InforController extends BaseContorller {
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("ret", 0);
         InforSubscriptionBo mySub = inforService.findMySubs(userBo.getId());
+        if (mySub == null) {
+            mySub = new InforSubscriptionBo();
+            mySub.setUserid(userBo.getId());
+            inforService.insertSub(mySub);
+        }
         LinkedList<String> mySubs = mySub.getSecuritys();
         map.put("mySubSecuritys", mySub.getSecuritys());
 
