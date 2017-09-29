@@ -149,7 +149,7 @@ public class CircleController extends BaseContorller {
 								  HttpServletResponse response){
 		CircleBo circleBo = circleService.findByTagAndName(name, sub, sub_tag);
 		if (circleBo != null) {
-			return Constant.COM_FAIL_RESP;
+			return "{\"ret\":1}";
 		} else {
 			return Constant.COM_RESP;
 		}
@@ -236,6 +236,11 @@ public class CircleController extends BaseContorller {
 			return CommonUtil.toErrorResult(
 					ERRORCODE.CIRCLE_IS_NULL.getIndex(),
 					ERRORCODE.CIRCLE_IS_NULL.getReason());
+		}
+		if (!circleBo.isOpen() || circleBo.isVerify()) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CIRCLE_NEED_VERIFY.getIndex(),
+					ERRORCODE.CIRCLE_NEED_VERIFY.getReason());
 		}
 		updateHistory(userBo.getId(), circleid, locationService, circleService);
 		HashSet<String> users= circleBo.getUsers();
