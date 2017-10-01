@@ -108,24 +108,12 @@ public class ChatroomController extends BaseContorller {
 	@ResponseBody
 	public String insertUser(String userids, String chatroomid,
 							 HttpServletRequest request, HttpServletResponse response) {
-		HttpSession session = request.getSession();
-		if (session.isNew()) {
-			return CommonUtil.toErrorResult(
-					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		UserBo userBo;
+		try {
+			userBo = checkSession(request, userService);
+		} catch (MyException e) {
+			return e.getMessage();
 		}
-		if (session.getAttribute("isLogin") == null) {
-			return CommonUtil.toErrorResult(
-					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-		}
-		UserBo userBo = (UserBo) session.getAttribute("userBo");
-		if (userBo == null) {
-			return CommonUtil.toErrorResult(
-					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-		}
-		userBo = userService.getUser(userBo.getId());
 		if (StringUtils.isEmpty(userids)) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_ID.getIndex(),
 					ERRORCODE.ACCOUNT_ID.getReason());
@@ -134,6 +122,10 @@ public class ChatroomController extends BaseContorller {
 		if (null == chatroomBo) {
 			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(),
 					ERRORCODE.CHATROOM_NULL.getReason());
+		}
+		if (!chatroomBo.isOpen()) {
+			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NOT_OPEN.getIndex(),
+					ERRORCODE.CHATROOM_NOT_OPEN.getReason());
 		}
 		//判断参数是一个还是多个
 		String[] useridArr;
@@ -195,24 +187,12 @@ public class ChatroomController extends BaseContorller {
 	@ResponseBody
 	public String deltetUser(String userids, String chatroomid,
 							 HttpServletRequest request, HttpServletResponse response) {
-		HttpSession session = request.getSession();
-		if (session.isNew()) {
-			return CommonUtil.toErrorResult(
-					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		UserBo userBo;
+		try {
+			userBo = checkSession(request, userService);
+		} catch (MyException e) {
+			return e.getMessage();
 		}
-		if (session.getAttribute("isLogin") == null) {
-			return CommonUtil.toErrorResult(
-					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-		}
-		UserBo userBo = (UserBo) session.getAttribute("userBo");
-		if (userBo == null) {
-			return CommonUtil.toErrorResult(
-					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-		}
-		userBo = userService.getUser(userBo.getId());
 		if (StringUtils.isEmpty(userids)) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_ID.getIndex(),
 					ERRORCODE.ACCOUNT_ID.getReason());
@@ -228,15 +208,19 @@ public class ChatroomController extends BaseContorller {
 		if (imTermBo != null) {
 			term = imTermBo.getTerm();
 		}
-		//第一个为返回结果信息，第二位term信息
-		String[] result = IMUtil.unSubscribe(chatroomid, term, useridArr);
-		if (!result[0].equals(IMUtil.FINISH)) {
-			return result[0];
-		}
 		ChatroomBo chatroomBo = chatroomService.get(chatroomid);
 		if (null == chatroomBo) {
 			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(),
 					ERRORCODE.CHATROOM_NULL.getReason());
+		}
+		if (!userBo.getId().equals(chatroomBo.getMaster())) {
+			return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_NOT_MASTER.getIndex(),
+					ERRORCODE.CIRCLE_NOT_MASTER.getReason());
+		}
+		//第一个为返回结果信息，第二位term信息
+		String[] result = IMUtil.unSubscribe(chatroomid, term, useridArr);
+		if (!result[0].equals(IMUtil.FINISH)) {
+			return result[0];
 		}
 		HashSet<String> set = chatroomBo.getUsers();
 		for (String userid : useridArr) {
@@ -252,6 +236,44 @@ public class ChatroomController extends BaseContorller {
 			set.remove(userid);
 			updateIMTerm(userid, result[1]);
 		}
+		chatroomBo.setUsers(set);
+		chatroomService.updateUsers(chatroomBo);
+		return Constant.COM_RESP;
+	}
+
+	@RequestMapping("/quit")
+	@ResponseBody
+	public String quit(String chatroomid, HttpServletRequest request, HttpServletResponse response) {
+		UserBo userBo;
+		try {
+			userBo = checkSession(request, userService);
+		} catch (MyException e) {
+			return e.getMessage();
+		}
+
+		IMTermBo imTermBo = iMTermService.selectByUserid(userBo.getId());
+		String term = "";
+		if (imTermBo != null) {
+			term = imTermBo.getTerm();
+		}
+		ChatroomBo chatroomBo = chatroomService.get(chatroomid);
+		if (null == chatroomBo) {
+			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(),
+					ERRORCODE.CHATROOM_NULL.getReason());
+		}
+		//第一个为返回结果信息，第二位term信息
+		String[] result = IMUtil.unSubscribe(chatroomid, term, userBo.getId());
+		if (!result[0].equals(IMUtil.FINISH)) {
+			return result[0];
+		}
+
+		HashSet<String> chatroom = userBo.getChatrooms();
+		chatroom.remove(chatroomBo.getId());
+		userBo.setChatrooms(chatroom);
+
+		HashSet<String> set = chatroomBo.getUsers();
+		set.remove(userBo.getId());
+		updateIMTerm(userBo.getId(), result[1]);
 		chatroomBo.setUsers(set);
 		chatroomService.updateUsers(chatroomBo);
 		return Constant.COM_RESP;

@@ -21,7 +21,7 @@ public class ChatroomBo extends BaseBo {
 
 	private String description;
 	//是否允许加入
-	private boolean isOpen;
+	private boolean isOpen = true;
 	//圈子加入是否需要校验
 	private boolean isVerify;
 
