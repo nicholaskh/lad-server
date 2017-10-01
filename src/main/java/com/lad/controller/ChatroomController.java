@@ -337,8 +337,10 @@ public class ChatroomController extends BaseContorller {
 			if (null != temp) {
 				ChatroomVo vo = new ChatroomVo();
 				BeanUtils.copyProperties(temp, vo);
-				bo2vo(temp, vo);
-				vo.setUserNum(temp.getUsers().size());
+				if (temp.getType() != 1) {
+					bo2vo(temp, vo);
+					vo.setUserNum(temp.getUsers().size());
+				}
 				vo.setTop(1);
 				chatroomList.add(vo);
 			}
@@ -348,8 +350,10 @@ public class ChatroomController extends BaseContorller {
 			if (null != temp) {
 				ChatroomVo vo = new ChatroomVo();
 				BeanUtils.copyProperties(temp, vo);
-				vo.setUserNum(temp.getUsers().size());
-				bo2vo(temp, vo);
+				if (temp.getType() != 1) {
+					bo2vo(temp, vo);
+					vo.setUserNum(temp.getUsers().size());
+				}
 				chatroomList.add(vo);
 			}
 		}
@@ -393,8 +397,10 @@ public class ChatroomController extends BaseContorller {
 		ChatroomVo vo = new ChatroomVo();
 		if (null != temp) {
 			BeanUtils.copyProperties(temp,vo);
-			bo2vo(temp, vo);
-			vo.setUserNum(temp.getUsers().size());
+			if (temp.getType() != 1) {
+				bo2vo(temp, vo);
+				vo.setUserNum(temp.getUsers().size());
+			}
 		} else {
 			return CommonUtil.toErrorResult(
 					ERRORCODE.CHATROOM_ID_NULL.getIndex(),
