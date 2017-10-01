@@ -108,7 +108,6 @@ public class Constant {
 	 * 文件 类型
 	 */
 	public static final int FILE_TYPE = 7;
-
 	/**
 	 * 帖子评论点赞
 	 */
@@ -118,15 +117,6 @@ public class Constant {
 	 */
 	public static final int INFOR_COM_TYPE = 9;
 
-	/**
-	 * 图片 类型
-	 */
-	public static final int PICTURE_TYPE = 10;
-
-	/**
-	 * 视频 类型
-	 */
-	public static final int VIDEO_TYPE = 11;
 
 
 	/**
@@ -239,6 +229,28 @@ public class Constant {
 	public static final int THREE = 3;
 
 	public static final int FOUR = 4;
+
+	/**
+	 * 收藏 图片类型
+	 */
+	public static final int COLLET_PIC = 1;
+	/**
+	 * 收藏 音乐类型
+	 */
+	public static final int COLLET_MUSIC = 2;
+	/**
+	 * 收藏 视频类型
+	 */
+	public static final int COLLET_VIDEO = 3;
+	/**
+	 * 收藏 语音类型
+	 */
+	public static final int COLLET_VOICE = 4;
+	/**
+	 * 收藏 链接文章、圈子 、帖子、聚会类型
+	 */
+	public static final int COLLET_URL = 5;
+
 
 
 

@@ -19,6 +19,14 @@ public class ChatroomBo extends BaseBo {
 
 	private double[] position;
 
+	private String description;
+	//是否允许加入
+	private boolean isOpen;
+	//圈子加入是否需要校验
+	private boolean isVerify;
+
+	private String master;
+
 	public String getName() {
 		return name;
 	}
@@ -81,5 +89,37 @@ public class ChatroomBo extends BaseBo {
 
 	public void setPosition(double[] postion) {
 		this.position = postion;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public boolean isOpen() {
+		return isOpen;
+	}
+
+	public void setOpen(boolean open) {
+		isOpen = open;
+	}
+
+	public boolean isVerify() {
+		return isVerify;
+	}
+
+	public void setVerify(boolean verify) {
+		isVerify = verify;
+	}
+
+	public String getMaster() {
+		return master;
+	}
+
+	public void setMaster(String master) {
+		this.master = master;
 	}
 }

@@ -8,6 +8,8 @@ import com.lad.dao.IChatroomDao;
 import com.lad.service.IChatroomService;
 import com.mongodb.WriteResult;
 
+import java.util.LinkedHashSet;
+
 @Service("chatroomService")
 public class ChatroomServiceImpl implements IChatroomService {
 
@@ -54,5 +56,35 @@ public class ChatroomServiceImpl implements IChatroomService {
 	@Override
 	public ChatroomBo selectBySeqInTen(int seq, double[] position, int radius) {
 		return chatroomDao.selectBySeqInTen(seq, position, radius);
+	}
+
+	@Override
+	public WriteResult updateMaster(String chatroomId, String masterid) {
+		return chatroomDao.updateMaster(chatroomId, masterid);
+	}
+
+	@Override
+	public WriteResult updateName(String chatroomId, String name) {
+		return chatroomDao.updateName(chatroomId, name);
+	}
+
+	@Override
+	public WriteResult updateDescription(String chatroomId, String description) {
+		return chatroomDao.updateDescription(chatroomId, description);
+	}
+
+	@Override
+	public WriteResult updateUsers(String chatroomId, LinkedHashSet<String> users) {
+		return chatroomDao.updateUsers(chatroomId, users);
+	}
+
+	@Override
+	public WriteResult updateOpen(String chatroomId, boolean isOpen) {
+		return chatroomDao.updateOpen(chatroomId, isOpen);
+	}
+
+	@Override
+	public WriteResult updateVerify(String chatroomId, boolean isVerify) {
+		return chatroomDao.updateVerify(chatroomId, isVerify);
 	}
 }

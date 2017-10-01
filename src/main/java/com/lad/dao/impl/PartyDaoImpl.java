@@ -4,7 +4,6 @@ import com.lad.bo.PartyBo;
 import com.lad.dao.IPartyDao;
 import com.lad.util.Constant;
 import com.mongodb.WriteResult;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -13,6 +12,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 
 /**
@@ -68,22 +68,6 @@ public class PartyDaoImpl implements IPartyDao {
         return mongoTemplate.updateFirst(query, update, PartyBo.class);
     }
 
-    @Override
-    public List<PartyBo> findByCreate(String createid, String start_id, int limit) {
-        Query query = new Query();
-        query.addCriteria(new Criteria("createuid").is(createid));
-        query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
-        if (StringUtils.isNotEmpty(start_id)) {
-            query.addCriteria(new Criteria("_id").lt(start_id));
-        }
-        query.limit(limit);
-        return mongoTemplate.find(query, PartyBo.class);
-    }
-
-    @Override
-    public List<PartyBo> findByMyJoin(String userid, String start_id, int limit) {
-        return null;
-    }
 
     @Override
     public PartyBo findById(String id) {
@@ -91,5 +75,101 @@ public class PartyDaoImpl implements IPartyDao {
         query.addCriteria(new Criteria("_id").is(id));
         query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
         return mongoTemplate.findOne(query, PartyBo.class);
+    }
+
+    @Override
+    public List<PartyBo> findByCreate(String createid, int page, int limit) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("createuid").is(createid));
+        query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
+        if (page < 1) {
+           page = 1;
+        }
+        query.skip((page -1)*limit);
+        query.limit(limit);
+        return mongoTemplate.find(query, PartyBo.class);
+    }
+
+    @Override
+    public List<PartyBo> findByMyJoin(String userid, int page, int limit) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("createuid").ne(userid));
+        query.addCriteria(new Criteria("users").in(userid));
+        query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
+        if (page < 1) {
+            page = 1;
+        }
+        query.skip((page -1)*limit);
+        query.limit(limit);
+        return mongoTemplate.find(query, PartyBo.class);
+    }
+
+    @Override
+    public WriteResult updateUser(String id, LinkedHashSet<String> users, LinkedHashSet<String> applys) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("_id").is(id));
+        Update update = new Update();
+        update.set("users", users);
+        update.set("applyUsers", applys);
+        return mongoTemplate.updateFirst(query, update, PartyBo.class);
+    }
+
+    @Override
+    public WriteResult updateRefus(String id, LinkedHashSet<String> refuses) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("_id").is(id));
+        Update update = new Update();
+        update.set("refuseUsers", refuses);
+        return mongoTemplate.updateFirst(query, update, PartyBo.class);
+    }
+
+    @Override
+    public WriteResult updateVisit(String id) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("_id").is(id));
+        Update update = new Update();
+        update.inc("visitNum", 1);
+        return mongoTemplate.updateFirst(query, update, PartyBo.class);
+    }
+
+    @Override
+    public WriteResult updateShare(String id, int num) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("_id").is(id));
+        Update update = new Update();
+        update.inc("shareNum", num);
+        return mongoTemplate.updateFirst(query, update, PartyBo.class);
+    }
+
+    @Override
+    public WriteResult updateCollect(String id, int num) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("_id").is(id));
+        Update update = new Update();
+        update.inc("collectNum", num);
+        return mongoTemplate.updateFirst(query, update, PartyBo.class);
+    }
+
+    @Override
+    public WriteResult updateReport(String id, int num) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("_id").is(id));
+        Update update = new Update();
+        update.inc("reportNum", num);
+        return mongoTemplate.updateFirst(query, update, PartyBo.class);
+    }
+
+    @Override
+    public List<PartyBo> findByMyApply(String userid, int page, int limit) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("createuid").ne(userid));
+        query.addCriteria(new Criteria("applyUsers").in(userid));
+        query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
+        if (page < 1) {
+            page = 1;
+        }
+        query.skip((page -1)*limit);
+        query.limit(limit);
+        return mongoTemplate.find(query, PartyBo.class);
     }
 }

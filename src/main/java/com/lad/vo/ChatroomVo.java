@@ -1,16 +1,28 @@
 package com.lad.vo;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 
 public class ChatroomVo extends BaseVo {
 
 	public String id;
 	public String name;
-	private HashSet<String> users = new HashSet<String>();
+
 	private int type;
 	private String userid;
 	private String friendid;
 	private Integer top = 0;
+
+	private String description;
+	//是否允许加入
+	private boolean isOpen;
+	//圈子加入是否需要校验
+	private boolean isVerify;
+
+	private int userNum;
+
+	private LinkedHashSet<ChatroomUserVo> userVos = new LinkedHashSet<>();
+
+
 	public String getId() {
 		return id;
 	}
@@ -25,14 +37,6 @@ public class ChatroomVo extends BaseVo {
 
 	public void setName(String name) {
 		this.name = name;
-	}
-
-	public HashSet<String> getUsers() {
-		return users;
-	}
-
-	public void setUsers(HashSet<String> users) {
-		this.users = users;
 	}
 
 	public int getType() {
@@ -65,5 +69,45 @@ public class ChatroomVo extends BaseVo {
 
 	public void setTop(Integer top) {
 		this.top = top;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public boolean isOpen() {
+		return isOpen;
+	}
+
+	public void setOpen(boolean open) {
+		isOpen = open;
+	}
+
+	public boolean isVerify() {
+		return isVerify;
+	}
+
+	public void setVerify(boolean verify) {
+		isVerify = verify;
+	}
+
+	public int getUserNum() {
+		return userNum;
+	}
+
+	public void setUserNum(int userNum) {
+		this.userNum = userNum;
+	}
+
+	public LinkedHashSet<ChatroomUserVo> getUserVos() {
+		return userVos;
+	}
+
+	public void setUserVos(LinkedHashSet<ChatroomUserVo> userVos) {
+		this.userVos = userVos;
 	}
 }

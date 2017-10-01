@@ -22,6 +22,7 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 import java.util.Date;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 @Repository("chatroomDao")
@@ -161,5 +162,71 @@ public class ChatroomDaoImpl implements IChatroomDao {
 		AggregationResults<ChatroomBo> results = mongoTemplate.aggregate(aggregation,collectionName,ChatroomBo.class);
 		List<ChatroomBo> list = results.getMappedResults();
 		return list != null && !list.isEmpty() ? list.get(0) : null;
+	}
+
+	@Override
+	public WriteResult updateMaster(String chatroomId, String masterid) {
+		//主键筛选条件
+		Query query = new Query();
+		query.addCriteria(new Criteria("_id").is(chatroomId));
+		query.addCriteria(new Criteria("deleted").is(0));
+		Update update = new Update();
+		update.set("master", masterid);
+		return mongoTemplate.updateFirst(query, update, ChatroomBo.class);
+	}
+
+	@Override
+	public WriteResult updateName(String chatroomId, String name) {
+		//主键筛选条件
+		Query query = new Query();
+		query.addCriteria(new Criteria("_id").is(chatroomId));
+		query.addCriteria(new Criteria("deleted").is(0));
+		Update update = new Update();
+		update.set("name", name);
+		return mongoTemplate.updateFirst(query, update, ChatroomBo.class);
+	}
+
+	@Override
+	public WriteResult updateUsers(String chatroomId, LinkedHashSet<String> users) {
+		//主键筛选条件
+		Query query = new Query();
+		query.addCriteria(new Criteria("_id").is(chatroomId));
+		query.addCriteria(new Criteria("deleted").is(0));
+		Update update = new Update();
+		update.set("users", users);
+		return mongoTemplate.updateFirst(query, update, ChatroomBo.class);
+	}
+
+	@Override
+	public WriteResult updateDescription(String chatroomId, String description) {
+		//主键筛选条件
+		Query query = new Query();
+		query.addCriteria(new Criteria("_id").is(chatroomId));
+		query.addCriteria(new Criteria("deleted").is(0));
+		Update update = new Update();
+		update.set("description", description);
+		return mongoTemplate.updateFirst(query, update, ChatroomBo.class);
+	}
+
+	@Override
+	public WriteResult updateOpen(String chatroomId, boolean isOpen) {
+		//主键筛选条件
+		Query query = new Query();
+		query.addCriteria(new Criteria("_id").is(chatroomId));
+		query.addCriteria(new Criteria("deleted").is(0));
+		Update update = new Update();
+		update.set("isOpen", isOpen);
+		return mongoTemplate.updateFirst(query, update, ChatroomBo.class);
+	}
+
+	@Override
+	public WriteResult updateVerify(String chatroomId, boolean isVerify) {
+		//主键筛选条件
+		Query query = new Query();
+		query.addCriteria(new Criteria("_id").is(chatroomId));
+		query.addCriteria(new Criteria("deleted").is(0));
+		Update update = new Update();
+		update.set("isVerify", isVerify);
+		return mongoTemplate.updateFirst(query, update, ChatroomBo.class);
 	}
 }
