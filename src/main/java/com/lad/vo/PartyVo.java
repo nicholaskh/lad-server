@@ -1,24 +1,27 @@
-package com.lad.bo;
-
-import org.springframework.data.mongodb.core.mapping.Document;
+package com.lad.vo;
 
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
+import java.util.List;
 
 /**
  * 功能描述：
  * Copyright: Copyright (c) 2017
  * Version: 1.0
- * Time:2017/8/18
+ * Time:2017/10/1
  */
-@Document(collection = "party")
-public class PartyBo extends BaseBo {
+public class PartyVo extends BaseVo {
+
+    private String partyid;
+
+    private PartyUserVo creater;
+
+    private boolean isCreate;
+
+    private List<PartyUserVo> users;
 
     private String title;
 
     private String content;
-
-    private String circleid;
 
     //聚会背景图片
     private String backPic;
@@ -56,12 +59,22 @@ public class PartyBo extends BaseBo {
     private boolean isOpen;
     //参加用户温馨提示
     private String reminder;
-    //聚会状态 0 进行中， 1 报名结束 ，2 活动结束  3 已取消
+    //聚会状态 0 已发起，1 进行中， 2 报名结束 ，3 活动结束 5 已取消
     private int status;
     //发起群聊聚会ID
     private String chatroomid;
-    //申请用户
-    private LinkedList<String> users = new LinkedList<>();
+
+    private String circlePic;
+
+    private String circleName;
+
+    private String circleid;
+
+    private boolean inCircle;
+    private boolean inParty;
+    //是否发表评论
+    private boolean isComment;
+
     //访问数量
     private int visitNum;
     //分享数量
@@ -71,47 +84,32 @@ public class PartyBo extends BaseBo {
     //举报数量
     private int reportNum;
 
-    public LinkedList<String> getUsers() {
+    private int userNum;
+
+
+    public String getPartyid() {
+        return partyid;
+    }
+
+    public void setPartyid(String partyid) {
+        this.partyid = partyid;
+    }
+
+    public PartyUserVo getCreater() {
+        return creater;
+    }
+
+    public void setCreater(PartyUserVo creater) {
+        this.creater = creater;
+    }
+
+    public List<PartyUserVo> getUsers() {
         return users;
     }
 
-    public void setUsers(LinkedList<String> users) {
+    public void setUsers(List<PartyUserVo> users) {
         this.users = users;
     }
-
-    public int getVisitNum() {
-        return visitNum;
-    }
-
-    public void setVisitNum(int visitNum) {
-        this.visitNum = visitNum;
-    }
-
-    public int getShareNum() {
-        return shareNum;
-    }
-
-    public void setShareNum(int shareNum) {
-        this.shareNum = shareNum;
-    }
-
-
-    public int getCollectNum() {
-        return collectNum;
-    }
-
-    public void setCollectNum(int collectNum) {
-        this.collectNum = collectNum;
-    }
-
-    public int getReportNum() {
-        return reportNum;
-    }
-
-    public void setReportNum(int reportNum) {
-        this.reportNum = reportNum;
-    }
-
 
     public String getTitle() {
         return title;
@@ -127,14 +125,6 @@ public class PartyBo extends BaseBo {
 
     public void setContent(String content) {
         this.content = content;
-    }
-
-    public String getCircleid() {
-        return circleid;
-    }
-
-    public void setCircleid(String circleid) {
-        this.circleid = circleid;
     }
 
     public String getBackPic() {
@@ -159,6 +149,14 @@ public class PartyBo extends BaseBo {
 
     public void setVideo(String video) {
         this.video = video;
+    }
+
+    public String getVideoPic() {
+        return videoPic;
+    }
+
+    public void setVideoPic(String videoPic) {
+        this.videoPic = videoPic;
     }
 
     public LinkedHashSet<String> getStartTime() {
@@ -289,11 +287,99 @@ public class PartyBo extends BaseBo {
         this.chatroomid = chatroomid;
     }
 
-    public String getVideoPic() {
-        return videoPic;
+    public String getCirclePic() {
+        return circlePic;
     }
 
-    public void setVideoPic(String videoPic) {
-        this.videoPic = videoPic;
+    public void setCirclePic(String circlePic) {
+        this.circlePic = circlePic;
+    }
+
+    public String getCircleName() {
+        return circleName;
+    }
+
+    public void setCircleName(String circleName) {
+        this.circleName = circleName;
+    }
+
+    public String getCircleid() {
+        return circleid;
+    }
+
+    public void setCircleid(String circleid) {
+        this.circleid = circleid;
+    }
+
+    public boolean isInCircle() {
+        return inCircle;
+    }
+
+    public void setInCircle(boolean inCircle) {
+        this.inCircle = inCircle;
+    }
+
+    public boolean isInParty() {
+        return inParty;
+    }
+
+    public void setInParty(boolean inParty) {
+        this.inParty = inParty;
+    }
+
+    public int getVisitNum() {
+        return visitNum;
+    }
+
+    public void setVisitNum(int visitNum) {
+        this.visitNum = visitNum;
+    }
+
+    public int getShareNum() {
+        return shareNum;
+    }
+
+    public void setShareNum(int shareNum) {
+        this.shareNum = shareNum;
+    }
+
+    public int getCollectNum() {
+        return collectNum;
+    }
+
+    public void setCollectNum(int collectNum) {
+        this.collectNum = collectNum;
+    }
+
+    public int getReportNum() {
+        return reportNum;
+    }
+
+    public void setReportNum(int reportNum) {
+        this.reportNum = reportNum;
+    }
+
+    public int getUserNum() {
+        return userNum;
+    }
+
+    public void setUserNum(int userNum) {
+        this.userNum = userNum;
+    }
+
+    public boolean isCreate() {
+        return isCreate;
+    }
+
+    public void setCreate(boolean create) {
+        isCreate = create;
+    }
+
+    public boolean isComment() {
+        return isComment;
+    }
+
+    public void setComment(boolean comment) {
+        isComment = comment;
     }
 }

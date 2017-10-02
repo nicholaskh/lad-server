@@ -128,4 +128,17 @@ public class CommentDaoImpl implements ICommentDao {
         query.addCriteria(new Criteria("type").is(type));
         return mongoTemplate.count(query, CommentBo.class);
     }
+
+    public List<CommentBo> selectByTargetUser(String targetid, String userid, int type) {
+        Query query = new Query();
+        if (type == Constant.NOTE_TYPE) {
+            query.addCriteria(new Criteria("noteid").is(targetid));
+        } else {
+            query.addCriteria(new Criteria("targetid").is(targetid));
+        }
+        query.addCriteria(new Criteria("deleted").is(0));
+        query.addCriteria(new Criteria("userid").is(userid));
+        query.addCriteria(new Criteria("type").is(type));
+        return mongoTemplate.find(query, CommentBo.class);
+    }
 }

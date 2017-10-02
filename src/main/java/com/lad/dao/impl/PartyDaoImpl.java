@@ -105,12 +105,11 @@ public class PartyDaoImpl implements IPartyDao {
     }
 
     @Override
-    public WriteResult updateUser(String id, LinkedHashSet<String> users, LinkedHashSet<String> applys) {
+    public WriteResult updateUser(String id, List<String> users) {
         Query query = new Query();
         query.addCriteria(new Criteria("_id").is(id));
         Update update = new Update();
         update.set("users", users);
-        update.set("applyUsers", applys);
         return mongoTemplate.updateFirst(query, update, PartyBo.class);
     }
 

@@ -97,4 +97,9 @@ public class CommentService implements ICommentService {
     public WriteResult deleteByNote(String noteid) {
         return commentDao.deleteByNote(noteid);
     }
+
+    @Override
+    public List<CommentBo> selectByTargetUser(String targetid, String userid, int type) {
+        return commentDao.selectByTargetUser(targetid, userid, type);
+    }
 }

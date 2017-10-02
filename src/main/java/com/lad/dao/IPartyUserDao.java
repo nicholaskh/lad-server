@@ -3,6 +3,8 @@ package com.lad.dao;
 import com.lad.bo.PartyUserBo;
 import com.mongodb.WriteResult;
 
+import java.util.List;
+
 /**
  * 功能描述：
  * Copyright: Copyright (c) 2017
@@ -19,6 +21,11 @@ public interface IPartyUserDao {
 
     WriteResult apply(String id, String info);
 
+
+    List<PartyUserBo> findByParty(String partyid, int status);
+
+
+    List<PartyUserBo>  findByUserid(String userid, int status);
 
 
 }

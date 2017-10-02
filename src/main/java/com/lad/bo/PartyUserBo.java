@@ -21,11 +21,11 @@ public class PartyUserBo extends BaseBo {
 
     private String refuseInfo;
 
-    private String amount;
+    private double amount;
 
     private int userNum;
 
-    // 0 申请， 1已加入 -1 拒绝
+    // 0 申请， 1已加入 2 拒绝
     private int status;
 
     public String getUserid() {
@@ -76,11 +76,11 @@ public class PartyUserBo extends BaseBo {
         this.status = status;
     }
 
-    public String getAmount() {
+    public double getAmount() {
         return amount;
     }
 
-    public void setAmount(String amount) {
+    public void setAmount(double amount) {
         this.amount = amount;
     }
 

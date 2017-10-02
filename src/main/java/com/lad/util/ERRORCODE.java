@@ -77,6 +77,10 @@ public enum ERRORCODE {
 	CIRCLE_NEED_VERIFY(110014, "加入圈子需要申请"),
 
 	INFOR_IS_NULL(130001, "资讯不存在"),
+
+	PARTY_ERROR(140001, "聚会参数错误"),
+	PARTY_NULL(140002, "聚会不存在"),
+	PARTY_TALK_EXIST(140003, "聚会群聊已经存在"),
 	
 	NOTE_IS_NULL(120001, "帖子不存在"),
 	NOTE_NOT_MASTER(120002, "没有权限"),

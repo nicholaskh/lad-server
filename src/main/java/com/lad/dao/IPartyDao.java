@@ -3,6 +3,7 @@ package com.lad.dao;
 import com.lad.bo.PartyBo;
 import com.mongodb.WriteResult;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 
 /**
@@ -46,13 +47,65 @@ public interface IPartyDao {
      * @param createid
      * @return
      */
-    List<PartyBo> findByCreate(String createid, String start_id, int limit);
+    List<PartyBo> findByCreate(String createid, int page, int limit);
 
     /**
      * 查找我参与的聚会
      * @return
      */
-    List<PartyBo> findByMyJoin(String userid, String start_id, int limit);
+    List<PartyBo> findByMyJoin(String userid, int page, int limit);
+
+    /**
+     * 更新用户
+     * @param id
+     * @param users
+     * @return
+     */
+    WriteResult updateUser(String id, List<String> users);
+
+    /**
+     * 更新已拒绝的用户
+     * @param id
+     * @return
+     */
+    WriteResult updateRefus(String id, LinkedHashSet<String> refuses);
+
+
+    /**
+     * 更新访问
+     * @param id
+     * @return
+     */
+    WriteResult updateVisit(String id);
+
+    /**
+     * 更新分享
+     * @param id
+     * @return
+     */
+    WriteResult updateShare(String id, int num);
+
+    /**
+     * 更新分享
+     * @param id
+     * @return
+     */
+    WriteResult updateCollect(String id, int num);
+
+    /**
+     * 更新举报
+     * @param id
+     * @return
+     */
+    WriteResult updateReport(String id, int num);
+
+    /**
+     * 查找我申请的聚会
+     * @return
+     */
+    List<PartyBo> findByMyApply(String userid, int page, int limit);
+
+
 
 
 }
