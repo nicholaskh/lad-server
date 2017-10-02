@@ -117,6 +117,10 @@ public class Constant {
 	 * 资讯评论点赞
 	 */
 	public static final int INFOR_COM_TYPE = 9;
+	/**
+	 * 聚会评论
+	 */
+	public static final int PARTY_COM_TYPE = 10;
 
 
 

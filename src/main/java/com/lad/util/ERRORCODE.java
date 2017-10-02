@@ -81,6 +81,8 @@ public enum ERRORCODE {
 	PARTY_ERROR(140001, "聚会参数错误"),
 	PARTY_NULL(140002, "聚会不存在"),
 	PARTY_TALK_EXIST(140003, "聚会群聊已经存在"),
+	PARTY_USER_MAX(140004, "聚会人数已达上限"),
+	PARTY_HAS_COMMENT(140005, "聚会以及评论"),
 	
 	NOTE_IS_NULL(120001, "帖子不存在"),
 	NOTE_NOT_MASTER(120002, "没有权限"),

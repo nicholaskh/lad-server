@@ -2,6 +2,8 @@ package com.lad.bo;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.LinkedHashSet;
+
 /**
  * 功能描述：评论
  * Version: 1.0
@@ -26,6 +28,12 @@ public class CommentBo extends BaseBo{
 
     //贴子的发帖人
     private String ownerid;
+
+    private LinkedHashSet<String> photos;
+
+    private String video;
+
+    private String videoPic;
 
     public String getUserName() {
         return userName;
@@ -82,5 +90,27 @@ public class CommentBo extends BaseBo{
     public void setOwnerid(String ownerid) {
         this.ownerid = ownerid;
     }
-    
+
+    public LinkedHashSet<String> getPhotos() {
+        return photos;
+    }
+    public void setPhotos(LinkedHashSet<String> photos) {
+        this.photos = photos;
+    }
+
+    public String getVideo() {
+        return video;
+    }
+
+    public void setVideo(String video) {
+        this.video = video;
+    }
+
+    public String getVideoPic() {
+        return videoPic;
+    }
+
+    public void setVideoPic(String videoPic) {
+        this.videoPic = videoPic;
+    }
 }

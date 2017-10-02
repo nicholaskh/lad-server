@@ -114,4 +114,10 @@ public interface IPartyService {
      */
     List<PartyUserBo> findPartyUser(String partyid, int status);
 
+    /**
+     * 更新群聊
+     * @return
+     */
+    WriteResult updateChatroom(String partyid, String chatroomid);
+
 }

@@ -137,7 +137,9 @@ public class CommentDaoImpl implements ICommentDao {
             query.addCriteria(new Criteria("targetid").is(targetid));
         }
         query.addCriteria(new Criteria("deleted").is(0));
-        query.addCriteria(new Criteria("userid").is(userid));
+        if (StringUtils.isNotEmpty(userid)) {
+            query.addCriteria(new Criteria("userid").is(userid));
+        }
         query.addCriteria(new Criteria("type").is(type));
         return mongoTemplate.find(query, CommentBo.class);
     }

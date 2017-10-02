@@ -95,4 +95,9 @@ public class PartyServiceImpl implements IPartyService {
     public List<PartyUserBo> findPartyUser(String partyid, int status) {
         return partyUserDao.findByParty(partyid, status);
     }
+
+    @Override
+    public WriteResult updateChatroom(String partyid, String chatroomid) {
+        return partyDao.updateChatroom(partyid, chatroomid);
+    }
 }

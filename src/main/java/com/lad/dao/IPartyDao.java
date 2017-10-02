@@ -105,6 +105,11 @@ public interface IPartyDao {
      */
     List<PartyBo> findByMyApply(String userid, int page, int limit);
 
+    /**
+     * 更新群聊
+     * @return
+     */
+    WriteResult updateChatroom(String partyid, String chatroomid);
 
 
 

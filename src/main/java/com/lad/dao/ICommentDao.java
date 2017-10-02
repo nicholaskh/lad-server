@@ -88,4 +88,13 @@ public interface ICommentDao {
      * @return
      */
     List<BasicDBObject> selectMyNoteReply(String userid, String startId, int limit);
+
+    /**
+     * 根据类型查找
+     * @param targetid
+     * @param userid
+     * @param type
+     * @return
+     */
+    List<CommentBo> selectByTargetUser(String targetid, String userid, int type);
 }

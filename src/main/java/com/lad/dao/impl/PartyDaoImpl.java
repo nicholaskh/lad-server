@@ -39,6 +39,7 @@ public class PartyDaoImpl implements IPartyDao {
     public WriteResult update(PartyBo partyBo) {
         Query query = new Query();
         query.addCriteria(new Criteria("_id").is(partyBo.getId()));
+        query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
         Update update = new Update();
         update.set("title", partyBo.getTitle());
         update.set("content", partyBo.getContent());
@@ -81,6 +82,7 @@ public class PartyDaoImpl implements IPartyDao {
     public List<PartyBo> findByCreate(String createid, int page, int limit) {
         Query query = new Query();
         query.addCriteria(new Criteria("createuid").is(createid));
+        query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
         query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
         if (page < 1) {
            page = 1;
@@ -95,6 +97,7 @@ public class PartyDaoImpl implements IPartyDao {
         Query query = new Query();
         query.addCriteria(new Criteria("createuid").ne(userid));
         query.addCriteria(new Criteria("users").in(userid));
+        query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
         query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
         if (page < 1) {
             page = 1;
@@ -108,6 +111,7 @@ public class PartyDaoImpl implements IPartyDao {
     public WriteResult updateUser(String id, List<String> users) {
         Query query = new Query();
         query.addCriteria(new Criteria("_id").is(id));
+        query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
         Update update = new Update();
         update.set("users", users);
         return mongoTemplate.updateFirst(query, update, PartyBo.class);
@@ -117,6 +121,7 @@ public class PartyDaoImpl implements IPartyDao {
     public WriteResult updateRefus(String id, LinkedHashSet<String> refuses) {
         Query query = new Query();
         query.addCriteria(new Criteria("_id").is(id));
+        query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
         Update update = new Update();
         update.set("refuseUsers", refuses);
         return mongoTemplate.updateFirst(query, update, PartyBo.class);
@@ -163,6 +168,7 @@ public class PartyDaoImpl implements IPartyDao {
         Query query = new Query();
         query.addCriteria(new Criteria("createuid").ne(userid));
         query.addCriteria(new Criteria("applyUsers").in(userid));
+        query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
         query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
         if (page < 1) {
             page = 1;
@@ -170,5 +176,15 @@ public class PartyDaoImpl implements IPartyDao {
         query.skip((page -1)*limit);
         query.limit(limit);
         return mongoTemplate.find(query, PartyBo.class);
+    }
+
+    @Override
+    public WriteResult updateChatroom(String partyid, String chatroomid) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("_id").is(partyid));
+        query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+        Update update = new Update();
+        update.set("chatroomid", chatroomid);
+        return mongoTemplate.updateFirst(query, update, PartyBo.class);
     }
 }

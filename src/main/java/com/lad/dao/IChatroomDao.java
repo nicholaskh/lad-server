@@ -24,6 +24,13 @@ public interface IChatroomDao extends IBaseDao {
 	public WriteResult setSeqExpire(int seq);
 
 	/**
+	 * 从数据库删除聊天
+	 * @param chatroomId
+	 * @return
+	 */
+	WriteResult remove(String chatroomId);
+
+	/**
 	 * 判断聊天室位置是否在制定的距离内
 	 * @param chatroomId  聊天
 	 * @param position  点

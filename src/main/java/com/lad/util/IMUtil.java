@@ -82,6 +82,12 @@ public class IMUtil {
 		if (StringUtils.isEmpty(inTerm)) {
 			term = getTerm(assistent);
 		}
+		if ("timeout".equals(term)) {
+			res = CommonUtil.toErrorResult(
+					ERRORCODE.PUSHED_CONNECT_ERROR.getIndex(),
+					ERRORCODE.PUSHED_CONNECT_ERROR.getReason());
+			return new String[]{res, ""};
+		}
 		assistent.setServerTerm(term);
 		Message message = assistent.unSubscribe(chatroomId, ids);
 		try {

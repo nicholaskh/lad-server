@@ -87,4 +87,9 @@ public class ChatroomServiceImpl implements IChatroomService {
 	public WriteResult updateVerify(String chatroomId, boolean isVerify) {
 		return chatroomDao.updateVerify(chatroomId, isVerify);
 	}
+
+	@Override
+	public WriteResult remove(String chatroomId) {
+		return chatroomDao.remove(chatroomId);
+	}
 }

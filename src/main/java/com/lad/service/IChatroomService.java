@@ -23,6 +23,13 @@ public interface IChatroomService extends IBaseService {
 	
 	public WriteResult setSeqExpire(int seq);
 
+	/**
+	 * 从数据库删除聊天
+	 * @param chatroomId
+	 * @return
+	 */
+	WriteResult remove(String chatroomId);
+
 	boolean withInRange(String chatroomId, double[] position, int radius);
 
 	/**
