@@ -46,7 +46,7 @@ public class CollectController extends BaseContorller {
 		chatBo.setContent(content);
 		chatBo.setTitle(title);
 		chatBo.setType(Constant.CHAT_TYPE);
-		chatBo = collectService.saveChat(chatBo);
+		chatBo = collectService.insert(chatBo);
 		
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
@@ -72,4 +72,28 @@ public class CollectController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
+
+	@RequestMapping("/note")
+	@ResponseBody
+	public String colNotes(String noteid, HttpServletRequest request, HttpServletResponse response){
+		UserBo userBo;
+		try {
+			userBo = checkSession(request, userService);
+		} catch (MyException e) {
+			return e.getMessage();
+		}
+
+
+		CollectBo chatBo = new CollectBo();
+		chatBo.setCreateuid(userBo.getId());
+		chatBo.setUserid(userBo.getId());
+		chatBo.setTargetid(noteid);
+		chatBo.setType(Constant.COLLET_URL);
+		chatBo.setSub_type(Constant.NOTE_TYPE);
+		collectService.insert(chatBo);
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("col-time", CommonUtil.time2str(chatBo.getCreateTime()));
+		return JSONObject.fromObject(map).toString();
+	}
 }
