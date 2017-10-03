@@ -251,6 +251,7 @@ public class CircleController extends BaseContorller {
 		}
 		users.add(userBo.getId());
 		circleService.updateUsers(circleid, users);
+		userAddHis(userBo.getId(), circleBo.getId(), 1);
 		return Constant.COM_RESP;
 	}
 
