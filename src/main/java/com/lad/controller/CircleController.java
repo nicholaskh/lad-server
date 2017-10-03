@@ -479,7 +479,7 @@ public class CircleController extends BaseContorller {
 		}
 		List<CircleBo> list = circleService
 				.selectByType(tag, sub_tag, category);
-		return bo2vos(list);
+		return bo2vos(list, userBo);
 	}
 
 
@@ -707,13 +707,13 @@ public class CircleController extends BaseContorller {
 				circleService.updateTotal(circleBo.getId(), number);
 			}
 			if (myCircles.contains(circleBo.getId())) {
-				voList.add(bo2vo(circleBo, 1));
+				voList.add(bo2vo(circleBo, userBo, 1));
 			} else {
 				noTops.add(circleBo);
 			}
 		}
 		for (CircleBo item : noTops) {
-			voList.add(bo2vo(item,0));
+			voList.add(bo2vo(item, userBo, 0));
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
@@ -734,7 +734,7 @@ public class CircleController extends BaseContorller {
 			return e.getMessage();
 		}
 		List<CircleBo> circleBos = circleService.selectUsersPre(userBo.getId());
-		return bo2vos(circleBos);
+		return bo2vos(circleBos, null);
 	}
 
 	/**
@@ -891,7 +891,7 @@ public class CircleController extends BaseContorller {
 			}
 
 			List<CircleBo> circleBos = circleService.findBykeyword(keyword);
-			return bo2vos(circleBos);
+			return bo2vos(circleBos, null);
 		}
 		return Constant.COM_RESP;
 	}
@@ -1094,7 +1094,7 @@ public class CircleController extends BaseContorller {
 			response) {
 		double[] position = new double[]{px, py};
 		List<CircleBo> circleBos = circleService.findNearCircle(position, 10000, 5);
-		return bo2vos(circleBos);
+		return bo2vos(circleBos, null);
 	}
 
 
@@ -1376,7 +1376,7 @@ public class CircleController extends BaseContorller {
 			seveKeys(district);
 		}
 		List<CircleBo> circleBos = circleService.findByCitys(province, city, district, page, limit);
-		return bo2vos(circleBos);
+		return bo2vos(circleBos, null);
 	}
 
 	private void seveKeys(String value){
@@ -1432,7 +1432,7 @@ public class CircleController extends BaseContorller {
 			circleBos = circleService.findRelatedCircles(
 					circleid, circleBo.getTag(), "", page, limit);
 		}
-		return bo2vos(circleBos);
+		return bo2vos(circleBos,null);
 	}
 
 
@@ -1462,10 +1462,10 @@ public class CircleController extends BaseContorller {
 	 * @param circleBos
 	 * @return
 	 */
-	private String bo2vos(List<CircleBo> circleBos){
+	private String bo2vos(List<CircleBo> circleBos, UserBo userBo){
 		List<CircleVo> listVo = new LinkedList<CircleVo>();
 		for (CircleBo item : circleBos) {
-			listVo.add(bo2vo(item,0));
+			listVo.add(bo2vo(item, userBo, 0));
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
@@ -1473,7 +1473,7 @@ public class CircleController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	private CircleVo bo2vo(CircleBo circleBo, int top){
+	private CircleVo bo2vo(CircleBo circleBo, UserBo userBo, int top){
 		CircleVo circleVo = new CircleVo();
 		BeanUtils.copyProperties(circleBo, circleVo);
 		circleVo.setId(circleBo.getId());
@@ -1481,6 +1481,13 @@ public class CircleController extends BaseContorller {
 		circleVo.setNotesSize(circleBo.getNoteSize());
 		circleVo.setUsersSize(circleBo.getTotal());
 		circleVo.setTop(top);
+		if (null != userBo) {
+			//查找圈子加入历史
+			CircleAddBo addBo = circleService.findHisByUserAndCircle(userBo.getId(), circleBo.getId());
+			if (null != addBo) {
+				circleVo.setUserAdd(addBo.getStatus());
+			}
+		}
 		return circleVo;
 	}
 }
