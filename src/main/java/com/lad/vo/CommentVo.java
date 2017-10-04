@@ -1,6 +1,7 @@
 package com.lad.vo;
 
 import java.util.Date;
+import java.util.LinkedHashSet;
 
 /**
  * 功能描述：
@@ -37,6 +38,12 @@ public class CommentVo extends BaseVo {
     private String userBirth;
 
     private int userLevel;
+
+    private LinkedHashSet<String> photos;
+
+    private String video;
+
+    private String videoPic;
 
     public long getThumpsubCount() {
         return thumpsubCount;
@@ -148,5 +155,29 @@ public class CommentVo extends BaseVo {
 
     public void setUserLevel(int userLevel) {
         this.userLevel = userLevel;
+    }
+
+    public LinkedHashSet<String> getPhotos() {
+        return photos;
+    }
+
+    public void setPhotos(LinkedHashSet<String> photos) {
+        this.photos = photos;
+    }
+
+    public String getVideo() {
+        return video;
+    }
+
+    public void setVideo(String video) {
+        this.video = video;
+    }
+
+    public String getVideoPic() {
+        return videoPic;
+    }
+
+    public void setVideoPic(String videoPic) {
+        this.videoPic = videoPic;
     }
 }

@@ -382,4 +382,5 @@ public class PartyVo extends BaseVo {
     public void setComment(boolean comment) {
         isComment = comment;
     }
+
 }
