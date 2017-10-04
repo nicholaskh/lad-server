@@ -79,7 +79,7 @@ public interface ICircleService extends IBaseService {
 	/**
 	 * 查询附近的圈子
 	 */
-	List<CircleBo> findNearCircle(double[] position, int maxDistance, int limit);
+	List<CircleBo> findNearCircle(String userid, double[] position, int maxDistance, int limit);
 
 	/**
 	 * 根据分类查询
@@ -112,6 +112,13 @@ public interface ICircleService extends IBaseService {
 	List<CircleTypeBo> selectByParent(String name);
 
 	CircleTypeBo addCircleType(CircleTypeBo circleTypeBo);
+
+	/**
+	 * 查找圈子分类是不是存在相同名称
+	 * @param keyword
+	 * @return
+	 */
+	CircleTypeBo findEsixtTagName(String keyword);
 
 	List<CircleTypeBo> selectByPage(int start, int limit);
 

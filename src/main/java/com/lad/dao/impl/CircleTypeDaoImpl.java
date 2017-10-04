@@ -70,4 +70,12 @@ public class CircleTypeDaoImpl implements ICircleTypeDao {
         return mongoTemplate.findAll(CircleTypeBo.class);
     }
 
+    @Override
+    public CircleTypeBo findEsixtTagName(String keyword, int type) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("category").is(keyword));
+        query.addCriteria(new Criteria("type").is(type));
+        return mongoTemplate.findOne(query, CircleTypeBo.class);
+    }
+
 }

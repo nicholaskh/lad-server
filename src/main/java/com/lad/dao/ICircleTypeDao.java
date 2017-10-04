@@ -24,4 +24,11 @@ public interface ICircleTypeDao {
 
     List<CircleTypeBo> findAll();
 
+    /**
+     * 查找
+     * @param keyword
+     * @return
+     */
+    CircleTypeBo findEsixtTagName(String keyword, int type);
+
 }

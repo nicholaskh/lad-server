@@ -75,6 +75,7 @@ public enum ERRORCODE {
 	CIRCLE_TYPE_EXIST(110012, "分类已经存在"),
 	CIRCLE_MASTER_MAX(110013, "管理员人数已达上限"),
 	CIRCLE_NEED_VERIFY(110014, "加入圈子需要申请"),
+	CIRCLE_NAME_EXIST(110015, "圈子名称已经存在"),
 
 	INFOR_IS_NULL(130001, "资讯不存在"),
 

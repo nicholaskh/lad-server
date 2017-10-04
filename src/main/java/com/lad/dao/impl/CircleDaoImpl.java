@@ -217,9 +217,12 @@ public class CircleDaoImpl implements ICircleDao {
 		return mongoTemplate.find(query, CircleBo.class);
 	}
 
-	public List<CircleBo> findNearCircle(double[] position, int maxDistance, int limit){
+	public List<CircleBo> findNearCircle(String userid, double[] position, int maxDistance, int limit){
 		Point point = new Point(position[0],position[1]);
 		Query query = new Query();
+		if (StringUtils.isNotEmpty(userid)){
+			query.addCriteria(new Criteria("users").nin(userid));
+		}
 		Criteria criteria1 = Criteria.where("position").nearSphere(point)
 				.maxDistance(maxDistance/6378137.0);
 		query.addCriteria(criteria1);

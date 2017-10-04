@@ -81,6 +81,21 @@ public class CircleController extends BaseContorller {
 					ERRORCODE.CIRCLE_CREATE_MAX.getIndex(),
 					ERRORCODE.CIRCLE_CREATE_MAX.getReason());
 		}
+		//是否存在相同名字圈子
+		CircleBo circle = circleService.findByTagAndName(name, tag, sub_tag);
+		if (circle != null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CIRCLE_NAME_EXIST.getIndex(),
+					ERRORCODE.CIRCLE_NAME_EXIST.getReason());
+		}
+		//圈子名称不能和分类名称一样
+		CircleTypeBo typeBo = circleService.findEsixtTagName(name);
+		if (null != typeBo) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CIRCLE_NAME_EXIST.getIndex(),
+					ERRORCODE.CIRCLE_NAME_EXIST.getReason());
+		}
+
 		CircleBo circleBo = new CircleBo();
 		circleBo.setCreateuid(userBo.getId());
 		circleBo.setPosition(new double[] { px, py });
@@ -1093,8 +1108,17 @@ public class CircleController extends BaseContorller {
 	@ResponseBody
 	public String nearPeopel(double px, double py, HttpServletRequest request, HttpServletResponse
 			response) {
+		HttpSession session = request.getSession();
 		double[] position = new double[]{px, py};
-		List<CircleBo> circleBos = circleService.findNearCircle(position, 10000, 5);
+		//未登录情况
+		String userid = "";
+		if (!session.isNew() &&  session.getAttribute("isLogin") != null) {
+			UserBo userBo = (UserBo) session.getAttribute("userBo");
+			if (userBo != null) {
+				userid = userBo.getId();
+			}
+		}
+		List<CircleBo> circleBos = circleService.findNearCircle(userid, position, 10000, 10);;
 		return bo2vos(circleBos, null);
 	}
 
