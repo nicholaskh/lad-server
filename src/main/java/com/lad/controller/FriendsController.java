@@ -570,6 +570,7 @@ public class FriendsController extends BaseContorller {
 		chatroomBo.setType(2);
 		chatroomBo.setName("群聊");
 		chatroomBo.setUsers(userSet);
+		chatroomBo.setMaster(userBo.getId());
 		chatroomBo.setCreateuid(userBo.getId());
 		chatroomService.insert(chatroomBo);
 		for (String id : userSet) {
@@ -636,12 +637,19 @@ public class FriendsController extends BaseContorller {
 		} catch (MyException e) {
 			return e.getMessage();
 		}
-		if (chatroomid == null) {
-			return CommonUtil.toErrorResult(
-					ERRORCODE.CHATROOM_ID_NULL.getIndex(),
-					ERRORCODE.CHATROOM_ID_NULL.getReason());
+		ChatroomBo chatroomBo = chatroomService.get(chatroomid);
+		if (null == chatroomBo) {
+			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(),
+					ERRORCODE.CHATROOM_NULL.getReason());
 		}
 		String userid = userBo.getId();
+		HashSet<String> userids = chatroomBo.getUsers();
+		if (userid.equals(chatroomBo.getMaster())) {
+			  if (userids.size() > 2) {
+				  return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_MASTER_QUIT.getIndex(),
+						  ERRORCODE.CHATROOM_MASTER_QUIT.getReason());
+			  }
+		}
 		userBo = userService.getUser(userid);
 		HashSet<String> chatrooms = new HashSet<String>();
 		chatrooms = userBo.getChatrooms();
@@ -650,12 +658,6 @@ public class FriendsController extends BaseContorller {
 		}
 		userBo.setChatrooms(chatrooms);
 		userService.updateChatrooms(userBo);
-		ChatroomBo chatroomBo = chatroomService.get(chatroomid);
-		if (null == chatroomBo) {
-			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(),
-					ERRORCODE.CHATROOM_NULL.getReason());
-		}
-		HashSet<String> userids = chatroomBo.getUsers();
 		if (userids.contains(userid)) {
 			userids.remove(userid);
 		}
