@@ -74,7 +74,7 @@ public interface ICircleDao extends IBaseDao {
 	 * @param keyword
 	 * @return
 	 */
-	List<CircleBo> findBykeyword(String keyword);
+	List<CircleBo> findBykeyword(String keyword, int page, int limit);
 
 	WriteResult updateTotal(String circleid, int total);
 

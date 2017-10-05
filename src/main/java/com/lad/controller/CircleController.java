@@ -894,6 +894,16 @@ public class CircleController extends BaseContorller {
 	@RequestMapping("/search")
 	@ResponseBody
 	public String search(String keyword, HttpServletRequest request, HttpServletResponse response) {
+		return searchKeyword(keyword, 1, 10, request, response);
+	}
+
+	/**
+	 * 搜索圈子
+	 */
+	@RequestMapping("/search-keyword")
+	@ResponseBody
+	public String searchKeyword(String keyword,int page, int limit,
+								HttpServletRequest request, HttpServletResponse response) {
 		if (StringUtils.isNotEmpty(keyword)) {
 			SearchBo searchBo = searchService.findByKeyword(keyword, 0);
 			if (searchBo == null) {
@@ -906,7 +916,7 @@ public class CircleController extends BaseContorller {
 				searchService.update(searchBo.getId());
 			}
 
-			List<CircleBo> circleBos = circleService.findBykeyword(keyword);
+			List<CircleBo> circleBos = circleService.findBykeyword(keyword, page, limit);
 			return bo2vos(circleBos, null);
 		}
 		return Constant.COM_RESP;

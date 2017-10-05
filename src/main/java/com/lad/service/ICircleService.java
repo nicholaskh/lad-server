@@ -73,7 +73,7 @@ public interface ICircleService extends IBaseService {
 	 * @param keyword
 	 * @return
 	 */
-	List<CircleBo> findBykeyword(String keyword);
+	List<CircleBo> findBykeyword(String keyword, int page, int limit);
 
 
 	/**

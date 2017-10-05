@@ -116,8 +116,8 @@ public class CircleServiceImpl implements ICircleService {
 
 
 	@Override
-	public List<CircleBo> findBykeyword(String keyword) {
-		return circleDao.findBykeyword(keyword);
+	public List<CircleBo> findBykeyword(String keyword, int page, int limit) {
+		return circleDao.findBykeyword(keyword, page, limit);
 	}
 
 	@Override

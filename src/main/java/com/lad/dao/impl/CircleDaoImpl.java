@@ -129,11 +129,16 @@ public class CircleDaoImpl implements ICircleDao {
 		return mongoTemplate.count(query, CircleBo.class);
 	}
 
-	public List<CircleBo> findBykeyword(String keyword) {
+	public List<CircleBo> findBykeyword(String keyword, int page, int limit) {
 		Query query = new Query();
 		Pattern pattern = Pattern.compile("^.*"+keyword+".*$", Pattern.CASE_INSENSITIVE);
-		query.addCriteria(new Criteria("name").regex(pattern));
+		Criteria name = new Criteria("name").regex(pattern);
+		Criteria tag = new Criteria("tag").is(keyword);
+		Criteria sub_tag = new Criteria("sub_tag").is(keyword);
+		query.addCriteria(name.andOperator(tag).andOperator(sub_tag));
 		query.with(new Sort(new Sort.Order(Sort.Direction.DESC,"hotNum")));
+		page = page < 1 ? 1 : page;
+		query.skip((page-1)*limit);
 		query.limit(10);
 		return mongoTemplate.find(query, CircleBo.class);
 	}
