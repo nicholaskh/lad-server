@@ -1220,17 +1220,8 @@ public class CircleController extends BaseContorller {
 					ERRORCODE.CIRCLE_IS_NULL.getIndex(),
 					ERRORCODE.CIRCLE_IS_NULL.getReason());
 		}
-		if (circleBo.getCreateuid().equals(userBo.getId()) ||
-				circleBo.getMasters().contains(userBo.getId())) {
-			if (StringUtils.isNotEmpty(name)){
-				circleService.updateCircleName(circleid, name);
-			} else {
-				return Constant.COM_FAIL_RESP;
-			}
-		} else {
-			return CommonUtil.toErrorResult(
-					ERRORCODE.CIRCLE_MASTER_NULL.getIndex(),
-					ERRORCODE.CIRCLE_MASTER_NULL.getReason());
+		if (StringUtils.isNotEmpty(name)){
+			circleService.updateCircleName(circleid, name);
 		}
 		return Constant.COM_RESP;
 	}
