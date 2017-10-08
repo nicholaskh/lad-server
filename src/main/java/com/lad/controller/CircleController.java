@@ -1221,7 +1221,15 @@ public class CircleController extends BaseContorller {
 					ERRORCODE.CIRCLE_IS_NULL.getReason());
 		}
 		if (StringUtils.isNotEmpty(name)){
+			CircleBo circle = circleService.findByTagAndName(name, circleBo.getTag(), circleBo.getSub_tag());
+			if (circle != null) {
+				return CommonUtil.toErrorResult(
+						ERRORCODE.CIRCLE_NAME_EXIST.getIndex(),
+						ERRORCODE.CIRCLE_NAME_EXIST.getReason());
+			}
 			circleService.updateCircleName(circleid, name);
+		} else {
+			return Constant.COM_FAIL_RESP;
 		}
 		return Constant.COM_RESP;
 	}

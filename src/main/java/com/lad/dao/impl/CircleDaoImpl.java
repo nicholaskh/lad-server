@@ -130,12 +130,13 @@ public class CircleDaoImpl implements ICircleDao {
 	}
 
 	public List<CircleBo> findBykeyword(String keyword, int page, int limit) {
-		Query query = new Query();
+
 		Pattern pattern = Pattern.compile("^.*"+keyword+".*$", Pattern.CASE_INSENSITIVE);
+		Criteria cr = new Criteria();
 		Criteria name = new Criteria("name").regex(pattern);
 		Criteria tag = new Criteria("tag").is(keyword);
 		Criteria sub_tag = new Criteria("sub_tag").is(keyword);
-		query.addCriteria(name.andOperator(tag).andOperator(sub_tag));
+		Query query = new Query(cr.orOperator(name,tag,sub_tag));
 		query.with(new Sort(new Sort.Order(Sort.Direction.DESC,"hotNum")));
 		page = page < 1 ? 1 : page;
 		query.skip((page-1)*limit);
