@@ -162,12 +162,10 @@ public class ChatroomDaoImpl implements IChatroomDao {
 		query.addCriteria(new Criteria("createTime").gte(beforeTime));
 		//位置索引查询
 		Point location = new Point(position[0], position[1]);
-		NearQuery nearQuery = NearQuery.near(location)
-				.maxDistance(new Distance(radius/6378137.0)).spherical(true).query(query);
-		Aggregation aggregation = Aggregation.newAggregation(Aggregation.geoNear(nearQuery,"position"));
-		AggregationResults<ChatroomBo> results = mongoTemplate.aggregate(aggregation,collectionName,ChatroomBo.class);
-		List<ChatroomBo> list = results.getMappedResults();
-		return list != null && !list.isEmpty() ? list.get(0) : null;
+		Criteria criteria1 = Criteria.where("position").nearSphere(location)
+				.maxDistance(radius/6378137.0);
+		query.addCriteria(criteria1);
+		return mongoTemplate.findOne(query, ChatroomBo.class);
 	}
 
 	@Override
