@@ -518,26 +518,23 @@ public class ChatroomController extends BaseContorller {
 		} catch (MyException e) {
 			return e.getMessage();
 		}
+		RLock lock = redisServer.getRLock(Constant.CHAT_LOCK);
 		boolean isNew = false;
 		double[] position = new double[]{px,py};
-        ChatroomBo chatroom = chatroomService.selectBySeqInTen(seq, position, 100);
-		if (null == chatroom) {
-			chatroom = getChatroomBo(chatroom, seq, position, userBo);
-			isNew = true;
-		} else {
-			//相同序列是否在10分钟内创建
-            if (0 == chatroom.getExpire()) {
-                return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_SEQ_EXPIRE.getIndex(),
-                        ERRORCODE.CHATROOM_SEQ_EXPIRE.getReason());
-            }
-            HashSet<String> userSet = chatroom.getUsers();
-			userSet.add(userBo.getId());
-			chatroom.setUsers(userSet);
-		}
-        RLock lock = redisServer.getRLock(Constant.CHAT_LOCK);
+		ChatroomBo chatroom = null;
 		try {
 			//10s自动解锁
-			lock.lock(3, TimeUnit.SECONDS);
+			lock.lock(4, TimeUnit.SECONDS);
+			chatroom = chatroomService.selectBySeqInTen(seq, position, 100);
+			if (null == chatroom) {
+				chatroom = getChatroomBo(seq, position, userBo);
+				isNew = true;
+			} else {
+				//相同序列是否在10分钟内创建
+				HashSet<String> userSet = chatroom.getUsers();
+				userSet.add(userBo.getId());
+				chatroom.setUsers(userSet);
+			}
 			if (isNew) {
                 chatroomService.insert(chatroom);
             } else {
@@ -546,6 +543,7 @@ public class ChatroomController extends BaseContorller {
 		} finally {
 			lock.unlock();
 		}
+
 		HashSet<String> chatrooms = userBo.getChatrooms();
 		chatrooms.add(chatroom.getId());
 		userBo.setChatrooms(chatrooms);
@@ -571,8 +569,8 @@ public class ChatroomController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	private ChatroomBo getChatroomBo(ChatroomBo chatroom, int seq, double[] position, UserBo userBo){
-		chatroom = new ChatroomBo();
+	private ChatroomBo getChatroomBo(int seq, double[] position, UserBo userBo){
+		ChatroomBo chatroom = new ChatroomBo();
 		chatroom.setSeq(seq);
 		chatroom.setUserid(userBo.getId());
 		HashSet<String> userSet = chatroom.getUsers();
@@ -639,11 +637,11 @@ public class ChatroomController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(),
 					ERRORCODE.CHATROOM_NULL.getReason());
 		}
-		if (userBo.getId().equals(chatroomBo.getMaster())) {
+		if (chatroomBo.getUsers().contains(userBo.getId())) {
 			chatroomService.updateName(chatroomid, name);
 		} else {
-			return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_NOT_MASTER.getIndex(),
-					ERRORCODE.CIRCLE_NOT_MASTER.getReason());
+			return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_USER_NULL.getIndex(),
+					ERRORCODE.CIRCLE_USER_NULL.getReason());
 		}
 		return Constant.COM_RESP;
 	}
