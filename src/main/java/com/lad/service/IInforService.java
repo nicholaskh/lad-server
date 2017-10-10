@@ -2,8 +2,10 @@ package com.lad.service;
 
 import com.lad.bo.InforReadNumBo;
 import com.lad.bo.InforSubscriptionBo;
+import com.lad.scrapybo.BroadcastBo;
 import com.lad.scrapybo.InforBo;
 import com.lad.scrapybo.SecurityBo;
+import com.lad.scrapybo.VideoBo;
 import com.mongodb.WriteResult;
 
 import java.util.LinkedHashSet;
@@ -153,7 +155,54 @@ public interface IInforService {
      */
     SecurityBo findSecurityById(String id);
 
+    /**
+     * 更具id查找
+     * @param id
+     * @return
+     */
+    BroadcastBo findBroadById(String id);
 
+    /**
+     * 查找所有类型
+     * @return
+     */
+    List<BroadcastBo> selectBroadGroups();
+
+    /**
+     * 根据分类查找
+     * @param groupName
+     * @return
+     */
+    List<BroadcastBo> selectBroadClassByGroups(String groupName);
+
+    /**
+     * 分页查找
+     * @param groupName
+     * @param page
+     * @param limit
+     * @return
+     */
+    List<BroadcastBo> findBroadByPage(String groupName, int page, int limit);
+
+    List<VideoBo> findVideoByPage(String groupName, int page, int limit);
+
+    VideoBo findVideoById(String id);
+
+    List<VideoBo> selectVdeoGroups();
+
+    List<VideoBo> selectVideoClassByGroups(String groupName);
+
+    /**
+     * 首页推荐
+     * @return
+     */
+    List<InforBo> homeHealthRecom(int limit);
+
+    /**
+     * 首页推荐
+     * @return
+     */
+    List<InforBo> userHealthRecom(String userid, int limit);
 
 
 }

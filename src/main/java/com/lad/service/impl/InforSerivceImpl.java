@@ -2,12 +2,11 @@ package com.lad.service.impl;
 
 import com.lad.bo.InforReadNumBo;
 import com.lad.bo.InforSubscriptionBo;
-import com.lad.dao.IInforDao;
-import com.lad.dao.IInforReadNumDao;
-import com.lad.dao.IInforSubDao;
-import com.lad.dao.ISecurityDao;
+import com.lad.dao.*;
+import com.lad.scrapybo.BroadcastBo;
 import com.lad.scrapybo.InforBo;
 import com.lad.scrapybo.SecurityBo;
+import com.lad.scrapybo.VideoBo;
 import com.lad.service.IInforService;
 import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +36,12 @@ public class InforSerivceImpl implements IInforService {
 
     @Autowired
     private ISecurityDao securityDao;
+
+    @Autowired
+    private IBroadcastDao broadcastDao;
+
+    @Autowired
+    private IVideoDao videoDao;
 
     @Override
     public List<InforBo> findAllGroups() {
@@ -159,5 +164,56 @@ public class InforSerivceImpl implements IInforService {
     @Override
     public SecurityBo findSecurityById(String id) {
         return securityDao.findById(id);
+    }
+
+
+    @Override
+    public BroadcastBo findBroadById(String id) {
+        return broadcastDao.findById(id);
+    }
+
+    @Override
+    public List<BroadcastBo> selectBroadGroups() {
+        return broadcastDao.selectGroups();
+    }
+
+    @Override
+    public List<BroadcastBo> selectBroadClassByGroups(String groupName) {
+        return broadcastDao.selectClassByGroups(groupName);
+    }
+
+    @Override
+    public List<BroadcastBo> findBroadByPage(String groupName, int page, int limit) {
+        return broadcastDao.findByPage(groupName, page, limit);
+    }
+
+    @Override
+    public List<VideoBo> findVideoByPage(String groupName, int page, int limit) {
+        return videoDao.findByPage(groupName, page, limit);
+    }
+
+    @Override
+    public VideoBo findVideoById(String id) {
+        return videoDao.findById(id);
+    }
+
+    @Override
+    public List<VideoBo> selectVdeoGroups() {
+        return videoDao.selectGroups();
+    }
+
+    @Override
+    public List<VideoBo> selectVideoClassByGroups(String groupName) {
+        return videoDao.selectClassByGroups(groupName);
+    }
+
+    @Override
+    public List<InforBo> homeHealthRecom(int limit) {
+        return inforDao.homeHealthRecom(limit);
+    }
+
+    @Override
+    public List<InforBo> userHealthRecom(String userid, int limit) {
+        return userHealthRecom(userid, limit);
     }
 }
