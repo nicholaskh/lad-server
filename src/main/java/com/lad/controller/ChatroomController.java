@@ -619,6 +619,7 @@ public class ChatroomController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_NOT_MASTER.getIndex(),
 					ERRORCODE.CIRCLE_NOT_MASTER.getReason());
 		}
+        JPushUtil.pushTo(userBo.getUserName()+"将"+chatroomBo.getName()+"转让给了您", userid);
 		return Constant.COM_RESP;
 	}
 
