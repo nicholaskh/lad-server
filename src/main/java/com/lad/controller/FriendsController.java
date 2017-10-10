@@ -509,22 +509,37 @@ public class FriendsController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NULL.getIndex(),
 					ERRORCODE.FRIEND_NULL.getReason());
 		}
-		FriendsBo temp = friendsService.getFriendByIdAndVisitorId(
-				userBo.getId(), friendid);
-		if (temp == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NULL.getIndex(),
-					ERRORCODE.FRIEND_NULL.getReason());
-		}
-		friendsService.delete(userBo.getId(), friendid);
 		ChatroomBo chatroomBo = chatroomService.selectByUserIdAndFriendid(
 				userBo.getId(), friendid);
-		if (null != chatroomBo) {
-			chatroomService.delete(chatroomBo.getId());
+		if (null == chatroomBo) {
+			chatroomBo = chatroomService.selectByUserIdAndFriendid(
+					friendid,userBo.getId());
 		}
-		String result = IMUtil.disolveRoom(iMTermService, userBo.getId(),
-				chatroomBo.getId().toString());
-		if (!result.equals(IMUtil.FINISH)) {
-			return result;
+		if (chatroomBo != null) {
+			String result = IMUtil.disolveRoom(iMTermService, userBo.getId(),
+					chatroomBo.getId());
+			if (!result.equals(IMUtil.FINISH)) {
+				return result;
+			}
+		}
+		FriendsBo temp = friendsService.getFriendByIdAndVisitorId(
+				userBo.getId(), friendid);
+		boolean isFriend = true;
+		if (temp == null) {
+			isFriend = false;
+		} else {
+			friendsService.delete(userBo.getId(), friendid);
+		}
+		//在添加好友的会互换id保存
+		temp = friendsService.getFriendByIdAndVisitorId(friendid,
+				userBo.getId());
+		if (temp == null ) {
+			if (!isFriend) {
+				return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NULL.getIndex(),
+						ERRORCODE.FRIEND_NULL.getReason());
+			}
+		} else {
+			friendsService.delete(friendid, userBo.getId());
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
