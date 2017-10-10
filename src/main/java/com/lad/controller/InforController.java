@@ -2,16 +2,19 @@ package com.lad.controller;
 
 import com.lad.bo.*;
 import com.lad.redis.RedisServer;
+import com.lad.scrapybo.BroadcastBo;
 import com.lad.scrapybo.InforBo;
 import com.lad.scrapybo.SecurityBo;
+import com.lad.scrapybo.VideoBo;
 import com.lad.service.ICommentService;
 import com.lad.service.IInforService;
 import com.lad.service.IThumbsupService;
 import com.lad.service.IUserService;
-import com.lad.util.*;
-import com.lad.vo.CommentVo;
-import com.lad.vo.InforVo;
-import com.lad.vo.SecurityVo;
+import com.lad.util.CommonUtil;
+import com.lad.util.Constant;
+import com.lad.util.ERRORCODE;
+import com.lad.util.MyException;
+import com.lad.vo.*;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.log4j.Logger;
@@ -21,7 +24,10 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -79,13 +85,26 @@ public class InforController extends BaseContorller {
         for (SecurityBo securityBo : securityBos) {
             securityTypes.add(securityBo.getId());
         }
+
+        List<BroadcastBo> broadcastBos = inforService.selectBroadGroups();
+        HashSet<String> broadTypes = new LinkedHashSet<>();
+        for (BroadcastBo broadcastBo : broadcastBos) {
+            broadTypes.add(broadcastBo.getId());
+        }
+
+        List<VideoBo> videoBos = inforService.selectVdeoGroups();
+        HashSet<String> videoTypes = new LinkedHashSet<>();
+        for (VideoBo videoBo : videoBos) {
+            videoTypes.add(videoBo.getId());
+        }
         cache.clear();
         cache.put("securityTypes", securityTypes, 0, TimeUnit.MINUTES);
         cache.put("healthTypes", groupTypes, 0, TimeUnit.MINUTES);
+        cache.put("radioTypes", broadTypes, 0, TimeUnit.MINUTES);
         map.put("healthTypes", groupTypes);
         map.put("securityTypes", securityTypes);
-        map.put("videoTypes", new ArrayList<String>());
-        map.put("radioTypes", new ArrayList<String>());
+        map.put("videoTypes", videoTypes);
+        map.put("radioTypes", broadTypes);
         return JSONObject.fromObject(map).toString();
     }
 
@@ -94,7 +113,7 @@ public class InforController extends BaseContorller {
     @ResponseBody
     public String inforGroups(HttpServletRequest request, HttpServletResponse response){
         HttpSession session = request.getSession();
-        Map<String, Object> map = new HashMap<>();
+        Map<String, Object> map = new LinkedHashMap<>();
         map.put("ret", 0);
         boolean isGetType = false;
         if (!session.isNew() && session.getAttribute("isLogin") != null) {
@@ -103,6 +122,8 @@ public class InforController extends BaseContorller {
             if (mySub != null && !mySub.getSubscriptions().isEmpty()) {
                 map.put("healthTypes", mySub.getSubscriptions());
                 map.put("securityTypes", mySub.getSecuritys());
+                map.put("radioTypes", mySub.getRadios());
+//                map.put("videoTypes", mySub.getVideos());
                 isGetType  = true;
             }
         }
@@ -111,8 +132,12 @@ public class InforController extends BaseContorller {
             if (cache.containsKey("healthTypes")) {
                 Object groupTypes = cache.get("healthTypes");
                 Object securityTypes = cache.get("securityTypes");
+                Object radioTypes = cache.get("radioTypes");
+//                Object videoTypes = cache.get("securityTypes");
                 map.put("healthTypes", groupTypes);
                 map.put("securityTypes", securityTypes);
+                map.put("radioTypes", radioTypes);
+//                map.put("videoTypes", videoTypes);
             } else {
                 List<InforBo> inforBos = inforService.findAllGroups();
                 int size =  inforBos.size();
@@ -126,12 +151,23 @@ public class InforController extends BaseContorller {
                 for (SecurityBo securityBo : securityBos) {
                     securityTypes.add(securityBo.getId());
                 }
+                List<BroadcastBo> broadcastBos = inforService.selectBroadGroups();
+                HashSet<String> broadTypes = new LinkedHashSet<>();
+                for (BroadcastBo broadcastBo : broadcastBos) {
+                    broadTypes.add(broadcastBo.getId());
+                }
+                List<VideoBo> videoBos = inforService.selectVdeoGroups();
+                HashSet<String> videoTypes = new LinkedHashSet<>();
+                for (VideoBo videoBo : videoBos) {
+                    videoTypes.add(videoBo.getId());
+                }
+                cache.put("radioTypes", broadTypes, 0, TimeUnit.MINUTES);
                 cache.put("securityTypes", securityTypes, 0, TimeUnit.MINUTES);
                 cache.put("healthTypes", groupTypes, 0, TimeUnit.MINUTES);
                 map.put("healthTypes", groupTypes);
                 map.put("securityTypes", securityTypes);
-                map.put("videoTypes", new ArrayList<String>());
-                map.put("radioTypes", new ArrayList<String>());
+                map.put("videoTypes", videoTypes);
+                map.put("radioTypes", broadTypes);
             }
         }
         return JSONObject.fromObject(map).toString();
@@ -164,15 +200,105 @@ public class InforController extends BaseContorller {
         return JSONObject.fromObject(map).toString();
     }
 
+
+    @RequestMapping("/radio-list")
+    @ResponseBody
+    public String radioList(String module, int page,  int limit,
+                              HttpServletRequest request, HttpServletResponse response){
+        List<BroadcastBo> broadcastBos = inforService.findBroadByPage(module, page, limit);
+        List<BroadcastVo> vos = new ArrayList<>();
+        for (BroadcastBo bo : broadcastBos) {
+            BroadcastVo broadcastVo = new BroadcastVo();
+            BeanUtils.copyProperties(bo, broadcastVo);
+            broadcastVo.setInforid(bo.getId());
+            vos.add(broadcastVo);
+        }
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("ret", 0);
+        map.put("radioList", vos);
+        return JSONObject.fromObject(map).toString();
+    }
+
+    @RequestMapping("/radio-infor")
+    @ResponseBody
+    public String radioInfors(String radioid, HttpServletRequest request, HttpServletResponse response){
+        BroadcastBo broadcastBo = inforService.findBroadById(radioid);
+        BroadcastVo broadcastVo = null;
+        if (broadcastBo != null) {
+            broadcastVo = new BroadcastVo();
+            BeanUtils.copyProperties(broadcastBo, broadcastVo);
+            broadcastVo.setInforid(broadcastBo.getId());
+        }
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("ret", 0);
+        map.put("radio", broadcastVo);
+        return JSONObject.fromObject(map).toString();
+    }
+
+
+    @RequestMapping("/video-list")
+    @ResponseBody
+    public String videoInfors(String module, int page,  int limit,
+                              HttpServletRequest request, HttpServletResponse response){
+        List<VideoBo> videoBos = inforService.findVideoByPage(module, page, limit);
+        List<VideoVo> videoVos = new ArrayList<>();
+        for (VideoBo bo : videoBos) {
+            VideoVo videoVo = new VideoVo();
+            BeanUtils.copyProperties(bo, videoVo);
+            videoVo.setInforid(bo.getId());
+            videoVos.add(videoVo);
+        }
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("ret", 0);
+        map.put("videoList", videoBos);
+        return JSONObject.fromObject(map).toString();
+    }
+
+    @RequestMapping("/video-infor")
+    @ResponseBody
+    public String videoInfors(@RequestParam String videoid,
+                              HttpServletRequest request, HttpServletResponse response){
+        VideoBo videoBo = inforService.findVideoById(videoid);
+        if (videoBo == null) {
+            return CommonUtil.toErrorResult(
+                    ERRORCODE.INFOR_IS_NULL.getIndex(),
+                    ERRORCODE.INFOR_IS_NULL.getReason());
+        }
+        InforReadNumBo readNumBo = inforService.findReadByid(videoid);
+        if (readNumBo == null) {
+            readNumBo = new InforReadNumBo();
+            readNumBo.setClassName(videoBo.getClassName());
+            readNumBo.setInforid(videoid);
+            readNumBo.setVisitNum(1);
+            inforService.addReadNum(readNumBo);
+        } else {
+            inforService.updateReadNum(videoid);
+        }
+        VideoVo videoVo = new VideoVo();
+
+        HttpSession session = request.getSession();
+        if (!session.isNew() && session.getAttribute("isLogin") != null) {
+            UserBo userBo = (UserBo) session.getAttribute("userBo");
+            ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(videoid, userBo.getId());
+            videoVo.setSelfSub(thumbsupBo != null);
+        }
+        videoVo.setInforid(videoid);
+        BeanUtils.copyProperties( videoBo, videoVo);
+        long thuSupNum = thumbsupService.selectByOwnerIdCount(videoid);
+        videoVo.setThumpsubNum(thuSupNum);
+        videoVo.setCommentNum((long)readNumBo.getCommentNum());
+        videoVo.setReadNum(readNumBo.getVisitNum());
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("ret", 0);
+        map.put("video", videoVo);
+        return JSONObject.fromObject(map).toString();
+    }
+
+
     @RequestMapping("/recommend-groups")
     @ResponseBody
     public String recommendGroups(HttpServletRequest request, HttpServletResponse response){
 
-        HttpSession session = request.getSession();
-        System.out.println("recommend-groups : =============" + session.getId());
-        System.out.println("recommend-groups is new : =============" + session.isNew());
-        System.out.println("recommend-groups is Login: =============" + session.getAttribute("isLogin"));
-        
         UserBo userBo;
         try {
             userBo = checkSession(request, userService);
@@ -211,10 +337,6 @@ public class InforController extends BaseContorller {
     @RequestMapping("/update-groups")
     @ResponseBody
     public String updateGroups(String[] groupNames, HttpServletRequest request, HttpServletResponse response){
-        HttpSession session = request.getSession();
-        System.out.println("update-groups : =============" + session.getId());
-        System.out.println("update-groups is new : =============" + session.isNew());
-        System.out.println("update-groupsis Login: =============" + session.getAttribute("isLogin"));
         UserBo userBo;
         try {
             userBo = checkSession(request, userService);
@@ -418,10 +540,6 @@ public class InforController extends BaseContorller {
                              @RequestParam String countent,
                              String parentid,
                              HttpServletRequest request, HttpServletResponse response){
-        HttpSession session = request.getSession();
-        System.out.println("add-comment : =============" + session.getId());
-        System.out.println("add-comment is new : =============" + session.isNew());
-        System.out.println("add-comment is Login: =============" + session.getAttribute("isLogin"));
 
         UserBo userBo;
         try {
@@ -473,10 +591,6 @@ public class InforController extends BaseContorller {
     @ResponseBody
     public String inforThumbsup(@RequestParam String targetid, @RequestParam int type,
             HttpServletRequest request, HttpServletResponse response){
-        HttpSession session = request.getSession();
-        System.out.println("thumbsup: =============" + session.getId());
-        System.out.println("thumbsup is new : =============" + session.isNew());
-        System.out.println("thumbsup Login: =============" + session.getAttribute("isLogin"));
         UserBo userBo;
         try {
             userBo = checkSession(request, userService);
@@ -520,7 +634,8 @@ public class InforController extends BaseContorller {
 
     @RequestMapping("/cancal-thumbsup")
     @ResponseBody
-    public String cancelThumbsup(@RequestParam String targetid, @RequestParam int type, HttpServletRequest request, HttpServletResponse response){
+    public String cancelThumbsup(@RequestParam String targetid, @RequestParam int type,
+                                 HttpServletRequest request, HttpServletResponse response){
         UserBo userBo;
         try {
             userBo = checkSession(request, userService);
@@ -555,10 +670,79 @@ public class InforController extends BaseContorller {
             commentVo.setParentUserid(parent.getCreateuid());
         }
         UserBo userBo = userService.getUser(commentBo.getCreateuid());
-        commentVo.setUserHeadPic(userBo.getHeadPictureName());
-        commentVo.setUserBirth(userBo.getBirthDay());
-        commentVo.setUserSex(userBo.getSex());
-        commentVo.setUserLevel(userBo.getLevel());
+        if (userBo != null){
+            commentVo.setUserHeadPic(userBo.getHeadPictureName());
+            commentVo.setUserBirth(userBo.getBirthDay());
+            commentVo.setUserSex(userBo.getSex());
+            commentVo.setUserLevel(userBo.getLevel());
+        }
         return commentVo;
     }
+
+    /**
+     * s
+     * @param request
+     * @param response
+     * @return
+     */
+    @RequestMapping("/home-health")
+    @ResponseBody
+    public String homeHealth(HttpServletRequest request, HttpServletResponse response){
+        List<InforBo> inforBos = inforService.homeHealthRecom(50);
+        LinkedList<InforVo> inforVos = new LinkedList<>();
+        for (InforBo inforBo : inforBos) {
+            InforVo inforVo = new InforVo();
+            inforVo.setInforid(inforBo.getId());
+            inforVo.setClassName(inforBo.getClassName());
+            inforVo.setImageUrls(inforBo.getImageUrls());
+            inforVo.setSource(inforBo.getSource());
+            inforVo.setTitle(inforBo.getTitle());
+            inforVo.setTime(inforBo.getTime());
+            inforVo.setSourceUrl(inforBo.getSourceUrl());
+            inforVos.add(inforVo);
+        }
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("ret", 0);
+        map.put("inforVoList", inforVos);
+        return JSONObject.fromObject(map).toString();
+    }
+
+    /**
+     * s
+     * @param request
+     * @param response
+     * @return
+     */
+    @RequestMapping("/user-health")
+    @ResponseBody
+    public String userHealth(HttpServletRequest request, HttpServletResponse response){
+
+        UserBo userBo;
+        try {
+            userBo = checkSession(request, userService);
+        } catch (MyException e) {
+            return e.getMessage();
+        }
+        List<InforBo> inforBos = inforService.userHealthRecom(userBo.getId(), 50);
+        LinkedList<InforVo> inforVos = new LinkedList<>();
+        for (InforBo inforBo : inforBos) {
+            InforVo inforVo = new InforVo();
+            inforVo.setInforid(inforBo.getId());
+            inforVo.setClassName(inforBo.getClassName());
+            inforVo.setImageUrls(inforBo.getImageUrls());
+            inforVo.setSource(inforBo.getSource());
+            inforVo.setTitle(inforBo.getTitle());
+            inforVo.setTime(inforBo.getTime());
+            inforVo.setSourceUrl(inforBo.getSourceUrl());
+            inforVos.add(inforVo);
+        }
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("ret", 0);
+        map.put("inforVoList", inforVos);
+        return JSONObject.fromObject(map).toString();
+
+    }
+
+
+
 }
