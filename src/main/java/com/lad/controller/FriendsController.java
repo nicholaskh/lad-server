@@ -4,6 +4,7 @@ import com.lad.bo.*;
 import com.lad.service.*;
 import com.lad.util.*;
 import com.lad.vo.FriendsVo;
+import com.lad.vo.UserBaseVo;
 import com.lad.vo.UserVoFriends;
 import com.pushd.ImAssistant;
 import com.pushd.Message;
@@ -683,5 +684,27 @@ public class FriendsController extends BaseContorller {
 			chatroomService.updateUsers(chatroomBo);
 		}
 		return Constant.COM_RESP;
+	}
+
+
+
+	@RequestMapping("/sign-users")
+	@ResponseBody
+	public String signUsers(String[] phones, HttpServletRequest request, HttpServletResponse response) {
+		List<UserBaseVo> userBaseVos = new ArrayList<>();
+		if(null != phones) {
+			for (String phone : phones) {
+				UserBo user = userService.getUserByPhone(phone);
+				if(null != user) {
+					UserBaseVo baseVo = new UserBaseVo();
+					org.springframework.beans.BeanUtils.copyProperties(user, baseVo);
+					userBaseVos.add(baseVo);
+				} 
+			}
+		}
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("userVos", userBaseVos);
+		return JSONObject.fromObject(map).toString();
 	}
 }
