@@ -594,6 +594,9 @@ public class ChatroomController extends BaseContorller {
 		if (!res[0].equals(IMUtil.FINISH)) {
 			return res[0];
 		}
+		HashMap<String, String> nicknames = new HashMap<>();
+		nicknames.put(userBo.getId(), userBo.getUserName());
+		addChatroomUser(chatroom.getId(), nicknames);
 		updateIMTerm(userBo.getId(), res[1]);
 		Map<String, Object> map = new HashMap<>();
 		map.put("ret", 0);
@@ -792,7 +795,9 @@ public class ChatroomController extends BaseContorller {
 			chatroomUserBo.setNicknames(nicknames);
 			chatroomService.insertUser(chatroomUserBo);
 		} else {
-			chatroomService.updateUserNickname(chatroomUserBo.getId(), nicknames);
+			HashMap<String, String> nicks = chatroomUserBo.getNicknames();
+			nicks.putAll(nicknames);
+			chatroomService.updateUserNickname(chatroomUserBo.getId(), nicks);
 		}
 	}
 
