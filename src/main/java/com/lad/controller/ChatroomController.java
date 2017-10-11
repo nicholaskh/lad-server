@@ -781,6 +781,46 @@ public class ChatroomController extends BaseContorller {
 		return Constant.COM_RESP;
 	}
 
+	@RequestMapping("/get-nicknames")
+	@ResponseBody
+	public String getNickname(String chatroomid,
+								 HttpServletRequest request, HttpServletResponse response) {
+		ChatroomBo chatroomBo = chatroomService.get(chatroomid);
+		if (chatroomBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(),
+					ERRORCODE.CHATROOM_NULL.getReason());
+		}
+		ChatroomUserBo chatroomUserBo = chatroomService.findByUserRoomid(chatroomid);
+		HashSet<String> users = chatroomBo.getUsers();
+		List<ChatroomUserVo> userVos = new ArrayList<>();
+		for (String userid : users) {
+			UserBo chatUser = userService.getUser(userid);
+			if (chatUser == null) {
+				continue;
+			}
+			ChatroomUserVo userVo = new ChatroomUserVo();
+			if (userid.equals(chatroomBo.getMaster())) {
+				userVo.setRole(2);
+			}
+			userVo.setUserid(userid);
+			userVo.setUserPic(chatUser.getHeadPictureName());
+			if (chatroomUserBo != null) {
+				HashMap<String, String> nicknames = chatroomUserBo.getNicknames();
+				String nickname = nicknames.get(userid);
+				if (StringUtils.isNotEmpty(nickname)) {
+					userVo.setNickname(nickname);
+				} else {
+					userVo.setNickname(chatUser.getUserName());
+				}
+			}
+			userVos.add(userVo);
+		}
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("chatroomUsers", userVos);
+		return JSONObject.fromObject(map).toString();
+	}
+
 	/**
 	 * 添加聊天室用户的昵称
 	 * @param chatroomid
