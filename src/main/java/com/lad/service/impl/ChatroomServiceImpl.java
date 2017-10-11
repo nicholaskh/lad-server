@@ -1,5 +1,7 @@
 package com.lad.service.impl;
 
+import com.lad.bo.ChatroomUserBo;
+import com.lad.dao.IChatroomUserDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -8,6 +10,7 @@ import com.lad.dao.IChatroomDao;
 import com.lad.service.IChatroomService;
 import com.mongodb.WriteResult;
 
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 
 @Service("chatroomService")
@@ -15,6 +18,9 @@ public class ChatroomServiceImpl implements IChatroomService {
 
 	@Autowired
 	private IChatroomDao chatroomDao;
+
+	@Autowired
+	private IChatroomUserDao chatroomUserDao;
 	
 	public ChatroomBo insert(ChatroomBo chatroom) {
 		return chatroomDao.insert(chatroom);
@@ -91,5 +97,31 @@ public class ChatroomServiceImpl implements IChatroomService {
 	@Override
 	public WriteResult remove(String chatroomId) {
 		return chatroomDao.remove(chatroomId);
+	}
+
+
+	@Override
+	public ChatroomUserBo insertUser(ChatroomUserBo userBo) {
+		return chatroomUserDao.insert(userBo);
+	}
+
+	@Override
+	public ChatroomUserBo findByUserRoomid(String chatroomid) {
+		return chatroomUserDao.findByRoomid(chatroomid);
+	}
+
+	@Override
+	public WriteResult updateUserNickname(String id, HashMap<String, String> nicknames) {
+		return chatroomUserDao.updateNickname(id, nicknames);
+	}
+
+	@Override
+	public WriteResult deleteUser(String id) {
+		return chatroomUserDao.delete(id);
+	}
+
+	@Override
+	public WriteResult deleteChatroomUser(String chatroomid) {
+		return chatroomUserDao.deleteChatroom(chatroomid);
 	}
 }

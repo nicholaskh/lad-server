@@ -9,7 +9,7 @@ public class ChatroomUserVo extends BaseVo{
 
     private String userid;
 
-    private String username;
+    private String nickname;
 
     private String userPic;
 
@@ -21,14 +21,6 @@ public class ChatroomUserVo extends BaseVo{
 
     public void setUserid(String userid) {
         this.userid = userid;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
     }
 
     public int getRole() {
@@ -45,5 +37,13 @@ public class ChatroomUserVo extends BaseVo{
 
     public void setUserPic(String userPic) {
         this.userPic = userPic;
+    }
+
+    public String getNickname() {
+        return nickname;
+    }
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
     }
 }

@@ -1,8 +1,10 @@
 package com.lad.service;
 
 import com.lad.bo.ChatroomBo;
+import com.lad.bo.ChatroomUserBo;
 import com.mongodb.WriteResult;
 
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 
 public interface IChatroomService extends IBaseService {
@@ -88,4 +90,39 @@ public interface IChatroomService extends IBaseService {
 	 * @return
 	 */
 	WriteResult updateVerify(String chatroomId, boolean isVerify);
+
+	/**
+	 * 插入群成员信息
+	 * @param userBo
+	 * @return
+	 */
+	ChatroomUserBo insertUser(ChatroomUserBo userBo);
+
+	/**
+	 * 更具聊天室查找聊天成员信息
+	 * @param chatroomid
+	 * @return
+	 */
+	ChatroomUserBo findByUserRoomid(String chatroomid);
+
+	/**
+	 * 更新成员昵称
+	 * @param id
+	 * @return
+	 */
+	WriteResult updateUserNickname(String id, HashMap<String, String> nicknames);
+
+	/**
+	 *
+	 * @param id
+	 * @return
+	 */
+	WriteResult deleteUser(String id);
+
+	/**
+	 *
+	 * @param chatroomid
+	 * @return
+	 */
+	WriteResult deleteChatroomUser(String chatroomid);
 }
