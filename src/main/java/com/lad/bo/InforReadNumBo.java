@@ -16,7 +16,7 @@ public class InforReadNumBo implements Serializable{
 
     @Id
     private String id;
-    // 若type为1 ，则表示安全信息id
+    
     private String inforid;
 
     private String className;
@@ -27,6 +27,9 @@ public class InforReadNumBo implements Serializable{
 
     private int thumpsubNum;
 
+    public String getId() {
+        return id;
+    }
     public void setId(String id) {
         this.id = id;
     }

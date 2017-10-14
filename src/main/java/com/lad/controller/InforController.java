@@ -10,10 +10,7 @@ import com.lad.service.ICommentService;
 import com.lad.service.IInforService;
 import com.lad.service.IThumbsupService;
 import com.lad.service.IUserService;
-import com.lad.util.CommonUtil;
-import com.lad.util.Constant;
-import com.lad.util.ERRORCODE;
-import com.lad.util.MyException;
+import com.lad.util.*;
 import com.lad.vo.*;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -32,6 +29,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.io.File;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -120,7 +118,7 @@ public class InforController extends BaseContorller {
         if (!session.isNew() && session.getAttribute("isLogin") != null) {
             UserBo userBo = (UserBo) session.getAttribute("userBo");
             InforSubscriptionBo mySub = inforService.findMySubs(userBo.getId());
-            if (mySub != null && !mySub.getSubscriptions().isEmpty()) {
+            if (mySub != null) {
                 map.put("healthTypes", mySub.getSubscriptions());
                 map.put("securityTypes", mySub.getSecuritys());
                 map.put("radioTypes", mySub.getRadios());
@@ -247,6 +245,21 @@ public class InforController extends BaseContorller {
         for (VideoBo bo : videoBos) {
             VideoVo videoVo = new VideoVo();
             BeanUtils.copyProperties(bo, videoVo);
+            //缩略图
+            if (StringUtils.isEmpty(bo.getPoster())){
+                File file = new File(bo.getUrl());
+                String picName = FFmpegUtil.inforTransfer(file, Constant.INFOR_PICTURE_PATH, bo.getId());
+                if (StringUtils.isEmpty(picName)){
+                    picName = FFmpegUtil.inforTransfer(file,  Constant.INFOR_PICTURE_PATH, bo.getId());
+                }
+                String vedioPic = QiNiu.uploadToQiNiu(Constant.INFOR_PICTURE_PATH, picName);
+                File picfile = new File(Constant.INFOR_PICTURE_PATH, picName);
+                if (null != picfile) {
+                    picfile.delete();
+                }
+                inforService.updateVideoPicById(bo.getId(), vedioPic);
+                videoVo.setPoster(vedioPic);
+            }
             videoVo.setInforid(bo.getId());
             videoVos.add(videoVo);
         }
@@ -299,7 +312,7 @@ public class InforController extends BaseContorller {
 
     @RequestMapping("/recommend-groups")
     @ResponseBody
-    public String recommendGroups(HttpServletRequest request, HttpServletResponse response){
+    public String recommendGroups(int type, HttpServletRequest request, HttpServletResponse response){
 
         UserBo userBo;
         try {
@@ -316,12 +329,27 @@ public class InforController extends BaseContorller {
             inforService.insertSub(mySub);
         }
         LinkedList<String> mySubs = mySub.getSubscriptions();
-        map.put("mySubTypes", mySub.getSubscriptions());
-        
         RMapCache<String, Object> cache = redisServer.getCacheMap(Constant.TEST_CACHE);
         List<String> groupList = new ArrayList<>();
-        if (cache.containsKey("healthTypes")) {
-            Object groupTypes = cache.get("healthTypes");
+        String keys = "";
+        switch (type){
+            case Constant.ONE:
+                keys = "healthTypes";
+                break;
+            case Constant.TWO:
+                keys = "securityTypes";
+                break;
+            case Constant.THREE:
+                keys = "radioTypes";
+                break;
+            case Constant.FOUR:
+                keys = "videoTypes";
+                break;
+            default:
+                break;
+        }
+        if (cache.containsKey(keys)) {
+            Object groupTypes = cache.get(keys);
             JSONArray array = JSONArray.fromObject(groupTypes);
             int size = array.size();
             for (int i = 0; i < size; i++) {
@@ -331,6 +359,7 @@ public class InforController extends BaseContorller {
                 } 
             }
         }
+        map.put("mySubTypes", mySub.getSubscriptions());
         map.put("recoTypes", groupList);
         return JSONObject.fromObject(map).toString();
     }
@@ -338,26 +367,43 @@ public class InforController extends BaseContorller {
     
     @RequestMapping("/update-groups")
     @ResponseBody
-    public String updateGroups(String[] groupNames, HttpServletRequest request, HttpServletResponse response){
+    public String updateGroups(String[] groupNames, int type, HttpServletRequest request, HttpServletResponse
+            response){
         UserBo userBo;
         try {
             userBo = checkSession(request, userService);
         } catch (MyException e) {
             return e.getMessage();
         }
-
         InforSubscriptionBo mySub = inforService.findMySubs(userBo.getId());
-
         LinkedList<String> mySubs = (LinkedList<String>) Arrays.asList(groupNames);
+        boolean isNew = false;
         if (null == mySub) {
             mySub = new InforSubscriptionBo();
             mySub.setUserid(userBo.getId());
             mySub.setCreateuid(userBo.getId());
-            mySub.setSubscriptions(mySubs);
+            isNew = true;
+        }
+        switch (type){
+            case Constant.ONE:
+                mySub.setSubscriptions(mySubs);
+                break;
+            case Constant.TWO:
+                mySub.setSecuritys(mySubs);
+                break;
+            case Constant.THREE:
+                mySub.setRadios(mySubs);
+                break;
+            case Constant.FOUR:
+                mySub.setSecuritys(mySubs);
+                break;
+            default:
+                break;
+        }
+        if (isNew){
             inforService.insertSub(mySub);
         } else {
-            mySub.setSubscriptions(mySubs);
-            inforService.updateSub(userBo.getId(), mySubs);
+            inforService.updateSub(userBo.getId(), type, mySubs);
         }
         return Constant.COM_RESP;
     }

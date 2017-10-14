@@ -21,5 +21,17 @@ public interface IInforDao {
 
     InforBo findById(String id);
 
+    /**
+     * 首页推荐
+     * @return
+     */
+    List<InforBo> homeHealthRecom(int limit);
+
+    /**
+     * 首页推荐
+     * @return
+     */
+    List<InforBo> userHealthRecom(String userid, int limit);
+
 
 }

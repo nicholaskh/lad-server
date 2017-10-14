@@ -32,12 +32,27 @@ public class InforSubDaoImpl implements IInforSubDao {
         return inforSubscriptionBo;
     }
 
-    public WriteResult updateSub(String userid, LinkedList<String> subscriptions){
+    public WriteResult updateSub(String userid, int type, LinkedList<String> list){
         Query query = new Query();
         query.addCriteria(new Criteria("userid").is(userid));
         query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
         Update update = new Update();
-        update.set("subscriptions", subscriptions);
+        switch (type){
+            case Constant.ONE:
+                update.set("subscriptions", list);
+                break;
+            case Constant.TWO:
+                update.set("securitys", list);
+                break;
+            case Constant.THREE:
+                update.set("radios", list);
+                break;
+            case Constant.FOUR:
+                update.set("videos", list);
+                break;
+            default:
+                break;
+        }
         return mongoTemplate.updateFirst(query, update, InforSubscriptionBo.class);
     }
 

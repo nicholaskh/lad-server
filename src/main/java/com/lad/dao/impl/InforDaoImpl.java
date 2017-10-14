@@ -71,5 +71,19 @@ public class InforDaoImpl implements IInforDao {
     }
 
 
-    
+    @Override
+    public List<InforBo> homeHealthRecom(int limit) {
+        Query query = new Query();
+        query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "time")));
+        query.limit(limit);
+        return mongoTemplateTwo.find(query, InforBo.class);
+    }
+
+    @Override
+    public List<InforBo> userHealthRecom(String userid, int limit) {
+        Query query = new Query();
+        query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "time")));
+        query.limit(limit);
+        return mongoTemplateTwo.find(query, InforBo.class);
+    }
 }

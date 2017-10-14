@@ -23,7 +23,7 @@ public interface IInforSubDao {
      * @param subscriptions
      * @return
      */
-    WriteResult updateSub(String userid, LinkedList<String> subscriptions);
+    WriteResult updateSub(String userid, int type, LinkedList<String> subscriptions);
 
     /**
      * 更新安全分类订阅

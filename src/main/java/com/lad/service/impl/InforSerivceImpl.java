@@ -107,8 +107,8 @@ public class InforSerivceImpl implements IInforService {
     }
 
     @Override
-    public WriteResult updateSub(String userid, LinkedList<String> subscriptions) {
-        return inforSubDao.updateSub(userid, subscriptions);
+    public WriteResult updateSub(String userid, int type,LinkedList<String> subscriptions) {
+        return inforSubDao.updateSub(userid, type, subscriptions);
     }
 
     @Override
@@ -205,6 +205,11 @@ public class InforSerivceImpl implements IInforService {
     @Override
     public List<VideoBo> selectVideoClassByGroups(String groupName) {
         return videoDao.selectClassByGroups(groupName);
+    }
+
+    @Override
+    public WriteResult updateVideoPicById(String id, String pic) {
+        return videoDao.updatePicById(id, pic);
     }
 
     @Override

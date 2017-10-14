@@ -90,7 +90,7 @@ public interface IInforService {
      * @param subscriptions
      * @return
      */
-    WriteResult updateSub(String userid, LinkedList<String> subscriptions);
+    WriteResult updateSub(String userid, int type, LinkedList<String> subscriptions);
 
     /**
      *
@@ -191,6 +191,14 @@ public interface IInforService {
     List<VideoBo> selectVdeoGroups();
 
     List<VideoBo> selectVideoClassByGroups(String groupName);
+
+    /**
+     * 更新缩略图
+     * @param id
+     * @param pic
+     * @return
+     */
+    WriteResult updateVideoPicById(String id, String pic);
 
     /**
      * 首页推荐

@@ -2,7 +2,6 @@ package com.lad.bo;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 
 /**
@@ -19,7 +18,11 @@ public class InforSubscriptionBo extends BaseBo {
     //安全订阅
     private LinkedList<String> securitys = new LinkedList<>();
     //咨询收藏，收藏是单条咨询
-    private LinkedHashSet<String> collects = new LinkedHashSet<>();
+    private LinkedList<String> collects = new LinkedList<>();
+    //广播订阅
+    private LinkedList<String> radios = new LinkedList<>();
+    //视频订阅
+    private LinkedList<String> videos = new LinkedList<>();
 
     private int type;
 
@@ -39,14 +42,6 @@ public class InforSubscriptionBo extends BaseBo {
         this.subscriptions = subscriptions;
     }
 
-    public LinkedHashSet<String> getCollects() {
-        return collects;
-    }
-
-    public void setCollects(LinkedHashSet<String> collects) {
-        this.collects = collects;
-    }
-
     public LinkedList<String> getSecuritys() {
         return securitys;
     }
@@ -61,5 +56,29 @@ public class InforSubscriptionBo extends BaseBo {
 
     public void setType(int type) {
         this.type = type;
+    }
+
+    public LinkedList<String> getCollects() {
+        return collects;
+    }
+
+    public void setCollects(LinkedList<String> collects) {
+        this.collects = collects;
+    }
+
+    public LinkedList<String> getRadios() {
+        return radios;
+    }
+
+    public void setRadios(LinkedList<String> radios) {
+        this.radios = radios;
+    }
+
+    public LinkedList<String> getVideos() {
+        return videos;
+    }
+
+    public void setVideos(LinkedList<String> videos) {
+        this.videos = videos;
     }
 }
