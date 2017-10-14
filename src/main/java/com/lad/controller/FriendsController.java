@@ -565,8 +565,20 @@ public class FriendsController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NULL.getIndex(),
 					ERRORCODE.FRIEND_NULL.getReason());
 		}
+		ImAssistant assistent = ImAssistant.init("180.76.138.200", 2222);
+		if (assistent == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.PUSHED_CONNECT_ERROR.getIndex(),
+					ERRORCODE.PUSHED_CONNECT_ERROR.getReason());
+		}
+		String term = getTerm(assistent);
+		if ("timeout".equals(term)){
+			return CommonUtil.toErrorResult(
+					ERRORCODE.PUSHED_CONNECT_ERROR.getIndex(),
+					ERRORCODE.PUSHED_CONNECT_ERROR.getReason());
+		}
 		String[] idsList = friendids.split(",");
-		HashSet<String> userSet = new HashSet<String>();
+		LinkedHashSet<String> userSet = new LinkedHashSet<String>();
 		for (String id : idsList) {
 			FriendsBo temp = friendsService.getFriendByIdAndVisitorIdAgree(
 					userBo.getId(), id);
@@ -596,20 +608,10 @@ public class FriendsController extends BaseContorller {
 			user.setChatrooms(chatroomsSet);
 			userService.updateChatrooms(user);
 		}
-		ImAssistant assistent = ImAssistant.init("180.76.138.200", 2222);
-		if (assistent == null) {
-			return CommonUtil.toErrorResult(
-					ERRORCODE.PUSHED_CONNECT_ERROR.getIndex(),
-					ERRORCODE.PUSHED_CONNECT_ERROR.getReason());
-		}
 		IMTermBo iMTermBo = iMTermService.selectByUserid(userBo.getId());
 		if (iMTermBo == null) {
 			iMTermBo = new IMTermBo();
 			iMTermBo.setUserid(userBo.getId());
-			Message message = assistent.getAppKey();
-			String appKey = message.getMsg();
-			Message message2 = assistent.authServer(appKey);
-			String term = message2.getMsg();
 			iMTermBo.setTerm(term);
 			iMTermService.insert(iMTermBo);
 		}
@@ -617,10 +619,7 @@ public class FriendsController extends BaseContorller {
 		Message message3 = assistent.subscribe(chatroomBo.getName(),
 				chatroomBo.getId(), idsList);
 		if (message3.getStatus() == Message.Status.termError) {
-			Message message = assistent.getAppKey();
-			String appKey = message.getMsg();
-			Message message2 = assistent.authServer(appKey);
-			String term = message2.getMsg();
+			term = getTerm(assistent);
 			iMTermService.updateByUserid(userBo.getId(), term);
 			assistent.setServerTerm(term);
 			Message message4 = assistent.subscribe(chatroomBo.getName(),
@@ -643,6 +642,13 @@ public class FriendsController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
+	private String getTerm(ImAssistant assistent){
+		Message message = assistent.getAppKey();
+		String appKey = message.getMsg();
+		Message message2 = assistent.authServer(appKey);
+		return message2.getMsg();
+	}
+
 	@RequestMapping("/multi-out")
 	@ResponseBody
 	public String multiOut(String chatroomid, HttpServletRequest request,
@@ -659,7 +665,7 @@ public class FriendsController extends BaseContorller {
 					ERRORCODE.CHATROOM_NULL.getReason());
 		}
 		String userid = userBo.getId();
-		HashSet<String> userids = chatroomBo.getUsers();
+		LinkedHashSet<String> userids = chatroomBo.getUsers();
 		if (userid.equals(chatroomBo.getMaster())) {
 			  if (userids.size() > 2) {
 				  return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_MASTER_QUIT.getIndex(),

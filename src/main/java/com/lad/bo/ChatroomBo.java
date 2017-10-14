@@ -2,14 +2,13 @@ package com.lad.bo;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 
 @Document(collection = "chatroom")
 public class ChatroomBo extends BaseBo {
 
 	private String name;
-	private HashSet<String> users = new LinkedHashSet<>();
+	private LinkedHashSet<String> users = new LinkedHashSet<>();
 	//1 表示一对一聊天室，2表示群聊，3表示面对面建群
 	private int type;
 	private String userid;
@@ -35,11 +34,11 @@ public class ChatroomBo extends BaseBo {
 		this.name = name;
 	}
 
-	public HashSet<String> getUsers() {
+	public LinkedHashSet<String> getUsers() {
 		return users;
 	}
 
-	public void setUsers(HashSet<String> users) {
+	public void setUsers(LinkedHashSet<String> users) {
 		this.users = users;
 	}
 

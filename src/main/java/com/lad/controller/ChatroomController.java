@@ -92,7 +92,7 @@ public class ChatroomController extends BaseContorller {
 		chatrooms.add(chatroomBo.getId());
 		userBo.setChatrooms(chatrooms);
 		userService.updateChatrooms(userBo);
-		HashMap<String, String> nicknames = new HashMap<>();
+		LinkedHashMap<String, String> nicknames = new LinkedHashMap<>();
 		nicknames.put(userBo.getId(), userBo.getUserName());
 		addChatroomUser(chatroomBo.getId(), nicknames);
 		updateIMTerm(userBo.getId(), result[1]);
@@ -143,10 +143,13 @@ public class ChatroomController extends BaseContorller {
 		if (!result[0].equals(IMUtil.FINISH)) {
 			return result[0];
 		}
-		HashMap<String, String> nicknames = new HashMap<>();
+		LinkedHashMap<String, String> nicknames = new LinkedHashMap<>();
 		updateIMTerm(userBo.getId(), result[1]);
-		HashSet<String> set = chatroomBo.getUsers();
+		LinkedHashSet<String> set = chatroomBo.getUsers();
 		for (String userid : useridArr) {
+			if (set.contains(userid)) {
+				continue;
+			}
 			updateIMTerm(userid, result[1]);
 			UserBo user = userService.getUser(userid);
 			if (null == user) {
@@ -224,7 +227,7 @@ public class ChatroomController extends BaseContorller {
 		if (!result[0].equals(IMUtil.FINISH)) {
 			return result[0];
 		}
-		HashSet<String> set = chatroomBo.getUsers();
+		LinkedHashSet<String> set = chatroomBo.getUsers();
 		for (String userid : useridArr) {
 			UserBo user = userService.getUser(userid);
 			if (null == user) {
@@ -238,7 +241,6 @@ public class ChatroomController extends BaseContorller {
 			set.remove(userid);
 			updateIMTerm(userid, result[1]);
 		}
-		deleteNickname(chatroomid, useridArr);
 		//聊天室少于2人则直接删除
 		if (set.size() < 2) {
 			String res = IMUtil.disolveRoom(iMTermService, userBo.getId(),
@@ -249,6 +251,7 @@ public class ChatroomController extends BaseContorller {
 			chatroomService.delete(chatroomid);
 			chatroomService.deleteChatroomUser(chatroomid);
 		} else {
+			deleteNickname(chatroomid, useridArr);
 			chatroomBo.setUsers(set);
 			chatroomService.updateUsers(chatroomBo);
 		}
@@ -280,13 +283,18 @@ public class ChatroomController extends BaseContorller {
 		if (!result[0].equals(IMUtil.FINISH)) {
 			return result[0];
 		}
-
+		LinkedHashSet<String> set = chatroomBo.getUsers();
+		//如果是群主退出，则由下一个人担当
+		if (userBo.getId().equals(chatroomBo.getMaster())) {
+			set.remove(userBo.getId());
+			String nextId = set.iterator().next();
+			chatroomService.updateMaster(chatroomid, nextId);
+		}
 		HashSet<String> chatroom = userBo.getChatrooms();
 		chatroom.remove(chatroomBo.getId());
 		userBo.setChatrooms(chatroom);
 		userService.updateChatrooms(userBo);
 		deleteNickname(chatroomid, userBo.getId());
-		HashSet<String> set = chatroomBo.getUsers();
 		set.remove(userBo.getId());
 		if (set.size() < 2) {
 			String res = IMUtil.disolveRoom(iMTermService, userBo.getId(),
@@ -562,8 +570,7 @@ public class ChatroomController extends BaseContorller {
 				chatroom = getChatroomBo(seq, position, userBo);
 				isNew = true;
 			} else {
-				//相同序列是否在10分钟内创建
-				HashSet<String> userSet = chatroom.getUsers();
+				LinkedHashSet<String> userSet = chatroom.getUsers();
 				userSet.add(userBo.getId());
 				chatroom.setUsers(userSet);
 			}
@@ -594,7 +601,7 @@ public class ChatroomController extends BaseContorller {
 		if (!res[0].equals(IMUtil.FINISH)) {
 			return res[0];
 		}
-		HashMap<String, String> nicknames = new HashMap<>();
+		LinkedHashMap<String, String> nicknames = new LinkedHashMap<>();
 		nicknames.put(userBo.getId(), userBo.getUserName());
 		addChatroomUser(chatroom.getId(), nicknames);
 		updateIMTerm(userBo.getId(), res[1]);
@@ -608,7 +615,7 @@ public class ChatroomController extends BaseContorller {
 		ChatroomBo chatroom = new ChatroomBo();
 		chatroom.setSeq(seq);
 		chatroom.setUserid(userBo.getId());
-		HashSet<String> userSet = chatroom.getUsers();
+		LinkedHashSet<String> userSet = chatroom.getUsers();
 		userSet.add(userBo.getId());
 		chatroom.setUsers(userSet);
 		chatroom.setName("FaceToFaceChatroom");
@@ -767,9 +774,9 @@ public class ChatroomController extends BaseContorller {
 		}
 		ChatroomUserBo chatroomUserBo = chatroomService.findByUserRoomid(chatroomid);
 		if (chatroomUserBo == null) {
-			HashMap<String, String> nicknames = new HashMap<>();
-			nicknames.put(userBo.getId(), nickname);
 			chatroomUserBo = new ChatroomUserBo();
+			LinkedHashMap<String, String> nicknames = chatroomUserBo.getNicknames();
+			nicknames.put(userBo.getId(), nickname);
 			chatroomUserBo.setChatroomid(chatroomid);
 			chatroomUserBo.setNicknames(nicknames);
 			chatroomService.insertUser(chatroomUserBo);
@@ -827,7 +834,7 @@ public class ChatroomController extends BaseContorller {
 	 * @param nicknames
 	 */
 	@Async
-	private void addChatroomUser(String chatroomid, HashMap<String, String> nicknames){
+	private void addChatroomUser(String chatroomid, LinkedHashMap<String, String> nicknames){
 		ChatroomUserBo chatroomUserBo = chatroomService.findByUserRoomid(chatroomid);
 		if (chatroomUserBo == null) {
 			chatroomUserBo = new ChatroomUserBo();

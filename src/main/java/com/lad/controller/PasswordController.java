@@ -41,13 +41,14 @@ public class PasswordController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PHONE_ERROR.getIndex(),
 					ERRORCODE.ACCOUNT_PHONE_ERROR.getReason());
 		}
+		UserBo userBo = userService.checkByPhone(phone);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PHONE_EXIST.getIndex(),
+					ERRORCODE.ACCOUNT_PHONE_EXIST.getReason());
+		}
 		if (!StringUtils.hasLength(verification_img)) {
 			return CommonUtil.toErrorResult(ERRORCODE.SECURITY_WRONG_VERIFICATION.getIndex(),
 					ERRORCODE.SECURITY_WRONG_VERIFICATION.getReason());
-		}
-		if (registService.is_phone_repeat(phone)) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PHONE_REPEAT.getIndex(),
-					ERRORCODE.ACCOUNT_PHONE_REPEAT.getReason());
 		}
 		if (session.getAttribute("verification_img") == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.SECURITY_WRONG_VERIFICATION.getIndex(),
@@ -79,19 +80,22 @@ public class PasswordController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (!StringUtils.hasLength(verification)) {
-			return "{\"ret\":30003,\"error\":\"验证码为空\"}";
-		}
-		if (session.getAttribute("verification") == null) {
-			return "{\"ret\":30003,\"error\":\"验证码为空\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.SECURITY_VERIFICATION_NULL.getIndex(),
+					ERRORCODE.SECURITY_VERIFICATION_NULL.getReason());
 		}
 		String verification_session = (String) session.getAttribute("verification");
-		if (!verification_session.equals(verification)) {
-			return "{\"ret\":30003,\"error\":\"验证码错误\"}";
+		if (verification_session == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.SECURITY_VERIFICATION_NULL.getIndex(),
+					ERRORCODE.SECURITY_VERIFICATION_NULL.getReason());
 		}
 		long codeTime = (long)session.getAttribute("verification-time");
 		if (!CommonUtil.isTimeIn(codeTime)){
 			return CommonUtil.toErrorResult(ERRORCODE.SECURITY_VERIFICATION_TIMEOUT.getIndex(),
 					ERRORCODE.SECURITY_VERIFICATION_TIMEOUT.getReason());
+		}
+		if (!verification_session.equals(verification)) {
+			return CommonUtil.toErrorResult(ERRORCODE.SECURITY_WRONG_VERIFICATION.getIndex(),
+					ERRORCODE.SECURITY_WRONG_VERIFICATION.getReason());
 		}
 		session.setAttribute("isVerification", true);
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -122,9 +126,17 @@ public class PasswordController extends BaseContorller {
 					ERRORCODE.SECURITY_VERIFICATION_TIMEOUT.getReason());
 		}
 		String phone = (String) session.getAttribute("phone");
-		UserBo userBo = new UserBo();
+		UserBo userBo = userService.checkByPhone(phone);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PHONE_EXIST.getIndex(),
+					ERRORCODE.ACCOUNT_PHONE_EXIST.getReason());
+		}
+		userBo = userService.getUserByPhone(phone);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PHONE_ERROR.getIndex(),
+					ERRORCODE.ACCOUNT_PHONE_ERROR.getReason());
+		}
 		userBo.setPassword(CommonUtil.getSHA256(password1));
-		userBo.setPhone(phone);
 		userService.updatePassword(userBo);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);

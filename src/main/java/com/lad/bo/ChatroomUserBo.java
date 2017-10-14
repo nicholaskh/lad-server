@@ -4,7 +4,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.io.Serializable;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 /**
  * 功能描述：聊天室用户及昵称
@@ -24,7 +24,7 @@ public class ChatroomUserBo implements Serializable {
     private Integer deleted = 0;
 
     //用户id和昵称
-    private HashMap<String, String> nicknames;
+    private LinkedHashMap<String, String> nicknames = new LinkedHashMap<>();
 
     public String getId() {
         return id;
@@ -42,11 +42,11 @@ public class ChatroomUserBo implements Serializable {
         this.chatroomid = chatroomid;
     }
 
-    public HashMap<String, String> getNicknames() {
+    public LinkedHashMap<String, String> getNicknames() {
         return nicknames;
     }
 
-    public void setNicknames(HashMap<String, String> nicknames) {
+    public void setNicknames(LinkedHashMap<String, String> nicknames) {
         this.nicknames = nicknames;
     }
 
