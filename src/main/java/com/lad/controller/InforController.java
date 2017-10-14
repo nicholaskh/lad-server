@@ -101,6 +101,7 @@ public class InforController extends BaseContorller {
         cache.put("securityTypes", securityTypes, 0, TimeUnit.MINUTES);
         cache.put("healthTypes", groupTypes, 0, TimeUnit.MINUTES);
         cache.put("radioTypes", broadTypes, 0, TimeUnit.MINUTES);
+        cache.put("videoTypes", videoTypes, 0, TimeUnit.MINUTES);
         map.put("healthTypes", groupTypes);
         map.put("securityTypes", securityTypes);
         map.put("videoTypes", videoTypes);
@@ -123,7 +124,7 @@ public class InforController extends BaseContorller {
                 map.put("healthTypes", mySub.getSubscriptions());
                 map.put("securityTypes", mySub.getSecuritys());
                 map.put("radioTypes", mySub.getRadios());
-//                map.put("videoTypes", mySub.getVideos());
+                map.put("videoTypes", mySub.getVideos());
                 isGetType  = true;
             }
         }
@@ -133,11 +134,11 @@ public class InforController extends BaseContorller {
                 Object groupTypes = cache.get("healthTypes");
                 Object securityTypes = cache.get("securityTypes");
                 Object radioTypes = cache.get("radioTypes");
-//                Object videoTypes = cache.get("securityTypes");
+                Object videoTypes = cache.get("videoTypes");
                 map.put("healthTypes", groupTypes);
                 map.put("securityTypes", securityTypes);
                 map.put("radioTypes", radioTypes);
-//                map.put("videoTypes", videoTypes);
+                map.put("videoTypes", videoTypes);
             } else {
                 List<InforBo> inforBos = inforService.findAllGroups();
                 int size =  inforBos.size();
@@ -164,6 +165,7 @@ public class InforController extends BaseContorller {
                 cache.put("radioTypes", broadTypes, 0, TimeUnit.MINUTES);
                 cache.put("securityTypes", securityTypes, 0, TimeUnit.MINUTES);
                 cache.put("healthTypes", groupTypes, 0, TimeUnit.MINUTES);
+                cache.put("videoTypes", videoTypes, 0, TimeUnit.MINUTES);
                 map.put("healthTypes", groupTypes);
                 map.put("securityTypes", securityTypes);
                 map.put("videoTypes", videoTypes);
