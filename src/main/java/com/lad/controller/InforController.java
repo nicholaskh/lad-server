@@ -247,25 +247,25 @@ public class InforController extends BaseContorller {
             BeanUtils.copyProperties(bo, videoVo);
             //缩略图
             if (StringUtils.isEmpty(bo.getPoster())){
-                File file = new File(bo.getUrl());
-                String picName = FFmpegUtil.inforTransfer(file, Constant.INFOR_PICTURE_PATH, bo.getId());
+                String picName = FFmpegUtil.inforTransfer(bo.getUrl(), Constant.INFOR_PICTURE_PATH, bo.getId());
                 if (StringUtils.isEmpty(picName)){
-                    picName = FFmpegUtil.inforTransfer(file,  Constant.INFOR_PICTURE_PATH, bo.getId());
+                    picName = FFmpegUtil.inforTransfer(bo.getUrl(),  Constant.INFOR_PICTURE_PATH, bo.getId());
                 }
-                String vedioPic = QiNiu.uploadToQiNiu(Constant.INFOR_PICTURE_PATH, picName);
-                File picfile = new File(Constant.INFOR_PICTURE_PATH, picName);
-                if (null != picfile) {
-                    picfile.delete();
+                if (!StringUtils.isEmpty(picName)){
+                    String vedioPic = QiNiu.uploadToQiNiu(Constant.INFOR_PICTURE_PATH, picName);
+                    String path = Constant.QINIU_URL + vedioPic + "?v=" + CommonUtil.getRandom1();
+                    inforService.updateVideoPicById(bo.getId(), path);
+                    videoVo.setPicture(path);
+                    File file = new File(Constant.INFOR_PICTURE_PATH, vedioPic);
+                    file.delete();
                 }
-                inforService.updateVideoPicById(bo.getId(), vedioPic);
-                videoVo.setPoster(vedioPic);
             }
             videoVo.setInforid(bo.getId());
             videoVos.add(videoVo);
         }
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("ret", 0);
-        map.put("videoList", videoBos);
+        map.put("videoList", videoVos);
         return JSONObject.fromObject(map).toString();
     }
 
@@ -367,16 +367,25 @@ public class InforController extends BaseContorller {
     
     @RequestMapping("/update-groups")
     @ResponseBody
-    public String updateGroups(String[] groupNames, int type, HttpServletRequest request, HttpServletResponse
-            response){
+    public String updateGroups(@RequestParam String groupNames,
+                               @RequestParam int type,
+                               HttpServletRequest request, HttpServletResponse response){
         UserBo userBo;
         try {
             userBo = checkSession(request, userService);
         } catch (MyException e) {
             return e.getMessage();
         }
+
         InforSubscriptionBo mySub = inforService.findMySubs(userBo.getId());
-        LinkedList<String> mySubs = (LinkedList<String>) Arrays.asList(groupNames);
+
+        LinkedList<String> mySubs = new LinkedList<>();
+        if (groupNames.indexOf(',') > -1) {
+            String[] idsArr = groupNames.split(",");
+            mySubs = (LinkedList<String>) Arrays.asList(idsArr);
+        } else {
+            mySubs.add(groupNames);
+        }
         boolean isNew = false;
         if (null == mySub) {
             mySub = new InforSubscriptionBo();
@@ -395,7 +404,7 @@ public class InforController extends BaseContorller {
                 mySub.setRadios(mySubs);
                 break;
             case Constant.FOUR:
-                mySub.setSecuritys(mySubs);
+                mySub.setVideos(mySubs);
                 break;
             default:
                 break;
@@ -403,7 +412,7 @@ public class InforController extends BaseContorller {
         if (isNew){
             inforService.insertSub(mySub);
         } else {
-            inforService.updateSub(userBo.getId(), type, mySubs);
+            inforService.updateSub(mySub.getId(), type, mySubs);
         }
         return Constant.COM_RESP;
     }

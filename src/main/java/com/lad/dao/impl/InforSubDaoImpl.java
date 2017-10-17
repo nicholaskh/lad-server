@@ -24,7 +24,7 @@ import java.util.LinkedList;
 public class InforSubDaoImpl implements IInforSubDao {
     
     @Autowired
-    MongoTemplate mongoTemplate;
+    private MongoTemplate mongoTemplate;
 
 
     public InforSubscriptionBo insert(InforSubscriptionBo inforSubscriptionBo){
@@ -32,9 +32,9 @@ public class InforSubDaoImpl implements IInforSubDao {
         return inforSubscriptionBo;
     }
 
-    public WriteResult updateSub(String userid, int type, LinkedList<String> list){
+    public WriteResult updateSub(String id, int type, LinkedList<String> list){
         Query query = new Query();
-        query.addCriteria(new Criteria("userid").is(userid));
+        query.addCriteria(new Criteria("_id").is(id));
         query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
         Update update = new Update();
         switch (type){
