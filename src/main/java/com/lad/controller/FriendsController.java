@@ -105,17 +105,15 @@ public class FriendsController extends BaseContorller {
 		FriendsBo temp = friendsService.getFriendByIdAndVisitorId(
 				userBo.getId(), friendid);
 		if (temp != null) {
-			return CommonUtil.toErrorResult(
-					ERRORCODE.FRIEND_EXIST.getIndex(),
-					ERRORCODE.FRIEND_EXIST.getReason());
+			friendsService.updateApply(temp.getId(), 1);
+		} else {
+			//更新同意人的好友信息
+			FriendsBo friendsBo2 = new FriendsBo();
+			friendsBo2.setUserid(userid);
+			friendsBo2.setFriendid(friendid);
+			friendsBo2.setApply(1);
+			friendsService.insert(friendsBo2);
 		}
-		//更新同意人的好友信息
-		FriendsBo friendsBo2 = friendsService.get(id);
-		friendsBo2.setUserid(userid);
-		friendsBo2.setFriendid(friendid);
-		friendsBo2.setId(null);
-		friendsBo2.setApply(1);
-		friendsService.insert(friendsBo2);
 		//更新申请人的好友信息
 		friendsService.updateApply(id, 1);
 
@@ -337,7 +335,7 @@ public class FriendsController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NULL.getIndex(),
 					ERRORCODE.FRIEND_NULL.getReason());
 		}
-		if (null == backname) {
+		if (StringUtils.isEmpty(backname)) {
 			return CommonUtil.toErrorResult(
 					ERRORCODE.FRIEND_BACKNAME_NULL.getIndex(),
 					ERRORCODE.FRIEND_BACKNAME_NULL.getReason());
@@ -348,7 +346,6 @@ public class FriendsController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NULL.getIndex(),
 					ERRORCODE.FRIEND_NULL.getReason());
 		}
-		friendsBo.setBackname(backname);
 		friendsService.updateBackname(friendsBo.getUserid(),
 				friendsBo.getFriendid(), backname);
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -488,6 +485,7 @@ public class FriendsController extends BaseContorller {
 			vo.setUsername(friend.getUserName());
 			vo.setPicture(friend.getHeadPictureName());
 			vo.setChannelId(chatroomBo.getId());
+			vo.setBackname(friendsBo.getBackname());
 			voList.add(vo);
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
