@@ -38,14 +38,18 @@ public class IMUtil {
 					ERRORCODE.PUSHED_CONNECT_ERROR.getReason());
 			return new String[]{res, ""};
 		}
+		System.out.println("create room term1 >--------  " + term);
 		assistent.setServerTerm(term);
 		Message message3 = assistent.subscribe(chatroomName, chatroomId, ids);
 		try {
+			System.out.println("status 3 >--------  " + message3.getStatus());
 			if (message3.getStatus() == Message.Status.termError) {
 				term = getTerm(assistent);
+				System.out.println("create room term2 >--------  " + term);
 				assistent.setServerTerm(term);
 				Message message4 = assistent.subscribe(chatroomName, chatroomId,
 						ids);
+				System.out.println("status 4 >--------  " + message3.getStatus());
 				if (Message.Status.success != message4.getStatus()) {
 					res = CommonUtil.toErrorResult(message4.getStatus(),
 							message4.getMsg());
