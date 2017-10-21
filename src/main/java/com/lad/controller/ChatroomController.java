@@ -83,7 +83,7 @@ public class ChatroomController extends BaseContorller {
 			term = iMTermBo.getTerm();
 		}
 		//第一个为返回结果信息，第二位term信息
-		String[] result = IMUtil.subscribe(name, chatroomBo.getId(), term, userBo.getId());
+		String[] result = IMUtil.subscribe(0, chatroomBo.getId(), term, userBo.getId());
 		if (!result[0].equals(IMUtil.FINISH)) {
 			chatroomService.remove(chatroomBo.getId());
 			return result[0];
@@ -139,7 +139,7 @@ public class ChatroomController extends BaseContorller {
 			term = imTermBo.getTerm();
 		}
 		//第一个为返回结果信息，第二位term信息
-		String[] result = IMUtil.subscribe("", chatroomid, term, useridArr);
+		String[] result = IMUtil.subscribe(1,chatroomid,term, userBo.getId());
 		if (!result[0].equals(IMUtil.FINISH)) {
 			return result[0];
 		}
@@ -592,12 +592,12 @@ public class ChatroomController extends BaseContorller {
 		if (iMTermBo != null) {
 			term = iMTermBo.getTerm();
 		}
-		String chatroomName = "";
-		//首次创建聊天室，需要输入名称
+		String[] res = null;
 		if (isNew) {
-			chatroomName = chatroom.getName();
+			res = IMUtil.subscribe(0,chatroom.getId(),term, userBo.getId());
+		} else {
+			res = IMUtil.subscribe(1,chatroom.getId(),term, userBo.getId());
 		}
-		String[] res = IMUtil.subscribe(chatroomName,chatroom.getId(),term, userBo.getId());
 		if (!res[0].equals(IMUtil.FINISH)) {
 			return res[0];
 		}
@@ -618,7 +618,7 @@ public class ChatroomController extends BaseContorller {
 		LinkedHashSet<String> userSet = chatroom.getUsers();
 		userSet.add(userBo.getId());
 		chatroom.setUsers(userSet);
-		chatroom.setName("FaceToFaceChatroom");
+		chatroom.setName(userBo.getUserName());
 		chatroom.setMaster(userBo.getId());
 		chatroom.setPosition(position);
 		chatroom.setType(Constant.ROOM_FACE_2_FACE);
