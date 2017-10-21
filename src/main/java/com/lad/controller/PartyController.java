@@ -317,7 +317,7 @@ public class PartyController extends BaseContorller {
                 term = imTermBo.getTerm();
             }
             //第一个为返回结果信息，第二位term信息
-            String[] result = IMUtil.subscribe("", chatroomid, term, userid);
+            String[] result = IMUtil.subscribe(1, chatroomid, term, userid);
             if (!result[0].equals(IMUtil.FINISH)) {
                 return result[0];
             }
@@ -329,7 +329,7 @@ public class PartyController extends BaseContorller {
             } else {
                 iMTermService.updateByUserid(userBo.getId(), term);
             }
-            HashSet<String> set = chatroomBo.getUsers();
+            LinkedHashSet<String> set = chatroomBo.getUsers();
             HashSet<String> chatroom = userBo.getChatrooms();
             //个人聊天室中没有当前聊天室，则添加到个人的聊天室
             if (!chatroom.contains(chatroomid)) {
@@ -515,7 +515,7 @@ public class PartyController extends BaseContorller {
         }
         String[] useridArr = (String[]) partyBo.getUsers().toArray();
         //第一个为返回结果信息，第二位term信息
-        String[] result = IMUtil.subscribe(chatroomBo.getName(), chatroomid, term, useridArr);
+        String[] result = IMUtil.subscribe(0, chatroomid, term, useridArr);
         if (!result[0].equals(IMUtil.FINISH)) {
             chatroomService.remove(chatroomid);
             return result[0];
@@ -533,7 +533,7 @@ public class PartyController extends BaseContorller {
     @Async
     private void updateUserChatroom(ChatroomBo chatroomBo, String[] useridArr, String term){
 
-        HashSet<String> users = chatroomBo.getUsers();
+        LinkedHashSet<String> users = chatroomBo.getUsers();
         for (String userid : useridArr) {
             UserBo user = userService.getUser(userid);
             if (null == user) {

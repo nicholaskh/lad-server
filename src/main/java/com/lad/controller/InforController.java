@@ -259,6 +259,8 @@ public class InforController extends BaseContorller {
                     File file = new File(Constant.INFOR_PICTURE_PATH, vedioPic);
                     file.delete();
                 }
+            } else {
+                videoVo.setPicture(bo.getPoster());
             }
             videoVo.setInforid(bo.getId());
             videoVos.add(videoVo);

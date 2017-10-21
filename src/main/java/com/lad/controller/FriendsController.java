@@ -148,7 +148,7 @@ public class FriendsController extends BaseContorller {
 			chatroomName = chatroomBo.getName();
 		}
 		//首次创建聊天室，需要输入名称
-		String[] res = IMUtil.subscribe(chatroomName,chatroomBo.getId(), term, userid, friendid);
+		String[] res = IMUtil.subscribe(0,chatroomBo.getId(), term, userid, friendid);
 		if (!res[0].equals(IMUtil.FINISH)) {
 			return res[0];
 		}
@@ -457,7 +457,7 @@ public class FriendsController extends BaseContorller {
 						term = iMTermBo.getTerm();
 					}
 					//首次创建聊天室，需要输入名称
-					String[] res = IMUtil.subscribe(chatroomBo.getName(), chatroomBo.getId(), term, userid, friend.getId());
+					String[] res = IMUtil.subscribe(0, chatroomBo.getId(), term, userid, friend.getId());
 
 					if (!res[0].equals(IMUtil.FINISH)) {
 						return res[0];
