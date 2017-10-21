@@ -440,7 +440,6 @@ public class CircleController extends BaseContorller {
 		} catch (MyException e) {
 			return e.getMessage();
 		}
-		logger.info("circleid: " + circleid);
 		CircleBo circleBo = circleService.selectById(circleid);
 		if (circleBo == null) {
 			return CommonUtil.toErrorResult(
@@ -535,14 +534,20 @@ public class CircleController extends BaseContorller {
 						ERRORCODE.CIRCLE_NOT_MASTER.getReason());
 			}
 		}
-
+		UserBo user = userService.getUser(userid);
+		if (user != null) {
+			List<String> circles = user.getCircleTops();
+			if (circles.contains(circleid)) {
+				circles.remove(circleid);
+				userService.updateTopCircles(userid, circles);
+			}
+		}
 		HashSet<String> users = circleBo.getUsers();
 		if (users.contains(userid)) {
 			users.remove(userid);
 			circleService.updateUsers(circleBo.getId(), users);
 			userAddHis(userid, circleid, 2);
 		}
-
 		return Constant.COM_RESP;
 	}
 
@@ -691,6 +696,12 @@ public class CircleController extends BaseContorller {
 		if (masters.contains(userBo.getId())) {
 			masters.remove(userBo.getId());
 			circleService.updateMaster(circleBo);
+		}
+		//删除置顶的圈子
+		List<String> circles = userBo.getCircleTops();
+		if (circles.contains(circleid)) {
+			circles.remove(circleid);
+			userService.updateTopCircles(userBo.getId(), circles);
 		}
 		HashSet<String> users = circleBo.getUsers();
 		users.remove(userBo.getId());
@@ -878,6 +889,12 @@ public class CircleController extends BaseContorller {
 		} catch (MyException e) {
 			return e.getMessage();
 		}
+		CircleBo circleBo = circleService.selectById(circleid);
+		if (null == circleBo) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CIRCLE_IS_NULL.getIndex(),
+					ERRORCODE.CIRCLE_IS_NULL.getReason());
+		}
 		updateHistory(userBo.getId(), circleid, locationService, circleService);
 		List<String> topList = userBo.getCircleTops();
 		if (topList.contains(circleid)) {
@@ -894,7 +911,7 @@ public class CircleController extends BaseContorller {
 	@RequestMapping("/search")
 	@ResponseBody
 	public String search(String keyword, HttpServletRequest request, HttpServletResponse response) {
-		return searchKeyword(keyword, 1, 10, request, response);
+		return  searchKeyword(keyword, 1, 10, request, response);
 	}
 
 	/**
