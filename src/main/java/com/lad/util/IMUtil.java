@@ -97,12 +97,12 @@ public class IMUtil {
 			return new String[]{res, ""};
 		}
 		assistent.setServerTerm(term);
-		Message message = assistent.unSubscribe(chatroomId, ids);
+		Message message = assistent.removeUserFromRoom(chatroomId, ids);
 		try {
 			if (message.getStatus() == Message.Status.termError) {
 				term = getTerm(assistent);
 				assistent.setServerTerm(term);
-				Message message2 = assistent.unSubscribe(chatroomId, ids);
+				Message message2 = assistent.removeUserFromRoom(chatroomId, ids);
 				if (Message.Status.success != message2.getStatus()) {
 					res = CommonUtil.toErrorResult(message2.getStatus(),
 							message2.getMsg());
