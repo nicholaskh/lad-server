@@ -98,13 +98,19 @@ public class CollectDao {
 		return mongoTemplate.find(query, CollectBo.class);
 	}
 
-	/**
+	/** String userid, int page , int limit
 	 * 更具用户分类
 	 * @param tag
 	 * @return
 	 */
-	public List<CollectBo> findByTag(String tag){
-		Query query = new Query(new Criteria("userTags").in(tag));
+	public List<CollectBo> findByTag(String tag, String userid, int page , int limit){
+		Query query = new Query();
+		query.addCriteria(new Criteria("userid").is(userid));
+		query.addCriteria(new Criteria("userTags").in(tag));
+		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "createTime")));
+		page = page < 1 ? 1 : page;
+		query.skip((page - 1)*limit);
+		query.limit(limit);
 		return mongoTemplate.find(query, CollectBo.class);
 	}
 

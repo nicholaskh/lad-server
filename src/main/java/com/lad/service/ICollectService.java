@@ -1,6 +1,7 @@
 package com.lad.service;
 
 import com.lad.bo.CollectBo;
+import com.lad.bo.UserTagBo;
 import com.mongodb.WriteResult;
 
 import java.util.LinkedHashSet;
@@ -70,6 +71,21 @@ public interface ICollectService {
 	 * @param tag
 	 * @return
 	 */
-	List<CollectBo> findByTag(String tag);
+	List<CollectBo> findByTag(String tag, String userid, int page , int limit);
+
+
+	UserTagBo insertTag(UserTagBo tagBo);
+
+
+	WriteResult deleteTag(String id);
+
+
+	UserTagBo findByTagName(String name, String userid);
+
+
+	List<UserTagBo> findTagByUserid(String userid, int type);
+
+
+	WriteResult updateTagTimes(String name, String userid, int type);
 
 }

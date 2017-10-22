@@ -1,7 +1,9 @@
 package com.lad.service.impl;
 
 import com.lad.bo.CollectBo;
+import com.lad.bo.UserTagBo;
 import com.lad.dao.CollectDao;
+import com.lad.dao.IUserTagDao;
 import com.lad.service.ICollectService;
 import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,14 +14,21 @@ import java.util.List;
 
 @Service("collectService")
 public class CollectServiceImpl implements ICollectService {
-	
+
 	@Autowired
 	private CollectDao collectDao;
-	
-	
+
+	@Autowired
+	private IUserTagDao userTagDao;
+
 	@Override
-	public CollectBo insert(CollectBo chatinfo) {
-		return collectDao.insert(chatinfo);
+	public CollectBo insert(CollectBo collectBo) {
+		return collectDao.insert(collectBo);
+	}
+
+	@Override
+	public CollectBo findById(String id) {
+		return collectDao.findById(id);
 	}
 
 	@Override
@@ -30,11 +39,6 @@ public class CollectServiceImpl implements ICollectService {
 	@Override
 	public List<CollectBo> findChatByUserid(String userid, String start_id, int limit, int type) {
 		return collectDao.findChatByUserid(userid, start_id, limit, type);
-	}
-
-	@Override
-	public CollectBo findById(String id) {
-		return collectDao.findById(id);
 	}
 
 	@Override
@@ -58,7 +62,32 @@ public class CollectServiceImpl implements ICollectService {
 	}
 
 	@Override
-	public List<CollectBo> findByTag(String tag) {
-		return collectDao.findByTag(tag);
+	public List<CollectBo> findByTag(String tag, String userid, int page , int limit) {
+		return collectDao.findByTag(tag, userid, page, limit);
+	}
+
+	@Override
+	public UserTagBo insertTag(UserTagBo tagBo) {
+		return userTagDao.insert(tagBo);
+	}
+
+	@Override
+	public WriteResult deleteTag(String id) {
+		return userTagDao.delete(id);
+	}
+
+	@Override
+	public UserTagBo findByTagName(String name, String userid) {
+		return userTagDao.findByName(name, userid);
+	}
+
+	@Override
+	public List<UserTagBo> findTagByUserid(String userid, int type) {
+		return userTagDao.findByUserid(userid, type);
+	}
+
+	@Override
+	public WriteResult updateTagTimes(String name, String userid, int type) {
+		return userTagDao.updateTimes(name, userid, type);
 	}
 }

@@ -2,7 +2,6 @@ package com.lad.bo;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 
 /**
@@ -26,7 +25,7 @@ public class CollectBo extends BaseBo {
 	private String targetid;
 
 	//用户自定义分类
-	private HashSet<String> userTags = new LinkedHashSet<>();
+	private LinkedHashSet<String> userTags = new LinkedHashSet<>();
 
 
 	public String getContent() {
@@ -85,11 +84,11 @@ public class CollectBo extends BaseBo {
 		this.sub_type = sub_type;
 	}
 
-	public HashSet<String> getUserTags() {
+	public LinkedHashSet<String> getUserTags() {
 		return userTags;
 	}
 
-	public void setUserTags(HashSet<String> userTags) {
+	public void setUserTags(LinkedHashSet<String> userTags) {
 		this.userTags = userTags;
 	}
 }

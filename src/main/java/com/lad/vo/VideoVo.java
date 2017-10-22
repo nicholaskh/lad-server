@@ -18,7 +18,7 @@ public class VideoVo extends BaseVo {
 
     private String url;
 
-    private String poster;
+    private String picture;
 
     private String module;
 
@@ -72,12 +72,12 @@ public class VideoVo extends BaseVo {
         this.url = url;
     }
 
-    public String getPoster() {
-        return poster;
+    public String getPicture() {
+        return picture;
     }
 
-    public void setPoster(String poster) {
-        this.poster = poster;
+    public void setPicture(String picture) {
+        this.picture = picture;
     }
 
     public String getModule() {
