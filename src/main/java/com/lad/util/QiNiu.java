@@ -36,8 +36,7 @@ public class QiNiu {
 		    long end =  System.currentTimeMillis();
 			System.out.println("update time millis : =======" + (end-start));
 		} catch (QiniuException ex) {
-		    Response r = ex.response;
-			logger.error(r.toString());
+			ex.printStackTrace();
 		}
 		return key;
 	}

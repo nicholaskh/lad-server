@@ -252,12 +252,19 @@ public class InforController extends BaseContorller {
                     picName = FFmpegUtil.inforTransfer(bo.getUrl(),  Constant.INFOR_PICTURE_PATH, bo.getId());
                 }
                 if (!StringUtils.isEmpty(picName)){
-                    String vedioPic = QiNiu.uploadToQiNiu(Constant.INFOR_PICTURE_PATH, picName);
-                    String path = Constant.QINIU_URL + vedioPic + "?v=" + CommonUtil.getRandom1();
-                    inforService.updateVideoPicById(bo.getId(), path);
-                    videoVo.setPicture(path);
-                    File file = new File(Constant.INFOR_PICTURE_PATH, vedioPic);
-                    file.delete();
+                    File file = null;
+                    try {
+                        file = new File(Constant.INFOR_PICTURE_PATH, picName);
+                    } catch (Exception e){
+                        e.printStackTrace();
+                    }
+                    if (file != null && file.exists()){
+                        String vedioPic = QiNiu.uploadToQiNiu(Constant.INFOR_PICTURE_PATH, picName);
+                        String path = Constant.QINIU_URL + vedioPic + "?v=" + CommonUtil.getRandom1();
+                        inforService.updateVideoPicById(bo.getId(), path);
+                        videoVo.setPicture(path);
+                        file.delete();
+                    }
                 }
             } else {
                 videoVo.setPicture(bo.getPoster());

@@ -3,10 +3,7 @@ package com.lad.util;
 import org.apache.log4j.Logger;
 import org.apache.log4j.spi.RootLogger;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 
 /**
  * 功能描述：
@@ -50,8 +47,8 @@ public class FFmpegUtil {
             isr.close();
             stderr.close();
         } catch (Exception e){
-            outName = "";
             e.printStackTrace();
+            return "";
         } finally {
             if (proc != null){
                 proc.destroy();
@@ -63,26 +60,28 @@ public class FFmpegUtil {
 
     /**
      *
-     * @param inFile   视频文件
+     * @param urls   视频文件
      * @param path
      */
-    public static String inforTransfer(File inFile, String path, String inforid){
-        String fileName = inFile.getName();
+    public static String inforTransfer(String urls, String path, String inforid){
         String outName = inforid + "-ffmpeg.jpg";
         StringBuilder cmd = new StringBuilder("ffmpeg -i ");
-        cmd.append(path).append(fileName);
+        cmd.append(urls);
         //截取视频第一秒的视频图片
         cmd.append(" -y -f image2 -ss 1 -t 0.001 -s ");
         cmd.append("1001x563 ");
         cmd.append(path).append(outName);
         Runtime rt = Runtime.getRuntime();
         Process proc = null;
+        InputStream stderr = null;
+        InputStreamReader isr = null;
+        BufferedReader br = null;
         try {
             proc= rt.exec(new String[]{"sh","-c",cmd.toString()});
             //调用线程命令进行转码
-            InputStream stderr = proc.getErrorStream();
-            InputStreamReader isr = new InputStreamReader(stderr);
-            BufferedReader br = new BufferedReader(isr);
+            stderr = proc.getErrorStream();
+            isr = new InputStreamReader(stderr);
+            br = new BufferedReader(isr);
             proc.waitFor();
             String line = "";
             while ((line = br.readLine()) != null) {
@@ -93,9 +92,22 @@ public class FFmpegUtil {
             isr.close();
             stderr.close();
         } catch (Exception e){
-            outName = "";
             e.printStackTrace();
+            return "";
         } finally {
+            try {
+                if (br != null){
+                    br.close();
+                }
+                if (isr != null){
+                    isr.close();
+                }
+                if (stderr != null){
+                    stderr.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             if (proc != null){
                 proc.destroy();
             }
