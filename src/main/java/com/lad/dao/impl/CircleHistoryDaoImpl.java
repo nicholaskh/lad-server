@@ -12,6 +12,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.StringUtils;
 
 import java.util.Date;
 import java.util.List;
@@ -51,7 +52,10 @@ public class CircleHistoryDaoImpl implements ICircleHistoryDao {
         Query query = new Query();
         Criteria criteria = Criteria.where("position").nearSphere(point).maxDistance(maxDistance/6378137.0);
         query.addCriteria(criteria);
-        query.addCriteria(new Criteria("circleid").is(cirlcid).and("userid").ne(userid));
+        query.addCriteria(new Criteria("circleid").is(cirlcid));
+        if (!StringUtils.isEmpty(userid)){
+            query.addCriteria(new Criteria("userid").ne(userid));
+        }
         query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "updateTime")));
         query.limit(20);
         return mongoTemplate.find(query, CircleHistoryBo.class);

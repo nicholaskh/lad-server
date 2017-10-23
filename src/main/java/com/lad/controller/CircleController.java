@@ -73,7 +73,6 @@ public class CircleController extends BaseContorller {
 		} catch (MyException e) {
 			return e.getMessage();
 		}
-		System.out.println("circle   px : " + px + ";  py : " + py);
 		//每人最多创建三个群
 		long circleNum = circleService.findCreateCricles(userBo.getId());
 		if (circleNum >= userBo.getLevel() * 5) {
@@ -819,14 +818,13 @@ public class CircleController extends BaseContorller {
 	@RequestMapping("/red-star-list")
 	@ResponseBody
 	public String redTopTotal(String circleid, HttpServletRequest request, HttpServletResponse response) {
-		UserBo userBo;
+		//如果登录就显示浏览记录
 		try {
-			userBo = checkSession(request, userService);
+			UserBo userBo = checkSession(request, userService);
+			updateHistory(userBo.getId(), circleid, locationService, circleService);
 		} catch (MyException e) {
-			return e.getMessage();
-		}
 
-		updateHistory(userBo.getId(), circleid, locationService, circleService);
+		}
 
 		Date currentDate = new Date();
 		int weekNo = CommonUtil.getWeekOfYear(currentDate);
@@ -868,13 +866,10 @@ public class CircleController extends BaseContorller {
 		updateHistory(userBo.getId(), circleid, locationService, circleService);
 		List<String> topList = userBo.getCircleTops();
 		if (topList.contains(circleid)) {
-			return CommonUtil.toErrorResult(
-					ERRORCODE.CIRCLE_IS_NULL.getIndex(),
-					ERRORCODE.CIRCLE_IS_NULL.getReason());
-		} else {
-			topList.add(0,circleid);
-			userService.updateTopCircles(userBo.getId(), topList);
+			topList.remove(circleid);
 		}
+		topList.add(0,circleid);
+		userService.updateTopCircles(userBo.getId(), topList);
 		return Constant.COM_RESP;
 	}
 	/**
@@ -922,6 +917,17 @@ public class CircleController extends BaseContorller {
 	public String searchKeyword(String keyword,int page, int limit,
 								HttpServletRequest request, HttpServletResponse response) {
 		if (StringUtils.isNotEmpty(keyword)) {
+			List<CircleBo> circleBos = circleService.findBykeyword(keyword, page, limit);
+			saveKwyword(keyword);
+			return bo2vos(circleBos, null);
+		}
+		return Constant.COM_RESP;
+	}
+
+	@Async
+	private void saveKwyword(String keyword){
+		CircleTypeBo typeBo = circleService.findByName(keyword, 2);
+		if (typeBo != null){
 			SearchBo searchBo = searchService.findByKeyword(keyword, 0);
 			if (searchBo == null) {
 				searchBo = new SearchBo();
@@ -932,11 +938,7 @@ public class CircleController extends BaseContorller {
 			} else {
 				searchService.update(searchBo.getId());
 			}
-
-			List<CircleBo> circleBos = circleService.findBykeyword(keyword, page, limit);
-			return bo2vos(circleBos, null);
 		}
-		return Constant.COM_RESP;
 	}
 
 	/**
@@ -1106,15 +1108,16 @@ public class CircleController extends BaseContorller {
 	@ResponseBody
 	public String nearPeopel(String circleid, double px, double py, HttpServletRequest request, HttpServletResponse
 			response) {
-		UserBo userBo;
+		String userid = "";
 		try {
-			userBo = checkSession(request, userService);
+			UserBo userBo = checkSession(request, userService);
+			userid = userBo.getId();
 		} catch (MyException e) {
-			return e.getMessage();
+			userid = "";
 		}
 		double[] position = new double[]{px, py};
 		List<CircleHistoryBo> historyBos = circleService.findNearPeople(circleid,
-				userBo.getId(),position, 20000);
+				userid,position, 20000);
 		List<UserBaseVo> userVos = new ArrayList<>();
 		for (CircleHistoryBo historyBo : historyBos) {
 			UserBo user = userService.getUser(historyBo.getUserid());
@@ -1237,16 +1240,22 @@ public class CircleController extends BaseContorller {
 					ERRORCODE.CIRCLE_IS_NULL.getIndex(),
 					ERRORCODE.CIRCLE_IS_NULL.getReason());
 		}
-		if (StringUtils.isNotEmpty(name)){
-			CircleBo circle = circleService.findByTagAndName(name, circleBo.getTag(), circleBo.getSub_tag());
-			if (circle != null) {
-				return CommonUtil.toErrorResult(
-						ERRORCODE.CIRCLE_NAME_EXIST.getIndex(),
-						ERRORCODE.CIRCLE_NAME_EXIST.getReason());
+		if(circleBo.getMasters().contains(userBo.getId()) || circleBo.getCreateuid().equals(userBo.getId())) {
+			if (StringUtils.isNotEmpty(name)){
+				CircleBo circle = circleService.findByTagAndName(name, circleBo.getTag(), circleBo.getSub_tag());
+				if (circle != null) {
+					return CommonUtil.toErrorResult(
+							ERRORCODE.CIRCLE_NAME_EXIST.getIndex(),
+							ERRORCODE.CIRCLE_NAME_EXIST.getReason());
+				}
+				circleService.updateCircleName(circleid, name);
+			} else {
+				return Constant.COM_FAIL_RESP;
 			}
-			circleService.updateCircleName(circleid, name);
 		} else {
-			return Constant.COM_FAIL_RESP;
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CIRCLE_NOT_MASTER.getIndex(),
+					ERRORCODE.CIRCLE_NOT_MASTER.getReason());
 		}
 		return Constant.COM_RESP;
 	}

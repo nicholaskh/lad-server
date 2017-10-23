@@ -245,19 +245,22 @@ public class NoteController extends BaseContorller {
 	@RequestMapping("/note-info")
 	@ResponseBody
 	public String noteInfo(String noteid, HttpServletRequest request, HttpServletResponse response) {
-		UserBo userBo;
-		try {
-			userBo = checkSession(request, userService);
-		} catch (MyException e) {
-			return e.getMessage();
-		}
 		NoteBo noteBo = noteService.selectById(noteid);
 		if (null == noteBo) {
 			return CommonUtil.toErrorResult(
 					ERRORCODE.NOTE_IS_NULL.getIndex(),
 					ERRORCODE.NOTE_IS_NULL.getReason());
 		}
-		updateHistory(userBo.getId(), noteBo.getCircleId(), locationService, circleService);
+		UserBo userBo;
+		ThumbsupBo thumbsupBo = null;
+		try {
+			userBo = checkSession(request, userService);
+			updateHistory(userBo.getId(), noteBo.getCircleId(), locationService, circleService);
+			thumbsupBo = thumbsupService.getByVidAndVisitorid(userBo.getId(), noteid);
+		} catch (MyException e) {
+			logger.error(e);
+			userBo = null;
+		}
 		updateCircleHot(circleService, redisServer, noteBo.getCircleId(), 1, Constant.CIRCLE_NOTE_VISIT);
 		RLock lock = redisServer.getRLock(Constant.VISIT_LOCK);
 		try {
@@ -266,7 +269,6 @@ public class NoteController extends BaseContorller {
 		} finally {
 			lock.unlock();
 		}
-		ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(userBo.getId(), noteid);
 		NoteVo noteVo = new NoteVo();
 		boToVo(noteBo, noteVo, userBo);
 		//这个帖子自己是否点赞
@@ -284,11 +286,6 @@ public class NoteController extends BaseContorller {
 	@ResponseBody
 	public String newSituation(String circleid, String start_id, boolean gt, int limit,
 							   HttpServletRequest request, HttpServletResponse response) {
-		try {
-			checkSession(request, userService);
-		} catch (MyException e) {
-			return e.getMessage();
-		}
 		List<NoteBo> noteBos = noteService.finyByCreateTime(circleid,start_id,gt,limit);
 		List<NoteVo> noteVos = new LinkedList<>();
 		if (noteBos != null) {
@@ -359,11 +356,6 @@ public class NoteController extends BaseContorller {
     @ResponseBody
     public String hotNotes(String circleid,HttpServletRequest request,
                            HttpServletResponse response) {
-		try {
-			checkSession(request, userService);
-		} catch (MyException e) {
-			return e.getMessage();
-		}
         List<NoteBo> noteBos = noteService.selectHotNotes(circleid);
 		List<NoteVo> noteVoList = new LinkedList<>();
 		for (NoteBo noteBo : noteBos) {
