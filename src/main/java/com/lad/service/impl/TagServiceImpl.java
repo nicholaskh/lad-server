@@ -7,6 +7,7 @@ import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 
 @Service("tagService")
@@ -48,5 +49,10 @@ public class TagServiceImpl implements ITagService {
 	@Override
 	public TagBo getBynameAndUserid(String tagName, String userid){
 		return tagDao.getBynameAndUserid(tagName, userid);
+	}
+
+	@Override
+	public WriteResult updateTagFriends(String tagid, LinkedHashSet<String> friendsIds) {
+		return null;
 	}
 }

@@ -3,6 +3,7 @@ package com.lad.service;
 import com.lad.bo.TagBo;
 import com.mongodb.WriteResult;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 
 public interface ITagService extends IBaseService {
@@ -16,4 +17,12 @@ public interface ITagService extends IBaseService {
 	WriteResult updateTagName(TagBo tagBo);
 
 	TagBo getBynameAndUserid(String tagName, String userid);
+
+	/**
+	 * 更新标签
+	 * @param tagid
+	 * @param friendsIds
+	 * @return
+	 */
+	WriteResult updateTagFriends(String tagid, LinkedHashSet<String> friendsIds);
 }

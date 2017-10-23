@@ -10,6 +10,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 
 @Repository("tagDao")
@@ -61,7 +62,7 @@ public class TagDaoImpl implements ITagDao {
 		Query query = new Query();
 		query.addCriteria(new Criteria("userid").is(userid));
 		query.addCriteria(new Criteria("deleted").is(0));
-		query.addCriteria(new Criteria("friendsIds").is(friendid));
+		query.addCriteria(new Criteria("friendsIds").in(friendid));
 		return mongoTemplate.find(query, TagBo.class);
 	}
 	public TagBo get(String tagId) {
@@ -76,5 +77,15 @@ public class TagDaoImpl implements ITagDao {
 		query.addCriteria(new Criteria("name").is(tagName));
 		query.addCriteria(new Criteria("userid").is(userid));
 		return mongoTemplate.findOne(query, TagBo.class);
+	}
+
+	@Override
+	public WriteResult updateTagFriends(String tagid, LinkedHashSet<String> friendsIds) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("_id").is(tagid));
+		query.addCriteria(new Criteria("deleted").is(0));
+		Update update = new Update();
+		update.set("friendsIds", friendsIds);
+		return mongoTemplate.updateFirst(query, update, TagBo.class);
 	}
 }
