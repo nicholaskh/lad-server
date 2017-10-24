@@ -22,6 +22,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class CommonUtil {
+	/**
+	 * 每天多少毫秒时间
+	 */
+	private static long dayMinlls = 1000L * 60 * 60 * 24 * 180;
+
 	public static boolean isRightPhone(String phone) {
 		String regExp = "^1(3|4|5|7|8)\\d{9}$";
 		Pattern p = Pattern.compile(regExp);
@@ -335,6 +340,43 @@ public class CommonUtil {
 		}
 		query.limit(limit);
 	}
+
+
+	/**
+	 * 判断时间是否在180天之内
+	 * @param currenDate 当前时间
+	 * @return 180天前的日期
+	 */
+	public static Date getHalfYearTime(Date currenDate){
+		long stap = currenDate.getTime() - dayMinlls ;
+		return new Date(stap);
+	}
+
+	/**
+	 * 获取当前时间字符串
+	 * @param currenDate 当前时间
+	 * @return yyyy-MM-dd
+	 */
+	public static String getCurrentDate(Date currenDate){
+		SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd");
+		return sf.format(currenDate);
+	}
+
+	/**
+	 * 获取当前时间零点时间戳
+	 * @return
+	 */
+	public static Date getDate(Date currenDate){
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(currenDate);
+		calendar.set(Calendar.HOUR_OF_DAY, 0);
+		calendar.set(Calendar.MINUTE, 0);
+		calendar.set(Calendar.SECOND, 0);
+		return calendar.getTime();
+	}
+
+
+
 
 	public static String ff(String inFile, String outFile){
 
