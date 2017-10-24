@@ -142,11 +142,12 @@ public class TagController extends BaseContorller {
 			}
 			tagVo.setTagid(tagBo.getId());
 			tagVo.setTagName(tagBo.getName());
+			tagVo.setUserNum(userNames.size());
+			tagVos.add(tagVo);
 			if (userNull.size() > 0){
 				friends.removeAll(userNull);
 				tagService.updateTagFriends(tagBo.getId(), friends);
 			}
-			tagVos.add(tagVo);
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
@@ -207,6 +208,7 @@ public class TagController extends BaseContorller {
 					if (user != null) {
 						UserBaseVo baseVo = new UserBaseVo();
 						BeanUtils.copyProperties(user, baseVo);
+						baseVo.setUserName(friendsBo.getBackname());
 						userBaseVos.add(baseVo);
 					}
 				}
