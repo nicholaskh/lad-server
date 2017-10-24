@@ -967,6 +967,9 @@ public class CircleController extends BaseContorller {
 		if (StringUtils.isNotEmpty(sub_tag)) {
 			saveKeyword(sub_tag);
 		}
+		if (StringUtils.isNotEmpty(tag)) {
+			saveKeyword(tag);
+		}
 		HttpSession session = request.getSession();
 		boolean isLogin;
 		UserBo userBo = null;
