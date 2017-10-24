@@ -12,6 +12,7 @@ import net.sf.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.log4j.spi.RootLogger;
+import org.redisson.api.RLock;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -25,6 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 @Controller
 @RequestMapping("circle")
@@ -362,7 +364,6 @@ public class CircleController extends BaseContorller {
 		} catch (MyException e) {
 			return e.getMessage();
 		}
-		logger.info("circleid: " + circleid);
 		CircleBo circleBo = circleService.selectById(circleid);
 		if (circleBo == null) {
 			return CommonUtil.toErrorResult(
@@ -720,7 +721,7 @@ public class CircleController extends BaseContorller {
 			return e.getMessage();
 		}
 		//置顶的圈子id
-		List<String> myCircles = userBo.getCircleTops();
+		List<String> topCircles = userBo.getCircleTops();
 		List<CircleBo> circleBos = circleService.findMyCircles(userBo.getId(), start_id, gt, limit);
 		//未置顶的圈子
 		List<CircleBo> noTops = new LinkedList<>();
@@ -732,7 +733,7 @@ public class CircleController extends BaseContorller {
 				circleBo.setTotal(number);
 				circleService.updateTotal(circleBo.getId(), number);
 			}
-			if (myCircles.contains(circleBo.getId())) {
+			if (topCircles.contains(circleBo.getId())) {
 				voList.add(bo2vo(circleBo, userBo, 1));
 			} else {
 				noTops.add(circleBo);
@@ -916,27 +917,41 @@ public class CircleController extends BaseContorller {
 	@ResponseBody
 	public String searchKeyword(String keyword,int page, int limit,
 								HttpServletRequest request, HttpServletResponse response) {
+		HttpSession session = request.getSession();
+		boolean isLogin;
+		UserBo userBo = null;
+		if (session.isNew() || session.getAttribute("isLogin") == null) {
+			isLogin = false;
+		} else {
+			userBo = (UserBo) session.getAttribute("userBo");
+		}
 		if (StringUtils.isNotEmpty(keyword)) {
 			List<CircleBo> circleBos = circleService.findBykeyword(keyword, page, limit);
-			saveKwyword(keyword);
-			return bo2vos(circleBos, null);
+			saveKeyword(keyword);
+			return bo2vos(circleBos, userBo);
 		}
 		return Constant.COM_RESP;
 	}
 
 	@Async
-	private void saveKwyword(String keyword){
+	private void saveKeyword(String keyword){
 		CircleTypeBo typeBo = circleService.findByName(keyword, 2);
 		if (typeBo != null){
 			SearchBo searchBo = searchService.findByKeyword(keyword, 0);
-			if (searchBo == null) {
-				searchBo = new SearchBo();
-				searchBo.setKeyword(keyword);
-				searchBo.setType(0);
-				searchBo.setTimes(1);
-				searchService.insert(searchBo);
-			} else {
-				searchService.update(searchBo.getId());
+			RLock lock = redisServer.getRLock("keyword");
+			try {
+				lock.lock(2, TimeUnit.SECONDS);
+				if (searchBo == null) {
+					searchBo = new SearchBo();
+					searchBo.setKeyword(keyword);
+					searchBo.setType(0);
+					searchBo.setTimes(1);
+					searchService.insert(searchBo);
+				} else {
+					searchService.update(searchBo.getId());
+				}
+			} finally {
+				lock.unlock();
 			}
 		}
 	}
@@ -949,6 +964,9 @@ public class CircleController extends BaseContorller {
 	public String getByType(String tag, String sub_tag , int page, int limit,
 							HttpServletRequest request, HttpServletResponse response) {
 		List<CircleBo> circleBos = circleService.findByType(tag, sub_tag, page, limit);
+		if (StringUtils.isNotEmpty(sub_tag)) {
+			saveKeyword(sub_tag);
+		}
 		HttpSession session = request.getSession();
 		boolean isLogin;
 		UserBo userBo = null;
