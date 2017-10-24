@@ -1,18 +1,45 @@
 package com.lad.vo;
 
+import java.util.LinkedHashSet;
+
 public class TagVo extends BaseVo {
-	private String id;
-	private String name;
-	public String getId() {
-		return id;
+	private String tagid;
+
+	private String tagName;
+
+	private int userNum;
+
+	private LinkedHashSet<String> userNames = new LinkedHashSet<>();
+
+	public String getTagid() {
+		return tagid;
 	}
-	public void setId(String id) {
-		this.id = id;
+
+	public void setTagid(String tagid) {
+		this.tagid = tagid;
 	}
-	public String getName() {
-		return name;
+
+	public String getTagName() {
+		return tagName;
 	}
-	public void setName(String name) {
-		this.name = name;
+
+	public void setTagName(String tagName) {
+		this.tagName = tagName;
+	}
+
+	public int getUserNum() {
+		return userNum;
+	}
+
+	public void setUserNum(int userNum) {
+		this.userNum = userNum;
+	}
+
+	public LinkedHashSet<String> getUserNames() {
+		return userNames;
+	}
+
+	public void setUserNames(LinkedHashSet<String> userNames) {
+		this.userNames = userNames;
 	}
 }

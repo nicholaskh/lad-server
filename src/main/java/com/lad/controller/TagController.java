@@ -50,11 +50,45 @@ public class TagController extends BaseContorller {
 					tagService.updateTagFriends(tagBo.getId(), firendsSet);
 				} else {
 					tagBo = new TagBo();
-					tagBo.getFriendsIds().add(friendid);
+					LinkedHashSet<String> firendsSet = tagBo.getFriendsIds();
+					firendsSet.add(friendid);
+					tagBo.setFriendsIds(firendsSet);
 					tagBo.setUserid(userBo.getId());
 					tagBo.setName(tag);
 					tagService.insert(tagBo);
 				}
+			}
+		} catch (MyException e) {
+			return e.getMessage();
+		}
+		return Constant.COM_RESP;
+	}
+
+
+	@RequestMapping("/add-tag-friends")
+	@ResponseBody
+	public String addTag(String tagName, String friendids,
+						 HttpServletRequest request, HttpServletResponse response) {
+		UserBo userBo;
+		try {
+			userBo = checkSession(request, userService);
+			String[] friendArr = friendids.split(",");
+			TagBo tagBo = tagService.getBynameAndUserid(tagName, userBo.getId());
+			if (tagBo != null) {
+				LinkedHashSet<String> firendsSet = tagBo.getFriendsIds();
+				for (String friendid : friendArr) {
+					firendsSet.add(friendid);
+				}
+				tagService.updateTagFriends(tagBo.getId(), firendsSet);
+			} else {
+				tagBo = new TagBo();
+				LinkedHashSet<String> firendsSet = tagBo.getFriendsIds();
+				for (String friendid : friendArr) {
+					firendsSet.add(friendid);
+				}
+				tagBo.setUserid(userBo.getId());
+				tagBo.setName(tagName);
+				tagService.insert(tagBo);
 			}
 		} catch (MyException e) {
 			return e.getMessage();
@@ -79,6 +113,44 @@ public class TagController extends BaseContorller {
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("tags", tags);
+		return JSONObject.fromObject(map).toString();
+	}
+
+	@RequestMapping("/get-tag-list")
+	@ResponseBody
+	public String getTagFriends(HttpServletRequest request, HttpServletResponse response) {
+		UserBo userBo;
+		try {
+			userBo = checkSession(request, userService);
+		} catch (MyException e) {
+			return e.getMessage();
+		}
+		List<TagVo> tagVos = new ArrayList<>();
+		List<TagBo> tagBos = tagService.getTagBoListByUserid(userBo.getId());
+		for (TagBo tagBo : tagBos) {
+			LinkedHashSet<String> friends = tagBo.getFriendsIds();
+			TagVo tagVo = new TagVo();
+			LinkedHashSet<String> userNames = tagVo.getUserNames();
+			HashSet<String> userNull = new LinkedHashSet<>();
+			for (String friendid : friends) {
+				FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(userBo.getId(), friendid);
+				if (friendsBo != null) {
+					userNames.add(friendsBo.getBackname());
+				} else {
+					userNull.add(friendid);
+				}
+			}
+			tagVo.setTagid(tagBo.getId());
+			tagVo.setTagName(tagBo.getName());
+			if (userNull.size() > 0){
+				friends.removeAll(userNull);
+				tagService.updateTagFriends(tagBo.getId(), friends);
+			}
+			tagVos.add(tagVo);
+		}
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("tagVos", tagVos);
 		return JSONObject.fromObject(map).toString();
 	}
 
@@ -111,8 +183,7 @@ public class TagController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-
-	@RequestMapping("/friends-by-tag")
+	@RequestMapping("/get-by-tagName")
 	@ResponseBody
 	public String getByTag(String tagName, HttpServletRequest request, HttpServletResponse response){
 		UserBo userBo;
@@ -140,13 +211,31 @@ public class TagController extends BaseContorller {
 					}
 				}
 			}
-			friends.removeAll(removes);
-			tagService.updateTagFriends(tagName,friends);
+			if (removes.size() > 0) {
+				friends.removeAll(removes);
+				tagService.updateTagFriends(tagName,friends);
+			}
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("userVos", userBaseVos);
 		return JSONObject.fromObject(map).toString();
+	}
+
+	@RequestMapping("/delete-tag")
+	@ResponseBody
+	public String deleteTag(String tagid,
+							HttpServletRequest request, HttpServletResponse response) {
+		try {
+			checkSession(request, userService);
+		} catch (MyException e) {
+			return e.getMessage();
+		}
+		TagBo tagBo = tagService.get(tagid);
+		if (null != tagBo) {
+			tagService.deleteById(tagid);
+		}
+		return Constant.COM_RESP;
 	}
 
 
@@ -169,47 +258,6 @@ public class TagController extends BaseContorller {
 		return Constant.COM_RESP;
 	}
 
-	@RequestMapping("/get-tag-list")
-	@ResponseBody
-	public String getTagList(HttpServletRequest request,
-			HttpServletResponse response) {
-		UserBo userBo;
-		try {
-			userBo = checkSession(request, userService);
-		} catch (MyException e) {
-			return e.getMessage();
-		}
-		List<TagBo> tagBoList = tagService.getTagBoListByUserid(userBo.getId());
-		List<TagVo> tagVoList = new LinkedList<TagVo>();
-		for (TagBo tagBo : tagBoList) {
-			TagVo tagVo = new TagVo();
-			tagVo.setId(tagBo.getId());
-			tagVo.setName(tagBo.getName());
-			tagVoList.add(tagVo);
-		}
-		Map<String, Object> map = new HashMap<String, Object>();
-		map.put("ret", 0);
-		map.put("tag", tagVoList);
-		return JSONObject.fromObject(map).toString();
-	}
-
-	@RequestMapping("/delete-tag")
-	@ResponseBody
-	public String deleteTag(String tagid,
-			HttpServletRequest request, HttpServletResponse response) {
-		try {
-			checkSession(request, userService);
-		} catch (MyException e) {
-			return e.getMessage();
-		}
-		TagBo tagBo = tagService.get(tagid);
-		if (null == tagBo) {
-			return CommonUtil.toErrorResult(ERRORCODE.TAG_NULL.getIndex(),
-					ERRORCODE.TAG_NULL.getReason());
-		}
-		tagService.deleteById(tagid);
-		return Constant.COM_RESP;
-	}
 
 	@RequestMapping("/cancel-friend-tag")
 	@ResponseBody
