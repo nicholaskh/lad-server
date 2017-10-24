@@ -161,9 +161,9 @@ public class CircleController extends BaseContorller {
 
 	@RequestMapping("/check-name")
 	@ResponseBody
-	public String preCreateCircle(String sub, String sub_tag, String name, HttpServletRequest request,
+	public String preCreateCircle(String name, String tag, String sub_tag, HttpServletRequest request,
 								  HttpServletResponse response){
-		CircleBo circleBo = circleService.findByTagAndName(name, sub, sub_tag);
+		CircleBo circleBo = circleService.findByTagAndName(name, tag, sub_tag);
 		if (circleBo != null) {
 			return "{\"ret\":1}";
 		} else {
