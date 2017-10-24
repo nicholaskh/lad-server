@@ -256,7 +256,22 @@ public class Constant {
 	 * 收藏 链接文章、圈子 、帖子、聚会类型
 	 */
 	public static final int COLLET_URL = 5;
-
+	/**
+	 * 健康
+	 */
+	public static final int INFOR_HEALTH = 1;
+	/**
+	 * 安防
+	 */
+	public static final int INFOR_SECRITY = 2;
+	/**
+	 * 广播
+	 */
+	public static final int INFOR_RADIO = 3;
+	/**
+	 * 视频
+	 */
+	public static final int INFOR_VIDEO = 4;
 
 
 
