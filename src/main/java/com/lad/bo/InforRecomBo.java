@@ -19,6 +19,8 @@ public class InforRecomBo extends BaseBo {
 
     private long halfyearNum;
 
+    private String module;
+
 
     public String getInforid() {
         return inforid;
@@ -50,5 +52,13 @@ public class InforRecomBo extends BaseBo {
 
     public void setHalfyearNum(long halfyearNum) {
         this.halfyearNum = halfyearNum;
+    }
+
+    public String getModule() {
+        return module;
+    }
+
+    public void setModule(String module) {
+        this.module = module;
     }
 }

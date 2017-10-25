@@ -1,5 +1,6 @@
 package com.lad.bo;
 
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.io.Serializable;
@@ -14,6 +15,7 @@ import java.util.Date;
 @Document(collection = "inforUserReadHis")
 public class InforUserReadHisBo implements Serializable {
 
+    @Id
     private String id;
 
     private String module;
@@ -21,6 +23,8 @@ public class InforUserReadHisBo implements Serializable {
     private int type;
 
     private Date lastDate;
+
+    private String userid;
 
 
     public String getId() {
@@ -53,5 +57,13 @@ public class InforUserReadHisBo implements Serializable {
 
     public void setLastDate(Date lastDate) {
         this.lastDate = lastDate;
+    }
+
+    public String getUserid() {
+        return userid;
+    }
+
+    public void setUserid(String userid) {
+        this.userid = userid;
     }
 }
