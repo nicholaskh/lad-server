@@ -273,6 +273,23 @@ public class Constant {
 	 */
 	public static final int INFOR_VIDEO = 4;
 
+	/**
+	 * 健康
+	 */
+	public static final String HEALTH_NAME = "healthTypes";
+	/**
+	 * 安防
+	 */
+	public static final String SECRITY_NAME = "securityTypes";
+	/**
+	 * 广播
+	 */
+	public static final String RADIO_NAME = "radioTypes";
+	/**
+	 * 视频
+	 */
+	public static final String VIDEO_NAME = "videoTypes";
+
 
 
 	public static final String QUICK_LOGIN =

@@ -4,7 +4,6 @@ import com.lad.bo.InforSubscriptionBo;
 import com.mongodb.WriteResult;
 
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 
 /**
  * 功能描述：
@@ -23,7 +22,7 @@ public interface IInforSubDao {
      * @param subscriptions
      * @return
      */
-    WriteResult updateSub(String userid, int type, LinkedList<String> subscriptions);
+    WriteResult updateSub(String userid, int type, LinkedHashSet<String> subscriptions);
 
     /**
      * 更新安全分类订阅
@@ -31,7 +30,7 @@ public interface IInforSubDao {
      * @param securitys
      * @return
      */
-    WriteResult updateSecuritys(String userid, LinkedList<String> securitys);
+    WriteResult updateSecuritys(String userid, LinkedHashSet<String> securitys);
 
     /**
      * 更新咨询收藏

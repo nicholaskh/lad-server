@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -107,12 +106,12 @@ public class InforSerivceImpl implements IInforService {
     }
 
     @Override
-    public WriteResult updateSub(String userid, int type,LinkedList<String> subscriptions) {
+    public WriteResult updateSub(String userid, int type,LinkedHashSet<String> subscriptions) {
         return inforSubDao.updateSub(userid, type, subscriptions);
     }
 
     @Override
-    public WriteResult updateSecuritys(String userid, LinkedList<String> securitys) {
+    public WriteResult updateSecuritys(String userid, LinkedHashSet<String> securitys) {
         return inforSubDao.updateSecuritys(userid, securitys);
     }
 

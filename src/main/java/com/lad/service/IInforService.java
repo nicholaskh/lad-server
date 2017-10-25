@@ -9,7 +9,6 @@ import com.lad.scrapybo.VideoBo;
 import com.mongodb.WriteResult;
 
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -90,7 +89,7 @@ public interface IInforService {
      * @param subscriptions
      * @return
      */
-    WriteResult updateSub(String userid, int type, LinkedList<String> subscriptions);
+    WriteResult updateSub(String userid, int type, LinkedHashSet<String> subscriptions);
 
     /**
      *
@@ -98,7 +97,7 @@ public interface IInforService {
      * @param securitys
      * @return
      */
-    WriteResult updateSecuritys(String userid, LinkedList<String> securitys);
+    WriteResult updateSecuritys(String userid, LinkedHashSet<String> securitys);
 
     /**
      * 更新咨询收藏

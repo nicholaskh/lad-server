@@ -2,7 +2,7 @@ package com.lad.bo;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.LinkedList;
+import java.util.LinkedHashSet;
 
 /**
  * 功能描述： 资讯订阅收藏类
@@ -14,15 +14,15 @@ public class InforSubscriptionBo extends BaseBo {
 
     private String userid;
     //咨询订阅, 订阅是小分类
-    private LinkedList<String> subscriptions = new LinkedList<>();
+    private LinkedHashSet<String> subscriptions = new LinkedHashSet<>();
     //安全订阅
-    private LinkedList<String> securitys = new LinkedList<>();
+    private LinkedHashSet<String> securitys = new LinkedHashSet<>();
     //咨询收藏，收藏是单条咨询
-    private LinkedList<String> collects = new LinkedList<>();
+    private LinkedHashSet<String> collects = new LinkedHashSet<>();
     //广播订阅
-    private LinkedList<String> radios = new LinkedList<>();
+    private LinkedHashSet<String> radios = new LinkedHashSet<>();
     //视频订阅
-    private LinkedList<String> videos = new LinkedList<>();
+    private LinkedHashSet<String> videos = new LinkedHashSet<>();
 
     private int type;
 
@@ -34,20 +34,44 @@ public class InforSubscriptionBo extends BaseBo {
         this.userid = userid;
     }
 
-    public LinkedList<String> getSubscriptions() {
+    public LinkedHashSet<String> getSubscriptions() {
         return subscriptions;
     }
 
-    public void setSubscriptions(LinkedList<String> subscriptions) {
+    public void setSubscriptions(LinkedHashSet<String> subscriptions) {
         this.subscriptions = subscriptions;
     }
 
-    public LinkedList<String> getSecuritys() {
+    public LinkedHashSet<String> getSecuritys() {
         return securitys;
     }
 
-    public void setSecuritys(LinkedList<String> securitys) {
+    public void setSecuritys(LinkedHashSet<String> securitys) {
         this.securitys = securitys;
+    }
+
+    public LinkedHashSet<String> getCollects() {
+        return collects;
+    }
+
+    public void setCollects(LinkedHashSet<String> collects) {
+        this.collects = collects;
+    }
+
+    public LinkedHashSet<String> getRadios() {
+        return radios;
+    }
+
+    public void setRadios(LinkedHashSet<String> radios) {
+        this.radios = radios;
+    }
+
+    public LinkedHashSet<String> getVideos() {
+        return videos;
+    }
+
+    public void setVideos(LinkedHashSet<String> videos) {
+        this.videos = videos;
     }
 
     public int getType() {
@@ -56,29 +80,5 @@ public class InforSubscriptionBo extends BaseBo {
 
     public void setType(int type) {
         this.type = type;
-    }
-
-    public LinkedList<String> getCollects() {
-        return collects;
-    }
-
-    public void setCollects(LinkedList<String> collects) {
-        this.collects = collects;
-    }
-
-    public LinkedList<String> getRadios() {
-        return radios;
-    }
-
-    public void setRadios(LinkedList<String> radios) {
-        this.radios = radios;
-    }
-
-    public LinkedList<String> getVideos() {
-        return videos;
-    }
-
-    public void setVideos(LinkedList<String> videos) {
-        this.videos = videos;
     }
 }

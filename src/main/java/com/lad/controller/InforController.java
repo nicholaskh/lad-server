@@ -96,14 +96,14 @@ public class InforController extends BaseContorller {
             videoTypes.add(videoBo.getId());
         }
         cache.clear();
-        cache.put("securityTypes", securityTypes, 0, TimeUnit.MINUTES);
-        cache.put("healthTypes", groupTypes, 0, TimeUnit.MINUTES);
-        cache.put("radioTypes", broadTypes, 0, TimeUnit.MINUTES);
-        cache.put("videoTypes", videoTypes, 0, TimeUnit.MINUTES);
-        map.put("healthTypes", groupTypes);
-        map.put("securityTypes", securityTypes);
-        map.put("videoTypes", videoTypes);
-        map.put("radioTypes", broadTypes);
+        cache.put(Constant.SECRITY_NAME, securityTypes, 0, TimeUnit.MINUTES);
+        cache.put(Constant.HEALTH_NAME, groupTypes, 0, TimeUnit.MINUTES);
+        cache.put(Constant.RADIO_NAME, broadTypes, 0, TimeUnit.MINUTES);
+        cache.put(Constant.VIDEO_NAME, videoTypes, 0, TimeUnit.MINUTES);
+        map.put(Constant.HEALTH_NAME, groupTypes);
+        map.put(Constant.SECRITY_NAME, securityTypes);
+        map.put(Constant.VIDEO_NAME, videoTypes);
+        map.put(Constant.RADIO_NAME, broadTypes);
         return JSONObject.fromObject(map).toString();
     }
 
@@ -119,24 +119,20 @@ public class InforController extends BaseContorller {
             UserBo userBo = (UserBo) session.getAttribute("userBo");
             InforSubscriptionBo mySub = inforService.findMySubs(userBo.getId());
             if (mySub != null) {
-                map.put("healthTypes", mySub.getSubscriptions());
-                map.put("securityTypes", mySub.getSecuritys());
-                map.put("radioTypes", mySub.getRadios());
-                map.put("videoTypes", mySub.getVideos());
+                map.put(Constant.HEALTH_NAME, mySub.getSubscriptions());
+                map.put(Constant.SECRITY_NAME, mySub.getSecuritys());
+                map.put(Constant.RADIO_NAME, mySub.getRadios());
+                map.put(Constant.VIDEO_NAME, mySub.getVideos());
                 isGetType  = true;
             }
         }
         if (!isGetType) {
             RMapCache<String, Object> cache = redisServer.getCacheMap(Constant.TEST_CACHE);
-            if (cache.containsKey("healthTypes")) {
-                Object groupTypes = cache.get("healthTypes");
-                Object securityTypes = cache.get("securityTypes");
-                Object radioTypes = cache.get("radioTypes");
-                Object videoTypes = cache.get("videoTypes");
-                map.put("healthTypes", groupTypes);
-                map.put("securityTypes", securityTypes);
-                map.put("radioTypes", radioTypes);
-                map.put("videoTypes", videoTypes);
+            if (cache.containsKey(Constant.HEALTH_NAME)) {
+                map.put(Constant.HEALTH_NAME, cache.get(Constant.HEALTH_NAME));
+                map.put(Constant.SECRITY_NAME, cache.get(Constant.SECRITY_NAME));
+                map.put(Constant.RADIO_NAME, cache.get(Constant.RADIO_NAME));
+                map.put(Constant.VIDEO_NAME, cache.get(Constant.VIDEO_NAME));
             } else {
                 List<InforBo> inforBos = inforService.findAllGroups();
                 int size =  inforBos.size();
@@ -160,14 +156,14 @@ public class InforController extends BaseContorller {
                 for (VideoBo videoBo : videoBos) {
                     videoTypes.add(videoBo.getId());
                 }
-                cache.put("radioTypes", broadTypes, 0, TimeUnit.MINUTES);
-                cache.put("securityTypes", securityTypes, 0, TimeUnit.MINUTES);
-                cache.put("healthTypes", groupTypes, 0, TimeUnit.MINUTES);
-                cache.put("videoTypes", videoTypes, 0, TimeUnit.MINUTES);
-                map.put("healthTypes", groupTypes);
-                map.put("securityTypes", securityTypes);
-                map.put("videoTypes", videoTypes);
-                map.put("radioTypes", broadTypes);
+                cache.put(Constant.SECRITY_NAME, securityTypes, 0, TimeUnit.MINUTES);
+                cache.put(Constant.HEALTH_NAME, groupTypes, 0, TimeUnit.MINUTES);
+                cache.put(Constant.RADIO_NAME, broadTypes, 0, TimeUnit.MINUTES);
+                cache.put(Constant.VIDEO_NAME, videoTypes, 0, TimeUnit.MINUTES);
+                map.put(Constant.HEALTH_NAME, groupTypes);
+                map.put(Constant.SECRITY_NAME, securityTypes);
+                map.put(Constant.VIDEO_NAME, videoTypes);
+                map.put(Constant.RADIO_NAME, broadTypes);
             }
         }
         return JSONObject.fromObject(map).toString();
@@ -337,39 +333,34 @@ public class InforController extends BaseContorller {
             mySub.setUserid(userBo.getId());
             inforService.insertSub(mySub);
         }
-        LinkedList<String> mySubs = mySub.getSubscriptions();
+        HashSet<String> mySubs = null;
         RMapCache<String, Object> cache = redisServer.getCacheMap(Constant.TEST_CACHE);
-        List<String> groupList = new ArrayList<>();
         String keys = "";
         switch (type){
             case Constant.ONE:
-                keys = "healthTypes";
+                keys = Constant.HEALTH_NAME;
+                mySubs = mySub.getSubscriptions();
                 break;
             case Constant.TWO:
-                keys = "securityTypes";
+                keys = Constant.SECRITY_NAME;
+                mySubs = mySub.getSecuritys();
                 break;
             case Constant.THREE:
-                keys = "radioTypes";
+                keys = Constant.RADIO_NAME;
+                mySubs = mySub.getRadios();
                 break;
             case Constant.FOUR:
-                keys = "videoTypes";
+                keys = Constant.VIDEO_NAME;
+                mySubs = mySub.getVideos();
                 break;
             default:
+                mySubs = new LinkedHashSet<>();
                 break;
         }
-        if (cache.containsKey(keys)) {
-            Object groupTypes = cache.get(keys);
-            JSONArray array = JSONArray.fromObject(groupTypes);
-            int size = array.size();
-            for (int i = 0; i < size; i++) {
-                String groupName = (String)array.get(i);
-                if (!mySubs.contains(groupName)) {
-                    groupList.add(groupName);
-                } 
-            }
-        }
-        map.put("mySubTypes", mySub.getSubscriptions());
-        map.put("recoTypes", groupList);
+        HashSet<String> groupTypes = (HashSet<String>)cache.get(keys);
+        groupTypes.removeAll(mySubs);
+        map.put("recoTypes", groupTypes);
+        map.put("mySubTypes", mySubs);
         return JSONObject.fromObject(map).toString();
     }
 
@@ -387,14 +378,6 @@ public class InforController extends BaseContorller {
         }
 
         InforSubscriptionBo mySub = inforService.findMySubs(userBo.getId());
-
-        LinkedList<String> mySubs = new LinkedList<>();
-        if (groupNames.indexOf(',') > -1) {
-            String[] idsArr = groupNames.split(",");
-            mySubs = (LinkedList<String>) Arrays.asList(idsArr);
-        } else {
-            mySubs.add(groupNames);
-        }
         boolean isNew = false;
         if (null == mySub) {
             mySub = new InforSubscriptionBo();
@@ -402,21 +385,49 @@ public class InforController extends BaseContorller {
             mySub.setCreateuid(userBo.getId());
             isNew = true;
         }
+        LinkedHashSet<String> mySubs = new LinkedHashSet<>();
+        String keys = "";
         switch (type){
             case Constant.ONE:
                 mySub.setSubscriptions(mySubs);
+                keys = Constant.HEALTH_NAME;
                 break;
             case Constant.TWO:
                 mySub.setSecuritys(mySubs);
+                keys = Constant.SECRITY_NAME;
                 break;
             case Constant.THREE:
                 mySub.setRadios(mySubs);
+                keys = Constant.RADIO_NAME;
                 break;
             case Constant.FOUR:
                 mySub.setVideos(mySubs);
+                keys = Constant.VIDEO_NAME;
                 break;
             default:
                 break;
+        }
+        RMapCache<String, Object> cache = redisServer.getCacheMap(Constant.TEST_CACHE);
+        LinkedHashSet<String> groupTypes = (LinkedHashSet<String>) cache.get(keys);
+        if (groupNames.indexOf(',') > -1) {
+            String[] namesArr = groupNames.split(",");
+            for (String name : namesArr) {
+                if (groupTypes.contains(name)) {
+                    mySubs.add(name);
+                } else {
+                    return CommonUtil.toErrorResult(
+                            ERRORCODE.INFOR_NAME_ERROR.getIndex(),
+                            ERRORCODE.INFOR_NAME_ERROR.getReason());
+                }
+            }
+        } else {
+            if (groupTypes.contains(groupNames)) {
+                mySubs.add(groupNames);
+            } else {
+                return CommonUtil.toErrorResult(
+                        ERRORCODE.INFOR_NAME_ERROR.getIndex(),
+                        ERRORCODE.INFOR_NAME_ERROR.getReason());
+            }
         }
         if (isNew){
             inforService.insertSub(mySub);
@@ -554,7 +565,7 @@ public class InforController extends BaseContorller {
             mySub.setUserid(userBo.getId());
             inforService.insertSub(mySub);
         }
-        LinkedList<String> mySubs = mySub.getSecuritys();
+        LinkedHashSet<String> mySubs = mySub.getSecuritys();
         map.put("mySubSecuritys", mySub.getSecuritys());
 
         RMapCache<String, Object> cache = redisServer.getCacheMap(Constant.TEST_CACHE);
@@ -585,8 +596,8 @@ public class InforController extends BaseContorller {
         }
 
         InforSubscriptionBo mySub = inforService.findMySubs(userBo.getId());
-
-        LinkedList<String> securitys = (LinkedList<String>) Arrays.asList(securityNames);
+        LinkedHashSet<String> securitys = new LinkedHashSet<>();
+        Collections.addAll(securitys, securityNames);
         if (null == mySub) {
             mySub = new InforSubscriptionBo();
             mySub.setUserid(userBo.getId());

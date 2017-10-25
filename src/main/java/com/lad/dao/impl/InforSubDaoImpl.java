@@ -12,7 +12,6 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 
 /**
  * 功能描述：
@@ -32,7 +31,7 @@ public class InforSubDaoImpl implements IInforSubDao {
         return inforSubscriptionBo;
     }
 
-    public WriteResult updateSub(String id, int type, LinkedList<String> list){
+    public WriteResult updateSub(String id, int type, LinkedHashSet<String> list){
         Query query = new Query();
         query.addCriteria(new Criteria("_id").is(id));
         query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
@@ -56,7 +55,7 @@ public class InforSubDaoImpl implements IInforSubDao {
         return mongoTemplate.updateFirst(query, update, InforSubscriptionBo.class);
     }
 
-    public WriteResult updateSecuritys(String userid, LinkedList<String> securitys){
+    public WriteResult updateSecuritys(String userid, LinkedHashSet<String> securitys){
         Query query = new Query();
         query.addCriteria(new Criteria("userid").is(userid));
         query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));

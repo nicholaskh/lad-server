@@ -79,6 +79,7 @@ public enum ERRORCODE {
 	CIRCLE_NAME_EXIST(110015, "圈子名称已经存在"),
 
 	INFOR_IS_NULL(130001, "资讯不存在"),
+	INFOR_NAME_ERROR(130002, "分类名称错误"),
 
 	PARTY_ERROR(140001, "聚会参数错误"),
 	PARTY_NULL(140002, "聚会不存在"),
