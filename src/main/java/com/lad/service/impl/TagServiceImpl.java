@@ -53,6 +53,6 @@ public class TagServiceImpl implements ITagService {
 
 	@Override
 	public WriteResult updateTagFriends(String tagid, LinkedHashSet<String> friendsIds) {
-		return null;
+		return tagDao.updateTagFriends(tagid, friendsIds);
 	}
 }

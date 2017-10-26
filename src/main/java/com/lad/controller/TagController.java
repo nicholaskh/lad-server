@@ -13,8 +13,11 @@ import com.lad.util.MyException;
 import com.lad.vo.TagVo;
 import com.lad.vo.UserBaseVo;
 import net.sf.json.JSONObject;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -26,6 +29,8 @@ import java.util.*;
 @Controller
 @RequestMapping("tag")
 public class TagController extends BaseContorller {
+
+	private static Logger logger = LogManager.getLogger(TagController.class);
 
 	@Autowired
 	private ITagService tagService;
@@ -41,13 +46,17 @@ public class TagController extends BaseContorller {
 		UserBo userBo;
 		try {
 			userBo = checkSession(request, userService);
-			String[] tags = tagNames.split(",");
+			List<String> tags = Arrays.asList(CommonUtil.getIds(tagNames));
+			removeTag(userBo,friendid, tags);
+			logger.info("friendid : {},  tag -list: {}",friendid, tagNames);
 			for (String tag : tags) {
 				TagBo tagBo = tagService.getBynameAndUserid(tag, userBo.getId());
 				if (tagBo != null) {
 					LinkedHashSet<String> firendsSet = tagBo.getFriendsIds();
-					firendsSet.add(friendid);
-					tagService.updateTagFriends(tagBo.getId(), firendsSet);
+					if (!firendsSet.contains(friendid)) {
+						firendsSet.add(friendid);
+						tagService.updateTagFriends(tagBo.getId(), firendsSet);
+					}
 				} else {
 					tagBo = new TagBo();
 					LinkedHashSet<String> firendsSet = tagBo.getFriendsIds();
@@ -62,6 +71,21 @@ public class TagController extends BaseContorller {
 			return e.getMessage();
 		}
 		return Constant.COM_RESP;
+	}
+
+	@Async
+	private void removeTag(UserBo userBo, String friendid, List<String> tags){
+		List<TagBo> tagBoList = tagService.getTagBoListByUseridAndFrinedid(
+				userBo.getId(), friendid);
+		if (tagBoList != null) {
+			for (TagBo tagBo : tagBoList) {
+				if (!tags.contains(tagBo.getName())){
+					LinkedHashSet<String> firendsSet = tagBo.getFriendsIds();
+					firendsSet.remove(friendid);
+					tagService.updateTagFriends(tagBo.getId(), firendsSet);
+				}
+			}
+		}
 	}
 
 
