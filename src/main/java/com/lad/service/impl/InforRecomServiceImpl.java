@@ -50,7 +50,7 @@ public class InforRecomServiceImpl implements IInforRecomService {
     }
 
     @Override
-    public WriteResult findHalfYearHis(String inforid, Date halfYearTime) {
+    public List<InforHistoryBo> findHalfYearHis(String inforid, Date halfYearTime) {
         return inforHistoryDao.findHalfYearHis(inforid, halfYearTime);
     }
 
@@ -110,6 +110,11 @@ public class InforRecomServiceImpl implements IInforRecomService {
     }
 
     @Override
+    public WriteResult updateUserReadAll(InforUserReadBo userReadBo) {
+        return inforUserReadDao.updateUserReadAll(userReadBo);
+    }
+
+    @Override
     public InforUserReadHisBo addUserReadHis(InforUserReadHisBo userReadHisBo) {
         return inforUserReadHisDao.addUserReadHis(userReadHisBo);
     }
@@ -122,5 +127,15 @@ public class InforRecomServiceImpl implements IInforRecomService {
     @Override
     public WriteResult updateUserReadHis(String id, Date currentDate) {
         return inforUserReadHisDao.updateUserReadHis(id, currentDate);
+    }
+
+    @Override
+    public InforUserReadHisBo findByReadHis(String userid, int type, String module) {
+        return inforUserReadHisDao.findByReadHis(userid, type, module);
+    }
+
+    @Override
+    public List<InforUserReadHisBo> findUserReadHisBeforeHalf(String userid, Date halfTime) {
+        return inforUserReadHisDao.findUserReadHisBeforeHalf(userid, halfTime);
     }
 }

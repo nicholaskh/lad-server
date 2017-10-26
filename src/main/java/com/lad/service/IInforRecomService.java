@@ -36,7 +36,7 @@ public interface IInforRecomService {
      * @param halfYearTime
      * @return
      */
-    WriteResult findHalfYearHis(String inforid, Date halfYearTime);
+    List<InforHistoryBo> findHalfYearHis(String inforid, Date halfYearTime);
 
     /**
      * 删除资讯信息
@@ -102,6 +102,8 @@ public interface IInforRecomService {
 
     WriteResult deleteUserRead(String id);
 
+    WriteResult updateUserReadAll(InforUserReadBo userReadBo);
+
     InforUserReadHisBo addUserReadHis(InforUserReadHisBo userReadHisBo);
 
     /**
@@ -122,5 +124,20 @@ public interface IInforRecomService {
      */
     WriteResult updateUserReadHis(String id, Date currentDate);
 
+    /**
+     * 查找用户当天指定类型和分类的阅读记录
+     * @param userid
+     * @param type
+     * @param module
+     * @return
+     */
+    InforUserReadHisBo findByReadHis(String userid, int type, String module);
 
+    /**
+     * 查找用户半年之前的分类阅读记录
+     * @param userid
+     * @param halfTime
+     * @return
+     */
+    List<InforUserReadHisBo> findUserReadHisBeforeHalf(String userid, Date halfTime);
 }
