@@ -4,14 +4,16 @@ import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.*;
 
 
 public class HttpClientUtil {
+
+    private static Logger logger = LogManager.getLogger(HttpClientUtil.class);
     
-    private final static org.slf4j.Logger logger = LoggerFactory.getLogger(HttpClientUtil.class);
     private static HttpClient client = null;
 
     // 构造单例
@@ -65,11 +67,9 @@ public class HttpClientUtil {
                 response = GetResponseString(_InputStream, "UTF-8");
             }
         } catch (HttpException e) {
-            e.printStackTrace();
-            logger.error("获取响应错误，原因：" + e.getMessage());
+            logger.error("获取响应错误，原因：{}",e.getMessage());
         } catch (IOException e) {
-            e.printStackTrace();
-            logger.error("获取响应错误，原因1：" + e.getMessage());
+            logger.error("获取响应错误，原因 {}",e.getMessage());
         } finally {
             httpmethod.releaseConnection();
         }
@@ -91,9 +91,9 @@ public class HttpClientUtil {
                 }
             }
         } catch (HttpException e) {
-            logger.error("获取响应错误，原因：" + e.getMessage());
+            logger.error("获取响应错误，原因：{}",e.getMessage());
         } catch (IOException e) {
-            logger.error("获取响应错误，原因1：" + e.getMessage());
+            logger.error("获取响应错误，原因：{}",e.getMessage());
         } finally {
             postMethod.releaseConnection();
         }
@@ -121,7 +121,7 @@ public class HttpClientUtil {
                 buffer = null;
             }
         } catch (IOException e) {
-            logger.error("获取响应错误，原因：" + e.getMessage());
+            logger.error("获取响应错误，原因：{}",e.getMessage());
             response = response + e.getMessage();
         }
         return response;

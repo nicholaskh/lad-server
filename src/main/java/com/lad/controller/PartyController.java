@@ -10,6 +10,8 @@ import com.lad.vo.PartyUserVo;
 import com.lad.vo.PartyVo;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.redisson.api.RLock;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +36,8 @@ import java.util.concurrent.TimeUnit;
 @Controller
 @RequestMapping("/party")
 public class PartyController extends BaseContorller {
+
+    private static Logger logger = LogManager.getLogger(BaseContorller.class);
 
     @Autowired
     private IPartyService partyService;
@@ -73,6 +77,7 @@ public class PartyController extends BaseContorller {
                           @RequestParam("video") MultipartFile video,
                           HttpServletRequest request, HttpServletResponse response){
 
+        logger.info("partyJson : {}",partyJson);
         UserBo userBo;
         try {
             userBo = checkSession(request, userService);
@@ -101,7 +106,7 @@ public class PartyController extends BaseContorller {
         }
         if (video != null) {
             String fileName = userId + "-" + time + "-" + video.getOriginalFilename();
-            System.out.println("----file: " + video.getOriginalFilename() + ",  size: " + video.getSize());
+            logger.info("---- party file: {} ,  size: {}" , video.getOriginalFilename(), video.getSize());
             String[] paths = CommonUtil.uploadVedio(video, Constant.PARTY_PICTURE_PATH, fileName, 0);
             partyBo.setVideo(paths[0]);
             partyBo.setVideoPic(paths[1]);
@@ -137,6 +142,8 @@ public class PartyController extends BaseContorller {
                          @RequestParam("images") MultipartFile[] images,
                          @RequestParam("video") MultipartFile video,
                          HttpServletRequest request, HttpServletResponse response){
+
+        logger.info("update partyJson : {}",partyJson);
 
         UserBo userBo;
         try {

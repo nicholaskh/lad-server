@@ -12,7 +12,8 @@ import com.lad.util.*;
 import com.pushd.ImAssistant;
 import com.pushd.Message;
 import net.sf.json.JSONObject;
-import org.redisson.api.RLock;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
@@ -29,6 +30,8 @@ import java.util.Map;
 @Controller
 @RequestMapping("login")
 public class LoginController extends BaseContorller {
+
+	private static Logger logger = LogManager.getLogger(LoginController.class);
 
 	@Autowired
 	private ILoginService loginService;
@@ -139,7 +142,7 @@ public class LoginController extends BaseContorller {
 				try {
 					msg = new String(Constant.QUICK_LOGIN.getBytes(), "GBK");
 				} catch (Exception e) {
-					System.out.println( "msg : " + e.getMessage());
+					logger.error(e);
 				}
 				CommonUtil.sendSMS2(phone, msg);
 				isNew = true;
@@ -159,7 +162,7 @@ public class LoginController extends BaseContorller {
 			session.setAttribute("isLogin", true);
 			session.setAttribute("loginTime", System.currentTimeMillis());
 			session.setAttribute("userBo", userBo);
-			System.out.println("==========" + phone +" ; sessionid :" + session.getId());
+			logger.info("quick login ========== {} ; sessionid :{}",phone, session.getId());
 		} else {
 			return CommonUtil.toErrorResult(ERRORCODE.SECURITY_WRONG_VERIFICATION.getIndex(),
 					ERRORCODE.SECURITY_WRONG_VERIFICATION.getReason());
@@ -254,7 +257,7 @@ public class LoginController extends BaseContorller {
 			}
 			map.put("token", message3.getMsg());
 			map.put("userid",userBo.getId());
-			System.out.println("==========" + phone +" ; sessionid :" + session.getId());
+			logger.info("login ========== {} ; sessionid :{}",phone, session.getId());
 			assistent.close();
 		} else {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PASSWORD.getIndex(),
@@ -263,63 +266,6 @@ public class LoginController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-
-	@RequestMapping("/login-no")
-	@ResponseBody
-	public String loginNoPas(String phone, HttpServletRequest request,
-							 HttpServletResponse response) {
-		HttpSession session = request.getSession();
-		if (!StringUtils.hasLength(phone)) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PHONE_ERROR.getIndex(),
-					ERRORCODE.ACCOUNT_PHONE_ERROR.getReason());
-		}
-		Map<String, Object> map = new HashMap<String, Object>();
-		UserBo userBo = userService.getUserByPhone(phone);
-		RLock lock = redisServer.getRLock(Constant.CHAT_LOCK);
-		lock.lock();
-		try {
-			System.out.println(lock.getName());
-
-			if (userBo != null) {
-				map.put("ret", 0);
-				session.setAttribute("isLogin", true);
-				session.setAttribute("userBo", userBo);
-				System.out.println("===========" + session);
-				ImAssistant assistent = ImAssistant.init("180.76.138.200", 2222);
-				if(assistent == null){
-					return CommonUtil.toErrorResult(ERRORCODE.PUSHED_CONNECT_ERROR.getIndex(),
-							ERRORCODE.PUSHED_CONNECT_ERROR.getReason());
-				}
-				IMTermBo iMTermBo = iMTermService.selectByUserid(userBo.getId());
-				if(iMTermBo == null){
-					iMTermBo = new IMTermBo();
-					iMTermBo.setUserid(userBo.getId());
-					String term =IMUtil.getTerm(assistent);
-					iMTermBo.setTerm(term);
-					iMTermService.insert(iMTermBo);
-				}
-				assistent.setServerTerm(iMTermBo.getTerm());
-				Message message3 = assistent.getToken();
-				if(message3.getStatus() == Message.Status.termError){
-					String term =IMUtil.getTerm(assistent);
-					iMTermService.updateByUserid(userBo.getId(), term);
-				}else if (Message.Status.success != message3.getStatus()) {
-					assistent.close();
-					return CommonUtil.toErrorResult(message3.getStatus(), message3.getMsg());
-				}
-				map.put("token", message3.getMsg());
-				assistent.close();
-			} else {
-				return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PHONE_ERROR.getIndex(),
-						ERRORCODE.ACCOUNT_PHONE_ERROR.getReason());
-			}
-		} catch (Exception e) {
-			map.put("errot",  e.getMessage());
-		} finally {
-			lock.unlock();
-		}
-		return JSONObject.fromObject(map).toString();
-	}
 
 	@RequestMapping("/logout")
 	@ResponseBody
@@ -338,6 +284,7 @@ public class LoginController extends BaseContorller {
 		long time = System.currentTimeMillis() - loginTime;
 		userService.addUserLevel(userBo.getId(), time, Constant.LEVEL_HOUR);
 		session.invalidate();
+		logger.info("logout ========== {} ; sessionid :{}",userBo.getPhone(), session.getId());
 		return Constant.COM_RESP;
 	}
 

@@ -3,6 +3,8 @@ package com.lad.util;
 import net.sf.json.JSONObject;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -22,6 +24,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class CommonUtil {
+
+	private static Logger logger = LogManager.getLogger(CommonUtil.class);
 	/**
 	 * 每天多少毫秒时间
 	 */
@@ -42,9 +46,9 @@ public class CommonUtil {
 			byte[] hash = digest.digest(content.getBytes("UTF-8"));
 			output = Hex.encodeHexString(hash);
 		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
+			logger.error("密码加密错误：{}",e);
 		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
+			logger.error("密码加密错误：{}",e);
 		}
 		return output;
 	}
@@ -152,7 +156,7 @@ public class CommonUtil {
 		}
 		String url = "http://sms-gw.bjedu.cloud:9888/smsservice/SendSMS?UserId=100535&Password=ttlyyl_2017&Mobiles="+mobile+"&Content="+message+"&ExtNo=35";
 		String responseString = HttpClientUtil.getInstance().doGetRequest(url);
-		System.out.println(mobile + " : =====message send result : " + responseString);
+		logger.error("{} : =====message send result : {}",mobile,responseString);
 		if (responseString.trim().equals(Constant.RESPONSE)) {
 			return 0;
 		}
@@ -195,7 +199,7 @@ public class CommonUtil {
 			builder.append(new1).append(number).append(new2);
 			msg = builder.toString();
 		} catch (Exception e) {
-			System.out.println("send Msg exception " + e.getMessage());
+			logger.error("send Msg exception : {}",e.getMessage());
 		}
 		return msg;
 	}
@@ -207,7 +211,7 @@ public class CommonUtil {
 			builder.append("您正在修改密码，验证码为：").append(number).append("，该验证码5分钟内有效，如非本人操作，请忽略。");
 			msg = new String(builder.toString().getBytes(), "GBK");
 		} catch (Exception e) {
-			System.out.println("send Msg exception " + e.getMessage());
+			logger.error("send Msg exception : {}",e.getMessage());
 		}
 		return msg;
 	}
@@ -366,7 +370,7 @@ public class CommonUtil {
 	 * 获取当前时间零点时间戳
 	 * @return
 	 */
-	public static Date getDate(Date currenDate){
+	public static Date getZeroDate(Date currenDate){
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(currenDate);
 		calendar.set(Calendar.HOUR_OF_DAY, 0);

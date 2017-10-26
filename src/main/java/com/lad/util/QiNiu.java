@@ -7,12 +7,12 @@ import com.qiniu.storage.BucketManager;
 import com.qiniu.storage.Configuration;
 import com.qiniu.storage.UploadManager;
 import com.qiniu.util.Auth;
-import org.apache.log4j.Logger;
-import org.apache.log4j.spi.RootLogger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class QiNiu {
 
-	private static final Logger logger = RootLogger.getLogger(QiNiu.class);
+	private static Logger logger = LogManager.getLogger(QiNiu.class);
 	
 	public static String uploadToQiNiu(String path ,String filename){
 		//构造一个带指定Zone对象的配置类
@@ -34,9 +34,9 @@ public class QiNiu {
 			long start = System.currentTimeMillis();
 		    uploadManager.put(localFilePath, key, upToken);
 		    long end =  System.currentTimeMillis();
-			System.out.println("update time millis : =======" + (end-start));
+			logger.info("update time millis : ======= {}",(end-start));
 		} catch (QiniuException ex) {
-			ex.printStackTrace();
+			logger.error(ex);
 		}
 		return key;
 	}
@@ -60,7 +60,7 @@ public class QiNiu {
 			long start = System.currentTimeMillis();
 			uploadManager.put(localFilePath, key, upToken);
 			long end =  System.currentTimeMillis();
-			System.out.println("update time millis due : =======" + (end-start));
+			logger.info("update time millis due : ======= {}",(end-start));
 		} catch (QiniuException ex) {
 		    Response r = ex.response;
 		    System.err.println(r.toString());
@@ -69,8 +69,7 @@ public class QiNiu {
 		try {
 		    bucketManager.deleteAfterDays(bucket, key, days);
 		} catch (QiniuException ex) {
-		    System.err.println(ex.response.toString());
-			logger.error(ex.response.toString());
+			logger.error(ex);
 		}
 		return key;
 	}

@@ -1,7 +1,7 @@
 package com.lad.util;
 
-import org.apache.log4j.Logger;
-import org.apache.log4j.spi.RootLogger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.*;
 
@@ -12,7 +12,8 @@ import java.io.*;
  * Time:2017/9/9
  */
 public class FFmpegUtil {
-    private static Logger logger = RootLogger.getLogger(FFmpegUtil.class);
+
+    private static Logger logger = LogManager.getLogger(FFmpegUtil.class);
     /**
      *
      * @param inFile   视频文件
@@ -28,33 +29,7 @@ public class FFmpegUtil {
         cmd.append(" -y -f image2 -ss 1 -t 0.001 -s ");
         cmd.append("176x144 ");
         cmd.append(path).append(outName);
-
-        Runtime rt = Runtime.getRuntime();
-        Process proc = null;
-        try {
-            proc= rt.exec(new String[]{"sh","-c",cmd.toString()});
-            //调用线程命令进行转码
-            InputStream stderr = proc.getErrorStream();
-            InputStreamReader isr = new InputStreamReader(stderr);
-            BufferedReader br = new BufferedReader(isr);
-            proc.waitFor();
-            String line = "";
-            while ((line = br.readLine()) != null) {
-                logger.info(">" + line);
-                System.out.println(">" + line);
-            }
-            br.close();
-            isr.close();
-            stderr.close();
-        } catch (Exception e){
-            e.printStackTrace();
-            return "";
-        } finally {
-            if (proc != null){
-                proc.destroy();
-            }
-        }
-        return outName;
+        return FFmpeg(cmd.toString(), outName);
     }
 
 
@@ -69,15 +44,19 @@ public class FFmpegUtil {
         cmd.append(urls);
         //截取视频第一秒的视频图片
         cmd.append(" -y -f image2 -ss 1 -t 0.001 -s ");
-        cmd.append("1001x563 ");
+        cmd.append("1000x562 ");
         cmd.append(path).append(outName);
+        return FFmpeg(cmd.toString(), outName);
+    }
+
+    private static String FFmpeg(String cmd, String outName){
         Runtime rt = Runtime.getRuntime();
         Process proc = null;
         InputStream stderr = null;
         InputStreamReader isr = null;
         BufferedReader br = null;
         try {
-            proc= rt.exec(new String[]{"sh","-c",cmd.toString()});
+            proc= rt.exec(new String[]{"sh","-c",cmd});
             //调用线程命令进行转码
             stderr = proc.getErrorStream();
             isr = new InputStreamReader(stderr);
@@ -86,13 +65,12 @@ public class FFmpegUtil {
             String line = "";
             while ((line = br.readLine()) != null) {
                 logger.info(">" + line);
-                System.out.println(">" + line);
             }
             br.close();
             isr.close();
             stderr.close();
         } catch (Exception e){
-            e.printStackTrace();
+            logger.error(e);
             return "";
         } finally {
             try {
@@ -106,7 +84,8 @@ public class FFmpegUtil {
                     stderr.close();
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error(e);
+                return "";
             }
             if (proc != null){
                 proc.destroy();
