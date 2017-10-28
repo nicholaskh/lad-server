@@ -37,7 +37,7 @@ import java.util.concurrent.TimeUnit;
 @RequestMapping("/party")
 public class PartyController extends BaseContorller {
 
-    private static Logger logger = LogManager.getLogger(BaseContorller.class);
+    private static Logger logger = LogManager.getLogger(PartyController.class);
 
     @Autowired
     private IPartyService partyService;
@@ -71,10 +71,8 @@ public class PartyController extends BaseContorller {
 
     @RequestMapping("/create")
     @ResponseBody
-    public String create(@RequestParam String partyJson,
-                          @RequestParam("backPic") MultipartFile backPic,
-                          @RequestParam("photos") MultipartFile[] photos,
-                          @RequestParam("video") MultipartFile video,
+    public String create(@RequestParam String partyJson, MultipartFile backPic,
+                          MultipartFile[] photos, MultipartFile video,
                           HttpServletRequest request, HttpServletResponse response){
 
         logger.info("partyJson : {}",partyJson);
@@ -92,6 +90,11 @@ public class PartyController extends BaseContorller {
             return CommonUtil.toErrorResult(ERRORCODE.PARTY_ERROR.getIndex(),
                     ERRORCODE.PARTY_ERROR.getReason());
         }
+        CircleBo circleBo = circleService.selectById(partyBo.getCircleid());
+        if (circleBo == null) {
+            return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_IS_NULL.getIndex(),
+                    ERRORCODE.CIRCLE_IS_NULL.getReason());
+        }
         String userId = userBo.getId();
         Long time = Calendar.getInstance().getTimeInMillis();
         if (photos != null) {
@@ -105,11 +108,15 @@ public class PartyController extends BaseContorller {
             partyBo.setPhotos(photo);
         }
         if (video != null) {
-            String fileName = userId + "-" + time + "-" + video.getOriginalFilename();
-            logger.info("---- party file: {} ,  size: {}" , video.getOriginalFilename(), video.getSize());
-            String[] paths = CommonUtil.uploadVedio(video, Constant.PARTY_PICTURE_PATH, fileName, 0);
-            partyBo.setVideo(paths[0]);
-            partyBo.setVideoPic(paths[1]);
+            try {
+                String fileName = userId + "-" + time + "-" + video.getOriginalFilename();
+                logger.info("---- party file: {} ,  size: {}" , video.getOriginalFilename(), video.getSize());
+                String[] paths = CommonUtil.uploadVedio(video, Constant.PARTY_PICTURE_PATH, fileName, 0);
+                partyBo.setVideo(paths[0]);
+                partyBo.setVideoPic(paths[1]);
+            } catch (Exception e) {
+                logger.error(e);
+            }
         }
         if (backPic != null) {
             String fileName = userId + "-" + time + "-" + backPic.getOriginalFilename();
@@ -136,11 +143,8 @@ public class PartyController extends BaseContorller {
 
     @RequestMapping("/update")
     @ResponseBody
-    public String update(@RequestParam String partyJson,
-                         @RequestParam String partyid,
-                         @RequestParam("backPic") MultipartFile backPic,
-                         @RequestParam("images") MultipartFile[] images,
-                         @RequestParam("video") MultipartFile video,
+    public String update(@RequestParam String partyJson, @RequestParam String partyid,
+                         MultipartFile backPic, MultipartFile[] images, MultipartFile video,
                          HttpServletRequest request, HttpServletResponse response){
 
         logger.info("update partyJson : {}",partyJson);
