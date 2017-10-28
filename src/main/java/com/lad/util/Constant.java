@@ -18,7 +18,7 @@ public class Constant {
 	/**
 	 * pushd服务器ip
 	 */
-	public static final String PUSHD_IP =  "180.76.138.200";
+	public static final String PUSHD_IP =  "192.168.0.5";
 
 	/**
 	 * push服务器端口
