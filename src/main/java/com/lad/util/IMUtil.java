@@ -20,7 +20,7 @@ public class IMUtil {
 	 * @return 数组 第一个为返回结果信息，第二位term信息
 	 */
 	public static String[] subscribe(int type, String chatroomId, String inTerm, String... ids){
-		ImAssistant assistent = ImAssistant.init("180.76.138.200", 2222);
+		ImAssistant assistent = ImAssistant.init(Constant.PUSHD_IP, Constant.PUSHD_POST);
 		String res = "";
 		if (assistent == null) {
 			res = CommonUtil.toErrorResult(
@@ -75,7 +75,7 @@ public class IMUtil {
 	 * @return 数组 第一个为返回结果信息，第二位term信息
 	 */
 	public static String[] unSubscribe(String chatroomId, String inTerm, String... ids){
-		ImAssistant assistent = ImAssistant.init("180.76.138.200", 2222);
+		ImAssistant assistent = ImAssistant.init(Constant.PUSHD_IP, Constant.PUSHD_POST);
 		String res = "";
 		if (assistent == null) {
 			res = CommonUtil.toErrorResult(
@@ -128,7 +128,7 @@ public class IMUtil {
 
 	public static String unSubscribe(IIMTermService iMTermService,
 			String userid, String chatroomId, String... ids) {
-		ImAssistant assistent = ImAssistant.init("180.76.138.200", 2222);
+		ImAssistant assistent = ImAssistant.init(Constant.PUSHD_IP, Constant.PUSHD_POST);
 		if (assistent == null) {
 			return CommonUtil.toErrorResult(
 					ERRORCODE.PUSHED_CONNECT_ERROR.getIndex(),
@@ -167,7 +167,7 @@ public class IMUtil {
 
 	public static String disolveRoom(IIMTermService iMTermService,
 			String userid, String chatroomId) {
-		ImAssistant assistent = ImAssistant.init("180.76.138.200", 2222);
+		ImAssistant assistent = ImAssistant.init(Constant.PUSHD_IP, Constant.PUSHD_POST);
 		if (assistent == null) {
 			return CommonUtil.toErrorResult(
 					ERRORCODE.PUSHED_CONNECT_ERROR.getIndex(),

@@ -13,6 +13,18 @@ public class Constant {
 
 	public static final String RESPONSE = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><response><error>0</error><message></message></response>";
 
+
+
+	/**
+	 * pushd服务器ip
+	 */
+	public static final String PUSHD_IP =  "180.76.138.200";
+
+	/**
+	 * push服务器端口
+	 */
+	public static final int PUSHD_POST=  2222;
+
 	/**
 	 * 通用成功返回
 	 */

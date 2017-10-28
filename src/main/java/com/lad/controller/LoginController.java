@@ -90,7 +90,7 @@ public class LoginController extends BaseContorller {
 			map.put("ret", 0);
 			UserBo userBo = userService.checkByPhone(phone);
 			boolean isNew = false;
-			ImAssistant assistent = ImAssistant.init("180.76.138.200", 2222);
+			ImAssistant assistent = ImAssistant.init(Constant.PUSHD_IP, Constant.PUSHD_POST);
 			if (null == assistent) {
 				return CommonUtil.toErrorResult(ERRORCODE.PUSHED_CONNECT_ERROR.getIndex(),
 						ERRORCODE.PUSHED_CONNECT_ERROR.getReason());
@@ -226,7 +226,7 @@ public class LoginController extends BaseContorller {
 			session.setAttribute("isLogin", true);
 			session.setAttribute("userBo", userBo);
 			session.setAttribute("loginTime", System.currentTimeMillis());
-			ImAssistant assistent = ImAssistant.init("180.76.138.200", 2222);
+			ImAssistant assistent = ImAssistant.init(Constant.PUSHD_IP, Constant.PUSHD_POST);
 			if(assistent == null){
 				return CommonUtil.toErrorResult(ERRORCODE.PUSHED_CONNECT_ERROR.getIndex(),
 						ERRORCODE.PUSHED_CONNECT_ERROR.getReason());

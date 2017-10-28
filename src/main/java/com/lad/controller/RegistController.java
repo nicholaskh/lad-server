@@ -134,7 +134,7 @@ public class RegistController extends BaseContorller {
 		homepageBo.setOwner_id(userBo.getId());
 		homepageService.insert(homepageBo);
 		session.invalidate();
-		ImAssistant assistent = ImAssistant.init("180.76.138.200", 2222);
+		ImAssistant assistent = ImAssistant.init(Constant.PUSHD_IP, Constant.PUSHD_POST);
 		if (null == assistent) {
 			return CommonUtil.toErrorResult(ERRORCODE.PUSHED_CONNECT_ERROR.getIndex(),
 					ERRORCODE.PUSHED_CONNECT_ERROR.getReason());
