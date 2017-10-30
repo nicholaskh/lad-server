@@ -326,6 +326,7 @@ public class CircleDaoImpl implements ICircleDao {
 				update.inc("hotNum", num);
 				break;
 			default:
+				update.inc("hotNum", num);
 				break;
 		}
 		return mongoTemplate.updateFirst(query, update, CircleBo.class);
