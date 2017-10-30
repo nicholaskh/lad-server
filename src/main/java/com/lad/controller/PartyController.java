@@ -130,7 +130,7 @@ public class PartyController extends BaseContorller {
         //用户等级
         userService.addUserLevel(userBo.getId(), 1, Constant.PARTY_TYPE);
         //圈子热度
-        updateCircleHot(circleService, redisServer, partyBo.getCircleid(), 1, Constant.CIRCLE_PARTY);
+        updateCircleHot(circleService, redisServer, partyBo.getCircleid(), 1, Constant.CIRCLE_PARTY_VISIT);
         //动态信息表
         addDynamicMsgs(userId, partyBo.getId(), Constant.PARTY_TYPE, dynamicService);
         updateDynamicNums(userId, 1, dynamicService, redisServer);
@@ -267,6 +267,8 @@ public class PartyController extends BaseContorller {
         }
         partyVo.setUserNum(partyBo.getUsers().size());
         partyService.updateVisit(partyid);
+        //圈子热度
+        updateCircleHot(circleService, redisServer, partyBo.getCircleid(), 1, Constant.CIRCLE_PARTY_VISIT);
 
         Map<String, Object> map = new HashMap<>();
         map.put("ret", 0);
@@ -713,6 +715,8 @@ public class PartyController extends BaseContorller {
             commentBo.setVideoPic(paths[1]);
         }
         commentService.insert(commentBo);
+        //圈子热度
+        updateCircleHot(circleService, redisServer, partyBo.getCircleid(), 1, Constant.CIRCLE_PARTY_VISIT);
         if (isSync) {
             //动态信息表
             addDynamicMsgs(userId, partyBo.getId(), Constant.PARTY_COM_TYPE, dynamicService);

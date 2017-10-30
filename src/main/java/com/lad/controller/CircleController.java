@@ -62,12 +62,8 @@ public class CircleController extends BaseContorller {
 						 @RequestParam(required = true) String name,
 						 @RequestParam(required = true) String tag,
 						 @RequestParam(required = true) String sub_tag,
-						 @RequestParam(required = true) String description,
-						 @RequestParam(required = true) String province,
-						 @RequestParam(required = true) String city,
-						 @RequestParam(required = true) String district,
-						 @RequestParam(required = true) boolean isOpen,
-						 @RequestParam("head_picture") MultipartFile file,
+						 String description, String province, String city,
+						 String district, boolean isOpen, MultipartFile head_picture,
 			HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
 		try {
@@ -109,13 +105,14 @@ public class CircleController extends BaseContorller {
 		circleBo.setProvince(province);
 		circleBo.setCity(city);
 		circleBo.setDistrict(district);
-		//圈子头像
 		String userId = userBo.getId();
-		String fileName = userId + file.getOriginalFilename();
-		String path = CommonUtil.upload(file,
-				Constant.CIRCLE_HEAD_PICTURE_PATH, fileName, 0);
-		circleBo.setHeadPicture(path);
-
+		//圈子头像
+		if (head_picture != null){
+			String fileName = userId + head_picture.getOriginalFilename();
+			String path = CommonUtil.upload(head_picture,
+					Constant.CIRCLE_HEAD_PICTURE_PATH, fileName, 0);
+			circleBo.setHeadPicture(path);
+		}
 		HashSet<String> users = new HashSet<String>();
 		users.add(userBo.getId());
 		circleBo.setUsers(users);
@@ -1169,7 +1166,7 @@ public class CircleController extends BaseContorller {
 				userid = userBo.getId();
 			}
 		}
-		List<CircleBo> circleBos = circleService.findNearCircle(userid, position, 10000, 10);;
+		List<CircleBo> circleBos = circleService.findNearCircle(userid, position, 10000, 10);
 		return bo2vos(circleBos, null);
 	}
 
