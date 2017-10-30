@@ -5,6 +5,7 @@ import com.lad.dao.IInforRecomDao;
 import com.lad.util.Constant;
 import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -56,6 +57,8 @@ public class InforRecomDaoImpl implements IInforRecomDao{
         query.addCriteria(new Criteria("type").is(type));
         query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
         query.addCriteria(new Criteria("module").in(modules));
+        query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "halfyearNum")));
+        query.limit(50);
         return mongoTemplate.find(query, InforRecomBo.class);
     }
 
@@ -64,6 +67,8 @@ public class InforRecomDaoImpl implements IInforRecomDao{
         Query query = new Query();
         query.addCriteria(new Criteria("type").is(type));
         query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+        query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "halfyearNum")));
+        query.limit(50);
         return mongoTemplate.find(query, InforRecomBo.class);
     }
 }

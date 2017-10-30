@@ -11,6 +11,7 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * 功能描述：
@@ -47,5 +48,22 @@ public class InforUserReadHisDaoImpl implements IInforUserReadHisDao {
         Update update = new Update();
         update.set("lastDate", currentDate);
         return mongoTemplate.updateFirst(query, update, InforUserReadHisBo.class);
+    }
+
+    @Override
+    public InforUserReadHisBo findByReadHis(String userid, int type, String module) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("userid").is(userid));
+        query.addCriteria(new Criteria("type").is(type));
+        query.addCriteria(new Criteria("module").is(module));
+        return mongoTemplate.findOne(query, InforUserReadHisBo.class);
+    }
+
+    @Override
+    public List<InforUserReadHisBo> findUserReadHisBeforeHalf(String userid, Date halfTime) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("userid").is(userid));
+        query.addCriteria(new Criteria("lastDate").lt(halfTime));
+        return mongoTemplate.find(query, InforUserReadHisBo.class);
     }
 }

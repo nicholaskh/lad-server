@@ -30,4 +30,11 @@ public interface IInforUserReadDao {
 
     WriteResult deleteUserRead(String id);
 
+    /**
+     * 修改
+     * @param userReadBo
+     * @return
+     */
+    WriteResult updateUserReadAll(InforUserReadBo userReadBo);
+
 }

@@ -4,6 +4,7 @@ import com.lad.bo.InforHistoryBo;
 import com.mongodb.WriteResult;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * 功能描述：
@@ -30,7 +31,7 @@ public interface IInforHistoryDao {
      * @param halfYearTime
      * @return
      */
-    WriteResult findHalfYearHis(String inforid, Date halfYearTime);
+    List<InforHistoryBo> findHalfYearHis(String inforid, Date halfYearTime);
 
     /**
      * 删除资讯信息

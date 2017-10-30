@@ -64,4 +64,16 @@ public class InforUserReadDaoImpl implements IInforUserReadDao {
         update.set("deleted", Constant.DELETED);
         return mongoTemplate.updateFirst(query, update, InforUserReadBo.class);
     }
+
+    @Override
+    public WriteResult updateUserReadAll(InforUserReadBo userReadBo) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("_id").is(userReadBo.getId()));
+        Update update = new Update();
+        update.set("healths", userReadBo.getHealths());
+        update.set("securitys", userReadBo.getSecuritys());
+        update.set("radios", userReadBo.getRadios());
+        update.set("videos", userReadBo.getVideos());
+        return mongoTemplate.updateFirst(query, update, InforUserReadBo.class);
+    }
 }

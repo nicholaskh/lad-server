@@ -12,6 +12,7 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * 功能描述：
@@ -41,14 +42,19 @@ public class InforHistoryDaoImpl implements IInforHistoryDao{
     }
 
     @Override
-    public WriteResult findHalfYearHis(String inforid, Date halfYearTime) {
+    public List<InforHistoryBo> findHalfYearHis(String inforid, Date halfYearTime) {
         Query query = new Query();
         query.addCriteria(new Criteria("inforid").is(inforid));
         query.addCriteria(new Criteria("readDate").lt(halfYearTime));
         query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
-        Update update = new Update();
-        update.set("deleted", Constant.DELETED);
-        return mongoTemplate.updateMulti(query, update, InforHistoryBo.class);
+        return mongoTemplate.find(query, InforHistoryBo.class);
+    }
+
+    public List<InforHistoryBo> findHalfYearHisNum(String inforid, Date halfYearTime) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("inforid").is(inforid));
+        query.addCriteria(new Criteria("readDate").lt(halfYearTime));
+        return mongoTemplate.find(query, InforHistoryBo.class);
     }
 
     @Override
