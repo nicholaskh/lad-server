@@ -118,6 +118,7 @@ public class NoteDaoImpl implements INoteDao {
 	public List<NoteBo> finyByCreateTime(String circleid, String startId, boolean gt, int limit){
 		Query query = new Query();
 		query.addCriteria(new Criteria("circleId").is(circleid));
+		query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
 		return findNotesByPage(query, startId, gt, limit);
 	}
 
@@ -160,6 +161,7 @@ public class NoteDaoImpl implements INoteDao {
 	public List<NoteBo> selectMyNotes(String userid, String startId, boolean gt, int limit){
 		Query query = new Query();
 		query.addCriteria(new Criteria("createuid").is(userid));
+		query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
 		return findNotesByPage(query, startId, gt, limit);
 	}
 
