@@ -14,6 +14,8 @@ import com.lad.vo.ChatroomVo;
 import com.lad.vo.UserVo;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.redisson.api.RLock;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +35,8 @@ import java.util.concurrent.TimeUnit;
 @Controller
 @RequestMapping("chatroom")
 public class ChatroomController extends BaseContorller {
+
+	private static Logger logger = LogManager.getLogger(ChatroomController.class);
 
 	@Autowired
 	private IChatroomService chatroomService;
@@ -84,6 +88,7 @@ public class ChatroomController extends BaseContorller {
 		}
 		//第一个为返回结果信息，第二位term信息
 		String[] result = IMUtil.subscribe(0, chatroomBo.getId(), term, userBo.getId());
+		logger.info(" create user {}, chatroom {},  res {}", userBo.getId(), chatroomBo.getId(), result[0]);
 		if (!result[0].equals(IMUtil.FINISH)) {
 			chatroomService.remove(chatroomBo.getId());
 			return result[0];
@@ -137,6 +142,7 @@ public class ChatroomController extends BaseContorller {
 		String term = imTermBo == null ? "" : imTermBo.getTerm();
 		//第一个为返回结果信息，第二位term信息
 		String[] result = IMUtil.subscribe(1,chatroomid,term, useridArr);
+		logger.info(" add user {}, chatroom {},  res {}", userids, chatroomid, result[0]);
 		if (!result[0].equals(IMUtil.FINISH)) {
 			return result[0];
 		}
@@ -213,6 +219,7 @@ public class ChatroomController extends BaseContorller {
 		}
 		//第一个为返回结果信息，第二位term信息
 		String[] result = IMUtil.unSubscribe(chatroomid, term, useridArr);
+		logger.info(" deleted user {}, chatroom {},  res {}", userids, chatroomid, result[0]);
 		if (!result[0].equals(IMUtil.FINISH)) {
 			if (!result[0].contains("not found")){
 				return result[0];
@@ -220,6 +227,9 @@ public class ChatroomController extends BaseContorller {
 		}
 		LinkedHashSet<String> set = chatroomBo.getUsers();
 		for (String userid : useridArr) {
+			if (!set.contains(userid)) {
+				continue;
+			}
 			UserBo user = userService.getUser(userid);
 			if (null == user) {
 				return CommonUtil.toErrorResult(ERRORCODE.USER_NULL.getIndex(),
@@ -244,6 +254,7 @@ public class ChatroomController extends BaseContorller {
 		//聊天室少于2人则直接删除
 		if (set.size() < 2) {
 			String res = IMUtil.disolveRoom(iMTermService, userBo.getId(), chatroomid);
+			logger.info(" deleted chatroom {},  res {}", chatroomid, res);
 			if (!res.equals(IMUtil.FINISH) && !res.contains("not found")) {
 				return res;
 			}
@@ -276,17 +287,20 @@ public class ChatroomController extends BaseContorller {
 		}
 		//第一个为返回结果信息，第二位term信息
 		String[] result = IMUtil.unSubscribe(chatroomid, term, userBo.getId());
+		logger.info(" deleted user {}, chatroom {},  res {}", userBo.getId(), chatroomid, result[0]);
 		if (!result[0].equals(IMUtil.FINISH)) {
 			if (!result[0].contains("not found")) {
 				return result[0];
 			}
 		}
 		LinkedHashSet<String> set = chatroomBo.getUsers();
-		//如果是群主退出，则由下一个人担当
-		if (userBo.getId().equals(chatroomBo.getMaster())) {
-			set.remove(userBo.getId());
-			String nextId = set.iterator().next();
-			chatroomService.updateMaster(chatroomid, nextId);
+		if (set.size() >= 2) {
+			//如果是群主退出，则由下一个人担当
+			if (userBo.getId().equals(chatroomBo.getMaster())) {
+				set.remove(userBo.getId());
+				String nextId = set.iterator().next();
+				chatroomService.updateMaster(chatroomid, nextId);
+			}
 		}
 		HashSet<String> chatroom = userBo.getChatrooms();
 		LinkedList<String> chatroomTops = userBo.getChatroomsTop();
@@ -303,6 +317,7 @@ public class ChatroomController extends BaseContorller {
 		set.remove(userBo.getId());
 		if (set.size() < 2) {
 			String res = IMUtil.disolveRoom(iMTermService, userBo.getId(), chatroomid);
+			logger.info(" deleted chatroom {},  res {}", chatroomid, res);
 			if (!res.equals(IMUtil.FINISH) && !res.contains("not found")) {
 				return res;
 			}
@@ -580,7 +595,8 @@ public class ChatroomController extends BaseContorller {
 		IMTermBo iMTermBo = iMTermService.selectByUserid(userBo.getId());
 		String term = iMTermBo != null ? iMTermBo.getTerm() : "";
 		int type = isNew ? 0 : 1;
-		String[] res = IMUtil.subscribe(type,chatroom.getId(),term, userBo.getId());;
+		String[] res = IMUtil.subscribe(type,chatroom.getId(),term, userBo.getId());
+		logger.info("face  user {}, chatroom {},  res {}", userBo.getId(), chatroom.getId(), res[0]);
 		if (!res[0].equals(IMUtil.FINISH)) {
 			//失败需要还原
 			if (isNew) {
