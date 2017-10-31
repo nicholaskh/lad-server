@@ -96,7 +96,7 @@ public class CommentDaoImpl implements ICommentDao {
         Aggregation aggregation = Aggregation.newAggregation(match, project,  group,
                 Aggregation.sort(new Sort(new Sort.Order(Sort.Direction.DESC, "noteid"))),
                 Aggregation.limit(limit));
-        AggregationResults<BasicDBObject> results = mongoTemplate.aggregate(aggregation, "commnet",
+        AggregationResults<BasicDBObject> results = mongoTemplate.aggregate(aggregation, "comment",
                 BasicDBObject.class);
         return results.getMappedResults();
     }
