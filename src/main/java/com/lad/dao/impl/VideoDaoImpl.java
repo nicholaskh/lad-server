@@ -74,4 +74,14 @@ public class VideoDaoImpl implements IVideoDao {
         update.set("poster", pic);
         return mongoTemplateTwo.updateFirst(query, update, VideoBo.class);
     }
+
+    @Override
+    public List<VideoBo> findByLimit(int limit) {
+        Query query = new Query();
+        query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
+        query.limit(limit);
+        return mongoTemplateTwo.find(query, VideoBo.class);
+    }
 }
+
+

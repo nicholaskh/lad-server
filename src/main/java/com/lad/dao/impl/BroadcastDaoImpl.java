@@ -63,4 +63,13 @@ public class BroadcastDaoImpl implements IBroadcastDao {
     public List<BroadcastBo> selectClassByGroups(String groupName) {
         return null;
     }
+
+
+    @Override
+    public List<BroadcastBo> findByLimit(int limit) {
+        Query query = new Query();
+        query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
+        query.limit(limit);
+        return mongoTemplateTwo.find(query, BroadcastBo.class);
+    }
 }

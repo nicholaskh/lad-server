@@ -21,4 +21,7 @@ public interface ISecurityDao {
 
     SecurityBo findById(String id);
 
+    //查找制定条数
+    List<SecurityBo> findByLimiy(int limit);
+
 }

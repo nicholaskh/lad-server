@@ -212,4 +212,11 @@ public interface IInforService {
     List<InforBo> userHealthRecom(String userid, int limit);
 
 
+    List<SecurityBo> findSecurityByLimit(int limit);
+
+
+    List<BroadcastBo> findRadioByLimit(int limit);
+
+
+    List<VideoBo> findVideoByLimit(int limit);
 }

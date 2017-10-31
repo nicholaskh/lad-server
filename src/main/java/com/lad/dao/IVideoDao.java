@@ -29,4 +29,11 @@ public interface IVideoDao {
      */
     WriteResult updatePicById(String id, String pic);
 
+    /**
+     * 按照条数查找
+     * @param limit
+     * @return
+     */
+    List<VideoBo> findByLimit(int limit);
+
 }

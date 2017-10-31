@@ -218,6 +218,22 @@ public class InforSerivceImpl implements IInforService {
 
     @Override
     public List<InforBo> userHealthRecom(String userid, int limit) {
-        return userHealthRecom(userid, limit);
+        return inforDao.userHealthRecom(userid, limit);
+    }
+
+
+    @Override
+    public List<SecurityBo> findSecurityByLimit(int limit) {
+        return securityDao.findByLimiy(limit);
+    }
+
+    @Override
+    public List<BroadcastBo> findRadioByLimit(int limit) {
+        return broadcastDao.findByLimit(limit);
+    }
+
+    @Override
+    public List<VideoBo> findVideoByLimit(int limit) {
+        return videoDao.findByLimit(limit);
     }
 }

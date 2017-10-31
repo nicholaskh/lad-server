@@ -71,4 +71,12 @@ public class SecurityDaoImpl implements ISecurityDao {
         query.addCriteria(new Criteria("_id").is(id));
         return mongoTemplateTwo.findOne(query, SecurityBo.class);
     }
+
+    @Override
+    public List<SecurityBo> findByLimiy(int limit) {
+        Query query = new Query();
+        query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "time")));
+        query.limit(limit);
+        return mongoTemplateTwo.find(query, SecurityBo.class);
+    }
 }
