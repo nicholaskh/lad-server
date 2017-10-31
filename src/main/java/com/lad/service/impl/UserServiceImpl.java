@@ -143,6 +143,10 @@ public class UserServiceImpl implements IUserService{
 	@Override
 	@Async
 	public void addUserLevel(String userid, long num, int type) {
+		UserBo userBo = userDao.getUser(userid);
+		if (userBo.getLevel() >= 6) {
+			return;
+		}
 		UserLevelBo userLevelBo = userLevelDao.findByUserid(userid);
 		int level = 1;
 		if (userLevelBo == null) {
