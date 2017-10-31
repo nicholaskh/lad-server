@@ -144,7 +144,7 @@ public class PartyController extends BaseContorller {
     @RequestMapping("/update")
     @ResponseBody
     public String update(@RequestParam String partyJson, @RequestParam String partyid,
-                         MultipartFile backPic, MultipartFile[] images, MultipartFile video,
+                         MultipartFile backPic, MultipartFile[] photos, MultipartFile video,
                          HttpServletRequest request, HttpServletResponse response){
 
         logger.info("update partyJson : {}",partyJson);
@@ -164,20 +164,25 @@ public class PartyController extends BaseContorller {
                     ERRORCODE.PARTY_ERROR.getReason());
         }
         PartyBo oldParty = partyService.findById(partyid);
-
-
-
+        if (oldParty == null) {
+            return CommonUtil.toErrorResult(ERRORCODE.PARTY_NULL.getIndex(),
+                    ERRORCODE.PARTY_NULL.getReason());
+        }
+        partyBo.setStatus(oldParty.getStatus());
+        partyBo.setId(oldParty.getId());
+        partyBo.setCreateuid(oldParty.getCreateuid());
+        BeanUtils.copyProperties(partyBo, oldParty);
         String userId = userBo.getId();
         Long time = Calendar.getInstance().getTimeInMillis();
-        if (images != null) {
-            LinkedHashSet<String> photos = oldParty.getPhotos();
-            for (MultipartFile file : images) {
+        if (photos != null) {
+            LinkedHashSet<String> photo = oldParty.getPhotos();
+            for (MultipartFile file : photos) {
                 String fileName = userId + "-" + time + "-" + file.getOriginalFilename();
                 String path = CommonUtil.upload(file, Constant.PARTY_PICTURE_PATH,
                         fileName, 0);
-                photos.add(path);
+                photo.add(path);
             }
-            partyBo.setPhotos(photos);
+            oldParty.setPhotos(photo);
         }
         if (video != null) {
             String fileName = userId + "-" + time + "-" + video.getOriginalFilename();
@@ -190,10 +195,7 @@ public class PartyController extends BaseContorller {
             String path =  CommonUtil.upload(backPic, Constant.PARTY_PICTURE_PATH, fileName, 0);
             oldParty.setBackPic(path);
         }
-        partyBo.setCreateuid(userId);
-        partyService.insert(partyBo);
-
-
+        partyService.update(oldParty);
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("ret", 0);
         map.put("partyid", partyBo.getId());
