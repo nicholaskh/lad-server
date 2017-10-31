@@ -23,21 +23,21 @@ public interface IUserDao extends IBaseDao {
 
     UserBo getUserByPhone(String phone);
 
-    UserBo updatePhone(UserBo userBo);
+    WriteResult updatePhone(UserBo userBo);
 
-    UserBo updateFriends(UserBo userBo);
+    WriteResult updateFriends(UserBo userBo);
 
-    UserBo updateChatrooms(UserBo userBo);
+    WriteResult updateChatrooms(UserBo userBo);
 
-    UserBo updateHeadPictureName(UserBo userBo);
+    WriteResult updateHeadPictureName(UserBo userBo);
 
-    UserBo updateUserName(UserBo userBo);
+    WriteResult updateUserName(UserBo userBo);
 
-    UserBo updateSex(UserBo userBo);
+    WriteResult updateSex(UserBo userBo);
 
-    UserBo updatePersonalizedSignature(UserBo userBo);
+    WriteResult updatePersonalizedSignature(UserBo userBo);
 
-    UserBo updateBirthDay(UserBo userBo);
+    WriteResult updateBirthDay(UserBo userBo);
 
     /**
      * 置顶圈子

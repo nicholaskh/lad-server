@@ -74,85 +74,77 @@ public class UserDaoImpl implements IUserDao {
         return mongoTemplate.findOne(query, UserBo.class);
     }
 
-    public UserBo updatePhone(UserBo userBo) {
+    public WriteResult updatePhone(UserBo userBo) {
         Query query = new Query();
         query.addCriteria(new Criteria("_id").is(userBo.getId()));
         query.addCriteria(new Criteria("deleted").is(0));
         Update update = new Update();
         update.set("phone", userBo.getPhone());
-        mongoTemplate.updateFirst(query, update, UserBo.class);
-        return userBo;
+        return mongoTemplate.updateFirst(query, update, UserBo.class);
     }
 
-    public UserBo updateFriends(UserBo userBo) {
+    public WriteResult updateFriends(UserBo userBo) {
         Query query = new Query();
         query.addCriteria(new Criteria("_id").is(userBo.getId()));
         query.addCriteria(new Criteria("deleted").is(0));
         Update update = new Update();
         update.set("friends", userBo.getFriends());
-        mongoTemplate.updateFirst(query, update, UserBo.class);
-        return userBo;
+        return mongoTemplate.updateFirst(query, update, UserBo.class);
     }
 
-    public UserBo updateChatrooms(UserBo userBo) {
+    public WriteResult updateChatrooms(UserBo userBo) {
         Query query = new Query();
         query.addCriteria(new Criteria("_id").is(userBo.getId()));
         query.addCriteria(new Criteria("deleted").is(0));
         Update update = new Update();
         update.set("chatrooms", userBo.getChatrooms());
         update.set("chatroomsTop", userBo.getChatroomsTop());
-        mongoTemplate.updateFirst(query, update, UserBo.class);
-        return userBo;
+        return mongoTemplate.updateFirst(query, update, UserBo.class);
     }
 
-    public UserBo updateHeadPictureName(UserBo userBo) {
+    public WriteResult updateHeadPictureName(UserBo userBo) {
         Query query = new Query();
         query.addCriteria(new Criteria("phone").is(userBo.getPhone()));
         query.addCriteria(new Criteria("deleted").is(0));
         Update update = new Update();
         update.set("headPictureName", userBo.getHeadPictureName());
-        mongoTemplate.updateFirst(query, update, UserBo.class);
-        return userBo;
+        return mongoTemplate.updateFirst(query, update, UserBo.class);
     }
 
-    public UserBo updateUserName(UserBo userBo) {
+    public WriteResult updateUserName(UserBo userBo) {
         Query query = new Query();
         query.addCriteria(new Criteria("phone").is(userBo.getPhone()));
         query.addCriteria(new Criteria("deleted").is(0));
         Update update = new Update();
         update.set("userName", userBo.getUserName());
-        mongoTemplate.updateFirst(query, update, UserBo.class);
-        return userBo;
+        return mongoTemplate.updateFirst(query, update, UserBo.class);
     }
 
-    public UserBo updateSex(UserBo userBo) {
+    public WriteResult updateSex(UserBo userBo) {
         Query query = new Query();
         query.addCriteria(new Criteria("phone").is(userBo.getPhone()));
         query.addCriteria(new Criteria("deleted").is(0));
         Update update = new Update();
         update.set("sex", userBo.getSex());
-        mongoTemplate.updateFirst(query, update, UserBo.class);
-        return userBo;
+        return mongoTemplate.updateFirst(query, update, UserBo.class);
     }
 
-    public UserBo updatePersonalizedSignature(UserBo userBo) {
+    public WriteResult updatePersonalizedSignature(UserBo userBo) {
         Query query = new Query();
         query.addCriteria(new Criteria("phone").is(userBo.getPhone()));
         query.addCriteria(new Criteria("deleted").is(0));
         Update update = new Update();
         update.set("personalizedSignature", userBo.getPersonalizedSignature());
-        mongoTemplate.updateFirst(query, update, UserBo.class);
-        return userBo;
+        return mongoTemplate.updateFirst(query, update, UserBo.class);
     }
 
-    public UserBo updateBirthDay(UserBo userBo) {
+    public WriteResult updateBirthDay(UserBo userBo) {
         Query query = new Query();
         query.addCriteria(new Criteria("phone").is(userBo.getPhone()));
         query.addCriteria(new Criteria("deleted").is(0));
         Update update = new Update();
         update.set("birthDay", userBo.getBirthDay());
-        mongoTemplate.updateFirst(query, update, UserBo.class);
-        return userBo;
+        return mongoTemplate.updateFirst(query, update, UserBo.class);
     }
     /**
      * 获取所有集合的名称

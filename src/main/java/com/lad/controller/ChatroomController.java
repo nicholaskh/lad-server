@@ -134,12 +134,9 @@ public class ChatroomController extends BaseContorller {
 			useridArr = new String[]{userids};
 		}
 		IMTermBo imTermBo = iMTermService.selectByUserid(userBo.getId());
-		String term = "";
-		if (imTermBo != null) {
-			term = imTermBo.getTerm();
-		}
+		String term = imTermBo == null ? "" : imTermBo.getTerm();
 		//第一个为返回结果信息，第二位term信息
-		String[] result = IMUtil.subscribe(1,chatroomid,term, userBo.getId());
+		String[] result = IMUtil.subscribe(1,chatroomid,term, useridArr);
 		if (!result[0].equals(IMUtil.FINISH)) {
 			return result[0];
 		}
@@ -229,8 +226,15 @@ public class ChatroomController extends BaseContorller {
 						ERRORCODE.USER_NULL.getReason());
 			}
 			HashSet<String> chatroom = user.getChatrooms();
-			chatroom.remove(chatroomBo.getId());
-			user.setChatrooms(chatroom);
+			LinkedList<String> chatroomTops = user.getChatroomsTop();
+			if (chatroom.contains(chatroomid)){
+				chatroom.remove(chatroomid);
+				user.setChatrooms(chatroom);
+			}
+			if (chatroomTops.contains(chatroomid)){
+				chatroomTops.remove(chatroomid);
+				user.setChatroomsTop(chatroomTops);
+			}
 			userService.updateChatrooms(user);
 			set.remove(userid);
 			if (!StringUtils.isEmpty(result[1])) {
@@ -285,8 +289,15 @@ public class ChatroomController extends BaseContorller {
 			chatroomService.updateMaster(chatroomid, nextId);
 		}
 		HashSet<String> chatroom = userBo.getChatrooms();
-		chatroom.remove(chatroomBo.getId());
-		userBo.setChatrooms(chatroom);
+		LinkedList<String> chatroomTops = userBo.getChatroomsTop();
+		if (chatroom.contains(chatroomid)){
+			chatroom.remove(chatroomid);
+			userBo.setChatrooms(chatroom);
+		}
+		if (chatroomTops.contains(chatroomid)){
+			chatroomTops.remove(chatroomid);
+			userBo.setChatroomsTop(chatroomTops);
+		}
 		userService.updateChatrooms(userBo);
 		deleteNickname(chatroomid, userBo.getId());
 		set.remove(userBo.getId());
@@ -355,7 +366,7 @@ public class ChatroomController extends BaseContorller {
 			return e.getMessage();
 		}
 		HashSet<String> chatrooms = userBo.getChatrooms();
-		HashSet<String> chatroomsTop = userBo.getChatroomsTop();
+		LinkedList<String> chatroomsTop = userBo.getChatroomsTop();
 		List<ChatroomVo> chatroomList = new LinkedList<ChatroomVo>();
 		for (String id : chatroomsTop) {
 			ChatroomBo temp = chatroomService.get(id);
@@ -406,7 +417,7 @@ public class ChatroomController extends BaseContorller {
 			if (chatroomUserBo != null) {
 				HashMap<String, String> nicknames = chatroomUserBo.getNicknames();
 				String nickname = nicknames.get(userid);
-				if (nickname ==null) {
+				if (StringUtils.isEmpty(nickname)) {
 					userVo.setNickname(chatUser.getUserName());
 				} else {
 					userVo.setNickname(nickname);
@@ -473,20 +484,14 @@ public class ChatroomController extends BaseContorller {
 					ERRORCODE.CHATROOM_NULL.getReason());
 		}
 		HashSet<String> chatrooms = userBo.getChatrooms();
-		LinkedHashSet<String> chatroomsTop = userBo.getChatroomsTop();
+		LinkedList<String> chatroomsTop = userBo.getChatroomsTop();
 		if (chatrooms.contains(chatroomid)) {
 			chatrooms.remove(chatroomid);
-		} else {
-			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(),
-					ERRORCODE.CHATROOM_NULL.getReason());
 		}
 		if (chatroomsTop.contains(chatroomid)) {
-			return CommonUtil.toErrorResult(
-					ERRORCODE.CHATROOM_TOP_EXIST.getIndex(),
-					ERRORCODE.CHATROOM_TOP_EXIST.getReason());
-		} else {
-			chatroomsTop.add(chatroomid);
+			chatroomsTop.remove(chatroomid);
 		}
+		chatroomsTop.set(0, chatroomid);
 		userBo.setChatrooms(chatrooms);
 		userBo.setChatroomsTop(chatroomsTop);
 		userService.updateChatrooms(userBo);
@@ -521,22 +526,15 @@ public class ChatroomController extends BaseContorller {
 					ERRORCODE.CHATROOM_NULL.getReason());
 		}
 		HashSet<String> chatrooms = userBo.getChatrooms();
-		LinkedHashSet<String> chatroomsTop = userBo.getChatroomsTop();
+		LinkedList<String> chatroomsTop = userBo.getChatroomsTop();
 		if (chatroomsTop.contains(chatroomid)) {
 			chatroomsTop.remove(chatroomid);
-		} else {
-			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(),
-					ERRORCODE.CHATROOM_NULL.getReason());
-		}
-		if (chatrooms.contains(chatroomid)) {
-			return CommonUtil.toErrorResult(
-					ERRORCODE.CHATROOM_EXIST.getIndex(),
-					ERRORCODE.CHATROOM_EXIST.getReason());
-		} else {
+			userBo.setChatroomsTop(chatroomsTop);
+		} 
+		if (!chatrooms.contains(chatroomid)) {
 			chatrooms.add(chatroomid);
+			userBo.setChatrooms(chatrooms);
 		}
-		userBo.setChatrooms(chatrooms);
-		userBo.setChatroomsTop(chatroomsTop);
 		userService.updateChatrooms(userBo);
 		return Constant.COM_RESP;
 	}

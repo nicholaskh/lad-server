@@ -15,21 +15,21 @@ public interface IUserService extends IBaseService {
 
 	public UserBo updatePassword(UserBo userBo);
 
-	public UserBo updatePhone(UserBo userBo);
+	public WriteResult updatePhone(UserBo userBo);
 
-	public UserBo updateHeadPictureName(UserBo userBo);
+	public WriteResult updateHeadPictureName(UserBo userBo);
 
-	public UserBo updateUserName(UserBo userBo);
+	public WriteResult updateUserName(UserBo userBo);
 
-	public UserBo updatePersonalizedSignature(UserBo userBo);
+	public WriteResult updatePersonalizedSignature(UserBo userBo);
 
-	public UserBo updateBirthDay(UserBo userBo);
+	public WriteResult updateBirthDay(UserBo userBo);
 
-	public UserBo updateFriends(UserBo userBo);
+	public WriteResult updateFriends(UserBo userBo);
 
-	public UserBo updateSex(UserBo userBo);
+	public WriteResult updateSex(UserBo userBo);
 
-	public UserBo updateChatrooms(UserBo userBo);
+	public WriteResult updateChatrooms(UserBo userBo);
 
 	public UserBo getUser(String userId);
 

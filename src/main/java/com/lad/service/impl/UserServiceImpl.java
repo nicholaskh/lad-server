@@ -44,45 +44,39 @@ public class UserServiceImpl implements IUserService{
 		return userBo;
 	}
 
-	public UserBo updatePhone(UserBo userBo){
-		userBo = userDao.updatePhone(userBo);
-		return userBo;
+	public WriteResult updatePhone(UserBo userBo){
+		return userDao.updatePhone(userBo);
 	}
 
-	public UserBo updateHeadPictureName(UserBo userBo){
-		userBo = userDao.updateHeadPictureName(userBo);
-		return userBo;
+	public WriteResult updateHeadPictureName(UserBo userBo){
+		return userDao.updateHeadPictureName(userBo);
 	}
 
-	public UserBo updateUserName(UserBo userBo){
-		userBo = userDao.updateUserName(userBo);
-		return userBo;
+	public WriteResult updateUserName(UserBo userBo){
+		return userDao.updateUserName(userBo);
 	}
 
-	public UserBo updateBirthDay(UserBo userBo){
-		userBo = userDao.updateBirthDay(userBo);
-		return userBo;
+	public WriteResult updateBirthDay(UserBo userBo){
+		return userDao.updateBirthDay(userBo);
 	}
 
-	public UserBo updateSex(UserBo userBo){
-		userBo = userDao.updateSex(userBo);
-		return userBo;
+	public WriteResult updateSex(UserBo userBo){
+		return userDao.updateSex(userBo);
 	}
 
-	public UserBo updatePersonalizedSignature(UserBo userBo){
-		userBo = userDao.updatePersonalizedSignature(userBo);
-		return userBo;
+	public WriteResult updatePersonalizedSignature(UserBo userBo){
+		return userDao.updatePersonalizedSignature(userBo);
 	}
 
 	public Pager selectPage(UserBo userBo,Pager pager){
 		return userDao.selectPage(userBo, pager);
 	}
 
-	public UserBo updateFriends(UserBo userBo) {
+	public WriteResult updateFriends(UserBo userBo) {
 		return userDao.updateFriends(userBo);
 	}
 
-	public UserBo updateChatrooms(UserBo userBo) {
+	public WriteResult updateChatrooms(UserBo userBo) {
 		return userDao.updateChatrooms(userBo);
 	}
 
