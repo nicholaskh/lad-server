@@ -2,6 +2,7 @@ package com.lad.bo;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 
@@ -50,6 +51,10 @@ public class CircleBo extends BaseBo {
 	private String noticeTitle;
 	//圈子公告
 	private String notice;
+	//圈子公告发布时间
+	private Date noticeTime;
+	//圈子公告发布人
+	private String noticeUserid;
 
 	//圈子总聚会数
 	private int partyNum;
@@ -322,5 +327,21 @@ public class CircleBo extends BaseBo {
 
 	public void setDistrict(String district) {
 		this.district = district;
+	}
+
+	public Date getNoticeTime() {
+		return noticeTime;
+	}
+
+	public void setNoticeTime(Date noticeTime) {
+		this.noticeTime = noticeTime;
+	}
+
+	public String getNoticeUserid() {
+		return noticeUserid;
+	}
+
+	public void setNoticeUserid(String noticeUserid) {
+		this.noticeUserid = noticeUserid;
 	}
 }
