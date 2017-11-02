@@ -88,7 +88,6 @@ public class ChatroomController extends BaseContorller {
 		}
 		//第一个为返回结果信息，第二位term信息
 		String[] result = IMUtil.subscribe(0, chatroomBo.getId(), term, userBo.getId());
-		logger.info(" create user {}, chatroom {},  res {}", userBo.getId(), chatroomBo.getId(), result[0]);
 		if (!result[0].equals(IMUtil.FINISH)) {
 			chatroomService.remove(chatroomBo.getId());
 			return result[0];
@@ -142,7 +141,6 @@ public class ChatroomController extends BaseContorller {
 		String term = imTermBo == null ? "" : imTermBo.getTerm();
 		//第一个为返回结果信息，第二位term信息
 		String[] result = IMUtil.subscribe(1,chatroomid,term, useridArr);
-		logger.info(" add user {}, chatroom {},  res {}", userids, chatroomid, result[0]);
 		if (!result[0].equals(IMUtil.FINISH)) {
 			return result[0];
 		}
@@ -219,7 +217,6 @@ public class ChatroomController extends BaseContorller {
 		}
 		//第一个为返回结果信息，第二位term信息
 		String[] result = IMUtil.unSubscribe(chatroomid, term, useridArr);
-		logger.info(" deleted user {}, chatroom {},  res {}", userids, chatroomid, result[0]);
 		if (!result[0].equals(IMUtil.FINISH)) {
 			if (!result[0].contains("not found")){
 				return result[0];
@@ -235,17 +232,7 @@ public class ChatroomController extends BaseContorller {
 				return CommonUtil.toErrorResult(ERRORCODE.USER_NULL.getIndex(),
 						ERRORCODE.USER_NULL.getReason());
 			}
-			HashSet<String> chatroom = user.getChatrooms();
-			LinkedList<String> chatroomTops = user.getChatroomsTop();
-			if (chatroom.contains(chatroomid)){
-				chatroom.remove(chatroomid);
-				user.setChatrooms(chatroom);
-			}
-			if (chatroomTops.contains(chatroomid)){
-				chatroomTops.remove(chatroomid);
-				user.setChatroomsTop(chatroomTops);
-			}
-			userService.updateChatrooms(user);
+			updateUserChatroom(user, chatroomid);
 			set.remove(userid);
 			if (!StringUtils.isEmpty(result[1])) {
 				updateIMTerm(userid, result[1]);
@@ -254,7 +241,6 @@ public class ChatroomController extends BaseContorller {
 		//聊天室少于2人则直接删除
 		if (set.size() < 2) {
 			String res = IMUtil.disolveRoom(iMTermService, userBo.getId(), chatroomid);
-			logger.info(" deleted chatroom {},  res {}", chatroomid, res);
 			if (!res.equals(IMUtil.FINISH) && !res.contains("not found")) {
 				return res;
 			}
@@ -277,17 +263,16 @@ public class ChatroomController extends BaseContorller {
 		} catch (MyException e) {
 			return e.getMessage();
 		}
-
-		IMTermBo imTermBo = iMTermService.selectByUserid(userBo.getId());
-		String term = imTermBo == null ? "" : imTermBo.getTerm();
 		ChatroomBo chatroomBo = chatroomService.get(chatroomid);
 		if (null == chatroomBo) {
-			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(),
-					ERRORCODE.CHATROOM_NULL.getReason());
+			updateUserChatroom(userBo, chatroomid);
+			return Constant.COM_RESP;
 		}
+		String userid = userBo.getId();
+		IMTermBo imTermBo = iMTermService.selectByUserid(userid);
+		String term = imTermBo == null ? "" : imTermBo.getTerm();
 		//第一个为返回结果信息，第二位term信息
-		String[] result = IMUtil.unSubscribe(chatroomid, term, userBo.getId());
-		logger.info(" deleted user {}, chatroom {},  res {}", userBo.getId(), chatroomid, result[0]);
+		String[] result = IMUtil.unSubscribe(chatroomid, term, userid);
 		if (!result[0].equals(IMUtil.FINISH)) {
 			if (!result[0].contains("not found")) {
 				return result[0];
@@ -296,28 +281,17 @@ public class ChatroomController extends BaseContorller {
 		LinkedHashSet<String> set = chatroomBo.getUsers();
 		if (set.size() >= 2) {
 			//如果是群主退出，则由下一个人担当
-			if (userBo.getId().equals(chatroomBo.getMaster())) {
-				set.remove(userBo.getId());
+			if (userid.equals(chatroomBo.getMaster())) {
+				set.remove(userid);
 				String nextId = set.iterator().next();
 				chatroomService.updateMaster(chatroomid, nextId);
 			}
 		}
-		HashSet<String> chatroom = userBo.getChatrooms();
-		LinkedList<String> chatroomTops = userBo.getChatroomsTop();
-		if (chatroom.contains(chatroomid)){
-			chatroom.remove(chatroomid);
-			userBo.setChatrooms(chatroom);
-		}
-		if (chatroomTops.contains(chatroomid)){
-			chatroomTops.remove(chatroomid);
-			userBo.setChatroomsTop(chatroomTops);
-		}
-		userService.updateChatrooms(userBo);
-		deleteNickname(chatroomid, userBo.getId());
-		set.remove(userBo.getId());
+		updateUserChatroom(userBo, chatroomid);
+		deleteNickname(chatroomid, userid);
+		set.remove(userid);
 		if (set.size() < 2) {
-			String res = IMUtil.disolveRoom(iMTermService, userBo.getId(), chatroomid);
-			logger.info(" deleted chatroom {},  res {}", chatroomid, res);
+			String res = IMUtil.disolveRoom(iMTermService, userid, chatroomid);
 			if (!res.equals(IMUtil.FINISH) && !res.contains("not found")) {
 				return res;
 			}
@@ -328,6 +302,25 @@ public class ChatroomController extends BaseContorller {
 			chatroomService.updateUsers(chatroomBo);
 		}
 		return Constant.COM_RESP;
+	}
+
+	private void updateUserChatroom(UserBo userBo, String chatroomid){
+		HashSet<String> chatroom = userBo.getChatrooms();
+		LinkedList<String> chatroomTops = userBo.getChatroomsTop();
+		boolean hasRoom = false;
+		if (chatroom.contains(chatroomid)){
+			chatroom.remove(chatroomid);
+			userBo.setChatrooms(chatroom);
+			hasRoom = true;
+		}
+		if (chatroomTops.contains(chatroomid)){
+			chatroomTops.remove(chatroomid);
+			userBo.setChatroomsTop(chatroomTops);
+			hasRoom = true;
+		}
+		if (hasRoom){
+			userService.updateChatrooms(userBo);
+		}
 	}
 
 	@RequestMapping("/get-friends")
@@ -502,12 +495,12 @@ public class ChatroomController extends BaseContorller {
 		LinkedList<String> chatroomsTop = userBo.getChatroomsTop();
 		if (chatrooms.contains(chatroomid)) {
 			chatrooms.remove(chatroomid);
+			userBo.setChatrooms(chatrooms);
 		}
 		if (chatroomsTop.contains(chatroomid)) {
 			chatroomsTop.remove(chatroomid);
 		}
 		chatroomsTop.set(0, chatroomid);
-		userBo.setChatrooms(chatrooms);
 		userBo.setChatroomsTop(chatroomsTop);
 		userService.updateChatrooms(userBo);
 		return Constant.COM_RESP;
