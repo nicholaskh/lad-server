@@ -9,8 +9,8 @@ import com.lad.vo.UserVoFriends;
 import com.pushd.ImAssistant;
 import com.pushd.Message;
 import net.sf.json.JSONObject;
-import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 @Controller
@@ -104,8 +103,17 @@ public class FriendsController extends BaseContorller {
 		}
 		String userid = friendsBo.getFriendid();
 		String friendid = friendsBo.getUserid();
+		UserBo friendBo = userService.getUser(friendid);
+		if (friendBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NULL.getIndex(),
+					ERRORCODE.FRIEND_NULL.getReason());
+		}
+		if (!userid.equals(userBo.getId())) {
+			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_ERROR.getIndex(),
+					ERRORCODE.FRIEND_ERROR.getReason());
+		}
 		FriendsBo temp = friendsService.getFriendByIdAndVisitorId(
-				userBo.getId(), friendid);
+				userid, friendid);
 		if (temp != null) {
 			friendsService.updateApply(temp.getId(), 1);
 		} else {
@@ -113,7 +121,7 @@ public class FriendsController extends BaseContorller {
 			FriendsBo friendsBo2 = new FriendsBo();
 			friendsBo2.setUserid(userid);
 			friendsBo2.setFriendid(friendid);
-			friendsBo2.setBackname(userBo.getUserName());
+			friendsBo2.setBackname(friendBo.getUserName());
 			friendsBo2.setApply(1);
 			friendsService.insert(friendsBo2);
 		}
@@ -238,13 +246,7 @@ public class FriendsController extends BaseContorller {
 						ERRORCODE.FRIEND_DATA_ERROR.getReason());
 			}
 			UserVoFriends user = new UserVoFriends();
-			try {
-				BeanUtils.copyProperties(user, userBoTemp);
-			} catch (IllegalAccessException e) {
-				e.printStackTrace();
-			} catch (InvocationTargetException e) {
-				e.printStackTrace();
-			}
+			BeanUtils.copyProperties(userBoTemp, user);
 			user.setFriendsTableId(friendsBo.getId());
 			userVoList.add(user);
 		}
@@ -464,18 +466,11 @@ public class FriendsController extends BaseContorller {
 					iMTermService.updateByUserid(userid, res[1]);
 				}
 			}
-			try {
-				BeanUtils.copyProperties(vo, friendsBo);
-			} catch (IllegalAccessException e) {
-				e.printStackTrace();
-			} catch (InvocationTargetException e) {
-				e.printStackTrace();
-			}
+
+			BeanUtils.copyProperties(friendsBo, vo);
 			String friendid = friendsBo.getFriendid();
 			UserBo friend = userService.getUser(friendid);
-
 			List<TagBo> tagBos = tagService.getTagBoListByUseridAndFrinedid(userid, friendid);
-
 			List<String> tagList = new ArrayList<>();
 			for (TagBo tagBo : tagBos) {
 				tagList.add(tagBo.getName());
@@ -484,7 +479,11 @@ public class FriendsController extends BaseContorller {
 			vo.setUsername(friend.getUserName());
 			vo.setPicture(friend.getHeadPictureName());
 			vo.setChannelId(chatroomBo.getId());
-			vo.setBackname(friendsBo.getBackname());
+			if (StringUtils.isEmpty(friendsBo.getBackname())) {
+				vo.setBackname(friend.getUserName());
+			} else {
+				vo.setBackname(friendsBo.getBackname());
+			}
 			voList.add(vo);
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -562,7 +561,7 @@ public class FriendsController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NULL.getIndex(),
 					ERRORCODE.FRIEND_NULL.getReason());
 		}
-		ImAssistant assistent = ImAssistant.init("180.76.138.200", 2222);
+		ImAssistant assistent = ImAssistant.init(Constant.PUSHD_IP, Constant.PUSHD_POST);
 		if (assistent == null) {
 			return CommonUtil.toErrorResult(
 					ERRORCODE.PUSHED_CONNECT_ERROR.getIndex(),
