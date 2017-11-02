@@ -321,6 +321,7 @@ public class ChatroomController extends BaseContorller {
 			}
 			if (hasRoom){
 				userService.updateChatrooms(userBo);
+				logger.info("user  {}  delete  chatroom  {}", userBo.getId(), chatroomid);
 			}
 		} finally {
 			lock.unlock();
