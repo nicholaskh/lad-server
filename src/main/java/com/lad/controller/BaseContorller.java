@@ -76,6 +76,21 @@ public abstract class BaseContorller {
 	}
 
 	/**
+	 * 获取session
+	 * @param request
+	 */
+	public UserBo getUserLogin(HttpServletRequest request) {
+		HttpSession session = request.getSession();
+		if (session.isNew()) {
+			return null;
+		}
+		if (session.getAttribute("isLogin") == null) {
+			return null;
+		}
+		return (UserBo) session.getAttribute("userBo");
+	}
+
+	/**
 	 * 更新圈子访问记录信息
 	 * @param userid
 	 * @param circleid

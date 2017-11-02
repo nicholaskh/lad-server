@@ -227,13 +227,11 @@ public class ChatroomController extends BaseContorller {
 			if (!set.contains(userid)) {
 				continue;
 			}
-			UserBo user = userService.getUser(userid);
-			if (null == user) {
-				return CommonUtil.toErrorResult(ERRORCODE.USER_NULL.getIndex(),
-						ERRORCODE.USER_NULL.getReason());
-			}
-			updateUserChatroom(user, chatroomid);
 			set.remove(userid);
+			UserBo user = userService.getUser(userid);
+			if (null != user) {
+				updateUserChatroom(user, chatroomid);
+			}
 			if (!StringUtils.isEmpty(result[1])) {
 				updateIMTerm(userid, result[1]);
 			}
@@ -305,22 +303,29 @@ public class ChatroomController extends BaseContorller {
 	}
 
 	private void updateUserChatroom(UserBo userBo, String chatroomid){
-		HashSet<String> chatroom = userBo.getChatrooms();
-		LinkedList<String> chatroomTops = userBo.getChatroomsTop();
-		boolean hasRoom = false;
-		if (chatroom.contains(chatroomid)){
-			chatroom.remove(chatroomid);
-			userBo.setChatrooms(chatroom);
-			hasRoom = true;
+		RLock lock = redisServer.getRLock("deleteUser");
+		try {
+			lock.lock(3, TimeUnit.SECONDS);
+			HashSet<String> chatroom = userBo.getChatrooms();
+			LinkedList<String> chatroomTops = userBo.getChatroomsTop();
+			boolean hasRoom = false;
+			if (chatroom.contains(chatroomid)){
+				chatroom.remove(chatroomid);
+				userBo.setChatrooms(chatroom);
+				hasRoom = true;
+			}
+			if (chatroomTops.contains(chatroomid)){
+				chatroomTops.remove(chatroomid);
+				userBo.setChatroomsTop(chatroomTops);
+				hasRoom = true;
+			}
+			if (hasRoom){
+				userService.updateChatrooms(userBo);
+			}
+		} finally {
+			lock.unlock();
 		}
-		if (chatroomTops.contains(chatroomid)){
-			chatroomTops.remove(chatroomid);
-			userBo.setChatroomsTop(chatroomTops);
-			hasRoom = true;
-		}
-		if (hasRoom){
-			userService.updateChatrooms(userBo);
-		}
+
 	}
 
 	@RequestMapping("/get-friends")
