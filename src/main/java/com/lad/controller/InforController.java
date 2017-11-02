@@ -570,20 +570,12 @@ public class InforController extends BaseContorller {
             for (String name : namesArr) {
                 if (groupTypes.contains(name)) {
                     mySubs.add(name);
-                } else {
-                    return CommonUtil.toErrorResult(
-                            ERRORCODE.INFOR_NAME_ERROR.getIndex(),
-                            ERRORCODE.INFOR_NAME_ERROR.getReason());
-                }
+                } 
             }
         } else {
             if (groupTypes.contains(groupNames)) {
                 mySubs.add(groupNames);
-            } else {
-                return CommonUtil.toErrorResult(
-                        ERRORCODE.INFOR_NAME_ERROR.getIndex(),
-                        ERRORCODE.INFOR_NAME_ERROR.getReason());
-            }
+            } 
         }
         if (isNew){
             inforService.insertSub(mySub);
@@ -880,11 +872,67 @@ public class InforController extends BaseContorller {
                 inforVos.add(inforVo);
             }
         }
+        addTop4(inforVos);
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("ret", 0);
         map.put("inforVoList", inforVos);
         return JSONObject.fromObject(map).toString();
     }
+
+    @Async
+    private void addTop4(List<InforVo> inforVos){
+        RMapCache<String, Object> cache = redisServer.getCacheMap(Constant.TEST_CACHE);
+
+        ArrayList<InforVo> top4 = new ArrayList<>();
+        int size = 0;
+        for (InforVo inforVo : inforVos) {
+            if (size > 4){
+                break;
+            }
+            LinkedList<String> images = inforVo.getImageUrls();
+            if (images != null && !images.isEmpty()) {
+               top4.add(inforVo);
+               size++;
+            }
+        }
+        cache.put("top4",top4);
+    }
+
+    /**
+     * s
+     * @param request
+     * @param response
+     * @return
+     */
+    @RequestMapping("/home-top4")
+    @ResponseBody
+    public String homeHealthTop(HttpServletRequest request, HttpServletResponse response){
+        RMapCache<String, Object> cache = redisServer.getCacheMap(Constant.TEST_CACHE);
+        List<InforVo> top4 = null;
+        if (cache.containsKey("top4")){
+            top4 = (List<InforVo>) cache.get("top4");
+        } else {
+            int size = 0;
+            List<InforBo> inforBos = inforService.homeHealthRecom(50);
+            for (InforBo inforBo : inforBos) {
+                if (size > 4){
+                    break;
+                }
+                LinkedList<String> images = inforBo.getImageUrls();
+                if (images != null && !images.isEmpty()) {
+                    InforVo inforVo = new InforVo();
+                    bo2vo(inforBo, inforVo);
+                    top4.add(inforVo);
+                    size ++;
+                }
+            }
+        }
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("ret", 0);
+        map.put("inforVoList", top4);
+        return JSONObject.fromObject(map).toString();
+    }
+
 
     private void bo2vo(InforBo inforBo, InforVo inforVo){
         inforVo.setInforid(inforBo.getId());
@@ -956,7 +1004,7 @@ public class InforController extends BaseContorller {
 
 
     /**
-     * 健康个性推荐
+     * 安防个性推荐
      * @param request
      * @param response
      * @return
@@ -997,15 +1045,76 @@ public class InforController extends BaseContorller {
             }
         }
         if (num < 50) {
-            List<InforBo> inforBos = inforService.homeHealthRecom(50 - num);
-            for (InforBo inforBo : inforBos) {
-                InforVo inforVo = new InforVo();
-                bo2vo(inforBo, inforVo);
+            List<SecurityBo> securityBos = inforService.findSecurityTypes();
+            for (SecurityBo securityBo : securityBos) {
+                SecurityVo securityVo = new SecurityVo();
+                BeanUtils.copyProperties(securityBo,securityVo);
+                securityVo.setText("");
+                securityVo.setInforid(securityBo.getId());
+                inforVos.add(securityVo);
             }
         }
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("ret", 0);
-        map.put("inforVoList", inforVos);
+        map.put("securityVoList", inforVos);
+        return JSONObject.fromObject(map).toString();
+    }
+
+
+    /**
+     * 广播个性推荐
+     * @param request
+     * @param response
+     * @return
+     */
+    @RequestMapping("/user-radios")
+    @ResponseBody
+    public String userRadios(HttpServletRequest request, HttpServletResponse response){
+        UserBo userBo;
+        try {
+            userBo = checkSession(request, userService);
+        } catch (MyException e) {
+            return e.getMessage();
+        }
+        List<SecurityVo> inforVos = new ArrayList<>();
+        int num = 0;
+        InforUserReadBo readBo = inforRecomService.findUserReadByUserid(userBo.getId());
+        if (readBo == null) {
+            readBo = new InforUserReadBo();
+            readBo.setUserid(userBo.getId());
+            inforRecomService.addUserRead(readBo);
+        } else {
+            LinkedHashSet<String> set = readBo.getSecuritys();
+            List<InforRecomBo> recomBos = null;
+            if (set.size() > 0) {
+                recomBos = inforRecomService.findRecomByTypeAndModule(Constant.INFOR_SECRITY, set);
+            } else {
+                recomBos = inforRecomService.findRecomByType(Constant.INFOR_SECRITY);
+            }
+            if (recomBos != null){
+                for (InforRecomBo recomBo : recomBos) {
+                    SecurityBo inforBo = inforService.findSecurityById(recomBo.getInforid());
+                    if (inforBo != null) {
+                        SecurityVo inforVo = new SecurityVo();
+                        num++;
+                        inforVos.add(inforVo);
+                    }
+                }
+            }
+        }
+        if (num < 50) {
+            List<SecurityBo> securityBos = inforService.findSecurityTypes();
+            for (SecurityBo securityBo : securityBos) {
+                SecurityVo securityVo = new SecurityVo();
+                BeanUtils.copyProperties(securityBo,securityVo);
+                securityVo.setText("");
+                securityVo.setInforid(securityBo.getId());
+                inforVos.add(securityVo);
+            }
+        }
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("ret", 0);
+        map.put("securityVoList", inforVos);
         return JSONObject.fromObject(map).toString();
     }
 
