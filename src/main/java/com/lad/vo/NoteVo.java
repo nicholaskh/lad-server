@@ -73,6 +73,8 @@ public class NoteVo extends BaseVo {
     private double[] position;
     private String circleId;
 
+    private String landmark;
+
     private boolean isForward = false;
 
     public String getNodeid() {
@@ -281,5 +283,13 @@ public class NoteVo extends BaseVo {
 
     public void setUserLevel(int userLevel) {
         this.userLevel = userLevel;
+    }
+
+    public String getLandmark() {
+        return landmark;
+    }
+
+    public void setLandmark(String landmark) {
+        this.landmark = landmark;
     }
 }
