@@ -117,20 +117,39 @@ public class InforController extends BaseContorller {
         Map<String, Object> map = new LinkedHashMap<>();
         map.put("ret", 0);
         boolean isGetType = false;
+        RMapCache<String, Object> cache = redisServer.getCacheMap(Constant.TEST_CACHE);
         if (!session.isNew() && session.getAttribute("isLogin") != null) {
             UserBo userBo = (UserBo) session.getAttribute("userBo");
             InforSubscriptionBo mySub = inforService.findMySubs(userBo.getId());
             if (mySub != null) {
-                map.put(Constant.HEALTH_NAME, mySub.getSubscriptions());
-                map.put(Constant.SECRITY_NAME, mySub.getSecuritys());
-                map.put(Constant.RADIO_NAME, mySub.getRadios());
-                map.put(Constant.VIDEO_NAME, mySub.getVideos());
+                if (mySub.getSubscriptions().isEmpty()) {
+                    map.put(Constant.HEALTH_NAME, cache.get(Constant.HEALTH_NAME));
+                } else {
+                    map.put(Constant.HEALTH_NAME, mySub.getSubscriptions());
+                }
+                if (mySub.getSecuritys().isEmpty()) {
+                    map.put(Constant.HEALTH_NAME, cache.get(Constant.SECRITY_NAME));
+                } else {
+                    map.put(Constant.HEALTH_NAME, mySub.getSecuritys());
+                }
+                if (mySub.getRadios().isEmpty()) {
+                    map.put(Constant.HEALTH_NAME, cache.get(Constant.RADIO_NAME));
+                } else {
+                    map.put(Constant.HEALTH_NAME, mySub.getRadios());
+                }
+                if (mySub.getVideos().isEmpty()) {
+                    map.put(Constant.HEALTH_NAME, cache.get(Constant.VIDEO_NAME));
+                } else {
+                    map.put(Constant.HEALTH_NAME, mySub.getVideos());
+                }
                 isGetType  = true;
             }
         }
         if (!isGetType) {
-            RMapCache<String, Object> cache = redisServer.getCacheMap(Constant.TEST_CACHE);
-            if (cache.containsKey(Constant.HEALTH_NAME)) {
+            if (cache.containsKey(Constant.HEALTH_NAME) &&
+                    cache.containsKey(Constant.SECRITY_NAME) &&
+                    cache.containsKey(Constant.RADIO_NAME) &&
+                    cache.containsKey(Constant.VIDEO_NAME)) {
                 map.put(Constant.HEALTH_NAME, cache.get(Constant.HEALTH_NAME));
                 map.put(Constant.SECRITY_NAME, cache.get(Constant.SECRITY_NAME));
                 map.put(Constant.RADIO_NAME, cache.get(Constant.RADIO_NAME));
