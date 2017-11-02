@@ -59,6 +59,7 @@ public enum ERRORCODE {
 	FRIEND_DATA_ERROR(80010, "好友信息异常，请联系管理员处理"),
 	FRIEND_TAG_NULL(80011, "好友标签为空"),
 	TAG_NAME_EXIST(80012, "标签名称已存在"),
+	FRIEND_ERROR(80013, "好友关系错误"),
 	
 	COMPLAIN_IS_NULL(90001, "投诉为空"),
 	
