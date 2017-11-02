@@ -204,8 +204,8 @@ public class CircleServiceImpl implements ICircleService {
 	}
 
 	@Override
-	public WriteResult updateNotice(String circleid, String title, String notice) {
-		return circleDao.updateNotice(circleid, title, notice);
+	public WriteResult updateNotice(CircleBo circleBo) {
+		return circleDao.updateNotice(circleBo);
 	}
 
 	@Override

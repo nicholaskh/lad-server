@@ -237,12 +237,14 @@ public class CircleDaoImpl implements ICircleDao {
 	}
 
 	@Override
-	public WriteResult updateNotice(String circleid, String title, String notice) {
+	public WriteResult updateNotice(CircleBo circleBo) {
 		Query query = new Query();
-		query.addCriteria(new Criteria("_id").is(circleid));
+		query.addCriteria(new Criteria("_id").is(circleBo.getId()));
 		Update update = new Update();
-		update.set("notice", notice);
-		update.set("noticeTitle", title);
+		update.set("notice", circleBo.getNotice());
+		update.set("noticeTitle", circleBo.getNoticeTitle());
+		update.set("noticeTime", circleBo.getNoticeTime());
+		update.set("noticeUserid", circleBo.getNoticeUserid());
 		return mongoTemplate.updateFirst(query, update, CircleBo.class);
 	}
 

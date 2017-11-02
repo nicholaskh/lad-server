@@ -498,7 +498,7 @@ public class CircleController extends BaseContorller {
 	@RequestMapping("/delete-user")
 	@ResponseBody
 	public String delete(@RequestParam(required = true) String circleid,
-						 @RequestParam(required = true) String userid,
+						 @RequestParam(required = true) String userids,
 						 HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
 		try {
@@ -513,37 +513,40 @@ public class CircleController extends BaseContorller {
 					ERRORCODE.CIRCLE_IS_NULL.getReason());
 		}
 		updateHistory(userBo.getId(), circleid, locationService, circleService);
+		String[] useridArr = CommonUtil.getIds(userids);
 		//圈主才能删除管理员
 		LinkedHashSet<String> masters = circleBo.getMasters();
-		if (masters.contains(userid)) {
-			if (!circleBo.getCreateuid().equals(userBo.getId())) {
-				return CommonUtil.toErrorResult(
-						ERRORCODE.CIRCLE_NOT_MASTER.getIndex(),
-						ERRORCODE.CIRCLE_NOT_MASTER.getReason());
-			}
-			masters.remove(userid);
-			circleService.updateMaster(circleBo);
-		} else {
-			if (!circleBo.getCreateuid().equals(userBo.getId()) &&
-					!circleBo.getMasters().contains(userBo.getId())) {
-				return CommonUtil.toErrorResult(
-						ERRORCODE.CIRCLE_NOT_MASTER.getIndex(),
-						ERRORCODE.CIRCLE_NOT_MASTER.getReason());
-			}
-		}
-		UserBo user = userService.getUser(userid);
-		if (user != null) {
-			List<String> circles = user.getCircleTops();
-			if (circles.contains(circleid)) {
-				circles.remove(circleid);
-				userService.updateTopCircles(userid, circles);
-			}
-		}
 		HashSet<String> users = circleBo.getUsers();
-		if (users.contains(userid)) {
-			users.remove(userid);
-			circleService.updateUsers(circleBo.getId(), users);
-			userAddHis(userid, circleid, 2);
+		for (String userid : useridArr) {
+			if (masters.contains(userid)) {
+				if (!circleBo.getCreateuid().equals(userBo.getId())) {
+					return CommonUtil.toErrorResult(
+							ERRORCODE.CIRCLE_NOT_MASTER.getIndex(),
+							ERRORCODE.CIRCLE_NOT_MASTER.getReason());
+				}
+				masters.remove(userid);
+				circleService.updateMaster(circleBo);
+			} else {
+				if (!circleBo.getCreateuid().equals(userBo.getId()) &&
+						!circleBo.getMasters().contains(userBo.getId())) {
+					return CommonUtil.toErrorResult(
+							ERRORCODE.CIRCLE_NOT_MASTER.getIndex(),
+							ERRORCODE.CIRCLE_NOT_MASTER.getReason());
+				}
+			}
+			UserBo user = userService.getUser(userid);
+			if (user != null) {
+				List<String> circles = user.getCircleTops();
+				if (circles.contains(circleid)) {
+					circles.remove(circleid);
+					userService.updateTopCircles(userid, circles);
+				}
+			}
+			if (users.contains(userid)) {
+				users.remove(userid);
+				circleService.updateUsers(circleBo.getId(), users);
+				userAddHis(userid, circleid, 2);
+			}
 		}
 		return Constant.COM_RESP;
 	}
@@ -692,6 +695,7 @@ public class CircleController extends BaseContorller {
 		LinkedHashSet<String> masters = circleBo.getMasters();
 		if (masters.contains(userBo.getId())) {
 			masters.remove(userBo.getId());
+			circleBo.setMasters(masters);
 			circleService.updateMaster(circleBo);
 		}
 		//删除置顶的圈子
@@ -1353,21 +1357,54 @@ public class CircleController extends BaseContorller {
 		} catch (MyException e) {
 			return e.getMessage();
 		}
+		String userid = userBo.getId();
 		CircleBo circleBo = circleService.selectById(circleid);
 		if (circleBo == null) {
 			return CommonUtil.toErrorResult(
 					ERRORCODE.CIRCLE_IS_NULL.getIndex(),
 					ERRORCODE.CIRCLE_IS_NULL.getReason());
 		}
-		if (circleBo.getCreateuid().equals(userBo.getId()) ||
-				circleBo.getMasters().contains(userBo.getId())) {
-			circleService.updateNotice(circleid, title, content);
+		if (circleBo.getCreateuid().equals(userid) ||
+				circleBo.getMasters().contains(userid)) {
+			circleBo.setNotice(content);
+			circleBo.setNoticeTitle(title);
+			circleBo.setNoticeTime(new Date());
+			circleBo.setNoticeUserid(userid);
+			circleService.updateNotice(circleBo);
 		} else {
 			return CommonUtil.toErrorResult(
 					ERRORCODE.CIRCLE_MASTER_NULL.getIndex(),
 					ERRORCODE.CIRCLE_MASTER_NULL.getReason());
 		}
 		return Constant.COM_RESP;
+	}
+
+	/**
+	 * 添加或修改公告
+	 */
+	@RequestMapping("/get-notice")
+	@ResponseBody
+	public String getNotice(@RequestParam String circleid,
+							HttpServletRequest request, HttpServletResponse response) {
+		CircleBo circleBo = circleService.selectById(circleid);
+		if (circleBo == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CIRCLE_IS_NULL.getIndex(),
+					ERRORCODE.CIRCLE_IS_NULL.getReason());
+		}
+
+		UserBo userBo = userService.getUser(circleBo.getNoticeUserid());
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("noticeTitle", circleBo.getNoticeTitle());
+		map.put("notice", circleBo.getNotice());
+		map.put("noticeTime", circleBo.getNoticeTime());
+		if (userBo != null) {
+			UserBaseVo userBaseVo = new UserBaseVo();
+			BeanUtils.copyProperties(userBo, userBaseVo);
+			map.put("noticeUser", userBaseVo);
+		}
+		return JSONObject.fromObject(map).toString();
 	}
 
 	/**

@@ -97,12 +97,10 @@ public interface ICircleDao extends IBaseDao {
 
 	/**
 	 * 更新公告
-	 * @param circleid
-	 * @param title
-	 * @param notice
+	 * @param circleBo
 	 * @return
 	 */
-	WriteResult updateNotice(String circleid, String title, String notice);
+	WriteResult updateNotice(CircleBo circleBo);
 
 	/**
 	 * 更新圈子名称
