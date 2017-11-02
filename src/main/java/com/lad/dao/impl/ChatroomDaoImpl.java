@@ -76,7 +76,6 @@ public class ChatroomDaoImpl implements IChatroomDao {
 	public WriteResult delete(String chatroomId) {
 		Query query = new Query();
 		query.addCriteria(new Criteria("_id").is(chatroomId));
-		query.addCriteria(new Criteria("deleted").is(0));
 		Update update = new Update();
 		update.set("deleted", 1);
 		return mongoTemplate.updateFirst(query, update, ChatroomBo.class);
