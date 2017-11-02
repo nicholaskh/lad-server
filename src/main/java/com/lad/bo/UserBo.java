@@ -3,7 +3,6 @@ package com.lad.bo;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -36,8 +35,8 @@ public class UserBo extends BaseBo {
 	 * 面对面群聊
 	 */
 	private HashSet<String> faceChatrooms = new HashSet<String>();
-	
-	private LinkedHashSet<String> chatroomsTop = new LinkedHashSet<String>();
+
+	private LinkedList<String> chatroomsTop = new LinkedList<String>();
 
 	private String locationid;
 
@@ -121,11 +120,11 @@ public class UserBo extends BaseBo {
 		this.locationid = locationid;
 	}
 
-	public LinkedHashSet<String> getChatroomsTop() {
+	public LinkedList<String> getChatroomsTop() {
 		return chatroomsTop;
 	}
 
-	public void setChatroomsTop(LinkedHashSet<String> chatroomsTop) {
+	public void setChatroomsTop(LinkedList<String> chatroomsTop) {
 		this.chatroomsTop = chatroomsTop;
 	}
 

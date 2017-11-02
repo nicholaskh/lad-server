@@ -1,7 +1,7 @@
 package com.lad.vo;
 
 import java.util.HashSet;
-import java.util.LinkedHashSet;
+import java.util.LinkedList;
 
 public class UserVo extends UserBaseVo {
 
@@ -9,7 +9,7 @@ public class UserVo extends UserBaseVo {
 
 	private HashSet<String> chatrooms;
 	
-	private LinkedHashSet<String> chatroomsTop;
+	private LinkedList<String> chatroomsTop;
 
 
 
@@ -21,11 +21,11 @@ public class UserVo extends UserBaseVo {
 		this.chatrooms = chatrooms;
 	}
 
-	public LinkedHashSet<String> getChatroomsTop() {
+	public LinkedList<String> getChatroomsTop() {
 		return chatroomsTop;
 	}
 
-	public void setChatroomsTop(LinkedHashSet<String> chatroomsTop) {
+	public void setChatroomsTop(LinkedList<String> chatroomsTop) {
 		this.chatroomsTop = chatroomsTop;
 	}
 
