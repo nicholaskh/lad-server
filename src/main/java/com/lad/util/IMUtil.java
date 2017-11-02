@@ -5,8 +5,13 @@ import com.lad.service.IIMTermService;
 import com.pushd.ImAssistant;
 import com.pushd.Message;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class IMUtil {
+
+	private static Logger logger = LogManager.getLogger(IMUtil.class);
+
 
 	public static String FINISH = "finish";
 
@@ -40,16 +45,20 @@ public class IMUtil {
 			Message message = null;
 			if (type == 0) {
 				message = assistent.createChatRoom(chatroomId, ids);
+				logger.info("create room 1,  user {}, chatroom {},  res {}",ids, chatroomId, message.getMsg());
 			} else {
 				message = assistent.addUserToChatRoom(chatroomId, ids);
+				logger.info("add user 1,  user {}, chatroom {},  res {}",ids, chatroomId, message.getMsg());
 			}
 			if (message.getStatus() == Message.Status.termError) {
 				term = getTerm(assistent);
 				assistent.setServerTerm(term);
 				if (type == 0) {
 					message = assistent.createChatRoom(chatroomId, ids);
+					logger.info("create room 2,  user {}, chatroom {},  res {}",ids, chatroomId, message.getMsg());
 				} else {
 					message = assistent.addUserToChatRoom(chatroomId, ids);
+					logger.info("add user 2,  user {}, chatroom {},  res {}",ids, chatroomId, message.getMsg());
 				}
 				if (Message.Status.success != message.getStatus()) {
 					res = CommonUtil.toErrorResult(message.getStatus(),
@@ -93,10 +102,12 @@ public class IMUtil {
 		try {
 			assistent.setServerTerm(term);
 			Message message = assistent.removeUserFromRoom(chatroomId, ids);
+			logger.info("delete user 1,  user {}, chatroom {},  res {}",ids, chatroomId, message.getMsg());
 			if (message.getStatus() == Message.Status.termError) {
 				term = getTerm(assistent);
 				assistent.setServerTerm(term);
 				message = assistent.removeUserFromRoom(chatroomId, ids);
+				logger.info("delete user 2,  user {}, chatroom {},  res {}",ids, chatroomId, message.getMsg());
 				if (Message.Status.success != message.getStatus()) {
 					res = CommonUtil.toErrorResult(message.getStatus(),
 							message.getMsg());
@@ -182,6 +193,7 @@ public class IMUtil {
 		}
 		assistent.setServerTerm(iMTermBo.getTerm());
 		Message message = assistent.disolveRoom(chatroomId);
+		logger.info("delete room 1, chatroom {},  res {}", chatroomId, message.getMsg());
 		if (message.getStatus() == Message.Status.termError) {
 			message = assistent.getAppKey();
 			String appKey = message.getMsg();
@@ -190,10 +202,13 @@ public class IMUtil {
 			iMTermService.updateByUserid(userid, term);
 			assistent.setServerTerm(term);
 			message = assistent.disolveRoom(chatroomId);
+			logger.info("delete room 2, chatroom {},  res {}", chatroomId, message.getMsg());
 			if (Message.Status.success != message.getStatus()) {
 				assistent.close();
 				return CommonUtil.toErrorResult(message.getStatus(),
 						message.getMsg());
+			} else {
+				assistent.close();
 			}
 		} else if (Message.Status.success != message.getStatus()) {
 			assistent.close();
