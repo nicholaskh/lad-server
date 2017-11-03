@@ -237,7 +237,6 @@ public class CityController extends BaseContorller {
                 city.add(string);
                 map.put(first, city);
             }
-            System.out.println(string);
         }
         return  JSONObject.fromObject(map).toString();
     }
