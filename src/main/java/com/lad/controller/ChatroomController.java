@@ -242,6 +242,14 @@ public class ChatroomController extends BaseContorller {
 			if (!res.equals(IMUtil.FINISH) && !res.contains("not found")) {
 				return res;
 			}
+			//删除最后一人的聊天室
+			if (set.size() == 1) {
+				String friendid = set.iterator().next();
+				UserBo friend = userService.getUser(friendid);
+				if (friend != null){
+					updateUserChatroom(friend, chatroomid);
+				}
+			}
 			chatroomService.delete(chatroomid);
 			chatroomService.deleteChatroomUser(chatroomid);
 		} else {
@@ -292,6 +300,14 @@ public class ChatroomController extends BaseContorller {
 			String res = IMUtil.disolveRoom(iMTermService, userid, chatroomid);
 			if (!res.equals(IMUtil.FINISH) && !res.contains("not found")) {
 				return res;
+			}
+			//删除最后一人的聊天室
+			if (set.size() == 1) {
+				String friendid = set.iterator().next();
+				UserBo friend = userService.getUser(friendid);
+				if (friend != null){
+					updateUserChatroom(friend, chatroomid);
+				}
 			}
 			chatroomService.deleteChatroomUser(chatroomid);
 			chatroomService.delete(chatroomid);
