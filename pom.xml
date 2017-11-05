@@ -172,6 +172,7 @@
 			<groupId>com.lad</groupId>
 			<artifactId>pushdTool</artifactId>
 			<version>1.0.5</version>
+			<systemPath>${basedir}/lib/pushdTool-1.0.5.jar</systemPath>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -220,7 +221,7 @@
 			<artifactId>spring-data-redis</artifactId>
 			<version>1.7.1.RELEASE</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.redisson</groupId>
 			<artifactId>redisson</artifactId>
@@ -343,12 +344,10 @@
 		</plugins>
 	</build>
 
-    <!--
-	<repositories>
+	<!--<repositories>
 		<repository>
 			<id>sonatype-snapshot</id>
 			<url>http://180.76.173.200:8081/nexus/content/repositories/thirdparty</url>
 		</repository>
-	</repositories>
-    -->
+	</repositories>  -->
 </project>
