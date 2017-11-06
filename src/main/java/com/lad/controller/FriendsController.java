@@ -12,6 +12,7 @@ import net.sf.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -518,24 +519,19 @@ public class FriendsController extends BaseContorller {
 			if (!result.equals(IMUtil.FINISH)) {
 				return result;
 			}
+			//删除好友互相设置信息user
+			chatroomService.deleteChatroomUser(userBo.getId(),chatroomBo.getId());
+			chatroomService.deleteChatroomUser(friendid,chatroomBo.getId());
 		}
 		FriendsBo temp = friendsService.getFriendByIdAndVisitorId(
 				userBo.getId(), friendid);
-		boolean isFriend = true;
-		if (temp == null) {
-			isFriend = false;
-		} else {
+		if (temp != null) {
 			friendsService.delete(userBo.getId(), friendid);
 		}
 		//在添加好友的会互换id保存
 		temp = friendsService.getFriendByIdAndVisitorId(friendid,
 				userBo.getId());
-		if (temp == null ) {
-			if (!isFriend) {
-				return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NULL.getIndex(),
-						ERRORCODE.FRIEND_NULL.getReason());
-			}
-		} else {
+		if (temp != null ) {
 			friendsService.delete(friendid, userBo.getId());
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -603,6 +599,7 @@ public class FriendsController extends BaseContorller {
 			chatroomsSet.add(chatroomBo.getId());
 			user.setChatrooms(chatroomsSet);
 			userService.updateChatrooms(user);
+			addChatroomUser(user, chatroomBo.getId());
 		}
 		IMTermBo iMTermBo = iMTermService.selectByUserid(userBo.getId());
 		if (iMTermBo == null) {
@@ -634,6 +631,26 @@ public class FriendsController extends BaseContorller {
 		map.put("ret", 0);
 		map.put("channelId", chatroomBo.getId());
 		return JSONObject.fromObject(map).toString();
+	}
+
+	/**
+	 * 添加聊天室用户
+	 * @param chatroomid
+	 */
+	@Async
+	private void addChatroomUser(UserBo userBo, String chatroomid){
+		ChatroomUserBo chatroomUserBo = chatroomService.findChatUserByUserAndRoomid(userBo.getId(), chatroomid);
+		if (chatroomUserBo == null) {
+			chatroomUserBo = new ChatroomUserBo();
+			chatroomUserBo.setChatroomid(chatroomid);
+			chatroomUserBo.setUserid(userBo.getId());
+			chatroomUserBo.setUsername(userBo.getUserName());
+			chatroomUserBo.setShowNick(false);
+			chatroomUserBo.setDisturb(false);
+			chatroomService.insertUser(chatroomUserBo);
+		} else {
+			chatroomService.updateUserNickname(chatroomUserBo.getId(), "");
+		}
 	}
 
 	private String getTerm(ImAssistant assistent){
