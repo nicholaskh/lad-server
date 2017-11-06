@@ -395,6 +395,9 @@ public class ChatroomController extends BaseContorller {
 		for (String id : chatroomsTop) {
 			ChatroomBo temp = chatroomService.get(id);
 			if (null != temp) {
+				if (temp.getType() == Constant.ROOM_SINGLE) {
+					continue;
+				}
 				ChatroomUserBo chatroomUserBo = chatroomService.findChatUserByUserAndRoomid(userid, id);
 				ChatroomVo vo = new ChatroomVo();
 				BeanUtils.copyProperties(temp, vo);
@@ -413,6 +416,9 @@ public class ChatroomController extends BaseContorller {
 		for (String id : chatrooms) {
 			ChatroomBo temp = chatroomService.get(id);
 			if (null != temp) {
+				if (temp.getType() == Constant.ROOM_SINGLE) {
+					continue;
+				}
 				ChatroomUserBo chatroomUserBo = chatroomService.findChatUserByUserAndRoomid(userid, id);
 				ChatroomVo vo = new ChatroomVo();
 				BeanUtils.copyProperties(temp, vo);
@@ -477,18 +483,28 @@ public class ChatroomController extends BaseContorller {
 		} catch (MyException e) {
 			return e.getMessage();
 		}
-
 		ChatroomBo temp = chatroomService.get(chatroomid);
 		ChatroomVo vo = new ChatroomVo();
 		if (null != temp) {
-			ChatroomUserBo chatroomUserBo = chatroomService.findChatUserByUserAndRoomid(userBo.getId(), chatroomid);
 			BeanUtils.copyProperties(temp,vo);
-			if (temp.getType() != 1) {
-				bo2vo(chatroomUserBo.isShowNick(), temp, vo);
-				vo.setUserNum(temp.getUsers().size());
+			ChatroomUserBo chatroomUserBo = chatroomService.findChatUserByUserAndRoomid(userBo.getId(), chatroomid);
+			if (chatroomUserBo == null) {
+				chatroomUserBo = new ChatroomUserBo();
+				chatroomUserBo.setChatroomid(chatroomid);
+				chatroomUserBo.setUserid(userBo.getId());
+				chatroomUserBo.setUsername(userBo.getUserName());
+				chatroomUserBo.setShowNick(false);
+				chatroomUserBo.setDisturb(false);
+				chatroomService.insertUser(chatroomUserBo);
+				vo.setDisturb(false);
+			} else {
+				if (temp.getType() != 1) {
+					bo2vo(chatroomUserBo.isShowNick(), temp, vo);
+					vo.setUserNum(temp.getUsers().size());
+					vo.setShowNick(chatroomUserBo.isShowNick());
+				}
+				vo.setDisturb(chatroomUserBo.isDisturb());
 			}
-			vo.setDisturb(chatroomUserBo.isDisturb());
-			vo.setShowNick(chatroomUserBo.isShowNick());
 		} else {
 			return CommonUtil.toErrorResult(
 					ERRORCODE.CHATROOM_ID_NULL.getIndex(),
@@ -890,7 +906,19 @@ public class ChatroomController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(),
 					ERRORCODE.CHATROOM_NULL.getReason());
 		}
-		chatroomService.updateDisturb(userBo.getId(), chatroomid, isDisturb);
+		ChatroomUserBo chatroomUserBo = chatroomService.findChatUserByUserAndRoomid(userBo.getId(), chatroomid);
+		//单人聊天也存在免打扰信息
+		if (chatroomUserBo == null) {
+			chatroomUserBo = new ChatroomUserBo();
+			chatroomUserBo.setChatroomid(chatroomid);
+			chatroomUserBo.setUserid(userBo.getId());
+			chatroomUserBo.setUsername(userBo.getUserName());
+			chatroomUserBo.setShowNick(false);
+			chatroomUserBo.setDisturb(isDisturb);
+			chatroomService.insertUser(chatroomUserBo);
+		} else {
+			chatroomService.updateDisturb(chatroomUserBo.getId(), isDisturb);
+		}
 		return Constant.COM_RESP;
 	}
 
