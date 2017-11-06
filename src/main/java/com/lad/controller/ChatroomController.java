@@ -96,10 +96,8 @@ public class ChatroomController extends BaseContorller {
 		chatrooms.add(chatroomBo.getId());
 		userBo.setChatrooms(chatrooms);
 		userService.updateChatrooms(userBo);
-		LinkedHashMap<String, String> nicknames = new LinkedHashMap<>();
-		nicknames.put(userBo.getId(), userBo.getUserName());
-		addChatroomUser(chatroomBo.getId(), nicknames);
 		updateIMTerm(userBo.getId(), result[1]);
+		addChatroomUser(userBo, chatroomBo.getId(), userBo.getUserName());
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("channelId", chatroomBo.getId());
@@ -144,7 +142,6 @@ public class ChatroomController extends BaseContorller {
 		if (!result[0].equals(IMUtil.FINISH)) {
 			return result[0];
 		}
-		LinkedHashMap<String, String> nicknames = new LinkedHashMap<>();
 		updateIMTerm(userBo.getId(), result[1]);
 		LinkedHashSet<String> set = chatroomBo.getUsers();
 		for (String userid : useridArr) {
@@ -153,21 +150,18 @@ public class ChatroomController extends BaseContorller {
 			}
 			updateIMTerm(userid, result[1]);
 			UserBo user = userService.getUser(userid);
-			if (null == user) {
-				return CommonUtil.toErrorResult(ERRORCODE.USER_NULL.getIndex(),
-						 ERRORCODE.USER_NULL.getReason());
+			if (null != user) {
+				addChatroomUser(user, chatroomBo.getId(), user.getUserName());
+				HashSet<String> chatroom = user.getChatrooms();
+				//个人聊天室中没有当前聊天室，则添加到个人的聊天室
+				if (!chatroom.contains(chatroomBo.getId())) {
+					chatroom.add(chatroomBo.getId());
+					user.setChatrooms(chatroom);
+					userService.updateChatrooms(user);
+				}
+				set.add(userid);
 			}
-			nicknames.put(user.getId(), user.getUserName());
-			HashSet<String> chatroom = user.getChatrooms();
-			//个人聊天室中没有当前聊天室，则添加到个人的聊天室
-			if (!chatroom.contains(chatroomBo.getId())) {
-				chatroom.add(chatroomBo.getId());
-				user.setChatrooms(chatroom);
-				userService.updateChatrooms(user);
-			}
-			set.add(userid);
 		}
-		addChatroomUser(chatroomid, nicknames);
 		chatroomBo.setUsers(set);
 		chatroomService.updateUsers(chatroomBo);
 		return Constant.COM_RESP;
@@ -251,9 +245,7 @@ public class ChatroomController extends BaseContorller {
 				}
 			}
 			chatroomService.delete(chatroomid);
-			chatroomService.deleteChatroomUser(chatroomid);
 		} else {
-			deleteNickname(chatroomid, useridArr);
 			chatroomBo.setUsers(set);
 			chatroomService.updateUsers(chatroomBo);
 		}
@@ -309,7 +301,6 @@ public class ChatroomController extends BaseContorller {
 					updateUserChatroom(friend, chatroomid);
 				}
 			}
-			chatroomService.deleteChatroomUser(chatroomid);
 			chatroomService.delete(chatroomid);
 		} else {
 			chatroomBo.setUsers(set);
@@ -342,7 +333,7 @@ public class ChatroomController extends BaseContorller {
 		} finally {
 			lock.unlock();
 		}
-
+		chatroomService.deleteChatroomUser(userBo.getId(), chatroomid);
 	}
 
 	@RequestMapping("/get-friends")
@@ -395,64 +386,83 @@ public class ChatroomController extends BaseContorller {
 		} catch (MyException e) {
 			return e.getMessage();
 		}
+		String userid = userBo.getId();
 		HashSet<String> chatrooms = userBo.getChatrooms();
 		LinkedList<String> chatroomsTop = userBo.getChatroomsTop();
 		List<ChatroomVo> chatroomList = new LinkedList<ChatroomVo>();
+		HashSet<String> removes = new LinkedHashSet<>();
+		LinkedList<String> removeTops = new LinkedList<>();
 		for (String id : chatroomsTop) {
 			ChatroomBo temp = chatroomService.get(id);
 			if (null != temp) {
+				ChatroomUserBo chatroomUserBo = chatroomService.findChatUserByUserAndRoomid(userid, id);
 				ChatroomVo vo = new ChatroomVo();
 				BeanUtils.copyProperties(temp, vo);
 				if (temp.getType() != 1) {
-					bo2vo(temp, vo);
+					bo2vo(chatroomUserBo.isShowNick(),temp, vo);
 					vo.setUserNum(temp.getUsers().size());
 				}
+				vo.setDisturb(chatroomUserBo.isDisturb());
+				vo.setShowNick(chatroomUserBo.isShowNick());
 				vo.setTop(1);
 				chatroomList.add(vo);
+			} else {
+				removeTops.add(id);
 			}
 		}
 		for (String id : chatrooms) {
 			ChatroomBo temp = chatroomService.get(id);
 			if (null != temp) {
+				ChatroomUserBo chatroomUserBo = chatroomService.findChatUserByUserAndRoomid(userid, id);
 				ChatroomVo vo = new ChatroomVo();
 				BeanUtils.copyProperties(temp, vo);
 				if (temp.getType() != 1) {
-					bo2vo(temp, vo);
+					bo2vo(chatroomUserBo.isShowNick(), temp, vo);
 					vo.setUserNum(temp.getUsers().size());
 				}
 				chatroomList.add(vo);
+				vo.setDisturb(chatroomUserBo.isDisturb());
+				vo.setShowNick(chatroomUserBo.isShowNick());
+			} else {
+				removes.add(id);
 			}
 		}
+		updateUserRoom(userBo, removes, removeTops);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("ChatroomList", chatroomList);
 		return JSONObject.fromObject(map).toString();
 	}
 
-	private void bo2vo(ChatroomBo chatroomBo, ChatroomVo vo){
-		HashSet<String> users = chatroomBo.getUsers();
+	@Async
+	private void updateUserRoom(UserBo userBo, HashSet<String> removes, LinkedList<String> removeTops){
+		HashSet<String> chatrooms = userBo.getChatrooms();
+		LinkedList<String> chatroomsTop = userBo.getChatroomsTop();
+		chatroomsTop.removeAll(removeTops);
+		chatrooms.removeAll(removes);
+		userBo.setChatroomsTop(chatroomsTop);
+		userBo.setChatrooms(chatrooms);
+		userService.updateChatrooms(userBo);
+	}
+
+	private void bo2vo(boolean isShowNick, ChatroomBo chatroomBo, ChatroomVo vo){
 		LinkedHashSet<ChatroomUserVo> userVos = vo.getUserVos();
-		ChatroomUserBo chatroomUserBo = chatroomService.findByUserRoomid(chatroomBo.getId());
-		for (String userid : users) {
+		List<ChatroomUserBo> chatroomUserBos = chatroomService.findByUserRoomid(chatroomBo.getId());
+		for (ChatroomUserBo chatroomUser : chatroomUserBos) {
+			String userid = chatroomUser.getUserid();
 			UserBo chatUser = userService.getUser(userid);
 			if (chatUser == null) {
+				chatroomService.deleteUser(chatroomUser.getId());
 				continue;
 			}
 			ChatroomUserVo userVo = new ChatroomUserVo();
-			userVo.setUserid(userid);
+			userVo.setUserid(chatUser.getId());
 			userVo.setUserPic(chatUser.getHeadPictureName());
 			if (userid.equals(chatroomBo.getMaster())) {
 				userVo.setRole(2);
 			}
-			if (chatroomUserBo != null) {
-				HashMap<String, String> nicknames = chatroomUserBo.getNicknames();
-				String nickname = nicknames.get(userid);
-				if (StringUtils.isEmpty(nickname)) {
-					userVo.setNickname(chatUser.getUserName());
-				} else {
-					userVo.setNickname(nickname);
-				}
-			}
+			String nickname = isShowNick ? chatroomUser.getNickname() : chatroomUser.getUsername();
+			userVo.setNickname(nickname);
 			userVos.add(userVo);
 		}
 	}
@@ -461,8 +471,9 @@ public class ChatroomController extends BaseContorller {
 	@ResponseBody
 	public String getChatroomInfo(@RequestParam String chatroomid,
 			HttpServletRequest request, HttpServletResponse response){
+		UserBo userBo;
 		try {
-			checkSession(request, userService);
+			userBo = checkSession(request, userService);
 		} catch (MyException e) {
 			return e.getMessage();
 		}
@@ -470,11 +481,14 @@ public class ChatroomController extends BaseContorller {
 		ChatroomBo temp = chatroomService.get(chatroomid);
 		ChatroomVo vo = new ChatroomVo();
 		if (null != temp) {
+			ChatroomUserBo chatroomUserBo = chatroomService.findChatUserByUserAndRoomid(userBo.getId(), chatroomid);
 			BeanUtils.copyProperties(temp,vo);
 			if (temp.getType() != 1) {
-				bo2vo(temp, vo);
+				bo2vo(chatroomUserBo.isShowNick(), temp, vo);
 				vo.setUserNum(temp.getUsers().size());
 			}
+			vo.setDisturb(chatroomUserBo.isDisturb());
+			vo.setShowNick(chatroomUserBo.isShowNick());
 		} else {
 			return CommonUtil.toErrorResult(
 					ERRORCODE.CHATROOM_ID_NULL.getIndex(),
@@ -624,9 +638,7 @@ public class ChatroomController extends BaseContorller {
 			}
 			return res[0];
 		}
-		LinkedHashMap<String, String> nicknames = new LinkedHashMap<>();
-		nicknames.put(userBo.getId(), userBo.getUserName());
-		addChatroomUser(chatroom.getId(), nicknames);
+		addChatroomUser(userBo, chatroom.getId(), userBo.getUserName());
 		updateIMTerm(userBo.getId(), res[1]);
 		Map<String, Object> map = new HashMap<>();
 		map.put("ret", 0);
@@ -784,7 +796,6 @@ public class ChatroomController extends BaseContorller {
 		return Constant.COM_RESP;
 	}
 
-
 	@RequestMapping("/update-nickname")
 	@ResponseBody
 	public String updateNickname(String chatroomid, String nickname,
@@ -795,19 +806,12 @@ public class ChatroomController extends BaseContorller {
 		} catch (MyException e) {
 			return e.getMessage();
 		}
-		ChatroomUserBo chatroomUserBo = chatroomService.findByUserRoomid(chatroomid);
-		if (chatroomUserBo == null) {
-			chatroomUserBo = new ChatroomUserBo();
-			LinkedHashMap<String, String> nicknames = chatroomUserBo.getNicknames();
-			nicknames.put(userBo.getId(), nickname);
-			chatroomUserBo.setChatroomid(chatroomid);
-			chatroomUserBo.setNicknames(nicknames);
-			chatroomService.insertUser(chatroomUserBo);
-		} else {
-			HashMap<String, String> nicknames = chatroomUserBo.getNicknames();
-			nicknames.put(userBo.getId(), nickname);
-			chatroomService.updateUserNickname(chatroomUserBo.getId(), nicknames);
+		ChatroomBo chatroomBo = chatroomService.get(chatroomid);
+		if (chatroomBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(),
+					ERRORCODE.CHATROOM_NULL.getReason());
 		}
+		chatroomService.updateUserNickname(userBo.getId(),chatroomid, nickname);
 		return Constant.COM_RESP;
 	}
 
@@ -815,17 +819,24 @@ public class ChatroomController extends BaseContorller {
 	@ResponseBody
 	public String getNickname(String chatroomid,
 								 HttpServletRequest request, HttpServletResponse response) {
+		UserBo userBo;
+		try {
+			userBo = checkSession(request, userService);
+		} catch (MyException e) {
+			return e.getMessage();
+		}
 		ChatroomBo chatroomBo = chatroomService.get(chatroomid);
 		if (chatroomBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(),
 					ERRORCODE.CHATROOM_NULL.getReason());
 		}
-		ChatroomUserBo chatroomUserBo = chatroomService.findByUserRoomid(chatroomid);
-		HashSet<String> users = chatroomBo.getUsers();
+		List<ChatroomUserBo> chatroomUserBos = chatroomService.findByUserRoomid(chatroomid);
 		List<ChatroomUserVo> userVos = new ArrayList<>();
-		for (String userid : users) {
+		for (ChatroomUserBo chatroomUserBo : chatroomUserBos) {
+			String userid = chatroomUserBo.getUserid();
 			UserBo chatUser = userService.getUser(userid);
 			if (chatUser == null) {
+				chatroomService.deleteUser(chatroomUserBo.getId());
 				continue;
 			}
 			ChatroomUserVo userVo = new ChatroomUserVo();
@@ -834,15 +845,7 @@ public class ChatroomController extends BaseContorller {
 			}
 			userVo.setUserid(userid);
 			userVo.setUserPic(chatUser.getHeadPictureName());
-			if (chatroomUserBo != null) {
-				HashMap<String, String> nicknames = chatroomUserBo.getNicknames();
-				String nickname = nicknames.get(userid);
-				if (StringUtils.isNotEmpty(nickname)) {
-					userVo.setNickname(nickname);
-				} else {
-					userVo.setNickname(chatUser.getUserName());
-				}
-			}
+			userVo.setNickname(chatroomUserBo.getNickname());
 			userVos.add(userVo);
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -851,40 +854,75 @@ public class ChatroomController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
+	@RequestMapping("/update-shownick")
+	@ResponseBody
+	public String updateShowNickname(String chatroomid, boolean isShowNick,
+								 HttpServletRequest request, HttpServletResponse response) {
+		UserBo userBo;
+		try {
+			userBo = checkSession(request, userService);
+		} catch (MyException e) {
+			return e.getMessage();
+		}
+		ChatroomBo chatroomBo = chatroomService.get(chatroomid);
+		if (chatroomBo == null) {
+			deleteNickname(userBo.getId(), chatroomid);
+			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(),
+					ERRORCODE.CHATROOM_NULL.getReason());
+		}
+		chatroomService.updateShowNick(userBo.getId(), chatroomid, isShowNick);
+		return Constant.COM_RESP;
+	}
+
+	@RequestMapping("/update-disturb")
+	@ResponseBody
+	public String updateDisturb(String chatroomid, boolean isDisturb,
+								 HttpServletRequest request, HttpServletResponse response) {
+		UserBo userBo;
+		try {
+			userBo = checkSession(request, userService);
+		} catch (MyException e) {
+			return e.getMessage();
+		}
+		ChatroomBo chatroomBo = chatroomService.get(chatroomid);
+		if (chatroomBo == null) {
+			deleteNickname(userBo.getId(), chatroomid);
+			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(),
+					ERRORCODE.CHATROOM_NULL.getReason());
+		}
+		chatroomService.updateDisturb(userBo.getId(), chatroomid, isDisturb);
+		return Constant.COM_RESP;
+	}
+
 	/**
 	 * 添加聊天室用户的昵称
 	 * @param chatroomid
-	 * @param nicknames
+	 * @param nickname
 	 */
 	@Async
-	private void addChatroomUser(String chatroomid, LinkedHashMap<String, String> nicknames){
-		ChatroomUserBo chatroomUserBo = chatroomService.findByUserRoomid(chatroomid);
+	private void addChatroomUser(UserBo userBo, String chatroomid, String nickname){
+		ChatroomUserBo chatroomUserBo = chatroomService.findChatUserByUserAndRoomid(userBo.getId(), chatroomid);
 		if (chatroomUserBo == null) {
 			chatroomUserBo = new ChatroomUserBo();
 			chatroomUserBo.setChatroomid(chatroomid);
-			chatroomUserBo.setNicknames(nicknames);
+			chatroomUserBo.setUserid(userBo.getId());
+			chatroomUserBo.setNickname(nickname);
+			chatroomUserBo.setUsername(userBo.getUserName());
+			chatroomUserBo.setShowNick(false);
+			chatroomUserBo.setDisturb(false);
 			chatroomService.insertUser(chatroomUserBo);
 		} else {
-			HashMap<String, String> nicks = chatroomUserBo.getNicknames();
-			nicks.putAll(nicknames);
-			chatroomService.updateUserNickname(chatroomUserBo.getId(), nicks);
+			chatroomService.updateUserNickname(chatroomUserBo.getId(), nickname);
 		}
 	}
 
 	/**
 	 * 删除群聊中的用户聊天昵称
+	 * @param userid
 	 * @param chatroomid
-	 * @param userids
 	 */
 	@Async
-	private void deleteNickname(String chatroomid, String... userids){
-		ChatroomUserBo chatroomUserBo = chatroomService.findByUserRoomid(chatroomid);
-		if (chatroomUserBo != null) {
-			HashMap<String, String> nicknames = chatroomUserBo.getNicknames();
-			for (String userid : userids) {
-				nicknames.remove(userid);
-			}
-			chatroomService.updateUserNickname(chatroomUserBo.getId(), nicknames);
-		}
+	private void deleteNickname(String userid, String chatroomid){
+		chatroomService.deleteChatroomUser(userid, chatroomid);
 	}
 }

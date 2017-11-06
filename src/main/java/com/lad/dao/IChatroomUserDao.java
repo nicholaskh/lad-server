@@ -3,7 +3,7 @@ package com.lad.dao;
 import com.lad.bo.ChatroomUserBo;
 import com.mongodb.WriteResult;
 
-import java.util.HashMap;
+import java.util.List;
 
 /**
  * 功能描述：
@@ -21,18 +21,34 @@ public interface IChatroomUserDao {
     ChatroomUserBo insert(ChatroomUserBo userBo);
 
     /**
-     * 更具查找
+     * 查找id里面所有信息
      * @param chatroomid
      * @return
      */
-    ChatroomUserBo findByRoomid(String chatroomid);
+    List<ChatroomUserBo> findByRoomid(String chatroomid);
+
+    /**
+     * 查找id里面所有信息
+     * @param chatroomid
+     * @return
+     */
+    ChatroomUserBo findByUserAndRoomid(String userid, String chatroomid);
 
     /**
      * 更新昵称
      * @param id
      * @return
      */
-    WriteResult updateNickname(String id, HashMap<String, String> nicknames);
+    WriteResult updateNickname(String id, String nickname);
+
+    /**
+     *
+     * @param userid
+     * @param chatroomid
+     * @param nickname
+     * @return
+     */
+    WriteResult updateNickname(String userid, String chatroomid, String nickname);
 
     /**
      *
@@ -46,6 +62,38 @@ public interface IChatroomUserDao {
      * @param chatroomid
      * @return
      */
-    WriteResult deleteChatroom(String chatroomid);
+    WriteResult deleteChatroom(String userid, String chatroomid);
+
+    /**
+     *
+     * @param id
+     * @return
+     */
+    WriteResult updateDisturb(String id, boolean isDisturb);
+
+    /**
+     *
+     * @param id
+     * @return
+     */
+    WriteResult updateShowNick(String id, boolean isShowNick);
+
+    /**
+     *
+     * @param userid
+     * @param chatroomid
+     * @param isShowNick
+     * @return
+     */
+    WriteResult updateShowNick(String userid, String chatroomid, boolean isShowNick);
+
+    /**
+     * 
+     * @param userid
+     * @param chatroomid
+     * @param isDisturb
+     * @return
+     */
+    WriteResult updateDisturb(String userid, String chatroomid, boolean isDisturb);
 
 }

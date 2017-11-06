@@ -11,7 +11,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
-import java.util.HashMap;
+import java.util.List;
 
 /**
  * 功能描述：
@@ -33,20 +33,49 @@ public class ChatroomUserDaoImpl implements IChatroomUserDao {
     }
 
     @Override
-    public ChatroomUserBo findByRoomid(String chatroomid) {
+    public List<ChatroomUserBo> findByRoomid(String chatroomid) {
         Query query = new Query();
         query.addCriteria(new Criteria("chatroomid").is(chatroomid));
         query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+        return mongoTemplate.find(query, ChatroomUserBo.class);
+    }
+
+    @Override
+    public ChatroomUserBo findByUserAndRoomid(String userid, String chatroomid) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("userid").is(userid));
+        query.addCriteria(new Criteria("chatroomid").is(chatroomid));
         return mongoTemplate.findOne(query, ChatroomUserBo.class);
     }
 
     @Override
-    public WriteResult updateNickname(String id, HashMap<String, String> nicknames) {
+    public WriteResult updateNickname(String id, String nickname) {
         Query query = new Query();
         query.addCriteria(new Criteria("_id").is(id));
+        Update update = new Update();
+        update.set("nickname", nickname);
+        update.set("deleted", Constant.ACTIVITY);
+        return mongoTemplate.updateFirst(query, update, ChatroomUserBo.class);
+    }
+
+    @Override
+    public WriteResult updateDisturb(String id, boolean isDisturb) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("_id").is(id));
+        Update update = new Update();
+        update.set("isDisturb", isDisturb);
+        update.set("deleted", Constant.ACTIVITY);
+        return mongoTemplate.updateFirst(query, update, ChatroomUserBo.class);
+    }
+
+    @Override
+    public WriteResult updateDisturb(String userid, String chatroomid, boolean isDisturb) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("userid").is(userid));
+        query.addCriteria(new Criteria("chatroomid").is(chatroomid));
         query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
         Update update = new Update();
-        update.set("nicknames", nicknames);
+        update.set("isDisturb", isDisturb);
         return mongoTemplate.updateFirst(query, update, ChatroomUserBo.class);
     }
 
@@ -60,11 +89,44 @@ public class ChatroomUserDaoImpl implements IChatroomUserDao {
     }
 
     @Override
-    public WriteResult deleteChatroom(String chatroomid) {
+    public WriteResult deleteChatroom(String userid, String chatroomid) {
         Query query = new Query();
+        query.addCriteria(new Criteria("userid").is(userid));
         query.addCriteria(new Criteria("chatroomid").is(chatroomid));
         Update update = new Update();
         update.set("deleted", Constant.DELETED);
+        return mongoTemplate.updateFirst(query, update, ChatroomUserBo.class);
+    }
+
+    @Override
+    public WriteResult updateShowNick(String id, boolean isShowNick) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("_id").is(id));
+        Update update = new Update();
+        update.set("isShowNick", isShowNick);
+        update.set("deleted", Constant.ACTIVITY);
+        return mongoTemplate.updateFirst(query, update, ChatroomUserBo.class);
+    }
+
+    @Override
+    public WriteResult updateShowNick(String userid, String chatroomid, boolean isShowNick) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("userid").is(userid));
+        query.addCriteria(new Criteria("chatroomid").is(chatroomid));
+        query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+        Update update = new Update();
+        update.set("isShowNick", isShowNick);
+        return mongoTemplate.updateFirst(query, update, ChatroomUserBo.class);
+    }
+
+    @Override
+    public WriteResult updateNickname(String userid, String chatroomid, String nickname) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("userid").is(userid));
+        query.addCriteria(new Criteria("chatroomid").is(chatroomid));
+        query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+        Update update = new Update();
+        update.set("nickname", nickname);
         return mongoTemplate.updateFirst(query, update, ChatroomUserBo.class);
     }
 }

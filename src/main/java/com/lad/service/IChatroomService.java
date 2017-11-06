@@ -4,8 +4,8 @@ import com.lad.bo.ChatroomBo;
 import com.lad.bo.ChatroomUserBo;
 import com.mongodb.WriteResult;
 
-import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 
 public interface IChatroomService extends IBaseService {
 	
@@ -103,14 +103,23 @@ public interface IChatroomService extends IBaseService {
 	 * @param chatroomid
 	 * @return
 	 */
-	ChatroomUserBo findByUserRoomid(String chatroomid);
+	List<ChatroomUserBo> findByUserRoomid(String chatroomid);
 
 	/**
 	 * 更新成员昵称
 	 * @param id
 	 * @return
 	 */
-	WriteResult updateUserNickname(String id, HashMap<String, String> nicknames);
+	WriteResult updateUserNickname(String id, String nickname);
+
+	/**
+	 * 
+	 * @param userid
+	 * @param chatroomid
+	 * @param nickname
+	 * @return
+	 */
+	WriteResult updateUserNickname(String userid, String chatroomid, String nickname);
 
 	/**
 	 *
@@ -124,5 +133,45 @@ public interface IChatroomService extends IBaseService {
 	 * @param chatroomid
 	 * @return
 	 */
-	WriteResult deleteChatroomUser(String chatroomid);
+	WriteResult deleteChatroomUser(String userid, String chatroomid);
+
+
+	/**
+	 *
+	 * @param id
+	 * @return
+	 */
+	WriteResult updateDisturb(String id, boolean isDisturb);
+
+	/**
+	 *
+	 * @param id
+	 * @return
+	 */
+	WriteResult updateShowNick(String id, boolean isShowNick);
+
+	/**
+	 *
+	 * @param userid
+	 * @param chatroomid
+	 * @param isShowNick
+	 * @return
+	 */
+	WriteResult updateShowNick(String userid, String chatroomid, boolean isShowNick);
+
+	/**
+	 *
+	 * @param userid
+	 * @param chatroomid
+	 * @param isDisturb
+	 * @return
+	 */
+	WriteResult updateDisturb(String userid, String chatroomid, boolean isDisturb);
+
+	/**
+	 * 查找id里面所有信息
+	 * @param chatroomid
+	 * @return
+	 */
+	ChatroomUserBo findChatUserByUserAndRoomid(String userid, String chatroomid);
 }

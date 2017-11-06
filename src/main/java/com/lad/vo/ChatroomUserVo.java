@@ -46,4 +46,5 @@ public class ChatroomUserVo extends BaseVo{
     public void setNickname(String nickname) {
         this.nickname = nickname;
     }
+
 }

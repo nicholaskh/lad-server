@@ -1,17 +1,16 @@
 package com.lad.service.impl;
 
+import com.lad.bo.ChatroomBo;
 import com.lad.bo.ChatroomUserBo;
+import com.lad.dao.IChatroomDao;
 import com.lad.dao.IChatroomUserDao;
+import com.lad.service.IChatroomService;
+import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.lad.bo.ChatroomBo;
-import com.lad.dao.IChatroomDao;
-import com.lad.service.IChatroomService;
-import com.mongodb.WriteResult;
-
-import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 
 @Service("chatroomService")
 public class ChatroomServiceImpl implements IChatroomService {
@@ -105,15 +104,6 @@ public class ChatroomServiceImpl implements IChatroomService {
 		return chatroomUserDao.insert(userBo);
 	}
 
-	@Override
-	public ChatroomUserBo findByUserRoomid(String chatroomid) {
-		return chatroomUserDao.findByRoomid(chatroomid);
-	}
-
-	@Override
-	public WriteResult updateUserNickname(String id, HashMap<String, String> nicknames) {
-		return chatroomUserDao.updateNickname(id, nicknames);
-	}
 
 	@Override
 	public WriteResult deleteUser(String id) {
@@ -121,7 +111,47 @@ public class ChatroomServiceImpl implements IChatroomService {
 	}
 
 	@Override
-	public WriteResult deleteChatroomUser(String chatroomid) {
-		return chatroomUserDao.deleteChatroom(chatroomid);
+	public List<ChatroomUserBo> findByUserRoomid(String chatroomid) {
+		return chatroomUserDao.findByRoomid(chatroomid);
+	}
+
+	@Override
+	public WriteResult updateUserNickname(String id, String nickname) {
+		return chatroomUserDao.updateNickname(id, nickname);
+	}
+
+	@Override
+	public WriteResult updateUserNickname(String userid, String chatroomid, String nickname) {
+		return chatroomUserDao.updateNickname(userid, chatroomid, nickname);
+	}
+
+	@Override
+	public WriteResult deleteChatroomUser(String userid, String chatroomid) {
+		return chatroomUserDao.deleteChatroom(userid, chatroomid);
+	}
+
+	@Override
+	public WriteResult updateDisturb(String id, boolean isDisturb) {
+		return chatroomUserDao.updateDisturb(id, isDisturb);
+	}
+
+	@Override
+	public WriteResult updateShowNick(String id, boolean isShowNick) {
+		return chatroomUserDao.updateShowNick(id, isShowNick);
+	}
+
+	@Override
+	public WriteResult updateShowNick(String userid, String chatroomid, boolean isShowNick) {
+		return chatroomUserDao.updateShowNick(userid, chatroomid, isShowNick);
+	}
+
+	@Override
+	public WriteResult updateDisturb(String userid, String chatroomid, boolean isDisturb) {
+		return chatroomUserDao.updateDisturb(userid, chatroomid, isDisturb);
+	}
+
+	@Override
+	public ChatroomUserBo findChatUserByUserAndRoomid(String userid, String chatroomid) {
+		return chatroomUserDao.findByUserAndRoomid(userid, chatroomid);
 	}
 }

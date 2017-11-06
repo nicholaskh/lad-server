@@ -18,7 +18,13 @@ public class ChatroomVo extends BaseVo {
 	//圈子加入是否需要校验
 	private boolean isVerify;
 
-	private int userNum;
+	private int userNum = 1;
+
+	//是否开启免打扰模式 true 是； false 否
+	private boolean isDisturb;
+
+	//是否显示昵称  true 是； false 否
+	private boolean isShowNick;
 
 	private LinkedHashSet<ChatroomUserVo> userVos = new LinkedHashSet<>();
 
@@ -109,5 +115,21 @@ public class ChatroomVo extends BaseVo {
 
 	public void setUserVos(LinkedHashSet<ChatroomUserVo> userVos) {
 		this.userVos = userVos;
+	}
+
+	public boolean isDisturb() {
+		return isDisturb;
+	}
+
+	public void setDisturb(boolean disturb) {
+		isDisturb = disturb;
+	}
+
+	public boolean isShowNick() {
+		return isShowNick;
+	}
+
+	public void setShowNick(boolean showNick) {
+		isShowNick = showNick;
 	}
 }

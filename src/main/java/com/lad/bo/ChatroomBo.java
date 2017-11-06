@@ -26,6 +26,7 @@ public class ChatroomBo extends BaseBo {
 
 	private String master;
 
+
 	public String getName() {
 		return name;
 	}
@@ -122,3 +123,4 @@ public class ChatroomBo extends BaseBo {
 		this.master = master;
 	}
 }
+
