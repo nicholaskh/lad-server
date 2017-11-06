@@ -37,6 +37,8 @@ public class InforBo implements Serializable {
 
     private String text;
 
+    private int num;
+
     public String getId() {
         return id;
     }
@@ -115,5 +117,13 @@ public class InforBo implements Serializable {
 
     public void setImageUrls(LinkedList<String> imageUrls) {
         this.imageUrls = imageUrls;
+    }
+
+    public int getNum() {
+        return num;
+    }
+
+    public void setNum(int num) {
+        this.num = num;
     }
 }

@@ -57,6 +57,7 @@ public class InforDaoImpl implements IInforDao {
         Query query = new Query();
         query.addCriteria(new Criteria("className").is(className));
         query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "time")));
+        query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "num")));
         if (!StringUtils.isEmpty(createTime)) {
             query.addCriteria(new Criteria("time").lt(createTime));
         }
@@ -75,6 +76,7 @@ public class InforDaoImpl implements IInforDao {
     public List<InforBo> homeHealthRecom(int limit) {
         Query query = new Query();
         query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "time")));
+        query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "num")));
         query.limit(limit);
         return mongoTemplateTwo.find(query, InforBo.class);
     }
