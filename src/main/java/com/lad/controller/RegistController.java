@@ -1,7 +1,6 @@
 package com.lad.controller;
 
 import com.lad.bo.HomepageBo;
-import com.lad.bo.IMTermBo;
 import com.lad.bo.UserBo;
 import com.lad.service.IHomepageService;
 import com.lad.service.IIMTermService;
@@ -11,8 +10,6 @@ import com.lad.util.CommonUtil;
 import com.lad.util.Constant;
 import com.lad.util.ERRORCODE;
 import com.lad.util.IMUtil;
-import com.pushd.ImAssistant;
-import com.pushd.Message;
 import net.sf.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -134,31 +131,10 @@ public class RegistController extends BaseContorller {
 		homepageBo.setOwner_id(userBo.getId());
 		homepageService.insert(homepageBo);
 		session.invalidate();
-		ImAssistant assistent = ImAssistant.init(Constant.PUSHD_IP, Constant.PUSHD_POST);
-		if (null == assistent) {
-			return CommonUtil.toErrorResult(ERRORCODE.PUSHED_CONNECT_ERROR.getIndex(),
-					ERRORCODE.PUSHED_CONNECT_ERROR.getReason());
-		}
-		try {
-			String term = IMUtil.getTerm(assistent);
-			IMTermBo iMTermBo = new IMTermBo();
-			iMTermBo.setUserid(userBo.getId());
-			iMTermBo.setTerm(term);
-			iMTermService.insert(iMTermBo);
-			assistent.setServerTerm(term);
-			Message messageUser = assistent.createUser(userBo.getId());
-			if (messageUser.getStatus() == Message.Status.termError) {
-				term = IMUtil.getTerm(assistent);
-				iMTermService.updateByUserid(userBo.getId(), term);
-				messageUser = assistent.createUser(userBo.getId());
-				if (Message.Status.success != messageUser.getStatus()) {
-					return CommonUtil.toErrorResult(messageUser.getStatus(), messageUser.getMsg());
-				}
-			} else if (Message.Status.success != messageUser.getStatus()) {
-				return CommonUtil.toErrorResult(messageUser.getStatus(), messageUser.getMsg());
-			}
-		} finally {
-			assistent.close();
+		// 在pushd中创建用户
+		String res = IMUtil.createUser(userBo.getId());
+		if(!IMUtil.FINISH.equals(res)){
+			return res;
 		}
 		return Constant.COM_RESP;
 	}

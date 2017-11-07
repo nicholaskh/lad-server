@@ -14,11 +14,22 @@ public class Constant {
 	public static final String RESPONSE = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><response><error>0</error><message></message></response>";
 
 
+	/**
+
+	 * pushd服务器appkey
+
+	 */
+	public static final String PUSHD_APPKEY = "2a7f2e170bc06773c7460e877990befb7cb76af5b9b3286b63248918a0f3f021";
 
 	/**
 	 * pushd服务器ip
 	 */
 	public static final String PUSHD_IP =  "192.168.0.5";
+
+	/**
+	 * pushd服务器ip
+	 */
+//	public static final String PUSHD_IP =  "180.76.138.200";
 
 	/**
 	 * push服务器端口

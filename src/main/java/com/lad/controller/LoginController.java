@@ -1,16 +1,16 @@
 package com.lad.controller;
 
 import com.lad.bo.HomepageBo;
-import com.lad.bo.IMTermBo;
 import com.lad.bo.UserBo;
 import com.lad.redis.RedisServer;
 import com.lad.service.IHomepageService;
 import com.lad.service.IIMTermService;
 import com.lad.service.ILoginService;
 import com.lad.service.IUserService;
-import com.lad.util.*;
-import com.pushd.ImAssistant;
-import com.pushd.Message;
+import com.lad.util.CommonUtil;
+import com.lad.util.Constant;
+import com.lad.util.ERRORCODE;
+import com.lad.util.IMUtil;
 import net.sf.json.JSONObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -90,19 +90,7 @@ public class LoginController extends BaseContorller {
 			map.put("ret", 0);
 			UserBo userBo = userService.checkByPhone(phone);
 			boolean isNew = false;
-			ImAssistant assistent = ImAssistant.init(Constant.PUSHD_IP, Constant.PUSHD_POST);
-			if (null == assistent) {
-				return CommonUtil.toErrorResult(ERRORCODE.PUSHED_CONNECT_ERROR.getIndex(),
-						ERRORCODE.PUSHED_CONNECT_ERROR.getReason());
-			}
-			String term = IMUtil.getTerm(assistent);
-			if ("timeout".equals(term)) {
-				term = IMUtil.getTerm(assistent);
-				if ("timeout".equals(term)) {
-					return CommonUtil.toErrorResult(ERRORCODE.PUSHED_CONNECT_ERROR.getIndex(),
-							ERRORCODE.PUSHED_CONNECT_ERROR.getReason());
-				}
-			}
+			
 			if (userBo == null) {
 				userBo = new UserBo();
 				Long time = System.currentTimeMillis()/1000;
@@ -114,30 +102,17 @@ public class LoginController extends BaseContorller {
 				HomepageBo homepageBo = new HomepageBo();
 				homepageBo.setOwner_id(userBo.getId());
 				homepageService.insert(homepageBo);
-				try {
-					IMTermBo iMTermBo = new IMTermBo();
-					iMTermBo.setUserid(userBo.getId());
-					iMTermBo.setTerm(term);
-					iMTermService.insert(iMTermBo);
-					assistent.setServerTerm(term);
-					Message messageUser = assistent.createUser(userBo.getId());
-
-					Message token = assistent.getToken();
-					if (messageUser.getStatus() == Message.Status.termError) {
-						term = IMUtil.getTerm(assistent);
-						iMTermService.updateByUserid(userBo.getId(), term);
-						messageUser = assistent.createUser(userBo.getId());
-						token = assistent.getToken();
-						if (Message.Status.success != messageUser.getStatus()) {
-							return CommonUtil.toErrorResult(messageUser.getStatus(), messageUser.getMsg());
-						}
-					} else if (Message.Status.success != messageUser.getStatus()) {
-						return CommonUtil.toErrorResult(messageUser.getStatus(), messageUser.getMsg());
-					}
-					map.put("token",token.getMsg());
-				} finally {
-					assistent.close();
+				// 在pushd创建用户
+				String res = IMUtil.createUser(userBo.getId());
+				if(!IMUtil.FINISH.equals(res)){
+					return res;
 				}
+				// 从pushd获取连接token
+				String token = IMUtil.getToken();
+				if(token == null){
+					return CommonUtil.toErrorResult(ERRORCODE.PUSHED_ERROR.getIndex(), "token produce error");
+				}
+				map.put("token",token);
 				String msg = "";
 				try {
 					msg = new String(Constant.QUICK_LOGIN.getBytes(), "GBK");
@@ -151,12 +126,12 @@ public class LoginController extends BaseContorller {
 				userService.updateUserStatus(userBo.getId(), Constant.ACTIVITY);
 			}
 			if (!isNew){
-				try {
-					String token = update(assistent, userBo, term);
-					map.put("token",token);
-				} catch (MyException e) {
-					return e.getMessage();
+				String token = IMUtil.getToken();
+				if(token == null){
+					return CommonUtil.toErrorResult(ERRORCODE.PUSHED_ERROR.getIndex(),
+							"token produce error");
 				}
+				map.put("token",token);
 			}
 			map.put("userid",userBo.getId());
 			session.setAttribute("isLogin", true);
@@ -170,34 +145,6 @@ public class LoginController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	private String update(ImAssistant assistent, UserBo userBo, String term) throws MyException{
-		IMTermBo iMTermBo = iMTermService.selectByUserid(userBo.getId());
-		if(iMTermBo == null){
-			iMTermBo = new IMTermBo();
-			iMTermBo.setUserid(userBo.getId());
-			iMTermBo.setTerm(term);
-			iMTermService.insert(iMTermBo);
-		}
-		assistent.setServerTerm(iMTermBo.getTerm());
-		Message message3 = assistent.getToken();
-		if(message3.getStatus() == Message.Status.termError){
-			term =IMUtil.getTerm(assistent);
-			iMTermService.updateByUserid(userBo.getId(), term);
-			message3 = assistent.getToken();
-			if(Message.Status.success != message3.getStatus()){
-				assistent.close();
-				throw new MyException(CommonUtil.toErrorResult(message3.getStatus(),
-						message3.getMsg()));
-			}
-			return message3.getMsg();
-
-		}else if (Message.Status.success != message3.getStatus()) {
-			assistent.close();
-			throw new MyException(CommonUtil.toErrorResult(message3.getStatus(),
-					message3.getMsg()));
-		}
-		return message3.getMsg();
-	}
 
 	@RequestMapping("/login")
 	@ResponseBody
@@ -206,17 +153,14 @@ public class LoginController extends BaseContorller {
 						HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (!StringUtils.hasLength(phone)) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PHONE_ERROR.getIndex(),
-					ERRORCODE.ACCOUNT_PHONE_ERROR.getReason());
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PHONE_ERROR.getIndex(), ERRORCODE.ACCOUNT_PHONE_ERROR.getReason());
 		}
 		UserBo userBo = userService.checkByPhone(phone);
 		if (userBo == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PHONE_EXIST.getIndex(),
-					ERRORCODE.ACCOUNT_PHONE_EXIST.getReason());
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PHONE_EXIST.getIndex(), ERRORCODE.ACCOUNT_PHONE_EXIST.getReason());
 		}
 		if (!StringUtils.hasLength(password)) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PASSWORD.getIndex(),
-					ERRORCODE.ACCOUNT_PASSWORD.getReason());
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PASSWORD.getIndex(), ERRORCODE.ACCOUNT_PASSWORD.getReason());
 		}
 		password = CommonUtil.getSHA256(password);
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -226,42 +170,18 @@ public class LoginController extends BaseContorller {
 			session.setAttribute("isLogin", true);
 			session.setAttribute("userBo", userBo);
 			session.setAttribute("loginTime", System.currentTimeMillis());
-			ImAssistant assistent = ImAssistant.init(Constant.PUSHD_IP, Constant.PUSHD_POST);
-			if(assistent == null){
-				return CommonUtil.toErrorResult(ERRORCODE.PUSHED_CONNECT_ERROR.getIndex(),
-						ERRORCODE.PUSHED_CONNECT_ERROR.getReason());
+
+			// 从pushd获取连接token
+			String token = IMUtil.getToken();
+			if (token == null) {
+				return CommonUtil.toErrorResult(ERRORCODE.PUSHED_ERROR.getIndex(), "token produce error");
 			}
-			String term = IMUtil.getTerm(assistent);
-			if ("timeout".equals(term)) {
-				term = IMUtil.getTerm(assistent);
-				if ("timeout".equals(term)) {
-					return CommonUtil.toErrorResult(ERRORCODE.PUSHED_CONNECT_ERROR.getIndex(),
-							ERRORCODE.PUSHED_CONNECT_ERROR.getReason());
-				}
-			}
-			IMTermBo iMTermBo = iMTermService.selectByUserid(userBo.getId());
-			if(iMTermBo == null){
-				iMTermBo = new IMTermBo();
-				iMTermBo.setUserid(userBo.getId());
-				iMTermBo.setTerm(term);
-				iMTermService.insert(iMTermBo);
-			}
-			assistent.setServerTerm(iMTermBo.getTerm());
-			Message message3 = assistent.getToken();
-			if(message3.getStatus() == Message.Status.termError){
-				term =IMUtil.getTerm(assistent);
-				iMTermService.updateByUserid(userBo.getId(), term);
-			}else if (Message.Status.success != message3.getStatus()) {
-				assistent.close();
-				return CommonUtil.toErrorResult(message3.getStatus(), message3.getMsg());
-			}
-			map.put("token", message3.getMsg());
-			map.put("userid",userBo.getId());
-			logger.info("login ========== {} ; sessionid :{}",phone, session.getId());
-			assistent.close();
+			map.put("token", token);
+			map.put("userid", userBo.getId());
+			logger.info("login ========== {} ; sessionid :{}", phone, session.getId());
 		} else {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PASSWORD.getIndex(),
-					ERRORCODE.ACCOUNT_PASSWORD.getReason());
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PASSWORD.getIndex(), ERRORCODE.ACCOUNT_PASSWORD.getReason());
+
 		}
 		return JSONObject.fromObject(map).toString();
 	}

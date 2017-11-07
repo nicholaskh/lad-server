@@ -7,7 +7,6 @@ import com.lad.vo.FriendsVo;
 import com.lad.vo.UserBaseVo;
 import com.lad.vo.UserVoFriends;
 import com.pushd.ImAssistant;
-import com.pushd.Message;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -143,24 +142,12 @@ public class FriendsController extends BaseContorller {
 			}
 		}
 		chatroomBo = savekUserAndFriendChatroom(user, friend, chatroomBo);
-
-		IMTermBo iMTermBo = iMTermService.selectByUserid(userBo.getId());
-		String term = "";
-		if (iMTermBo != null) {
-			term = iMTermBo.getTerm();
-		} else {
-			iMTermBo = new IMTermBo();
-			iMTermBo.setTerm(term);
-			iMTermBo.setUserid(userid);
-			iMTermService.insert(iMTermBo);
-		}
 		//是不是创建聊天室
 		int type = isNew ? 0 : 1;
-		String[] res = IMUtil.subscribe(type,chatroomBo.getId(), term, userid, friendid);
-		if (!res[0].equals(IMUtil.FINISH)) {
-			return res[0];
+		String res = IMUtil.subscribe(type,chatroomBo.getId(), userid, friendid);
+		if (!res.equals(IMUtil.FINISH)) {
+			return res;
 		}
-		iMTermService.updateByUserid(userid, res[1]);
 		
 		JPushUtil.pushTo(userBo.getUserName() + JPushUtil.AGREE_APPLY_FRIEND,
 				friendid);
@@ -448,23 +435,11 @@ public class FriendsController extends BaseContorller {
 				if (chatroomBo == null) {
 					UserBo friend = userService.getUser(friendsBo.getFriendid());
 					chatroomBo = savekUserAndFriendChatroom(userBo, friend, chatroomBo);
-					IMTermBo iMTermBo = iMTermService.selectByUserid(userid);
-					String term = "";
-					if (iMTermBo == null) {
-						iMTermBo = new IMTermBo();
-						iMTermBo.setTerm(term);
-						iMTermBo.setUserid(userid);
-						iMTermService.insert(iMTermBo);
-					} else {
-						term = iMTermBo.getTerm();
-					}
 					//首次创建聊天室，需要输入名称
-					String[] res = IMUtil.subscribe(0, chatroomBo.getId(), term, userid, friend.getId());
-
-					if (!res[0].equals(IMUtil.FINISH)) {
-						return res[0];
+					String res = IMUtil.subscribe(0, chatroomBo.getId(), userid, friend.getId());
+					if (!res.equals(IMUtil.FINISH)) {
+						return res;
 					}
-					iMTermService.updateByUserid(userid, res[1]);
 				}
 			}
 
@@ -563,12 +538,6 @@ public class FriendsController extends BaseContorller {
 					ERRORCODE.PUSHED_CONNECT_ERROR.getIndex(),
 					ERRORCODE.PUSHED_CONNECT_ERROR.getReason());
 		}
-		String term = getTerm(assistent);
-		if ("timeout".equals(term)){
-			return CommonUtil.toErrorResult(
-					ERRORCODE.PUSHED_CONNECT_ERROR.getIndex(),
-					ERRORCODE.PUSHED_CONNECT_ERROR.getReason());
-		}
 		String[] idsList = friendids.split(",");
 		LinkedHashSet<String> userSet = new LinkedHashSet<String>();
 		for (String id : idsList) {
@@ -601,32 +570,11 @@ public class FriendsController extends BaseContorller {
 			userService.updateChatrooms(user);
 			addChatroomUser(user, chatroomBo.getId());
 		}
-		IMTermBo iMTermBo = iMTermService.selectByUserid(userBo.getId());
-		if (iMTermBo == null) {
-			iMTermBo = new IMTermBo();
-			iMTermBo.setUserid(userBo.getId());
-			iMTermBo.setTerm(term);
-			iMTermService.insert(iMTermBo);
+		String res = IMUtil.subscribe(0, chatroomBo.getId(), idsList);
+		if(!IMUtil.FINISH.equals(res)){
+			return res;
 		}
-		assistent.setServerTerm(iMTermBo.getTerm());
-		Message message = assistent.createChatRoom(chatroomBo.getId(), idsList);
-		if (message.getStatus() == Message.Status.termError) {
-			term = getTerm(assistent);
-			iMTermService.updateByUserid(userBo.getId(), term);
-			assistent.setServerTerm(term);
-			message = assistent.createChatRoom(chatroomBo.getId(), idsList);
-			if (Message.Status.success != message.getStatus()) {
-				assistent.close();
-				return CommonUtil.toErrorResult(message.getStatus(),
-						message.getMsg());
-			}
-		} else if (Message.Status.success != message.getStatus()) {
-			assistent.close();
-			return CommonUtil.toErrorResult(message.getStatus(),
-					message.getMsg());
-		}
-		JPushUtil
-				.pushTo(userBo.getUserName() + JPushUtil.MULTI_INSERT, idsList);
+		JPushUtil.pushTo(userBo.getUserName() + JPushUtil.MULTI_INSERT, idsList);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("channelId", chatroomBo.getId());
@@ -653,12 +601,6 @@ public class FriendsController extends BaseContorller {
 		}
 	}
 
-	private String getTerm(ImAssistant assistent){
-		Message message = assistent.getAppKey();
-		String appKey = message.getMsg();
-		message = assistent.authServer(appKey);
-		return message.getMsg();
-	}
 
 	@RequestMapping("/multi-out")
 	@ResponseBody
@@ -685,11 +627,9 @@ public class FriendsController extends BaseContorller {
 		}
 		userBo = userService.getUser(userid);
 		HashSet<String> chatrooms = userBo.getChatrooms();
-		IMTermBo termBo = iMTermService.selectByUserid(userid);
-		String term = termBo == null ? "" : termBo.getTerm();
-		String[] res = IMUtil.unSubscribe(chatroomid, term, userid);
-		if (!res[0].equals(IMUtil.FINISH)) {
-			return res[0];
+		String res = IMUtil.unSubscribe(chatroomid,  userid);
+		if (!res.equals(IMUtil.FINISH)) {
+			return res;
 		}
 		if (chatrooms.contains(chatroomid)) {
 			chatrooms.remove(chatroomid);
