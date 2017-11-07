@@ -79,14 +79,6 @@ public class ControllerTest {
 
     }
 
-    @Test
-    public void testLogin2() throws Exception {
-        request.setMethod("GET");
-        String res = loginController.loginNoPas(phone, request, response);
-        System.out.println(res);
-        res = accountSecurityController.verification_send( request, response);
-        System.out.println(res);
-    }
 
     @Test
     public void testAcc() throws Exception {
