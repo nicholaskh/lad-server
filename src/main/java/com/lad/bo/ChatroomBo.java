@@ -26,6 +26,7 @@ public class ChatroomBo extends BaseBo {
 
 	private String master;
 
+	private boolean isNameSet;
 
 	public String getName() {
 		return name;
@@ -121,6 +122,14 @@ public class ChatroomBo extends BaseBo {
 
 	public void setMaster(String master) {
 		this.master = master;
+	}
+
+	public boolean isNameSet() {
+		return isNameSet;
+	}
+
+	public void setNameSet(boolean nameSet) {
+		isNameSet = nameSet;
 	}
 }
 

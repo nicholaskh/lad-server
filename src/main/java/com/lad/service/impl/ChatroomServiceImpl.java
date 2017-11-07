@@ -154,4 +154,9 @@ public class ChatroomServiceImpl implements IChatroomService {
 	public ChatroomUserBo findChatUserByUserAndRoomid(String userid, String chatroomid) {
 		return chatroomUserDao.findByUserAndRoomid(userid, chatroomid);
 	}
+
+	@Override
+	public WriteResult updateName(String chatRoomId, String name, boolean isNameSet) {
+		return chatroomDao.updateName(chatRoomId, name, isNameSet);
+	}
 }

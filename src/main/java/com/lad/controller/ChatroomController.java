@@ -80,6 +80,8 @@ public class ChatroomController extends BaseContorller {
 		chatroomBo.setType(Constant.ROOM_MULIT);
 		chatroomBo.setCreateuid(userBo.getId());
 		chatroomBo.setMaster(userBo.getId());
+		HashSet<String> users = chatroomBo.getUsers();
+		users.add(chatroomBo.getId());
 		chatroomService.insert(chatroomBo);
 		String term = "";
 		IMTermBo iMTermBo = iMTermService.selectByUserid(userBo.getId());
@@ -92,9 +94,6 @@ public class ChatroomController extends BaseContorller {
 			chatroomService.remove(chatroomBo.getId());
 			return result[0];
 		}
-		HashSet<String> chatrooms = userBo.getChatrooms();
-		chatrooms.add(chatroomBo.getId());
-		userBo.setChatrooms(chatrooms);
 		userService.updateChatrooms(userBo);
 		updateIMTerm(userBo.getId(), result[1]);
 		addChatroomUser(userBo, chatroomBo.getId(), userBo.getUserName());
@@ -142,6 +141,8 @@ public class ChatroomController extends BaseContorller {
 		if (!result[0].equals(IMUtil.FINISH)) {
 			return result[0];
 		}
+		// 如果群聊名称没有修改过，那么此对象生成的字符串将追加到群聊名称后面
+		StringBuilder chatRoomNameAppend = new StringBuilder();
 		updateIMTerm(userBo.getId(), result[1]);
 		LinkedHashSet<String> set = chatroomBo.getUsers();
 		for (String userid : useridArr) {
@@ -159,8 +160,17 @@ public class ChatroomController extends BaseContorller {
 					user.setChatrooms(chatroom);
 					userService.updateChatrooms(user);
 				}
+				if(!chatroomBo.isNameSet()){
+					chatRoomNameAppend.append("、").append(user.getUserName());
+				}
 				set.add(userid);
 			}
+		}
+		// 如果群聊没有修改过名称，那么根据添加的用户自动修改名称
+		if(chatRoomNameAppend.length() > 0){
+			chatroomService.updateName(chatroomid,
+					String.format("%s%s", chatroomBo.getName(), chatRoomNameAppend.toString()),
+					false);
 		}
 		chatroomBo.setUsers(set);
 		chatroomService.updateUsers(chatroomBo);
@@ -216,11 +226,16 @@ public class ChatroomController extends BaseContorller {
 				return result[0];
 			}
 		}
+		StringBuilder builder = null;
+		if(!chatroomBo.isNameSet()){
+			builder = new StringBuilder(chatroomBo.getName());
+		}
 		LinkedHashSet<String> set = chatroomBo.getUsers();
 		for (String userid : useridArr) {
 			if (!set.contains(userid)) {
 				continue;
 			}
+			removeUserNameFromChatRoomName(chatroomBo, userid, builder);
 			set.remove(userid);
 			UserBo user = userService.getUser(userid);
 			if (null != user) {
@@ -246,6 +261,10 @@ public class ChatroomController extends BaseContorller {
 			}
 			chatroomService.delete(chatroomid);
 		} else {
+			// 修改群聊名称
+			if(builder != null){
+				chatroomService.updateName(chatroomid, builder.toString(), false);
+			}
 			chatroomBo.setUsers(set);
 			chatroomService.updateUsers(chatroomBo);
 		}
@@ -303,10 +322,49 @@ public class ChatroomController extends BaseContorller {
 			}
 			chatroomService.delete(chatroomid);
 		} else {
+			// 判断修改群聊名称
+			if(!chatroomBo.isNameSet()){
+				StringBuilder builder = new StringBuilder(chatroomBo.getName());
+				removeUserNameFromChatRoomName(chatroomBo, userid, builder);
+				chatroomService.updateName(chatroomid, builder.toString(), false);
+			}
 			chatroomBo.setUsers(set);
 			chatroomService.updateUsers(chatroomBo);
 		}
 		return Constant.COM_RESP;
+	}
+
+	/**
+	 * @param chatroomBo
+	 * @param userid
+	 * @param builder
+	 */
+	private void removeUserNameFromChatRoomName(ChatroomBo chatroomBo, String userid, StringBuilder builder){
+		if(chatroomBo == null || chatroomBo.isNameSet() || builder == null) return;
+		UserBo temp = userService.getUser(userid);
+		if(temp != null){
+			String userNameTemp = temp.getUserName();
+			int start = builder.indexOf(userNameTemp);
+			if(start == -1){
+				// 如果在此操作之前用户修改过自己的名称，此时将发生此warning
+				logger.warn(String.format("chatRoom(id:%s)名称异常,没有包含%s用户名称，且群聊名称也没有被用户手动更改过",
+						chatroomBo.getId(),
+						userNameTemp)
+				);
+				//TODO 此时会出现群聊名称没有自动更改的情况，该如何处理？
+
+				//TODO 方案一： think about 获取所有用户id和名称，一个一个对比，找出不存在的那个。如果有两个都修改了名称，无解
+				return;
+			}
+			// 删除此用户名称
+			builder.delete(start, start + userNameTemp.length());
+			if(start != 0){
+				// 删除多余的顿号(、)
+				builder.deleteCharAt(start-1);
+			}
+		}else{
+			logger.error(String.format("chatRoom(id:%s)中有一个用户id(%s)，在系统中不存在", chatroomBo.getId(), userid));
+		}
 	}
 
 	private void updateUserChatroom(UserBo userBo, String chatroomid){

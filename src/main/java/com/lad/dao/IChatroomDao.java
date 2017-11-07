@@ -95,4 +95,13 @@ public interface IChatroomDao extends IBaseDao {
 	 * @return
 	 */
 	WriteResult updateVerify(String chatroomId, boolean isVerify);
+
+	/**
+	 * 更新群名称
+	 * @param chatRoomId
+	 * @param name
+	 * @param isNameSet
+	 * @return
+	 */
+	WriteResult updateName(String chatRoomId, String name, boolean isNameSet);
 }
