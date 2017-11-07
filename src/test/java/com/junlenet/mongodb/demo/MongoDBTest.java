@@ -499,32 +499,11 @@ public class MongoDBTest {
 			System.out.println("chatroomBo111: ===" + JSON.toJSONString(chatroomBo));
 		}
 
-
-		IMTermBo iMTermBo = iMTermService.selectByUserid(userBo.getId());
-		System.out.println("iMTermBo: ===" + JSON.toJSONString(iMTermBo));
-		String term = "";
-		if (iMTermBo != null) {
-			term = iMTermBo.getTerm();
-		} else {
-			iMTermBo = new IMTermBo();
-			iMTermBo.setTerm(term);
-			iMTermBo.setUserid(userBo.getId());
-			iMTermService.insert(iMTermBo);
-		}
-		System.out.println("res=======================" + term);
 		String chatroomName = chatroomBo.getName();
 		//首次创建聊天室，需要输入名称
-		String[] res = IMUtil.subscribe(1,chatroomBo.getId(), term, userBo.getId(), userBo1.getId());
+		String res = IMUtil.subscribe(1,chatroomBo.getId(), userBo.getId(), userBo1.getId());
 
 		System.out.println("res=======================" + res);
-		if (!res[0].equals(IMUtil.FINISH)) {
-			System.out.println("res=======================" + res[0]);
-		}
-//
-		iMTermService.updateByUserid(userBo.getId(), res[1]);
-		iMTermBo = iMTermService.selectByUserid(userBo.getId());
-		System.out.println("iMTermBo: ===" + JSON.toJSONString(iMTermBo));
-//		System.out.println("res=======================" + res[1]);
 
 	}
 
