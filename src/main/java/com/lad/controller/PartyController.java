@@ -309,7 +309,7 @@ public class PartyController extends BaseContorller {
             partyUserBo.setUserid(userBo.getId());
             partyUserBo.setPartyid(partyid);
             partyUserBo.setUserNum(userNum);
-            partyUserBo.setStatus(0);
+            partyUserBo.setStatus(1);
             partyService.addParty(partyUserBo);
         } else {
             return CommonUtil.toErrorResult(ERRORCODE.PARTY_HAS_ADD.getIndex(),
@@ -444,7 +444,18 @@ public class PartyController extends BaseContorller {
         }
         List<PartyBo> partyBos = partyService.findByMyJoin(userBo.getId(), page, limit);
         List<PartyListVo> partyListVos = new ArrayList<>();
-        bo2listVo(partyBos, partyListVos);
+        for(PartyBo partyBo : partyBos) {
+            //判断用户是否已经删除这个信息
+            PartyUserBo partyUserBo = partyService.findPartyUser(partyBo.getId(), userBo.getId());
+            if (partyUserBo != null && partyUserBo.getUserDelete() == Constant.DELETED) {
+                continue;
+            }
+            PartyListVo listVo = new PartyListVo();
+            BeanUtils.copyProperties(partyBo, listVo);
+            listVo.setPartyid(partyBo.getId());
+            listVo.setUserNum(partyBo.getUsers().size());
+            partyListVos.add(listVo);
+        }
         Map<String, Object> map = new HashMap<>();
         map.put("ret", 0);
         map.put("partyListVos", partyListVos);
@@ -617,11 +628,14 @@ public class PartyController extends BaseContorller {
             return CommonUtil.toErrorResult(ERRORCODE.PARTY_NULL.getIndex(),
                     ERRORCODE.PARTY_NULL.getReason());
         }
-        if (!userBo.getId().equals(partyBo.getCreateuid())) {
-            return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_NOT_MASTER.getIndex(),
-                    ERRORCODE.CIRCLE_NOT_MASTER.getReason());
+        CircleBo circleBo = circleService.selectById(partyBo.getCircleid());
+        if (!userBo.getId().equals(partyBo.getCreateuid()) ||
+                !circleBo.getMasters().contains(userBo.getId())) {
+            return CommonUtil.toErrorResult(ERRORCODE.PARTY_NO_AUTH.getIndex(),
+                    ERRORCODE.PARTY_NO_AUTH.getReason());
         }
         partyService.delete(partyid);
+        partyService.deleteMulitByaPartyid(partyBo.getId());
         return Constant.COM_RESP;
     }
 
@@ -856,12 +870,12 @@ public class PartyController extends BaseContorller {
 
 
     /**
-     * 删除我的发起的聚会
+     * 删除我参与的的聚会
      * @return
      */
-    @RequestMapping("/delete-my-party")
+    @RequestMapping("/delete-join-party")
     @ResponseBody
-    public String delMyPartys(String partyid, HttpServletRequest request, HttpServletResponse
+    public String delMyJoinPartys(String partyid, HttpServletRequest request, HttpServletResponse
             response){
         UserBo userBo;
         try {
@@ -874,12 +888,7 @@ public class PartyController extends BaseContorller {
             return CommonUtil.toErrorResult(ERRORCODE.PARTY_NULL.getIndex(),
                     ERRORCODE.PARTY_NULL.getReason());
         }
-        if (partyBo.getCreateuid().equals(userBo.getId())) {
-            return CommonUtil.toErrorResult(ERRORCODE.PARTY_NO_AUTH.getIndex(),
-                    ERRORCODE.PARTY_NO_AUTH.getReason());
-        }
-        partyService.delete(partyBo.getId());
-        partyService.deleteMulitByaPartyid(partyBo.getId());
+        partyService.outParty(partyid, userBo.getId());
         return Constant.COM_RESP;
     }
 

@@ -141,4 +141,9 @@ public class PartyServiceImpl implements IPartyService {
     public WriteResult deleteMulitByaPartyid(String partyid) {
         return partyUserDao.deleteMulit(partyid);
     }
+
+    @Override
+    public WriteResult deleteJoinParty(String partyid, String userid) {
+        return partyUserDao.deleteJoinParty(partyid, userid);
+    }
 }

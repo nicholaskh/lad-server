@@ -95,6 +95,7 @@ public class PartyUserDaoImpl implements IPartyUserDao {
     public List<PartyUserBo> findPartyByUserid(String userid, int page, int limit) {
         Query query = new Query();
         query.addCriteria(new Criteria("userid").is(userid));
+        query.addCriteria(new Criteria("userDelete").is(Constant.ACTIVITY));
         query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
         query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
         if (page < 1) {
@@ -143,5 +144,15 @@ public class PartyUserDaoImpl implements IPartyUserDao {
         Update update = new Update();
         update.set("deleted", Constant.DELETED);
         return mongoTemplate.updateMulti(query, update, PartyUserBo.class);
+    }
+
+    @Override
+    public WriteResult deleteJoinParty(String partyid, String userid) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("partyid").is(partyid));
+        query.addCriteria(new Criteria("userid").is(userid));
+        Update update = new Update();
+        update.set("userDelete", Constant.DELETED);
+        return mongoTemplate.updateFirst(query, update, PartyUserBo.class);
     }
 }

@@ -77,4 +77,11 @@ public interface IPartyUserDao {
      */
     WriteResult deleteMulit(String partyid);
 
+    /**
+     * 删除我参与的聚会
+     * @param partyid
+     * @return
+     */
+    WriteResult deleteJoinParty(String partyid, String userid);
+
 }
