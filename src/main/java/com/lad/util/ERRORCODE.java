@@ -87,6 +87,9 @@ public enum ERRORCODE {
 	PARTY_TALK_EXIST(140003, "聚会群聊已经存在"),
 	PARTY_USER_MAX(140004, "聚会人数已达上限"),
 	PARTY_HAS_COMMENT(140005, "聚会以及评论"),
+	PARTY_HAS_ADD(140006, "已经报名聚会"),
+	PARTY_NO_AUTH(140007, "没有权限"),
+	PARTY_USER_NULL(140008, "聚会报名用户不存在"),
 
 	COLLECT_IS_NULL(150001, "收藏不存在"),
 	COLLECT_TYPE_ERR(150002, "收藏类型错误"),

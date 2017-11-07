@@ -27,6 +27,8 @@ public class PartyUserBo extends BaseBo {
 
     // 0 申请， 1已加入 2 拒绝
     private int status;
+    //0 未收藏，1 收藏
+    private int collectParty;
 
     public String getUserid() {
         return userid;
@@ -90,5 +92,13 @@ public class PartyUserBo extends BaseBo {
 
     public void setUserNum(int userNum) {
         this.userNum = userNum;
+    }
+
+    public int getCollectParty() {
+        return collectParty;
+    }
+
+    public void setCollectParty(int collectParty) {
+        this.collectParty = collectParty;
     }
 }

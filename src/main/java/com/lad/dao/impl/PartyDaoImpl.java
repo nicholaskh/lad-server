@@ -187,4 +187,23 @@ public class PartyDaoImpl implements IPartyDao {
         update.set("chatroomid", chatroomid);
         return mongoTemplate.updateFirst(query, update, PartyBo.class);
     }
+
+    @Override
+    public List<PartyBo> findByCircleid(String circleid, int page, int limit) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("circleid").is(circleid));
+        query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+        query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
+        if (page < 1) {
+            page = 1;
+        }
+        query.skip((page -1)*limit);
+        query.limit(limit);
+        return  mongoTemplate.find(query, PartyBo.class);
+    }
+
+    @Override
+    public WriteResult outParty(String id, String userid) {
+        return null;
+    }
 }

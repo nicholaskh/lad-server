@@ -213,27 +213,18 @@ public class PartyController extends BaseContorller {
             return CommonUtil.toErrorResult(ERRORCODE.PARTY_NULL.getIndex(),
                     ERRORCODE.PARTY_NULL.getReason());
         }
-        UserBo userBo;
-        try {
-            userBo = checkSession(request, userService);
-        } catch (MyException e) {
-            return e.getMessage();
-        }
+        UserBo userBo = getUserLogin(request);
+        String userid = userBo != null ? userBo.getId() : "";
 
         CircleBo circleBo = circleService.selectById(partyBo.getCircleid());
         if (circleBo == null) {
             return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_IS_NULL.getIndex(),
                     ERRORCODE.CIRCLE_IS_NULL.getReason());
         }
-
         List<PartyUserVo> partyUserVos = new ArrayList<>();
         LinkedList<String> users = partyBo.getUsers();
         int length = users.size() -1;
         int userAdd = 0;
-
-        boolean inCircle = circleBo.getUsers().contains(userBo.getId());
-        boolean isAdd = users.contains(userBo.getId());
-        
         for (int i = length; i >=0 ; i--) {
             UserBo user =  userService.getUser(users.get(i));
             if (userAdd > 10) {
@@ -251,21 +242,21 @@ public class PartyController extends BaseContorller {
         partyVo.setPartyid(partyBo.getId());
         partyVo.setCircleName(circleBo.getName());
         partyVo.setCirclePic(circleBo.getHeadPicture());
-        partyVo.setInCircle(inCircle);
-        partyVo.setInParty(isAdd);
+        partyVo.setInCircle(circleBo.getUsers().contains(userid));
+        partyVo.setInParty(users.contains(userid));
         partyVo.setUsers(partyUserVos);
-        if (partyBo.getCreateuid().equals(userBo.getId())) {
-            partyVo.setCreate(true);
-        }
+        partyVo.setCreate(partyBo.getCreateuid().equals(userid));
         UserBo createBo = userService.getUser(partyBo.getCreateuid());
         if (createBo != null) {
             PartyUserVo createVo = new PartyUserVo();
             partyUserBo2Vo(createBo, createVo);
             partyVo.setCreater(createVo);
         }
-        List<CommentBo> commentBos = commentService.selectByTargetUser(partyid, userBo.getId(), Constant.PARTY_TYPE);
-        if (commentBos != null && !commentBos.isEmpty()) {
-            partyVo.setComment(true);
+        if (StringUtils.isNotEmpty(userid)){
+            PartyUserBo partyUserBo = partyService.findPartyUser(partyid, userid);
+            partyVo.setCollect(partyUserBo != null && partyUserBo.getCollectParty() == 1);
+            List<CommentBo> commentBos = commentService.selectByTargetUser(partyid, userid, Constant.PARTY_TYPE);
+            partyVo.setComment(commentBos != null && !commentBos.isEmpty());
         }
         partyVo.setUserNum(partyBo.getUsers().size());
         partyService.updateVisit(partyid);
@@ -304,21 +295,26 @@ public class PartyController extends BaseContorller {
         } catch (MyException e) {
             return e.getMessage();
         }
-        if (partyBo.getUsers().size() >= partyBo.getUserLimit()) {
+        if (partyBo.getUserLimit() != 0 && partyBo.getUsers().size() >= partyBo.getUserLimit()) {
             return CommonUtil.toErrorResult(ERRORCODE.PARTY_USER_MAX.getIndex(),
                     ERRORCODE.PARTY_USER_MAX.getReason());
         }
         String userid = userBo.getId();
-        PartyUserBo partyUserBo = new PartyUserBo();
-        partyUserBo.setAmount(amount);
-        partyUserBo.setJoinInfo(joinInfo);
-        partyUserBo.setJoinPhone(phone);
-        partyUserBo.setUserid(userBo.getId());
-        partyUserBo.setPartyid(partyid);
-        partyUserBo.setUserNum(userNum);
-        partyUserBo.setStatus(0);
-
-        partyService.addParty(partyUserBo);
+        PartyUserBo partyUserBo = partyService.findPartyUser(partyid, userid);
+        if (partyUserBo == null) {
+            partyUserBo = new PartyUserBo();
+            partyUserBo.setAmount(amount);
+            partyUserBo.setJoinInfo(joinInfo);
+            partyUserBo.setJoinPhone(phone);
+            partyUserBo.setUserid(userBo.getId());
+            partyUserBo.setPartyid(partyid);
+            partyUserBo.setUserNum(userNum);
+            partyUserBo.setStatus(0);
+            partyService.addParty(partyUserBo);
+        } else {
+            return CommonUtil.toErrorResult(ERRORCODE.PARTY_HAS_ADD.getIndex(),
+                    ERRORCODE.PARTY_HAS_ADD.getReason());
+        }
         LinkedList<String> users = partyBo.getUsers();
         users.add(userBo.getId());
         partyService.updateUser(partyid, users);
@@ -326,23 +322,10 @@ public class PartyController extends BaseContorller {
         if (StringUtils.isNotEmpty(chatroomid)) {
             ChatroomBo chatroomBo = chatroomService.get(chatroomid);
 
-            IMTermBo imTermBo = iMTermService.selectByUserid(userid);
-            String term = "";
-            if (imTermBo != null) {
-                term = imTermBo.getTerm();
-            }
             //第一个为返回结果信息，第二位term信息
-            String[] result = IMUtil.subscribe(1, chatroomid, term, userid);
-            if (!result[0].equals(IMUtil.FINISH)) {
-                return result[0];
-            }
-            if (imTermBo == null) {
-                imTermBo = new IMTermBo();
-                imTermBo.setTerm(term);
-                imTermBo.setUserid(userid);
-                iMTermService.insert(imTermBo);
-            } else {
-                iMTermService.updateByUserid(userBo.getId(), term);
+            String result = IMUtil.subscribe(1, chatroomid, userid);
+            if (!result.equals(IMUtil.FINISH)) {
+                return result;
             }
             LinkedHashSet<String> set = chatroomBo.getUsers();
             HashSet<String> chatroom = userBo.getChatrooms();
@@ -518,50 +501,29 @@ public class PartyController extends BaseContorller {
 
         String chatroomid = chatroomBo.getId();
         
-        IMTermBo imTermBo = iMTermService.selectByUserid(userBo.getId());
-        String term = "";
-        if (imTermBo != null) {
-            term = imTermBo.getTerm();
-        } else {
-            imTermBo = new IMTermBo();
-            imTermBo.setTerm(term);
-            imTermBo.setUserid(userBo.getId());
-            iMTermService.insert(imTermBo);
-        }
         String[] useridArr = (String[]) partyBo.getUsers().toArray();
         //第一个为返回结果信息，第二位term信息
-        String[] result = IMUtil.subscribe(0, chatroomid, term, useridArr);
-        if (!result[0].equals(IMUtil.FINISH)) {
+        String result = IMUtil.subscribe(0, chatroomid, useridArr);
+        if (!result.equals(IMUtil.FINISH)) {
             chatroomService.remove(chatroomid);
-            return result[0];
+            return result;
         }
-        iMTermService.updateByUserid(userBo.getId(), result[1]);
-        updateUserChatroom(chatroomBo, useridArr, result[1]);
+        updateUserChatroom(chatroomBo, useridArr);
         partyService.updateChatroom(partyid, chatroomid);
         return Constant.COM_RESP;
     }
 
     /**
      * 更新用户聊天室列表
-     * @param term
      */
     @Async
-    private void updateUserChatroom(ChatroomBo chatroomBo, String[] useridArr, String term){
+    private void updateUserChatroom(ChatroomBo chatroomBo, String[] useridArr){
 
         LinkedHashSet<String> users = chatroomBo.getUsers();
         for (String userid : useridArr) {
             UserBo user = userService.getUser(userid);
             if (null == user) {
                 continue;
-            }
-            IMTermBo imTermBo = iMTermService.selectByUserid(userid);
-            if (imTermBo == null) {
-                imTermBo = new IMTermBo();
-                imTermBo.setTerm(term);
-                imTermBo.setUserid(userid);
-                iMTermService.insert(imTermBo);
-            } else {
-                iMTermService.updateByUserid(userid, term);
             }
             HashSet<String> chatroom = user.getChatrooms();
             //个人聊天室中没有当前聊天室，则添加到个人的聊天室
@@ -600,7 +562,7 @@ public class PartyController extends BaseContorller {
 
 
     /**
-     * 收藏群聊
+     * 收藏聚会
      * @param partyid
      * @return
      */
@@ -636,7 +598,7 @@ public class PartyController extends BaseContorller {
     }
 
     /**
-     * 收藏群聊
+     * 删除聚会
      * @param partyid
      * @return
      */
@@ -664,7 +626,7 @@ public class PartyController extends BaseContorller {
     }
 
     /**
-     * 收藏群聊
+     * 添加聊天
      * @param partyid
      * @return
      */
@@ -796,7 +758,7 @@ public class PartyController extends BaseContorller {
     }
 
     /**
-     * 收藏群聊
+     * 获取评论
      * @param partyid
      * @return
      */
@@ -836,5 +798,117 @@ public class PartyController extends BaseContorller {
         map.put("ret", 0);
         map.put("commentVos", commentVos);
         return JSONObject.fromObject(map).toString();
+    }
+
+
+    /**
+     * 获取圈子所有聚会
+     * @return
+     */
+    @RequestMapping("/all-partys")
+    @ResponseBody
+    public String getAllPartys(String circleid, int page, int limit, HttpServletRequest request, HttpServletResponse
+            response){
+        List<PartyBo> partyBos = partyService.findByCircleid(circleid, page, limit);
+        List<PartyListVo> partyListVos = new ArrayList<>();
+        bo2listVo(partyBos, partyListVos);
+        Map<String, Object> map = new HashMap<>();
+        map.put("ret", 0);
+        map.put("partyListVos", partyListVos);
+        return JSONObject.fromObject(map).toString();
+    }
+
+
+    /**
+     * 取消报名
+     * @return
+     */
+    @RequestMapping("/cancel-enroll")
+    @ResponseBody
+    public String cancelPartys(String partyid,HttpServletRequest request, HttpServletResponse
+            response){
+        UserBo userBo;
+        try {
+            userBo = checkSession(request, userService);
+        } catch (MyException e) {
+            return e.getMessage();
+        }
+        RLock lock = redisServer.getRLock("partyUserLock");
+        PartyBo partyBo = null;
+        try {
+            lock.lock(3, TimeUnit.SECONDS);
+            partyBo = partyService.findById(partyid);
+            if (partyBo == null) {
+                return CommonUtil.toErrorResult(ERRORCODE.PARTY_NULL.getIndex(),
+                        ERRORCODE.PARTY_NULL.getReason());
+            }
+            LinkedList<String> users = partyBo.getUsers();
+            if (users.contains(userBo.getId())) {
+                users.remove(userBo.getId());
+            }
+            partyService.updateUser(partyid, users);
+        } finally {
+            lock.unlock();
+        }
+        partyService.outParty(partyBo.getId(), userBo.getId());
+        return Constant.COM_RESP;
+    }
+
+
+    /**
+     * 删除我的发起的聚会
+     * @return
+     */
+    @RequestMapping("/delete-my-party")
+    @ResponseBody
+    public String delMyPartys(String partyid, HttpServletRequest request, HttpServletResponse
+            response){
+        UserBo userBo;
+        try {
+            userBo = checkSession(request, userService);
+        } catch (MyException e) {
+            return e.getMessage();
+        }
+        PartyBo partyBo = partyService.findById(partyid);
+        if (partyBo == null) {
+            return CommonUtil.toErrorResult(ERRORCODE.PARTY_NULL.getIndex(),
+                    ERRORCODE.PARTY_NULL.getReason());
+        }
+        if (partyBo.getCreateuid().equals(userBo.getId())) {
+            return CommonUtil.toErrorResult(ERRORCODE.PARTY_NO_AUTH.getIndex(),
+                    ERRORCODE.PARTY_NO_AUTH.getReason());
+        }
+        partyService.delete(partyBo.getId());
+        partyService.deleteMulitByaPartyid(partyBo.getId());
+        return Constant.COM_RESP;
+    }
+
+    /**
+     * 用户聚会报名详情
+     * @return
+     */
+    @RequestMapping("/enroll-detail")
+    @ResponseBody
+    public String enrollDetail(String partyid, String userid, HttpServletRequest request, HttpServletResponse
+            response){
+        PartyBo partyBo = partyService.findById(partyid);
+        if (partyBo == null) {
+            return CommonUtil.toErrorResult(ERRORCODE.PARTY_NULL.getIndex(),
+                    ERRORCODE.PARTY_NULL.getReason());
+        }
+        PartyUserBo partyUserBo = partyService.findPartyUser(partyid, userid);
+        if (partyUserBo == null) {
+            return CommonUtil.toErrorResult(ERRORCODE.PARTY_USER_NULL.getIndex(),
+                    ERRORCODE.PARTY_USER_NULL.getReason());
+        }
+        Map<String, Object> map = new HashMap<>();
+        map.put("ret", 0);
+        map.put("partyUser", partyUserBo);
+        return JSONObject.fromObject(map).toString();
+    }
+
+    @Async
+    private void updateUsers(PartyBo partyBo){
+
     }
 }

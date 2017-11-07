@@ -69,11 +69,14 @@ public class PartyVo extends BaseVo {
     private String circleName;
 
     private String circleid;
-
+    //是否在当前圈子
     private boolean inCircle;
+    //是否已报名
     private boolean inParty;
     //是否发表评论
     private boolean isComment;
+    //是否收藏
+    private boolean isCollect;
 
     //访问数量
     private int visitNum;
@@ -383,4 +386,11 @@ public class PartyVo extends BaseVo {
         isComment = comment;
     }
 
+    public boolean isCollect() {
+        return isCollect;
+    }
+
+    public void setCollect(boolean collect) {
+        isCollect = collect;
+    }
 }

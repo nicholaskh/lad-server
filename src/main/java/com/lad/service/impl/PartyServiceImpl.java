@@ -100,4 +100,45 @@ public class PartyServiceImpl implements IPartyService {
     public WriteResult updateChatroom(String partyid, String chatroomid) {
         return partyDao.updateChatroom(partyid, chatroomid);
     }
+
+
+    @Override
+    public WriteResult outParty(String partyid, String userid) {
+        return partyUserDao.outParty(partyid, userid);
+    }
+
+    @Override
+    public List<PartyUserBo> findByPartyUsers(String partyid) {
+        return partyUserDao.findByPartyUsers(partyid);
+    }
+
+    @Override
+    public List<PartyUserBo> findPartyByUserid(String userid, int page, int limit) {
+        return partyUserDao.findPartyByUserid(userid, page, limit);
+    }
+
+    @Override
+    public WriteResult collectParty(String partyid, String userid, boolean isCollect) {
+        return partyUserDao.collectParty(partyid, userid, isCollect);
+    }
+
+    @Override
+    public List<PartyBo> findByCircleid(String circleid, int page, int limit) {
+        return partyDao.findByCircleid(circleid, page, limit);
+    }
+
+    @Override
+    public PartyUserBo findPartyUser(String partyid, String userid) {
+        return partyUserDao.findPartyUser(partyid, userid);
+    }
+
+    @Override
+    public PartyUserBo findPartyUserIgnoreDel(String partyid, String userid) {
+        return partyUserDao.findPartyUserIgnoreDel(partyid, userid);
+    }
+
+    @Override
+    public WriteResult deleteMulitByaPartyid(String partyid) {
+        return partyUserDao.deleteMulit(partyid);
+    }
 }

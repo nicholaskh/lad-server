@@ -15,11 +15,11 @@ public class PartyManageBo extends BaseBo {
 
     private String partyid;
 
-    private LinkedHashSet<String> applyUsers;
+    private LinkedHashSet<String> applyUsers = new LinkedHashSet<>();
 
-    private LinkedHashSet<String> users;
+    private LinkedHashSet<String> users = new LinkedHashSet<>();
 
-    private LinkedHashSet<String> refuseUsers;
+    private LinkedHashSet<String> refuseUsers = new LinkedHashSet<>();
     //访问数量
     private int visitNum;
     //分享数量

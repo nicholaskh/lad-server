@@ -120,4 +120,57 @@ public interface IPartyService {
      */
     WriteResult updateChatroom(String partyid, String chatroomid);
 
+    /**
+     * 退出聚会
+     * @param partyid
+     * @return
+     */
+    WriteResult outParty(String partyid, String userid);
+
+    /**
+     * 报名详情查看
+     * @param partyid
+     * @return
+     */
+    List<PartyUserBo> findByPartyUsers(String partyid);
+
+    /**
+     * 参与的聚会
+     * @return
+     */
+    List<PartyUserBo> findPartyByUserid(String userid, int page, int limit);
+
+    /**
+     * 收藏或取消收藏聚会
+     * @param partyid
+     * @return
+     */
+    WriteResult collectParty(String partyid, String userid, boolean isCollect);
+
+    /**
+     * 查找圈子里所有聚会
+     * @return
+     */
+    List<PartyBo> findByCircleid(String circleid, int page, int limit);
+
+    /**
+     * 查找当前用户聚会参与信息
+     * @param partyid
+     * @return
+     */
+    PartyUserBo findPartyUser(String partyid, String userid);
+
+    /**
+     * 查找当前用户聚会参与信息,不需要判断是否已经删除
+     * @param partyid
+     * @return
+     */
+    PartyUserBo findPartyUserIgnoreDel(String partyid, String userid);
+
+    /**
+     * 删除参与聚会人员
+     * @param partyid
+     * @return
+     */
+    WriteResult deleteMulitByaPartyid(String partyid);
 }

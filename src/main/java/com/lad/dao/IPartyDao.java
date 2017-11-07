@@ -112,5 +112,16 @@ public interface IPartyDao {
     WriteResult updateChatroom(String partyid, String chatroomid);
 
 
+    /**
+     * 查找圈子里所有聚会
+     * @return
+     */
+    List<PartyBo> findByCircleid(String circleid, int page, int limit);
+
+    /**
+     * 退出圈子
+     * @return
+     */
+    WriteResult outParty(String id, String userid);
 
 }
