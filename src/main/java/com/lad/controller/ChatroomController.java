@@ -148,6 +148,7 @@ public class ChatroomController extends BaseContorller {
 					chatRoomNameAppend.append("、").append(user.getUserName());
 				}
 				set.add(userid);
+				JPushUtil.pushTo(String.format("%s邀请您加入群聊", user.getUserName()), userid);
 			}
 		}
 		// 如果群聊没有修改过名称，那么根据添加的用户自动修改名称
@@ -197,7 +198,8 @@ public class ChatroomController extends BaseContorller {
 		}
 		LinkedHashSet<String> set = chatroomBo.getUsers();
 		for (String userid : useridArr) {
-			if (!set.contains(userid)) {
+			//只能删除非自己以外人员，自己需要退出
+			if (!set.contains(userid) || userid.equals(userBo.getId())) {
 				continue;
 			}
 			removeUserNameFromChatRoomName(chatroomBo, userid, builder);
