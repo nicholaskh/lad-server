@@ -19,6 +19,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -149,11 +150,14 @@ public class NoteDaoImpl implements INoteDao {
 		return mongoTemplate.find(query, NoteBo.class);
 	}
 
-	public WriteResult deleteNote(String noteId) {
+	public WriteResult deleteNote(String noteId, String deleteuid) {
 		Query query = new Query();
 		query.addCriteria(new Criteria("_id").is(noteId));
 		Update update = new Update();
 		update.set("deleted", 1);
+		//更新删除人信息
+		update.set("updateuid", deleteuid);
+		update.set("updateTime", new Date());
 		return mongoTemplate.updateFirst(query, update, NoteBo.class);
 	}
 

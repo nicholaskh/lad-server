@@ -742,12 +742,13 @@ public class NoteController extends BaseContorller {
 		updateHistory(userBo.getId(), circleBo.getId(), locationService, circleService);
 		String[] ids = CommonUtil.getIds(noteids);
 		int notes = 0;
-		if (circleBo.getCreateuid().equals(userBo.getId())) {
+		if (circleBo.getCreateuid().equals(userBo.getId()) ||
+				circleBo.getMasters().contains(userBo.getId())) {
 			for (String id : ids) {
 				NoteBo noteBo = noteService.selectById(id);
 				if (null != noteBo) {
 					//圈主删除帖子
-					noteService.deleteNote(id);
+					noteService.deleteNote(id, userBo.getId());
 					commentService.deleteByNote(id);
 					notes ++;
 				}
@@ -795,7 +796,7 @@ public class NoteController extends BaseContorller {
 				}
 				//删除帖子
 				if (noteBo.getCreateuid().equals(userBo.getId())) {
-					noteService.deleteNote(id);
+					noteService.deleteNote(id,userBo.getId());
 					commentService.deleteByNote(id);
 					notes ++;
 				}

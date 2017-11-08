@@ -87,7 +87,7 @@ public interface INoteDao extends IBaseDao {
 	 * @param noteId
 	 * @return
 	 */
-	WriteResult deleteNote(String noteId);
+	WriteResult deleteNote(String noteId, String deleteuid);
 
 	/**
 	 * 我的帖子

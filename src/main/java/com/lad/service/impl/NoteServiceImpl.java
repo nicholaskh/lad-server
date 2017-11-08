@@ -85,8 +85,8 @@ public class NoteServiceImpl implements INoteService {
 	}
 
 	@Override
-	public void deleteNote(String noteId) {
-		noteDao.deleteNote(noteId);
+	public void deleteNote(String noteId, String deleteuid) {
+		noteDao.deleteNote(noteId, deleteuid);
 	}
 
 	@Override

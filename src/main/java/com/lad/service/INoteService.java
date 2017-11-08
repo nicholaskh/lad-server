@@ -104,7 +104,7 @@ public interface INoteService extends IBaseService {
 	 * @param noteId
 	 * @return
 	 */
-	void deleteNote(String noteId);
+	void deleteNote(String noteId, String deleteuid);
 
 	/**
 	 * 我的帖子
