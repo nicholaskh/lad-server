@@ -414,14 +414,15 @@ public class ChatroomController extends BaseContorller {
 					continue;
 				}
 				ChatroomUserBo chatroomUserBo = chatroomService.findChatUserByUserAndRoomid(userid, id);
+				boolean has = chatroomUserBo != null;
 				ChatroomVo vo = new ChatroomVo();
 				BeanUtils.copyProperties(temp, vo);
 				if (temp.getType() != 1) {
-					bo2vo(chatroomUserBo.isShowNick(),temp, vo);
+					bo2vo(has && chatroomUserBo.isShowNick(),temp, vo);
 					vo.setUserNum(temp.getUsers().size());
-					vo.setShowNick(chatroomUserBo.isShowNick());
+					vo.setShowNick(has && chatroomUserBo.isShowNick());
 				}
-				vo.setDisturb(chatroomUserBo.isDisturb());
+				vo.setDisturb(has && chatroomUserBo.isDisturb());
 				vo.setTop(1);
 				chatroomList.add(vo);
 			} else {
@@ -435,15 +436,16 @@ public class ChatroomController extends BaseContorller {
 					continue;
 				}
 				ChatroomUserBo chatroomUserBo = chatroomService.findChatUserByUserAndRoomid(userid, id);
+				boolean has = chatroomUserBo != null;
 				ChatroomVo vo = new ChatroomVo();
 				BeanUtils.copyProperties(temp, vo);
 				if (temp.getType() != 1) {
-					bo2vo(chatroomUserBo.isShowNick(), temp, vo);
+					bo2vo(has && chatroomUserBo.isShowNick(), temp, vo);
 					vo.setUserNum(temp.getUsers().size());
+					vo.setShowNick(has && chatroomUserBo.isShowNick());
 				}
 				chatroomList.add(vo);
-				vo.setDisturb(chatroomUserBo.isDisturb());
-				vo.setShowNick(chatroomUserBo.isShowNick());
+				vo.setDisturb(has && chatroomUserBo.isDisturb());
 			} else {
 				removes.add(id);
 			}
