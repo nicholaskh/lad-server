@@ -2,7 +2,6 @@ package com.lad.controller;
 
 import com.lad.bo.ChatroomBo;
 import com.lad.bo.ChatroomUserBo;
-import com.lad.bo.IMTermBo;
 import com.lad.bo.UserBo;
 import com.lad.redis.RedisServer;
 import com.lad.service.IChatroomService;
@@ -161,22 +160,7 @@ public class ChatroomController extends BaseContorller {
 		chatroomService.updateUsers(chatroomBo);
 		return Constant.COM_RESP;
 	}
-	/**
-	 *
-	 * @param userid
-	 * @param term
-	 */
-	private void updateIMTerm(String userid, String term){
-		IMTermBo imTermBo = iMTermService.selectByUserid(userid);
-		if (imTermBo == null) {
-			imTermBo = new IMTermBo();
-			imTermBo.setTerm(term);
-			imTermBo.setUserid(userid);
-			iMTermService.insert(imTermBo);
-		} else {
-			iMTermService.updateByUserid(userid, term);
-		}
-	}
+	
 
 	@RequestMapping("/delete-user")
 	@ResponseBody
@@ -193,8 +177,6 @@ public class ChatroomController extends BaseContorller {
 					ERRORCODE.ACCOUNT_ID.getReason());
 		}
 		String[] useridArr = CommonUtil.getIds(userids.trim());
-		IMTermBo termBo = iMTermService.selectByUserid(userBo.getId());
-		String term = termBo == null ? "" : termBo.getTerm();
 		ChatroomBo chatroomBo = chatroomService.get(chatroomid);
 		if (null == chatroomBo) {
 			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(),
@@ -227,7 +209,7 @@ public class ChatroomController extends BaseContorller {
 		}
 		//聊天室少于2人则直接删除
 		if (set.size() < 2) {
-			String res = IMUtil.disolveRoom(iMTermService, userBo.getId(), chatroomid);
+			String res = IMUtil.disolveRoom(chatroomid);
 			if (!res.equals(IMUtil.FINISH) && !res.contains("not found")) {
 				return res;
 			}
@@ -284,7 +266,7 @@ public class ChatroomController extends BaseContorller {
 		deleteNickname(chatroomid, userid);
 		set.remove(userid);
 		if (set.size() < 2) {
-			String res = IMUtil.disolveRoom(iMTermService, userid, chatroomid);
+			String res = IMUtil.disolveRoom(chatroomid);
 			if (!res.equals(IMUtil.FINISH) && !res.contains("not found")) {
 				return res;
 			}
@@ -412,8 +394,7 @@ public class ChatroomController extends BaseContorller {
 	@RequestMapping("/get-my-chatrooms")
 	@ResponseBody
 	public String getChatrooms(HttpServletRequest request,
-			HttpServletResponse response) throws IllegalAccessException,
-			InvocationTargetException {
+			HttpServletResponse response) {
 		UserBo userBo;
 		try {
 			userBo = checkSession(request, userService);
@@ -438,9 +419,9 @@ public class ChatroomController extends BaseContorller {
 				if (temp.getType() != 1) {
 					bo2vo(chatroomUserBo.isShowNick(),temp, vo);
 					vo.setUserNum(temp.getUsers().size());
+					vo.setShowNick(chatroomUserBo.isShowNick());
 				}
 				vo.setDisturb(chatroomUserBo.isDisturb());
-				vo.setShowNick(chatroomUserBo.isShowNick());
 				vo.setTop(1);
 				chatroomList.add(vo);
 			} else {
@@ -763,7 +744,7 @@ public class ChatroomController extends BaseContorller {
 					ERRORCODE.CHATROOM_NULL.getReason());
 		}
 		if (chatroomBo.getUsers().contains(userBo.getId())) {
-			chatroomService.updateName(chatroomid, name);
+			chatroomService.updateName(chatroomid, name, true);
 		} else {
 			return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_USER_NULL.getIndex(),
 					ERRORCODE.CIRCLE_USER_NULL.getReason());

@@ -29,6 +29,8 @@ public class PartyUserBo extends BaseBo {
     private int status;
     //0 未收藏，1 收藏
     private int collectParty;
+    //用户是否删除记录信息  0 未删除 ， 1 已删除
+    private int userDelete;
 
     public String getUserid() {
         return userid;
@@ -100,5 +102,13 @@ public class PartyUserBo extends BaseBo {
 
     public void setCollectParty(int collectParty) {
         this.collectParty = collectParty;
+    }
+
+    public int getUserDelete() {
+        return userDelete;
+    }
+
+    public void setUserDelete(int userDelete) {
+        this.userDelete = userDelete;
     }
 }

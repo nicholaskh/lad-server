@@ -1,6 +1,5 @@
 package com.lad.util;
 
-import com.lad.service.IIMTermService;
 import com.pushd.ImAssistant;
 import com.pushd.Message;
 import org.apache.commons.lang3.StringUtils;
@@ -206,17 +205,14 @@ public class IMUtil {
 		return res;
 	}
 
-	public static String disolveRoom(IIMTermService iMTermService,
-									 String userid, String chatroomId) {
+	public static String disolveRoom(String chatroomId) {
 		ImAssistant assistent = ImAssistant.init(Constant.PUSHD_IP, Constant.PUSHD_POST);
 		if (assistent == null) {
 			return CommonUtil.toErrorResult(
 					ERRORCODE.PUSHED_CONNECT_ERROR.getIndex(),
 					ERRORCODE.PUSHED_CONNECT_ERROR.getReason());
 		}
-
 		String res = "";
-
 		assistent.setServerTerm(term);
 		Message message = assistent.disolveRoom(chatroomId);
 		logger.info("delete room 1, chatroom {},  res {}", chatroomId, message.getMsg());
@@ -236,10 +232,8 @@ public class IMUtil {
 		if (Message.Status.success != message.getStatus()) {
 			res = CommonUtil.toErrorResult(ERRORCODE.PUSHED_ERROR.getIndex(), message.getMsg());
 		}
-
 		assistent.close();
 		if (StringUtils.isEmpty(res)) res = FINISH;
-
 		return res;
 	}
 

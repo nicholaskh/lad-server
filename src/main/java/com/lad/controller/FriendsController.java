@@ -489,8 +489,7 @@ public class FriendsController extends BaseContorller {
 					friendid,userBo.getId());
 		}
 		if (chatroomBo != null) {
-			String result = IMUtil.disolveRoom(iMTermService, userBo.getId(),
-					chatroomBo.getId());
+			String result = IMUtil.disolveRoom(chatroomBo.getId());
 			if (!result.equals(IMUtil.FINISH)) {
 				return result;
 			}
