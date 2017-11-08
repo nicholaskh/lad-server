@@ -90,4 +90,14 @@ public class CollectServiceImpl implements ICollectService {
 	public WriteResult updateTagTimes(String name, String userid, int type) {
 		return userTagDao.updateTimes(name, userid, type);
 	}
+
+	@Override
+	public CollectBo findByUseridAndTargetid(String userid, String targetid) {
+		return collectDao.findByUseridAndTargetid(userid, targetid);
+	}
+
+	@Override
+	public WriteResult updateCollectDelete(String id, int status) {
+		return collectDao.updateCollectDelete(id, status);
+	}
 }

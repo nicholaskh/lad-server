@@ -1,6 +1,7 @@
 package com.lad.dao;
 
 import com.lad.bo.CollectBo;
+import com.lad.util.Constant;
 import com.mongodb.WriteResult;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +38,25 @@ public class CollectDao {
 		return mongoTemplate.findOne(query, CollectBo.class);
 	}
 
+	public CollectBo findByUseridAndTargetid(String userid, String targetid){
+		Query query = new Query();
+		query.addCriteria(new Criteria("userid").is(userid));
+		query.addCriteria(new Criteria("targetid").is(targetid));
+		return mongoTemplate.findOne(query, CollectBo.class);
+	}
+
+	/**
+	 * 如果
+	 * @return
+	 */
+	public WriteResult updateCollectDelete(String id, int status){
+		Query query = new Query();
+		query.addCriteria(new Criteria("_id").is(id));
+		Update update = new Update();
+		update.set("deleted",status);
+		return mongoTemplate.updateFirst(query, update, CollectBo.class);
+	}
+
 	/**
 	 * 查找当前用户所有收藏
 	 * @param userid
@@ -46,6 +66,7 @@ public class CollectDao {
 	public List<CollectBo> findAllByUserid(String userid, int page , int limit){
 		Query query = new Query();
 		query.addCriteria(new Criteria("userid").is(userid));
+		query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
 		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "createTime")));
 		page = page < 1 ? 1 : page;
 		query.skip((page - 1)*limit);
@@ -64,6 +85,7 @@ public class CollectDao {
 		Query query = new Query();
 		query.addCriteria(new Criteria("userid").is(userid));
 		query.addCriteria(new Criteria("type").is(type));
+		query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
 		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "createTime")));
 		page = page < 1 ? 1 : page;
 		query.skip((page - 1)*limit);
@@ -80,6 +102,7 @@ public class CollectDao {
 	public WriteResult updateTags(String id, LinkedHashSet<String> userTages){
 		Query query = new Query();
 		query.addCriteria(new Criteria("_id").is(id));
+		query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
 		Update update = new Update();
 		update.set("userTags", userTages);
 		return mongoTemplate.updateFirst(query,update,CollectBo.class);
@@ -95,6 +118,7 @@ public class CollectDao {
 		Criteria criteria =  new Criteria("title").regex(pattern);
 		Criteria tags =  new Criteria("userTags").in(keyword);
 		Query query = new Query(criteria.orOperator(tags));
+		query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
 		return mongoTemplate.find(query, CollectBo.class);
 	}
 
@@ -107,6 +131,7 @@ public class CollectDao {
 		Query query = new Query();
 		query.addCriteria(new Criteria("userid").is(userid));
 		query.addCriteria(new Criteria("userTags").in(tag));
+		query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
 		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "createTime")));
 		page = page < 1 ? 1 : page;
 		query.skip((page - 1)*limit);
@@ -122,13 +147,16 @@ public class CollectDao {
 	public WriteResult delete(String chatid) {
 		Query query = new Query();
 		query.addCriteria(new Criteria("_id").is(chatid));
-		return mongoTemplate.remove(query, CollectBo.class);
+		Update update = new Update();
+		update.set("deleted",Constant.DELETED);
+		return mongoTemplate.updateFirst(query, update, CollectBo.class);
 	}
 
 	public List<CollectBo> findChatByUserid(String userid, String start_id, int limit, int type){
 		Query query = new Query();
 		query.addCriteria(new Criteria("userid").is(userid));
 		query.addCriteria(new Criteria("type").is(type));
+		query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
 		if (StringUtils.isNotEmpty(start_id)) {
 			query.addCriteria(new Criteria("_id").lt(start_id));
 		}

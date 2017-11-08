@@ -88,4 +88,14 @@ public interface ICollectService {
 
 	WriteResult updateTagTimes(String name, String userid, int type);
 
+
+	
+	CollectBo findByUseridAndTargetid(String userid, String targetid);
+
+	/**
+	 * 如果
+	 * @return
+	 */
+	WriteResult updateCollectDelete(String id, int status);
+
 }

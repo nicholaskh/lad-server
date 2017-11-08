@@ -180,4 +180,11 @@ public interface IPartyService {
      * @return
      */
     WriteResult deleteJoinParty(String partyid, String userid);
+
+    /**
+     * 退出聚会
+     * @param id
+     * @return
+     */
+    WriteResult outParty(String id);
 }

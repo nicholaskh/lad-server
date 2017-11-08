@@ -35,6 +35,13 @@ public interface IPartyUserDao {
     WriteResult outParty(String partyid, String userid);
 
     /**
+     * 退出聚会
+     * @param id
+     * @return
+     */
+    WriteResult outParty(String id);
+
+    /**
      * 报名详情查看
      * @param partyid
      * @return

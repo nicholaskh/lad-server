@@ -56,6 +56,7 @@ public class PartyUserDaoImpl implements IPartyUserDao {
         Query query = new Query();
         query.addCriteria(new Criteria("partyid").is(partyid));
         query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+        query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
         if (status != -1) {
             query.addCriteria(new Criteria("status").is(status));
         }
@@ -67,6 +68,7 @@ public class PartyUserDaoImpl implements IPartyUserDao {
         Query query = new Query();
         query.addCriteria(new Criteria("userid").is(userid));
         query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+        query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
         if (status != -1) {
             query.addCriteria(new Criteria("status").is(status));
         }
@@ -88,6 +90,7 @@ public class PartyUserDaoImpl implements IPartyUserDao {
         Query query = new Query();
         query.addCriteria(new Criteria("partyid").is(partyid));
         query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+        query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
         return mongoTemplate.find(query, PartyUserBo.class);
     }
 
@@ -153,6 +156,15 @@ public class PartyUserDaoImpl implements IPartyUserDao {
         query.addCriteria(new Criteria("userid").is(userid));
         Update update = new Update();
         update.set("userDelete", Constant.DELETED);
+        return mongoTemplate.updateFirst(query, update, PartyUserBo.class);
+    }
+
+    @Override
+    public WriteResult outParty(String id) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("_id").is(id));
+        Update update = new Update();
+        update.set("deleted", Constant.DELETED);
         return mongoTemplate.updateFirst(query, update, PartyUserBo.class);
     }
 }

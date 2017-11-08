@@ -53,6 +53,7 @@ public class PartyController extends BaseContorller {
 
     @Autowired
     private IThumbsupService thumbsupService;
+    
     @Autowired
     private RedisServer redisServer;
 
@@ -63,10 +64,10 @@ public class PartyController extends BaseContorller {
     private IChatroomService chatroomService;
 
     @Autowired
-    private IIMTermService iMTermService;
+    private ICollectService collectService;
 
     @Autowired
-    private ICollectService collectService;
+    private IFeedbackService feedbackService;
 
 
     @RequestMapping("/create")
@@ -366,15 +367,16 @@ public class PartyController extends BaseContorller {
             return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_NOT_MASTER.getIndex(),
                     ERRORCODE.CIRCLE_NOT_MASTER.getReason());
         }
+        List<PartyUserBo> partyUserBos = partyService.findPartyUser(partyid, 1);
         List<PartyUserVo> partyUserVos = new ArrayList<>();
-        LinkedList<String> users = partyBo.getUsers();
-        int length = users.size() -1;
-        for (int i = length; i >=0 ; i--) {
-            UserBo user =  userService.getUser(users.get(i));
+        for (PartyUserBo partyUserBo : partyUserBos) {
+            UserBo user =  userService.getUser(partyUserBo.getUserid());
             if (user !=null) {
                 PartyUserVo userVo = new PartyUserVo();
                 partyUserBo2Vo(user, userVo);
                 partyUserVos.add(userVo);
+            } else {
+                partyService.outParty(partyUserBo.getId());
             }
         }
         Map<String, Object> map = new HashMap<>();
@@ -592,20 +594,60 @@ public class PartyController extends BaseContorller {
             return CommonUtil.toErrorResult(ERRORCODE.PARTY_NULL.getIndex(),
                     ERRORCODE.PARTY_NULL.getReason());
         }
-
-        CollectBo collectBo = new CollectBo();
-        collectBo.setUserid(userBo.getId());
-        collectBo.setTitle(partyBo.getTitle());
-        collectBo.setType(Constant.COLLET_URL);
-        collectBo.setSub_type(Constant.PARTY_TYPE);
-        collectBo.setTargetid(partyid);
-        collectService.insert(collectBo);
+        CollectBo collectBo = collectService.findByUseridAndTargetid(userBo.getId(), partyid);
+        if (collectBo == null) {
+            collectBo = new CollectBo();
+            collectBo.setUserid(userBo.getId());
+            collectBo.setTitle(partyBo.getTitle());
+            collectBo.setType(Constant.COLLET_URL);
+            collectBo.setSub_type(Constant.PARTY_TYPE);
+            collectBo.setTargetid(partyid);
+            collectService.insert(collectBo);
+        } else {
+            if(collectBo.getDeleted() == 1) {
+                collectService.updateCollectDelete(collectBo.getId(), Constant.ACTIVITY);
+            }
+        }
         partyService.updateCollect(partyid, 1);
-
+        partyService.collectParty(partyid, userBo.getId(), true);
         Map<String, Object> map = new HashMap<>();
         map.put("ret", 0);
         map.put("col-time", CommonUtil.time2str(collectBo.getCreateTime()));
         return JSONObject.fromObject(map).toString();
+    }
+
+    /**
+     * 取消收藏
+     * @param partyid
+     * @return
+     */
+    @RequestMapping("/del-collect")
+    @ResponseBody
+    public String deleteCollectParty(@RequestParam String partyid,
+                                     HttpServletRequest request, HttpServletResponse response){
+        UserBo userBo;
+        try {
+            userBo = checkSession(request, userService);
+        } catch (MyException e) {
+            return e.getMessage();
+        }
+        PartyBo partyBo = partyService.findById(partyid);
+        if (partyBo == null) {
+            return CommonUtil.toErrorResult(ERRORCODE.PARTY_NULL.getIndex(),
+                    ERRORCODE.PARTY_NULL.getReason());
+        }
+        CollectBo collectBo = collectService.findByUseridAndTargetid(userBo.getId(), partyid);
+        if (collectBo == null) {
+            return CommonUtil.toErrorResult(ERRORCODE.COLLECT_IS_NULL.getIndex(),
+                    ERRORCODE.COLLECT_IS_NULL.getReason());
+        } else {
+            if(collectBo.getDeleted() == 0) {
+                collectService.updateCollectDelete(collectBo.getId(), Constant.DELETED);
+                partyService.updateCollect(partyid, -1);
+            }
+            partyService.collectParty(partyid, userBo.getId(), false);
+        }
+        return Constant.COM_RESP;
     }
 
     /**
@@ -629,7 +671,7 @@ public class PartyController extends BaseContorller {
                     ERRORCODE.PARTY_NULL.getReason());
         }
         CircleBo circleBo = circleService.selectById(partyBo.getCircleid());
-        if (!userBo.getId().equals(partyBo.getCreateuid()) ||
+        if (!userBo.getId().equals(partyBo.getCreateuid()) &&
                 !circleBo.getMasters().contains(userBo.getId())) {
             return CommonUtil.toErrorResult(ERRORCODE.PARTY_NO_AUTH.getIndex(),
                     ERRORCODE.PARTY_NO_AUTH.getReason());
@@ -647,8 +689,7 @@ public class PartyController extends BaseContorller {
     @RequestMapping("/add-comment")
     @ResponseBody
     public String addComment(String partyid, String content, boolean isSync,
-                             MultipartFile[] photos, MultipartFile video,
-                             HttpServletRequest request, HttpServletResponse response){
+                             MultipartFile[] photos, HttpServletRequest request, HttpServletResponse response){
         UserBo userBo;
         try {
             userBo = checkSession(request, userService);
@@ -685,12 +726,6 @@ public class PartyController extends BaseContorller {
                 photo.add(path);
             }
             commentBo.setPhotos(photo);
-        }
-        if (video != null) {
-            String fileName = userId + "-" + time + "-" + video.getOriginalFilename();
-            String[] paths = CommonUtil.uploadVedio(video, Constant.PARTY_PICTURE_PATH, fileName, 0);
-            commentBo.setVideo(paths[0]);
-            commentBo.setVideoPic(paths[1]);
         }
         commentService.insert(commentBo);
         //圈子热度
@@ -914,6 +949,31 @@ public class PartyController extends BaseContorller {
         map.put("ret", 0);
         map.put("partyUser", partyUserBo);
         return JSONObject.fromObject(map).toString();
+    }
+
+
+    /**
+     * 举报聚会
+     * @param partyid
+     * @return
+     */
+    @RequestMapping("/tip-off-party")
+    @ResponseBody
+    public String tipOffParty(@RequestParam String partyid,
+                               HttpServletRequest request, HttpServletResponse response){
+        UserBo userBo;
+        try {
+            userBo = checkSession(request, userService);
+        } catch (MyException e) {
+            return e.getMessage();
+        }
+        PartyBo partyBo = partyService.findById(partyid);
+        if (partyBo == null) {
+            return CommonUtil.toErrorResult(ERRORCODE.PARTY_NULL.getIndex(),
+                    ERRORCODE.PARTY_NULL.getReason());
+        }
+
+        return "";
     }
 
     @Async
