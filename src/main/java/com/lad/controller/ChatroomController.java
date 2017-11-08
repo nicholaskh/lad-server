@@ -70,13 +70,8 @@ public class ChatroomController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		userBo = userService.getUser(userBo.getId());
-		if (StringUtils.isEmpty(name)) {
-			return CommonUtil.toErrorResult(
-					ERRORCODE.CHATROOM_NAME_NULL.getIndex(),
-					ERRORCODE.CHATROOM_NAME_NULL.getReason());
-		}
 		ChatroomBo chatroomBo = new ChatroomBo();
-		chatroomBo.setName(name);
+		chatroomBo.setName(userBo.getUserName());
 		chatroomBo.setType(Constant.ROOM_MULIT);
 		chatroomBo.setCreateuid(userBo.getId());
 		chatroomBo.setMaster(userBo.getId());
