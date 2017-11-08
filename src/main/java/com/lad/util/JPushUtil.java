@@ -13,12 +13,12 @@ import cn.jpush.api.push.model.audience.Audience;
 import cn.jpush.api.push.model.notification.AndroidNotification;
 import cn.jpush.api.push.model.notification.IosNotification;
 import cn.jpush.api.push.model.notification.Notification;
-import org.apache.log4j.Logger;
-import org.apache.log4j.spi.RootLogger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class JPushUtil {
 
-	private static Logger logger = RootLogger.getLogger(JPushUtil.class);
+	private static Logger logger = LogManager.getLogger(JPushUtil.class);
 
 	private static String MASTER_SECRET = "db587bc126abddf27e548ecc";
 	private static String APP_KEY = "d53e8d39d6df18e379bf5da4";
@@ -61,22 +61,19 @@ public class JPushUtil {
 		JPushClient jpushClient = new JPushClient(MASTER_SECRET, APP_KEY, null,
 				ClientConfig.getInstance());
 		PushPayload payload = buildPushObject_to_alias_alert(content, alias);
-		logger.info("alias: " + alias);
+		logger.info("alias: {}",alias);
 		try {
 			PushResult result = jpushClient.sendPush(payload);
-			logger.info("Got result - " + result);
+			logger.info("Got result - {}",result);
 			return result;
 		} catch (APIConnectionException e) {
-			logger.error("Connection error, should retry later : "
-					+ e.getMessage());
+			logger.error("Connection error, should retry later : {}", e.getMessage());
 
 		} catch (APIRequestException e) {
-			logger.error("Should review the error, and fix the request : "
-							+ e.getMessage());
-			logger.error("alias: " + alias);
-			logger.error("HTTP Status: " + e.getStatus());
-			logger.error("Error Code: " + e.getErrorCode());
-			logger.error("Error Message: " + e.getErrorMessage());
+			logger.error("Should review the error, and fix the request : {}", e.getMessage());
+			logger.error("HTTP Status: {}", e.getStatus());
+			logger.error("Error Code: {}" ,e.getErrorCode());
+			logger.error("Error Message: {}", e.getErrorMessage());
 		}
 		return null;
 	}
