@@ -12,8 +12,8 @@ import com.lad.vo.NoteVo;
 import com.lad.vo.UserBaseVo;
 import com.mongodb.BasicDBObject;
 import net.sf.json.JSONObject;
-import org.apache.log4j.Logger;
-import org.apache.log4j.spi.RootLogger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.redisson.api.RLock;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +34,7 @@ import java.util.concurrent.TimeUnit;
 @RequestMapping("note")
 public class NoteController extends BaseContorller {
 
-	private final Logger logger = RootLogger.getLogger(NoteController.class);
+	private final Logger logger = LogManager.getLogger(NoteController.class);
 
 	@Autowired
 	private INoteService noteService;
@@ -336,10 +336,12 @@ public class NoteController extends BaseContorller {
 		}
 		List<NoteBo> noteBos = noteService.findByTopEssence(circleid, Constant.NOTE_TOP, start_id, limit);
 		List<NoteVo> noteVoList = new LinkedList<>();
-		for (NoteBo noteBo : noteBos) {
-			NoteVo noteVo = new NoteVo();
-			boToVo(noteBo, noteVo, userService.getUser(noteBo.getCreateuid()));
-			noteVoList.add(noteVo);
+		if (noteBos != null) {
+			for (NoteBo noteBo : noteBos) {
+				NoteVo noteVo = new NoteVo();
+				boToVo(noteBo, noteVo, userService.getUser(noteBo.getCreateuid()));
+				noteVoList.add(noteVo);
+			}
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
