@@ -313,6 +313,10 @@ public class PartyController extends BaseContorller {
             partyUserBo.setStatus(1);
             partyService.addParty(partyUserBo);
         } else {
+            if (partyUserBo.getDeleted() == Constant.ACTIVITY) {
+                return CommonUtil.toErrorResult(ERRORCODE.PARTY_HAS_ADD.getIndex(),
+                        ERRORCODE.PARTY_HAS_ADD.getReason());
+            }
             partyUserBo.setAmount(amount);
             partyUserBo.setJoinInfo(joinInfo);
             partyUserBo.setJoinPhone(phone);
