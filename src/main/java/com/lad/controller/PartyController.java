@@ -4,10 +4,7 @@ import com.lad.bo.*;
 import com.lad.redis.RedisServer;
 import com.lad.service.*;
 import com.lad.util.*;
-import com.lad.vo.CommentVo;
-import com.lad.vo.PartyListVo;
-import com.lad.vo.PartyUserVo;
-import com.lad.vo.PartyVo;
+import com.lad.vo.*;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -126,6 +123,26 @@ public class PartyController extends BaseContorller {
         }
         partyBo.setStatus(0);
         partyBo.setCreateuid(userId);
+
+        ChatroomBo chatroomBo = new ChatroomBo();
+        chatroomBo.setName(partyBo.getTitle());
+        chatroomBo.setType(Constant.ROOM_MULIT);
+        chatroomBo.setCreateuid(userBo.getId());
+        chatroomBo.setMaster(userBo.getId());
+        chatroomBo.setOpen(true);
+        chatroomBo.setVerify(false);
+        HashSet<String> users = chatroomBo.getUsers();
+        users.add(chatroomBo.getId());
+        chatroomService.insert(chatroomBo);
+        //第一个为返回结果信息，第二位term信息
+        String result = IMUtil.subscribe(0, chatroomBo.getId(), userBo.getId());
+        if (!result.equals(IMUtil.FINISH)) {
+            chatroomService.remove(chatroomBo.getId());
+            return result;
+        }
+        userService.updateChatrooms(userBo);
+        addChatroomUser(chatroomService, userBo, chatroomBo.getId(), userBo.getUserName());
+        partyBo.setChatroomid(chatroomBo.getId());
         partyService.insert(partyBo);
 
         //用户等级
@@ -135,7 +152,6 @@ public class PartyController extends BaseContorller {
         //动态信息表
         addDynamicMsgs(userId, partyBo.getId(), Constant.PARTY_TYPE, dynamicService);
         updateDynamicNums(userId, 1, dynamicService, redisServer);
-
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("ret", 0);
         map.put("partyid", partyBo.getId());
@@ -532,6 +548,7 @@ public class PartyController extends BaseContorller {
             chatroomService.remove(chatroomid);
             return result;
         }
+        userService.updateChatrooms(userBo);
         updateUserChatroom(chatroomBo, useridArr);
         partyService.updateChatroom(partyid, chatroomid);
         return Constant.COM_RESP;
@@ -557,9 +574,11 @@ public class PartyController extends BaseContorller {
                 userService.updateChatrooms(user);
             }
             users.add(userid);
+            addChatroomUser(chatroomService, user, chatroomBo.getId(), user.getUserName());
         }
         chatroomBo.setUsers(users);
         chatroomService.updateUsers(chatroomBo);
+
     }
 
 
@@ -703,27 +722,37 @@ public class PartyController extends BaseContorller {
     }
 
     /**
-     * 添加聊天
-     * @param partyid
+     * 添加评论
+     * @param partyComment
      * @return
      */
     @RequestMapping("/add-comment")
     @ResponseBody
-    public String addComment(String partyid, String content, boolean isSync,
-                             MultipartFile[] photos, HttpServletRequest request, HttpServletResponse response){
+    public String addComment(String partyComment,MultipartFile[] photos,
+                             HttpServletRequest request, HttpServletResponse response){
         UserBo userBo;
         try {
             userBo = checkSession(request, userService);
         } catch (MyException e) {
             return e.getMessage();
         }
-        PartyBo partyBo = partyService.findById(partyid);
+
+        PartyComment comment = null;
+        try {
+            JSONObject jsonObject = JSONObject.fromObject(partyComment);
+            comment = (PartyComment)JSONObject.toBean(jsonObject, PartyComment.class);
+        } catch (Exception e) {
+            return CommonUtil.toErrorResult(ERRORCODE.PARTY_ERROR.getIndex(),
+                    ERRORCODE.PARTY_ERROR.getReason());
+        }
+
+        PartyBo partyBo = partyService.findById(comment.getPartyid());
         if (partyBo == null) {
             return CommonUtil.toErrorResult(ERRORCODE.PARTY_NULL.getIndex(),
                     ERRORCODE.PARTY_NULL.getReason());
         }
 
-        List<CommentBo> commentBos = commentService.selectByTargetUser(partyid, userBo.getId(), Constant.PARTY_TYPE);
+        List<CommentBo> commentBos = commentService.selectByTargetUser(comment.getPartyid(), userBo.getId(), Constant.PARTY_TYPE);
         if (commentBos != null && !commentBos.isEmpty()) {
             return CommonUtil.toErrorResult(ERRORCODE.PARTY_HAS_COMMENT.getIndex(),
                     ERRORCODE.PARTY_HAS_COMMENT.getReason());
@@ -731,9 +760,9 @@ public class PartyController extends BaseContorller {
 
         CommentBo commentBo = new CommentBo();
         commentBo.setCreateuid(userBo.getId());
-        commentBo.setContent(content);
+        commentBo.setContent(comment.getContent());
         commentBo.setType(Constant.PARTY_TYPE);
-        commentBo.setTargetid(partyid);
+        commentBo.setTargetid(comment.getPartyid());
         commentBo.setUserName(userBo.getUserName());
 
         String userId = userBo.getId();
@@ -751,7 +780,7 @@ public class PartyController extends BaseContorller {
         commentService.insert(commentBo);
         //圈子热度
         updateCircleHot(circleService, redisServer, partyBo.getCircleid(), 1, Constant.CIRCLE_PARTY_VISIT);
-        if (isSync) {
+        if (comment.isSync()) {
             //动态信息表
             addDynamicMsgs(userId, partyBo.getId(), Constant.PARTY_COM_TYPE, dynamicService);
             updateDynamicNums(userId, 1, dynamicService, redisServer);
@@ -842,6 +871,9 @@ public class PartyController extends BaseContorller {
             return CommonUtil.toErrorResult(ERRORCODE.PARTY_NULL.getIndex(),
                     ERRORCODE.PARTY_NULL.getReason());
         }
+
+        UserBo user = getUserLogin(request);
+
         List<CommentBo> commentBos = commentService.selectByTargetUser(partyid,"", Constant.PARTY_TYPE);
 
         List<CommentVo> commentVos = new ArrayList<>();
@@ -862,6 +894,11 @@ public class PartyController extends BaseContorller {
             vo.setPhotos(commentBo.getPhotos());
             vo.setVideo(commentBo.getVideo());
             vo.setVideoPic(commentBo.getVideoPic());
+            if (null != user) {
+                //判断当前用户是否点赞
+                ThumbsupBo thumbsupBo = thumbsupService.findHaveOwenidAndVisitorid(commentBo.getId(), user.getId());
+                vo.setMyThumbsup(thumbsupBo != null);
+            }
             commentVos.add(vo);
         }
         Map<String, Object> map = new HashMap<>();
@@ -970,6 +1007,46 @@ public class PartyController extends BaseContorller {
         map.put("ret", 0);
         map.put("partyUser", partyUserBo);
         return JSONObject.fromObject(map).toString();
+    }
+
+
+    /**
+     * 评论点赞
+     * @return
+     */
+    @RequestMapping("/comment-thumbsup")
+    @ResponseBody
+    public String commentThumbsup(String commentid, int type, HttpServletRequest request, HttpServletResponse
+            response) {
+        UserBo userBo;
+        try {
+            userBo = checkSession(request, userService);
+        } catch (MyException e) {
+            return e.getMessage();
+        }
+        ThumbsupBo thumbsupBo = thumbsupService.findHaveOwenidAndVisitorid(commentid, userBo.getId());
+        if (type == 0) {
+            if (null == thumbsupBo) {
+                thumbsupBo = new ThumbsupBo();
+                thumbsupBo.setType(Constant.PARTY_COM_TYPE);
+                thumbsupBo.setOwner_id(commentid);
+                thumbsupBo.setImage(userBo.getHeadPictureName());
+                thumbsupBo.setVisitor_id(userBo.getId());
+                thumbsupBo.setCreateuid(userBo.getId());
+            } else {
+                if (thumbsupBo.getDeleted() == Constant.DELETED) {
+                    thumbsupService.udateDeleteById(thumbsupBo.getId());
+                }
+            }
+        } else if (type == 1) {
+            if (null != thumbsupBo) {
+                thumbsupService.deleteById(thumbsupBo.getId());
+            }
+        } else {
+            return CommonUtil.toErrorResult(ERRORCODE.TYPE_ERROR.getIndex(),
+                    ERRORCODE.TYPE_ERROR.getReason());
+        }
+        return Constant.COM_RESP;
     }
 
 
