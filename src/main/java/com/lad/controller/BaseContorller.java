@@ -87,7 +87,8 @@ public abstract class BaseContorller {
 		if (session.getAttribute("isLogin") == null) {
 			return null;
 		}
-		return (UserBo) session.getAttribute("userBo");
+		Object userBo = session.getAttribute("userBo");
+		return userBo == null ? null : (UserBo) userBo;
 	}
 
 	/**
