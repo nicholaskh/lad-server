@@ -84,7 +84,7 @@ public class ChatroomController extends BaseContorller {
 			return result;
 		}
 		userService.updateChatrooms(userBo);
-		addChatroomUser(userBo, chatroomBo.getId(), userBo.getUserName());
+		addChatroomUser(chatroomService, userBo, chatroomBo.getId(), userBo.getUserName());
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("channelId", chatroomBo.getId());
@@ -136,7 +136,7 @@ public class ChatroomController extends BaseContorller {
 			}
 			UserBo user = userService.getUser(userid);
 			if (null != user) {
-				addChatroomUser(user, chatroomBo.getId(), user.getUserName());
+				addChatroomUser(chatroomService, user, chatroomBo.getId(), user.getUserName());
 				HashSet<String> chatroom = user.getChatrooms();
 				//个人聊天室中没有当前聊天室，则添加到个人的聊天室
 				if (!chatroom.contains(chatroomBo.getId())) {
@@ -651,7 +651,7 @@ public class ChatroomController extends BaseContorller {
 		chatrooms.add(chatroom.getId());
 		userBo.setChatrooms(chatrooms);
 		userService.updateChatrooms(userBo);
-		addChatroomUser(userBo, chatroom.getId(), userBo.getUserName());
+		addChatroomUser(chatroomService, userBo, chatroom.getId(), userBo.getUserName());
 		Map<String, Object> map = new HashMap<>();
 		map.put("ret", 0);
 		map.put("channelId", chatroom.getId());
@@ -916,28 +916,6 @@ public class ChatroomController extends BaseContorller {
 			chatroomService.updateDisturb(chatroomUserBo.getId(), isDisturb);
 		}
 		return Constant.COM_RESP;
-	}
-
-	/**
-	 * 添加聊天室用户的昵称
-	 * @param chatroomid
-	 * @param nickname
-	 */
-	@Async
-	private void addChatroomUser(UserBo userBo, String chatroomid, String nickname){
-		ChatroomUserBo chatroomUserBo = chatroomService.findChatUserByUserAndRoomid(userBo.getId(), chatroomid);
-		if (chatroomUserBo == null) {
-			chatroomUserBo = new ChatroomUserBo();
-			chatroomUserBo.setChatroomid(chatroomid);
-			chatroomUserBo.setUserid(userBo.getId());
-			chatroomUserBo.setNickname(nickname);
-			chatroomUserBo.setUsername(userBo.getUserName());
-			chatroomUserBo.setShowNick(false);
-			chatroomUserBo.setDisturb(false);
-			chatroomService.insertUser(chatroomUserBo);
-		} else {
-			chatroomService.updateUserNickname(chatroomUserBo.getId(), nickname);
-		}
 	}
 
 	/**

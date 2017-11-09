@@ -3,10 +3,7 @@ package com.lad.controller;
 
 import com.lad.bo.*;
 import com.lad.redis.RedisServer;
-import com.lad.service.ICircleService;
-import com.lad.service.IDynamicService;
-import com.lad.service.ILocationService;
-import com.lad.service.IUserService;
+import com.lad.service.*;
 import com.lad.util.CommonUtil;
 import com.lad.util.Constant;
 import com.lad.util.ERRORCODE;
@@ -180,5 +177,29 @@ public abstract class BaseContorller {
 			}
 		}
 	}
+
+
+	/**
+	 * 添加聊天室用户的昵称
+	 * @param chatroomid
+	 * @param nickname
+	 */
+	@Async
+	public void addChatroomUser(IChatroomService service, UserBo userBo, String chatroomid, String nickname){
+		ChatroomUserBo chatroomUserBo = service.findChatUserByUserAndRoomid(userBo.getId(), chatroomid);
+		if (chatroomUserBo == null) {
+			chatroomUserBo = new ChatroomUserBo();
+			chatroomUserBo.setChatroomid(chatroomid);
+			chatroomUserBo.setUserid(userBo.getId());
+			chatroomUserBo.setNickname(nickname);
+			chatroomUserBo.setUsername(userBo.getUserName());
+			chatroomUserBo.setShowNick(false);
+			chatroomUserBo.setDisturb(false);
+			service.insertUser(chatroomUserBo);
+		} else {
+			service.updateUserNickname(chatroomUserBo.getId(), nickname);
+		}
+	}
+
 
 }
