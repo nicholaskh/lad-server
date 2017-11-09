@@ -253,7 +253,7 @@ public class PartyController extends BaseContorller {
             partyVo.setCreater(createVo);
         }
         if (StringUtils.isNotEmpty(userid)){
-            PartyUserBo partyUserBo = partyService.findPartyUser(partyid, userid);
+            PartyUserBo partyUserBo = partyService.findPartyUserIgnoreDel(partyid, userid);
             partyVo.setInParty(partyUserBo != null && partyUserBo.getDeleted() == 1);
             partyVo.setCollect(partyUserBo != null && partyUserBo.getCollectParty() == 1);
             List<CommentBo> commentBos = commentService.selectByTargetUser(partyid, userid, Constant.PARTY_TYPE);
