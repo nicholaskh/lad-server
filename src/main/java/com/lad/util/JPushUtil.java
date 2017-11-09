@@ -15,6 +15,7 @@ import cn.jpush.api.push.model.notification.IosNotification;
 import cn.jpush.api.push.model.notification.Notification;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.scheduling.annotation.Async;
 
 public class JPushUtil {
 
@@ -57,6 +58,7 @@ public class JPushUtil {
 				.setNotification(Notification.alert(content)).build();
 	}
 
+	@Async
 	public static PushResult pushTo(String content, String... alias) {
 		JPushClient jpushClient = new JPushClient(MASTER_SECRET, APP_KEY, null,
 				ClientConfig.getInstance());
