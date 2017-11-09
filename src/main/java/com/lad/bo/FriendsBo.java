@@ -15,6 +15,7 @@ public class FriendsBo extends BaseBo {
 	private String description;
 	private Integer VIP = 0;
 	private Integer black = 0;
+	private String lastTime;
 
 	public String getUserid() {
 		return userid;
