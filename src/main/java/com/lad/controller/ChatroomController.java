@@ -426,9 +426,6 @@ public class ChatroomController extends BaseContorller {
 		for (String id : chatroomsTop) {
 			ChatroomBo temp = chatroomService.get(id);
 			if (null != temp) {
-				if (temp.getType() == Constant.ROOM_SINGLE) {
-					continue;
-				}
 				ChatroomUserBo chatroomUserBo = chatroomService.findChatUserByUserAndRoomid(userid, id);
 				boolean has = chatroomUserBo != null;
 				ChatroomVo vo = new ChatroomVo();
@@ -448,9 +445,6 @@ public class ChatroomController extends BaseContorller {
 		for (String id : chatrooms) {
 			ChatroomBo temp = chatroomService.get(id);
 			if (null != temp) {
-				if (temp.getType() == Constant.ROOM_SINGLE) {
-					continue;
-				}
 				ChatroomUserBo chatroomUserBo = chatroomService.findChatUserByUserAndRoomid(userid, id);
 				boolean has = chatroomUserBo != null;
 				ChatroomVo vo = new ChatroomVo();
