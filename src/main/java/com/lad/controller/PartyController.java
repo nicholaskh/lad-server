@@ -254,7 +254,7 @@ public class PartyController extends BaseContorller {
         }
         if (StringUtils.isNotEmpty(userid)){
             PartyUserBo partyUserBo = partyService.findPartyUserIgnoreDel(partyid, userid);
-            partyVo.setInParty(partyUserBo != null && partyUserBo.getDeleted() == 1);
+            partyVo.setInParty(partyUserBo != null && partyUserBo.getDeleted() == 0);
             partyVo.setCollect(partyUserBo != null && partyUserBo.getCollectParty() == 1);
             List<CommentBo> commentBos = commentService.selectByTargetUser(partyid, userid, Constant.PARTY_TYPE);
             partyVo.setComment(commentBos != null && !commentBos.isEmpty());
