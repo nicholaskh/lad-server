@@ -1016,7 +1016,7 @@ public class PartyController extends BaseContorller {
      */
     @RequestMapping("/comment-thumbsup")
     @ResponseBody
-    public String commentThumbsup(String commentid, int type, HttpServletRequest request, HttpServletResponse
+    public String commentThumbsup(String commentId, int type, HttpServletRequest request, HttpServletResponse
             response) {
         UserBo userBo;
         try {
@@ -1024,12 +1024,12 @@ public class PartyController extends BaseContorller {
         } catch (MyException e) {
             return e.getMessage();
         }
-        ThumbsupBo thumbsupBo = thumbsupService.findHaveOwenidAndVisitorid(commentid, userBo.getId());
+        ThumbsupBo thumbsupBo = thumbsupService.findHaveOwenidAndVisitorid(commentId, userBo.getId());
         if (type == 0) {
             if (null == thumbsupBo) {
                 thumbsupBo = new ThumbsupBo();
                 thumbsupBo.setType(Constant.PARTY_COM_TYPE);
-                thumbsupBo.setOwner_id(commentid);
+                thumbsupBo.setOwner_id(commentId);
                 thumbsupBo.setImage(userBo.getHeadPictureName());
                 thumbsupBo.setVisitor_id(userBo.getId());
                 thumbsupBo.setCreateuid(userBo.getId());
