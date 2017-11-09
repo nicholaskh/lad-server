@@ -75,7 +75,7 @@ public class ChatroomController extends BaseContorller {
 		chatroomBo.setCreateuid(userBo.getId());
 		chatroomBo.setMaster(userBo.getId());
 		HashSet<String> users = chatroomBo.getUsers();
-		users.add(chatroomBo.getId());
+		users.add(userBo.getId());
 		chatroomService.insert(chatroomBo);
 		//第一个为返回结果信息，第二位term信息
 		String result = IMUtil.subscribe(0, chatroomBo.getId(), userBo.getId());
