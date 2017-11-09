@@ -3,10 +3,7 @@ package com.lad.controller;
 import com.lad.bo.*;
 import com.lad.redis.RedisServer;
 import com.lad.service.*;
-import com.lad.util.CommonUtil;
-import com.lad.util.Constant;
-import com.lad.util.ERRORCODE;
-import com.lad.util.MyException;
+import com.lad.util.*;
 import com.lad.vo.*;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
@@ -54,6 +51,14 @@ public class CircleController extends BaseContorller {
 
 	@Autowired
 	private RedisServer redisServer;
+
+	@Autowired
+	private IFriendsService friendsService;
+
+	/**
+	 * 圈子添加成员时锁
+	 */
+	private String circleAddUserLock = "circleAdd";
 
 	@RequestMapping("/insert")
 	@ResponseBody
@@ -230,6 +235,8 @@ public class CircleController extends BaseContorller {
 		reasonBo.setStatus(Constant.ADD_APPLY);
 		circleService.updateUsersApply(circleid, usersApply);
 		circleService.insertApplyReason(reasonBo);
+		JPushUtil.pushTo(String.format("%s申请加入圈子【%s】", userBo.getUserName(),
+				circleBo.getName()), userBo.getId());
 		return Constant.COM_RESP;
 	}
 
@@ -262,8 +269,11 @@ public class CircleController extends BaseContorller {
 					ERRORCODE.CIRCLE_USER_MAX.getIndex(),
 					ERRORCODE.CIRCLE_USER_MAX.getReason());
 		}
-		users.add(userBo.getId());
-		circleService.updateUsers(circleid, users);
+		if(!addUser(circleid, userBo.getId())){
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CIRCLE_USER_MAX.getIndex(),
+					ERRORCODE.CIRCLE_USER_MAX.getReason());
+		}
 		userAddHis(userBo.getId(), circleBo.getId(), 1);
 		return Constant.COM_RESP;
 	}
@@ -385,8 +395,7 @@ public class CircleController extends BaseContorller {
 		for (String userid : useridArr) {
 			UserBo user = userService.getUser(userid);
 			if (null == user) {
-				return CommonUtil.toErrorResult(ERRORCODE.USER_NULL.getIndex(),
-						ERRORCODE.USER_NULL.getReason());
+				continue;
 			}
 			if (!usersApply.contains(userid)) {
 				return CommonUtil.toErrorResult(
@@ -457,8 +466,7 @@ public class CircleController extends BaseContorller {
 			if (StringUtils.isNotEmpty(userid)) {
 				UserBo user = userService.getUser(userid);
 				if (null == user) {
-					return CommonUtil.toErrorResult(ERRORCODE.USER_NULL.getIndex(),
-							ERRORCODE.USER_NULL.getReason());
+					continue;
 				}
 				if (!usersApply.contains(userid)) {
 					return CommonUtil.toErrorResult(
@@ -918,14 +926,7 @@ public class CircleController extends BaseContorller {
 	@ResponseBody
 	public String searchKeyword(String keyword,int page, int limit,
 								HttpServletRequest request, HttpServletResponse response) {
-		HttpSession session = request.getSession();
-		boolean isLogin;
-		UserBo userBo = null;
-		if (session.isNew() || session.getAttribute("isLogin") == null) {
-			isLogin = false;
-		} else {
-			userBo = (UserBo) session.getAttribute("userBo");
-		}
+		UserBo userBo = getUserLogin(request);
 		if (StringUtils.isNotEmpty(keyword)) {
 			List<CircleBo> circleBos = circleService.findBykeyword(keyword, page, limit);
 			saveKeyword(keyword);
@@ -938,10 +939,10 @@ public class CircleController extends BaseContorller {
 	private void saveKeyword(String keyword){
 		CircleTypeBo typeBo = circleService.findByName(keyword, 2);
 		if (typeBo != null){
-			SearchBo searchBo = searchService.findByKeyword(keyword, 0);
 			RLock lock = redisServer.getRLock("keyword");
 			try {
 				lock.lock(2, TimeUnit.SECONDS);
+				SearchBo searchBo = searchService.findByKeyword(keyword, 0);
 				if (searchBo == null) {
 					searchBo = new SearchBo();
 					searchBo.setKeyword(keyword);
@@ -1547,9 +1548,144 @@ public class CircleController extends BaseContorller {
 			circleBos = circleService.findRelatedCircles(
 					circleid, circleBo.getTag(), "", page, limit);
 		}
-		return bo2vos(circleBos,null);
+		return bo2vos(circleBos,getUserLogin(request));
 	}
 
+	/**
+	 * 邀请加入圈子
+	 * @param circleid
+	 * @param userids
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@RequestMapping("/invite-user")
+	@ResponseBody
+	public String inviteUsers(@RequestParam String circleid, @RequestParam String userids,
+						   HttpServletRequest request, HttpServletResponse response) {
+		UserBo userBo;
+		try {
+			userBo = checkSession(request, userService);
+		} catch (MyException e) {
+			return e.getMessage();
+		}
+		CircleBo circleBo = circleService.selectById(circleid);
+		if (circleBo == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CIRCLE_IS_NULL.getIndex(),
+					ERRORCODE.CIRCLE_IS_NULL.getReason());
+		}
+		String userid = userBo.getId();
+		String[] useridArr = CommonUtil.getIds(userids);
+		updateHistory(userid, circleid, locationService, circleService);
+		if (circleBo.getCreateuid().equals(userid) ||
+				circleBo.getMasters().contains(userid)) {
+			if (!addUser(circleid, useridArr)){
+				return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_USER_MAX.getIndex(),
+						ERRORCODE.CIRCLE_USER_MAX.getReason());
+			}
+		} else {
+			HashSet<String> usersApply = circleBo.getUsersApply();
+			HashSet<String> users = circleBo.getUsers();
+			String reason = "";
+			for (String inviteid : useridArr) {
+				if (users.contains(inviteid) || usersApply.contains(inviteid)){
+					continue;
+				}
+				usersApply.add(inviteid);
+				ReasonBo reasonBo = circleService.findByUserAndCircle(userid, circleid);
+				if (reasonBo == null) {
+					reasonBo = new ReasonBo();
+					reasonBo.setCircleid(circleid);
+					reasonBo.setReason(reason);
+					reasonBo.setCreateuid(userBo.getId());
+					reasonBo.setStatus(Constant.ADD_APPLY);
+					circleService.insertApplyReason(reasonBo);
+				}
+			}
+			circleService.updateUsersApply(circleid, usersApply);
+		}
+		for (String user : useridArr) {
+			JPushUtil.pushTo(String.format("%s邀请您加入圈子【%s】", userBo.getUserName(),
+					circleBo.getName()), user);
+		}
+		return Constant.COM_RESP;
+	}
+
+
+	/**
+	 * 邀请好友列表
+	 * @param circleid
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@RequestMapping("/invite-friend-list")
+	@ResponseBody
+	public String inviteList(@RequestParam String circleid,
+							  HttpServletRequest request, HttpServletResponse response) {
+		UserBo userBo;
+		try {
+			userBo = checkSession(request, userService);
+		} catch (MyException e) {
+			return e.getMessage();
+		}
+		CircleBo circleBo = circleService.selectById(circleid);
+		if (circleBo == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CIRCLE_IS_NULL.getIndex(),
+					ERRORCODE.CIRCLE_IS_NULL.getReason());
+		}
+		List<FriendsBo> friendsBos = friendsService.getFriendByUserid(userBo.getId());
+		HashSet<String> circleUsers = circleBo.getUsers();
+		List<FriendsVo> voList = new ArrayList<>();
+		for (FriendsBo friendsBo : friendsBos) {
+			FriendsVo vo = new FriendsVo();
+			BeanUtils.copyProperties(friendsBo, vo);
+			String friendid = friendsBo.getFriendid();
+			if (circleUsers.contains(friendid)) {
+				continue;
+			}
+			UserBo friend = userService.getUser(friendsBo.getFriendid());
+			if (friend == null) {
+				friendsService.delete(userBo.getId(), friendid);
+				continue;
+			}
+			vo.setUsername(friend.getUserName());
+			vo.setPicture(friend.getHeadPictureName());
+			vo.setBackname(friendsBo.getBackname());
+			voList.add(vo);
+		}
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("userVos", voList);
+		return JSONObject.fromObject(map).toString();
+	}
+
+
+	/**
+	 * 圈子用户添加时加锁
+	 * @param circleid
+	 * @param userids
+	 */
+	private boolean addUser(String circleid, String... userids) {
+		RLock lock = redisServer.getRLock(circleAddUserLock);
+		try {
+			lock.lock(4, TimeUnit.SECONDS);
+			CircleBo circleBo = circleService.selectById(circleid);
+			HashSet<String> users= circleBo.getUsers();
+			for (String userid : userids){
+				users.add(userid);
+			}
+			if (users.size() > 500){
+				return false;
+			}
+			circleService.updateUsers(circleid, users);
+		} finally {
+		  	lock.unlock();
+		}
+		return true;
+	}
 
 	/**
 	 * 红人列表实体类转换
