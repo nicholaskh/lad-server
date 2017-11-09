@@ -15,6 +15,8 @@ public interface IPartyUserDao {
 
     PartyUserBo insert(PartyUserBo partyUserBo);
 
+    WriteResult updatePartyUser(PartyUserBo partyUserBo);
+
 
     WriteResult refuse(String id, String info);
 

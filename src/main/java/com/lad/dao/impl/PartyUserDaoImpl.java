@@ -32,6 +32,21 @@ public class PartyUserDaoImpl implements IPartyUserDao {
     }
 
     @Override
+    public WriteResult updatePartyUser(PartyUserBo partyUserBo) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("_id").is(partyUserBo.getId()));
+        Update update = new Update();
+        update.set("refuseInfo", partyUserBo.getRefuseInfo());
+        update.set("joinInfo", partyUserBo.getJoinInfo());
+        update.set("joinPhone", partyUserBo.getJoinPhone());
+        update.set("amount", partyUserBo.getAmount());
+        update.set("userNum", partyUserBo.getUserNum());
+        update.set("status", partyUserBo.getStatus());
+        update.set("deleted", partyUserBo.getDeleted());
+        return mongoTemplate.updateFirst(query, update, PartyUserBo.class);
+    }
+
+    @Override
     public WriteResult refuse(String id, String info) {
         Query query = new Query();
         query.addCriteria(new Criteria("_id").is(id));

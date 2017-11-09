@@ -244,7 +244,6 @@ public class PartyController extends BaseContorller {
         partyVo.setCircleName(circleBo.getName());
         partyVo.setCirclePic(circleBo.getHeadPicture());
         partyVo.setInCircle(circleBo.getUsers().contains(userid));
-        partyVo.setInParty(users.contains(userid));
         partyVo.setUsers(partyUserVos);
         partyVo.setCreate(partyBo.getCreateuid().equals(userid));
         UserBo createBo = userService.getUser(partyBo.getCreateuid());
@@ -255,6 +254,7 @@ public class PartyController extends BaseContorller {
         }
         if (StringUtils.isNotEmpty(userid)){
             PartyUserBo partyUserBo = partyService.findPartyUser(partyid, userid);
+            partyVo.setInParty(partyUserBo != null && partyUserBo.getDeleted() == 1);
             partyVo.setCollect(partyUserBo != null && partyUserBo.getCollectParty() == 1);
             List<CommentBo> commentBos = commentService.selectByTargetUser(partyid, userid, Constant.PARTY_TYPE);
             partyVo.setComment(commentBos != null && !commentBos.isEmpty());
@@ -301,7 +301,7 @@ public class PartyController extends BaseContorller {
                     ERRORCODE.PARTY_USER_MAX.getReason());
         }
         String userid = userBo.getId();
-        PartyUserBo partyUserBo = partyService.findPartyUser(partyid, userid);
+        PartyUserBo partyUserBo = partyService.findPartyUserIgnoreDel(partyid, userid);
         if (partyUserBo == null) {
             partyUserBo = new PartyUserBo();
             partyUserBo.setAmount(amount);
@@ -313,12 +313,19 @@ public class PartyController extends BaseContorller {
             partyUserBo.setStatus(1);
             partyService.addParty(partyUserBo);
         } else {
-            return CommonUtil.toErrorResult(ERRORCODE.PARTY_HAS_ADD.getIndex(),
-                    ERRORCODE.PARTY_HAS_ADD.getReason());
+            partyUserBo.setAmount(amount);
+            partyUserBo.setJoinInfo(joinInfo);
+            partyUserBo.setJoinPhone(phone);
+            partyUserBo.setUserNum(userNum);
+            partyUserBo.setStatus(1);
+            partyUserBo.setDeleted(Constant.ACTIVITY);
+            partyService.updatePartyUser(partyUserBo);
         }
         LinkedList<String> users = partyBo.getUsers();
-        users.add(userBo.getId());
-        partyService.updateUser(partyid, users);
+        if (!users.contains(userBo.getId())) {
+            users.add(userBo.getId());
+            partyService.updateUser(partyid, users);
+        }
         String chatroomid = partyBo.getChatroomid();
         if (StringUtils.isNotEmpty(chatroomid)) {
             ChatroomBo chatroomBo = chatroomService.get(chatroomid);
@@ -608,8 +615,18 @@ public class PartyController extends BaseContorller {
                 collectService.updateCollectDelete(collectBo.getId(), Constant.ACTIVITY);
             }
         }
-        partyService.updateCollect(partyid, 1);
-        partyService.collectParty(partyid, userBo.getId(), true);
+        PartyUserBo partyUserBo = partyService.findPartyUserIgnoreDel(partyid, userBo.getId());
+        if (partyUserBo == null) {
+            partyUserBo = new PartyUserBo();
+            partyUserBo.setUserid(userBo.getId());
+            partyUserBo.setPartyid(partyid);
+            partyUserBo.setStatus(0);
+            partyUserBo.setCollectParty(1);
+            partyService.addParty(partyUserBo);
+        } else {
+            partyService.collectParty(partyid, userBo.getId(), true);
+        }
+        updatePartyCollectNum(partyid, 1);
         Map<String, Object> map = new HashMap<>();
         map.put("ret", 0);
         map.put("col-time", CommonUtil.time2str(collectBo.getCreateTime()));
@@ -643,7 +660,7 @@ public class PartyController extends BaseContorller {
         } else {
             if(collectBo.getDeleted() == 0) {
                 collectService.updateCollectDelete(collectBo.getId(), Constant.DELETED);
-                partyService.updateCollect(partyid, -1);
+                updatePartyCollectNum(partyid, -1);
             }
             partyService.collectParty(partyid, userBo.getId(), false);
         }
@@ -977,7 +994,13 @@ public class PartyController extends BaseContorller {
     }
 
     @Async
-    private void updateUsers(PartyBo partyBo){
-
+    private void updatePartyCollectNum(String partyid, int num){
+        RLock lock = redisServer.getRLock("partyCollect");
+        try {
+            lock.lock(2, TimeUnit.SECONDS);
+            partyService.updateCollect(partyid, num);
+        } finally {
+            lock.unlock();
+        }
     }
 }

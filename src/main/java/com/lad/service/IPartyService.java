@@ -107,6 +107,9 @@ public interface IPartyService {
      */
     PartyUserBo addParty(PartyUserBo partyUserBo);
 
+
+    WriteResult updatePartyUser(PartyUserBo partyUserBo);
+
     /**
      * 管理报名聚会
      * @param partyid
