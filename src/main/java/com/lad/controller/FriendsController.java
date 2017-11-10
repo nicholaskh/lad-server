@@ -66,7 +66,6 @@ public class FriendsController extends BaseContorller {
 		FriendsBo friendsBo = new FriendsBo();
 		friendsBo.setUserid(userBo.getId());
 		friendsBo.setFriendid(friendid);
-		friendsBo.setBackname(friendBo.getUserName());
 		friendsBo.setApply(0);
 		friendsService.insert(friendsBo);
 		JPushUtil.pushTo(userBo.getUserName() + JPushUtil.APPLY, friendid);
@@ -121,7 +120,6 @@ public class FriendsController extends BaseContorller {
 			FriendsBo friendsBo2 = new FriendsBo();
 			friendsBo2.setUserid(userid);
 			friendsBo2.setFriendid(friendid);
-			friendsBo2.setBackname(friendBo.getUserName());
 			friendsBo2.setApply(1);
 			friendsService.insert(friendsBo2);
 		}
