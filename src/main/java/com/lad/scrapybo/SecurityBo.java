@@ -27,6 +27,8 @@ public class SecurityBo implements Serializable {
 
     private String city;
 
+    private String sourceUrl;
+
     public String getId() {
         return id;
     }
@@ -73,5 +75,13 @@ public class SecurityBo implements Serializable {
 
     public void setCity(String city) {
         this.city = city;
+    }
+
+    public String getSourceUrl() {
+        return sourceUrl;
+    }
+
+    public void setSourceUrl(String sourceUrl) {
+        this.sourceUrl = sourceUrl;
     }
 }

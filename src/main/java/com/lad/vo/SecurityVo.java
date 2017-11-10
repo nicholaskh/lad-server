@@ -19,6 +19,7 @@ public class SecurityVo extends BaseVo {
     private String time;
 
     private String text;
+    private String sourceUrl;
 
     private Long readNum;
 
@@ -106,5 +107,13 @@ public class SecurityVo extends BaseVo {
 
     public void setSelfSub(boolean selfSub) {
         this.selfSub = selfSub;
+    }
+
+    public String getSourceUrl() {
+        return sourceUrl;
+    }
+
+    public void setSourceUrl(String sourceUrl) {
+        this.sourceUrl = sourceUrl;
     }
 }

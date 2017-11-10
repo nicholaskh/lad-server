@@ -703,6 +703,7 @@ public class InforController extends BaseContorller {
             securityVo.setNewsType(newsType);
             securityVo.setTime(securityBo.getTime());
             securityVo.setTitle(securityBo.getTitle());
+            securityVo.setSourceUrl(securityBo.getSourceUrl());
             vos.add(securityVo);
         }
         UserBo userBo =  getUserLogin(request);
@@ -931,6 +932,7 @@ public class InforController extends BaseContorller {
         if (cache.containsKey("top4")){
             top4 = (List<InforVo>) cache.get("top4");
         } else {
+            top4 = new ArrayList<>();
             int size = 0;
             List<InforBo> inforBos = inforService.homeHealthRecom(50);
             for (InforBo inforBo : inforBos) {
@@ -945,6 +947,7 @@ public class InforController extends BaseContorller {
                     size ++;
                 }
             }
+            cache.put("top4",top4);
         }
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("ret", 0);
