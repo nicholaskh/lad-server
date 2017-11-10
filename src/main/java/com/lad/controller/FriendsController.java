@@ -556,10 +556,25 @@ public class FriendsController extends BaseContorller {
 		userSet.add(userBo.getId());
 		ChatroomBo chatroomBo = new ChatroomBo();
 		chatroomBo.setType(2);
-		chatroomBo.setName("群聊");
 		chatroomBo.setUsers(userSet);
 		chatroomBo.setMaster(userBo.getId());
 		chatroomBo.setCreateuid(userBo.getId());
+
+		// 生成群聊名称
+		String newChatRoomName = ChatRoomUtil.generateChatRoomName(userService, userSet, chatroomBo.getId(), null);
+		if(newChatRoomName != null){
+			chatroomBo.setName(newChatRoomName);
+		}else{
+			/**
+			 *  出现这种情况的原因： 请看ChatRoomUtil.generateChatRoomName 这个方法的内部处理。
+			 *  如果前端传的userIds参数没问题，那么不会出现这种群聊名称
+			 *
+			 *  如果出现了这种情况，为了不至于没有群聊名称，默认为"群聊"。这样处理不会造成糟糕bug，特别是给前端，虽然让用户感到一点困惑
+			 */
+			chatroomBo.setName("群聊");
+		}
+
+
 		chatroomService.insert(chatroomBo);
 		for (String id : userSet) {
 			UserBo user = userService.getUser(id);
