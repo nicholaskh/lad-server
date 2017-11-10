@@ -150,7 +150,7 @@ public class ChatroomController extends BaseContorller {
 		}
 		// 如果群聊没有修改过名称，自动修改名称
 		if(!chatroomBo.isNameSet()){
-			String newChatRoomName = generateChatRoomName(set, chatroomid);
+			String newChatRoomName = ChatRoomUtil.generateChatRoomName(userService, set, chatroomid, logger);
 			if(newChatRoomName != null){
 				chatroomService.updateName(chatroomid, newChatRoomName, false);
 			}
@@ -222,7 +222,7 @@ public class ChatroomController extends BaseContorller {
 		} else {
 			// 如果群聊没有修改过名称，自动修改名称
 			if(!chatroomBo.isNameSet()){
-				String newChatRoomName = generateChatRoomName(set, chatroomid);
+				String newChatRoomName = ChatRoomUtil.generateChatRoomName(userService, set, chatroomid, logger);
 				if(newChatRoomName != null){
 					chatroomService.updateName(chatroomid, newChatRoomName, false);
 				}
@@ -282,7 +282,7 @@ public class ChatroomController extends BaseContorller {
 		} else {
 			// 如果群聊没有修改过名称，自动修改名称
 			if(!chatroomBo.isNameSet()){
-				String newChatRoomName = generateChatRoomName(set, chatroomid);
+				String newChatRoomName = ChatRoomUtil.generateChatRoomName(userService, set, chatroomid, logger);
 				if(newChatRoomName != null){
 					chatroomService.updateName(chatroomid, newChatRoomName, false);
 				}
@@ -291,30 +291,6 @@ public class ChatroomController extends BaseContorller {
 			chatroomService.updateUsers(chatroomBo);
 		}
 		return Constant.COM_RESP;
-	}
-
-	// 生成群聊名称
-	private String generateChatRoomName(LinkedHashSet<String> userIds, String chatRoomId){
-		StringBuilder builder = new StringBuilder();
-		for(String userId: userIds){
-			UserBo userBo = userService.getUser(userId);
-			if(userBo != null){
-				String userName = userBo.getUserName();
-				builder.append(userName);
-				builder.append('、');
-			}else{
-				logger.error(String.format("%s id的用户不存在，但在群聊(id:%s)中存在", userId, chatRoomId));
-			}
-		}
-
-		if(builder.length() > 0){
-			builder.deleteCharAt(builder.length()-1);
-			return builder.toString();
-		}
-
-		logger.error(String.format("群聊（id：%s）中没有一个有效用户", chatRoomId));
-		return null;
-
 	}
 
 	/**
@@ -620,7 +596,8 @@ public class ChatroomController extends BaseContorller {
             } else {
 				// 如果群聊没有修改过名称，自动修改名称
 				if(!chatroom.isNameSet()){
-					String newChatRoomName = generateChatRoomName(chatroom.getUsers(), chatroom.getId());
+					String newChatRoomName = ChatRoomUtil.generateChatRoomName(userService,
+							chatroom.getUsers(), chatroom.getId(), logger);
 					if(newChatRoomName != null){
 						chatroomService.updateName(chatroom.getId(), newChatRoomName, false);
 					}
