@@ -846,12 +846,11 @@ public class CircleController extends BaseContorller {
 	@ResponseBody
 	public String redTopTotal(String circleid, HttpServletRequest request, HttpServletResponse response) {
 		//如果登录就显示浏览记录
-		try {
-			UserBo userBo = checkSession(request, userService);
-			updateHistory(userBo.getId(), circleid, locationService, circleService);
-		} catch (MyException e) {
 
-		}
+        UserBo userBo = getUserLogin(request);
+        if (null != userBo){
+            updateHistory(userBo.getId(), circleid, locationService, circleService);
+        }
 
 		Date currentDate = new Date();
 		int weekNo = CommonUtil.getWeekOfYear(currentDate);
