@@ -4,6 +4,7 @@ import com.lad.bo.ChatroomBo;
 import com.lad.bo.ChatroomUserBo;
 import com.mongodb.WriteResult;
 
+import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -183,4 +184,20 @@ public interface IChatroomService extends IBaseService {
 	 * @return
 	 */
 	WriteResult updateName(String chatRoomId, String name, boolean isNameSet);
+
+
+	/**
+	 * 查找我的聊天列表
+	 * @param userid
+	 * @param timestamp   最大时间戳
+	 * @return
+	 */
+	List<ChatroomBo> findMyChatrooms(String userid, Date timestamp);
+
+	/**
+	 * 查找我的聊天列表
+	 * @param userid
+	 * @return
+	 */
+	List<ChatroomBo> findMyChatrooms(String userid);
 }

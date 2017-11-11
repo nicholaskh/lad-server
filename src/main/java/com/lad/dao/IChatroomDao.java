@@ -3,7 +3,9 @@ package com.lad.dao;
 import com.lad.bo.ChatroomBo;
 import com.mongodb.WriteResult;
 
+import java.util.Date;
 import java.util.LinkedHashSet;
+import java.util.List;
 
 public interface IChatroomDao extends IBaseDao {
 
@@ -22,6 +24,21 @@ public interface IChatroomDao extends IBaseDao {
 	public ChatroomBo selectBySeq(int seq);
 	
 	public WriteResult setSeqExpire(int seq);
+
+	/**
+	 * 查找我的聊天列表
+	 * @param userid
+	 * @param timestamp   最大时间戳
+	 * @return
+	 */
+	List<ChatroomBo> findMyChatrooms(String userid, Date timestamp);
+
+	/**
+	 * 查找我的聊天列表
+	 * @param userid
+	 * @return
+	 */
+	List<ChatroomBo> findMyChatrooms(String userid);
 
 	/**
 	 * 从数据库删除聊天

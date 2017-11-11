@@ -9,6 +9,7 @@ import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -158,5 +159,15 @@ public class ChatroomServiceImpl implements IChatroomService {
 	@Override
 	public WriteResult updateName(String chatRoomId, String name, boolean isNameSet) {
 		return chatroomDao.updateName(chatRoomId, name, isNameSet);
+	}
+
+	@Override
+	public List<ChatroomBo> findMyChatrooms(String userid, Date timestamp) {
+		return chatroomDao.findMyChatrooms(userid, timestamp);
+	}
+
+	@Override
+	public List<ChatroomBo> findMyChatrooms(String userid) {
+		return chatroomDao.findMyChatrooms(userid);
 	}
 }

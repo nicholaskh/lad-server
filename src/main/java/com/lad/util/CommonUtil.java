@@ -16,6 +16,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -366,6 +367,28 @@ public class CommonUtil {
 		return sf.format(currenDate);
 	}
 
+	/**
+	 * 获取当前时间字符串
+	 * @param dateStr yyyy-MM-dd HH:mm:ss
+	 * @return date
+	 */
+	public static Date getDate(String dateStr) throws ParseException{
+		if ("0".equals(dateStr) || StringUtils.isEmpty(dateStr)) {
+			return null;
+		}
+		SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		return sf.parse(dateStr);
+	}
+
+	/**
+	 * 获取当前时间字符串
+	 * @param date 当前时间
+	 * @return yyyy-MM-dd
+	 */
+	public static String getDateStr(Date date, String format){
+		SimpleDateFormat sf = new SimpleDateFormat(format);
+		return sf.format(date);
+	}
 	/**
 	 * 获取当前时间零点时间戳
 	 * @return

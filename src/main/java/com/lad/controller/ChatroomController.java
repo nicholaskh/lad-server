@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.lang.reflect.InvocationTargetException;
+import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -428,6 +429,66 @@ public class ChatroomController extends BaseContorller {
 		}
 		updateUserRoom(userBo, removes, removeTops);
 		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("ChatroomList", chatroomList);
+		return JSONObject.fromObject(map).toString();
+	}
+
+	@RequestMapping("/my-chatrooms")
+	@ResponseBody
+	public String getChatrooms(String timestamp, HttpServletRequest request,
+							   HttpServletResponse response) {
+		UserBo userBo;
+		try {
+			userBo = checkSession(request, userService);
+		} catch (MyException e) {
+			return e.getMessage();
+		}
+		String userid = userBo.getId();
+		LinkedList<String> chatroomsTop = userBo.getChatroomsTop();
+		List<ChatroomVo> chatroomList = new LinkedList<ChatroomVo>();
+		HashSet<String> removes = new LinkedHashSet<>();
+		LinkedList<String> removeTops = new LinkedList<>();
+
+		Date times;
+		try {
+			times = CommonUtil.getDate(timestamp);
+		} catch (ParseException e){
+			return CommonUtil.toErrorResult(ERRORCODE.FORMAT_ERROR.getIndex(),
+					ERRORCODE.FORMAT_ERROR.getReason());
+		}
+
+		List<ChatroomVo> chats = new LinkedList<>();
+
+		List<ChatroomBo> chatroomBos = chatroomService.findMyChatrooms(userid, times);
+
+		String timeStr = "";
+		if (chatroomBos != null && !chatroomBos.isEmpty()) {
+			ChatroomBo first = chatroomBos.get(0);
+			timeStr = CommonUtil.getDateStr(first.getCreateTime(),"yyyy-MM-dd HH:mm:ss");
+			for (ChatroomBo chatroomBo : chatroomBos) {
+				ChatroomUserBo chatroomUserBo = chatroomService.findChatUserByUserAndRoomid(userid, chatroomBo.getId());
+				boolean has = chatroomUserBo != null;
+				ChatroomVo vo = new ChatroomVo();
+				BeanUtils.copyProperties(chatroomBo, vo);
+				if (chatroomBo.getType() != 1) {
+					bo2vo(has && chatroomUserBo.isShowNick(),chatroomBo, vo);
+					vo.setUserNum(chatroomBo.getUsers().size());
+					vo.setShowNick(has && chatroomUserBo.isShowNick());
+				}
+				vo.setDisturb(has && chatroomUserBo.isDisturb());
+				if (chatroomsTop.contains(chatroomBo.getId())) {
+					vo.setTop(1);
+					chatroomList.add(vo);
+				} else {
+					chats.add(vo);
+				}
+			}
+			chatroomList.addAll(chats);
+			updateUserRoom(userBo, removes, removeTops);
+		}
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("timestamp", StringUtils.isNotEmpty(timeStr) ? timeStr : timestamp);
 		map.put("ret", 0);
 		map.put("ChatroomList", chatroomList);
 		return JSONObject.fromObject(map).toString();

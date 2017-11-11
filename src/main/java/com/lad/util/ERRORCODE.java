@@ -96,6 +96,7 @@ public enum ERRORCODE {
 	
 	NOTE_IS_NULL(120001, "帖子不存在"),
 	NOTE_NOT_MASTER(120002, "没有权限"),
+	FORMAT_ERROR(120005, "格式错误"),
 	TYPE_ERROR(120004, "类型错误"),
 	COMMENT_IS_NULL(120003, "评论不存在");
 

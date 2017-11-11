@@ -10,6 +10,7 @@ import com.mongodb.WriteResult;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.geo.Distance;
 import org.springframework.data.geo.Point;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -242,5 +243,35 @@ public class ChatroomDaoImpl implements IChatroomDao {
 		Update update = new Update();
 		update.set("isVerify", isVerify);
 		return mongoTemplate.updateFirst(query, update, ChatroomBo.class);
+	}
+
+	@Override
+	public List<ChatroomBo> findMyChatrooms(String userid) {
+		Query query = new Query();
+		Criteria single = new Criteria("userid").is(userid);
+		Criteria single2 = new Criteria("friendid").is(userid);
+		Criteria mulit = new Criteria("users").in(userid);
+		query.addCriteria(single.orOperator(single2,mulit));
+		query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+		return mongoTemplate.find(query, ChatroomBo.class);
+	}
+
+	@Override
+	public List<ChatroomBo> findMyChatrooms(String userid, Date timestamp) {
+
+		Criteria c = new Criteria();
+		Criteria single = new Criteria("userid").is(userid);
+		Criteria single2 = new Criteria("friendid").is(userid);
+		Criteria mulit = new Criteria("users").in(userid);
+		c.orOperator(single,single2,mulit);
+		Query query = new Query();
+		query.addCriteria(c);
+		query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+		if (timestamp != null) {
+			query.addCriteria(new Criteria("createTime").gt(timestamp));
+		}
+		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "createTime")));
+		System.out.println(query.toString());
+		return mongoTemplate.find(query, ChatroomBo.class);
 	}
 }
