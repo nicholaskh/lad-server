@@ -12,6 +12,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -65,6 +66,22 @@ public class UserDaoImpl implements IUserDao {
         query.addCriteria(new Criteria("phone").is(phone));
         query.addCriteria(new Criteria("deleted").is(0));
         return mongoTemplate.findOne(query, UserBo.class);
+    }
+
+    /**
+     * 通讯录信息获取
+     * @param timestamp
+     * @return
+     */
+    public List<UserBo> getUserByPhoneAndTime(List<String> phones, Date timestamp) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("phone").in(phones));
+        query.addCriteria(new Criteria("deleted").is(0));
+        if (null != timestamp) {
+            query.addCriteria(new Criteria("createTime").gt(timestamp));
+        }
+        query.with(new Sort(new Sort.Order(Sort.Direction.DESC,"createTime")));
+        return mongoTemplate.find(query, UserBo.class);
     }
 
     @Override

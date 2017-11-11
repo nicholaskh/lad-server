@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.text.ParseException;
 import java.util.*;
 
 @Controller
@@ -671,13 +672,47 @@ public class FriendsController extends BaseContorller {
 				UserBo user = userService.getUserByPhone(phone);
 				if(null != user) {
 					UserBaseVo baseVo = new UserBaseVo();
-					org.springframework.beans.BeanUtils.copyProperties(user, baseVo);
+					BeanUtils.copyProperties(user, baseVo);
 					userBaseVos.add(baseVo);
 				} 
 			}
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
+		map.put("userVos", userBaseVos);
+		return JSONObject.fromObject(map).toString();
+	}
+
+
+	@RequestMapping("/sign-user-time")
+	@ResponseBody
+	public String signUsers(String[] phones,String timestamp, HttpServletRequest request, HttpServletResponse
+			response) {
+		List<UserBaseVo> userBaseVos = new ArrayList<>();
+		List<String> phoneList = new ArrayList<>();
+		String timeStr = "";
+		if(null != phones) {
+			Collections.addAll(phoneList, phones);
+			try {
+				Date times = CommonUtil.getDate(timestamp);
+				List<UserBo> userBos = userService.getUserByPhoneAndTime(phoneList, times);
+				if (!CommonUtil.isEmpty(userBos)) {
+					UserBo first = userBos.get(0);
+					timeStr = CommonUtil.getDateStr(first.getCreateTime(),"yyyy-MM-dd HH:mm:ss");
+					for (UserBo userBo : userBos) {
+						UserBaseVo baseVo = new UserBaseVo();
+						BeanUtils.copyProperties(userBo, baseVo);
+						userBaseVos.add(baseVo);
+					}
+				}
+			} catch (ParseException e){
+				return CommonUtil.toErrorResult(ERRORCODE.FORMAT_ERROR.getIndex(),
+						ERRORCODE.FORMAT_ERROR.getReason());
+			}
+		}
+		Map<String, Object> map = new LinkedHashMap<>();
+		map.put("ret", 0);
+		map.put("timestamp", StringUtils.isNotEmpty(timeStr) ? timeStr : timestamp);
 		map.put("userVos", userBaseVos);
 		return JSONObject.fromObject(map).toString();
 	}

@@ -19,6 +19,7 @@ import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.regex.Matcher;
@@ -400,6 +401,16 @@ public class CommonUtil {
 		calendar.set(Calendar.MINUTE, 0);
 		calendar.set(Calendar.SECOND, 0);
 		return calendar.getTime();
+	}
+
+
+	/**
+	 * 判断当前对象是否为空
+	 * @param collection 当前对象
+	 * @return
+	 */
+	public static boolean isEmpty(Collection collection){
+		return collection == null || collection.isEmpty();
 	}
 
 

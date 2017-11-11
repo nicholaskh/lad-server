@@ -4,6 +4,7 @@ import com.lad.bo.Pager;
 import com.lad.bo.UserBo;
 import com.mongodb.WriteResult;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -73,6 +74,13 @@ public interface IUserDao extends IBaseDao {
      * @return
      */
     UserBo checkByPhone(String phone);
+
+    /**
+     * 查找新增的好友
+     * @param timestamp
+     * @return
+     */
+    List<UserBo> getUserByPhoneAndTime(List<String> phones,Date timestamp);
 
     /**
      * 修改用户状态

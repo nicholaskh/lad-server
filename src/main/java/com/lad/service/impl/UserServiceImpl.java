@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -265,5 +266,10 @@ public class UserServiceImpl implements IUserService{
 		}
 		return null;
 
+	}
+
+	@Override
+	public List<UserBo> getUserByPhoneAndTime(List<String> phones,Date timestamp) {
+		return userDao.getUserByPhoneAndTime(phones,timestamp);
 	}
 }

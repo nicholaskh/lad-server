@@ -6,6 +6,7 @@ import com.lad.bo.UserBo;
 import com.lad.bo.UserTasteBo;
 import com.mongodb.WriteResult;
 
+import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -134,4 +135,11 @@ public interface IUserService extends IBaseService {
 	 */
 	WriteResult updateUserTaste(String id, LinkedHashSet<String> tastes, int type);
 
+
+	/**
+	 * 查找新增的用户
+	 * @param timestamp
+	 * @return
+	 */
+	List<UserBo> getUserByPhoneAndTime(List<String> phones,Date timestamp);
 }
