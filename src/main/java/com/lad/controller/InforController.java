@@ -698,7 +698,8 @@ public class InforController extends BaseContorller {
         LinkedList<SecurityVo> vos = new LinkedList<>();
         for (SecurityBo securityBo : securityBos) {
             SecurityVo securityVo = new SecurityVo();
-            securityVo.setCity(securityBo.getId());
+            securityVo.setInforid(securityBo.getId());
+            securityVo.setCity(securityBo.getCity());
             securityVo.setInforid(securityBo.getId());
             securityVo.setNewsType(newsType);
             securityVo.setTime(securityBo.getTime());
@@ -1061,6 +1062,9 @@ public class InforController extends BaseContorller {
                     SecurityBo inforBo = inforService.findSecurityById(recomBo.getInforid());
                     if (inforBo != null) {
                         SecurityVo inforVo = new SecurityVo();
+                        BeanUtils.copyProperties(inforBo,inforVo);
+                        inforVo.setText("");
+                        inforVo.setInforid(inforBo.getId());
                         num++;
                         inforVos.add(inforVo);
                     }
