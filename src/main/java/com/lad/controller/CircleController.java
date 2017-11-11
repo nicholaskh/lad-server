@@ -801,7 +801,6 @@ public class CircleController extends BaseContorller {
 		circleVo.setName(circleBo.getName());
 		circleVo.setUsersSize(circleBo.getTotal());
 		circleVo.setNotesSize(circleBo.getNoteSize());
-		Map<String, Object> map = new HashMap<String, Object>();
 		LinkedHashSet<String> masters = circleBo.getMasters();
 		//管理员
 		List<UserBaseVo> mastersList = new ArrayList<>();
@@ -809,15 +808,33 @@ public class CircleController extends BaseContorller {
 			UserBo masterBo = userService.getUser(master);
 			UserBaseVo userVo = new UserBaseVo();
 			BeanUtils.copyProperties(masterBo, userVo);
+			userVo.setRole(1);
 			mastersList.add(userVo);
+		}
+		HashSet<String> users = circleBo.getUsers();
+		List<UserBaseVo> userList = new ArrayList<>();
+		for (String userId : users) {
+			if (circleBo.getCreateuid().equals(userId) || masters.contains(userId)) {
+				continue;
+			}
+			UserBo user = userService.getUser(userId);
+			if (user != null) {
+				UserBaseVo userBaseVo = new UserBaseVo();
+				BeanUtils.copyProperties(user, userBaseVo);
+				userBaseVo.setRole(0);
+				userList.add(userBaseVo);
+			}
 		}
 		//圈主
 		UserBo hostBo = userService.getUser(circleBo.getCreateuid());
 		UserBaseVo userHostVo = new UserBaseVo();
 		BeanUtils.copyProperties(hostBo, userHostVo);
-		map.put("masters", mastersList);
-		map.put("creater", userHostVo);
+		userHostVo.setRole(2);
+		Map<String, Object> map = new LinkedHashMap<>();
 		map.put("ret", 0);
+		map.put("creater", userHostVo);
+		map.put("masters", mastersList);
+		map.put("userVos", userList);
 		map.put("circleVo", circleVo);
 		return JSONObject.fromObject(map).toString();
 	}
