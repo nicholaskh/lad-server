@@ -132,7 +132,7 @@ public class PartyController extends BaseContorller {
         chatroomBo.setOpen(true);
         chatroomBo.setVerify(false);
         HashSet<String> users = chatroomBo.getUsers();
-        users.add(chatroomBo.getId());
+        users.add(userId);
         chatroomService.insert(chatroomBo);
         //第一个为返回结果信息，第二位term信息
         String result = IMUtil.subscribe(0, chatroomBo.getId(), userBo.getId());
@@ -389,10 +389,6 @@ public class PartyController extends BaseContorller {
             userBo = checkSession(request, userService);
         } catch (MyException e) {
             return e.getMessage();
-        }
-        if (!userBo.getId().equals(partyBo.getCreateuid())) {
-            return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_NOT_MASTER.getIndex(),
-                    ERRORCODE.CIRCLE_NOT_MASTER.getReason());
         }
         List<PartyUserBo> partyUserBos = partyService.findPartyUser(partyid, 1);
         List<PartyUserVo> partyUserVos = new ArrayList<>();
