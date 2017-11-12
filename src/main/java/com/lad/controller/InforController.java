@@ -417,7 +417,7 @@ public class InforController extends BaseContorller {
         }
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("ret", 0);
-        map.put("radioGroups", vos);
+        map.put("radioList", vos);
         return JSONObject.fromObject(map).toString();
     }
 
