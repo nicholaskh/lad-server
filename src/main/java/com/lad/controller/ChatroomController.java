@@ -147,6 +147,7 @@ public class ChatroomController extends BaseContorller {
 
 				set.add(userid);
 				JPushUtil.pushTo(String.format("%s邀请您加入群聊", user.getUserName()), userid);
+
 			}
 		}
 		// 如果群聊没有修改过名称，自动修改名称
@@ -158,6 +159,14 @@ public class ChatroomController extends BaseContorller {
 		}
 		chatroomBo.setUsers(set);
 		chatroomService.updateUsers(chatroomBo);
+
+		// 向群中某人被邀请加入群聊通知
+		String message = String.format("%s,%s", userBo.getId(), userids);
+		String res = IMUtil.notifyInChatRoom(Constant.SOME_ONE_BE_INVITED_OT_CHAT_ROOM, chatroomid, message);
+		if(!IMUtil.FINISH.equals(res)){
+			logger.error("failed notifyInChatRoom Constant.SOME_ONE_BE_INVITED_OT_CHAT_ROOM, %s",res);
+		}
+
 		return Constant.COM_RESP;
 	}
 	
@@ -220,6 +229,7 @@ public class ChatroomController extends BaseContorller {
 				}
 			}
 			chatroomService.delete(chatroomid);
+
 		} else {
 			// 如果群聊没有修改过名称，自动修改名称
 			if(!chatroomBo.isNameSet()){
@@ -231,6 +241,14 @@ public class ChatroomController extends BaseContorller {
 			chatroomBo.setUsers(set);
 			chatroomService.updateUsers(chatroomBo);
 		}
+
+		// 向群中发踢人通知
+		String message = String.format("%s,%s", userBo.getId(), userids);
+		String res = IMUtil.notifyInChatRoom(Constant.SOME_ONE_EXPELLED_FROM_CHAT_ROOM, chatroomid, message);
+		if(!IMUtil.FINISH.equals(res)){
+			logger.error("failed notifyInChatRoom Constant.SOME_ONE_EXPELLED_FROM_CHAT_ROOM, %s",res);
+		}
+
 		return Constant.COM_RESP;
 	}
 
@@ -280,6 +298,17 @@ public class ChatroomController extends BaseContorller {
 				}
 			}
 			chatroomService.delete(chatroomid);
+
+			/**
+			 * TODO 如何通知
+			 *
+			 * 问题在于：群聊已经被 disolve，在即时通讯系统中，这种群聊关系已经解除
+			 * 而这个通知基于群聊广播的
+			 *
+			 * 解决方案：1、改为基于用户的通知，（问题：用户不在线，此条通知如何保存成离线，因为离线也是基于群聊做的）
+			 *
+			 *
+			 */
 		} else {
 			// 如果群聊没有修改过名称，自动修改名称
 			if(!chatroomBo.isNameSet()){
@@ -290,6 +319,13 @@ public class ChatroomController extends BaseContorller {
 			}
 			chatroomBo.setUsers(set);
 			chatroomService.updateUsers(chatroomBo);
+
+			// 向群中发某人退出群聊通知
+			String message = String.format("%s", userBo.getId());
+			String res = IMUtil.notifyInChatRoom(Constant.SOME_ONE_QUIT_CHAT_ROOM, chatroomid, message);
+			if(!IMUtil.FINISH.equals(res)){
+				logger.error("failed notifyInChatRoom Constant.SOME_ONE_QUIT_CHAT_ROOM, %s",res);
+			}
 		}
 		return Constant.COM_RESP;
 	}
@@ -688,6 +724,14 @@ public class ChatroomController extends BaseContorller {
 		userBo.setChatrooms(chatrooms);
 		userService.updateChatrooms(userBo);
 		addChatroomUser(chatroomService, userBo, chatroom.getId(), userBo.getUserName());
+		if(!isNew){
+			// 向群中发某人加入群聊通知
+			String message = String.format("%s", userBo.getUserName());
+			String res2 = IMUtil.notifyInChatRoom(Constant.SOME_ONE_JOIN_CHAT_ROOM, chatroom.getId(), message);
+			if(!IMUtil.FINISH.equals(res2)){
+				logger.error("failed notifyInChatRoom Constant.SOME_ONE_JOIN_CHAT_ROOM, %s",res2);
+			}
+		}
 		Map<String, Object> map = new HashMap<>();
 		map.put("ret", 0);
 		map.put("channelId", chatroom.getId());
@@ -769,6 +813,14 @@ public class ChatroomController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_USER_NULL.getIndex(),
 					ERRORCODE.CIRCLE_USER_NULL.getReason());
 		}
+
+		// 向群中发某人加入群聊通知
+		String message = String.format("%s,%s", userBo.getId(), name);
+		String res2 = IMUtil.notifyInChatRoom(Constant.SOME_ONE_MODIFY_NAME_OF_CHAT_ROOM, chatroomid, message);
+		if(!IMUtil.FINISH.equals(res2)){
+			logger.error("failed notifyInChatRoom Constant.SOME_ONE_MODIFY_NAME_OF_CHAT_ROOM, %s",res2);
+		}
+
 		return Constant.COM_RESP;
 	}
 
