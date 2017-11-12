@@ -552,6 +552,20 @@ public class FriendsController extends BaseContorller {
 			}
 			userSet.add(id);
 		}
+
+		/**
+		 * 因为没有看懂上面for循环中，为什么有可能会包含 userBo.getId()
+		 * 所以为了保险起见，remove掉，再add进去
+		 */
+		userSet.remove(userBo.getId());
+		String[] tt = new String[userSet.size()];
+		String nameAndIdsTemp = ChatRoomUtil.getUserNamesAndIds(userService, tt, null);
+		String nameAndIds = null;
+		if(nameAndIdsTemp != null){
+			String[] cc = nameAndIdsTemp.split(" ");
+			nameAndIds = String.format("%s,%s %s,%s", userBo.getId(), cc[1], userBo.getUserName(), cc[0]);
+		}
+
 		userSet.add(userBo.getId());
 		ChatroomBo chatroomBo = new ChatroomBo();
 		chatroomBo.setType(2);
@@ -573,7 +587,6 @@ public class FriendsController extends BaseContorller {
 			chatroomBo.setName("群聊");
 		}
 
-
 		chatroomService.insert(chatroomBo);
 		for (String id : userSet) {
 			UserBo user = userService.getUser(id);
@@ -590,11 +603,15 @@ public class FriendsController extends BaseContorller {
 		JPushUtil.pushTo(userBo.getUserName() + JPushUtil.MULTI_INSERT, idsList);
 
 		// 某人被邀请加入群聊通知
-		String message = String.format("%s,%s", userBo.getId(), friendids);
-		String res2 = IMUtil.notifyInChatRoom(Constant.SOME_ONE_BE_INVITED_OT_CHAT_ROOM, chatroomBo.getId(), message);
-//		if(!IMUtil.FINISH.equals(res2)){
-//			logger.error("failed notifyInChatRoom Constant.SOME_ONE_BE_INVITED_OT_CHAT_ROOM, %s",res2);
-//		}
+		if(nameAndIds != null){
+			String res2 = IMUtil.notifyInChatRoom(Constant.SOME_ONE_BE_INVITED_OT_CHAT_ROOM,
+					chatroomBo.getId(),
+					nameAndIds);
+
+			//		if(!IMUtil.FINISH.equals(res2)){
+			//			logger.error("failed notifyInChatRoom Constant.SOME_ONE_BE_INVITED_OT_CHAT_ROOM, %s",res2);
+			//		}
+		}
 
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);

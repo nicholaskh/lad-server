@@ -129,7 +129,18 @@ public class ChatroomController extends BaseContorller {
 			return result;
 		}
 
+		// 为IMUtil通知做数据准备
 		LinkedHashSet<String> set = chatroomBo.getUsers();
+		String[] tt = new String[set.size()-1];
+		int i=0;
+		for(String uu: set){
+			if(uu.equals(userBo.getId())) continue;
+			tt[i++] = uu;
+		}
+		String otherNameAndId = ChatRoomUtil.getUserNamesAndIds(userService, tt, logger);
+		StringBuilder imNames = new StringBuilder();
+		StringBuilder imIds = new StringBuilder();
+
 		for (String userid : useridArr) {
 			if (set.contains(userid)) {
 				continue;
@@ -146,6 +157,11 @@ public class ChatroomController extends BaseContorller {
 				}
 
 				set.add(userid);
+				imNames.append(user.getUserName());
+				imNames.append(",");
+				imIds.append(user.getId());
+				imIds.append(",");
+
 				JPushUtil.pushTo(String.format("%s邀请您加入群聊", user.getUserName()), userid);
 
 			}
@@ -161,11 +177,22 @@ public class ChatroomController extends BaseContorller {
 		chatroomService.updateUsers(chatroomBo);
 
 		// 向群中某人被邀请加入群聊通知
-		String message = String.format("%s,%s", userBo.getId(), userids);
-		String res = IMUtil.notifyInChatRoom(Constant.SOME_ONE_BE_INVITED_OT_CHAT_ROOM, chatroomid, message);
-		if(!IMUtil.FINISH.equals(res)){
-			logger.error("failed notifyInChatRoom Constant.SOME_ONE_BE_INVITED_OT_CHAT_ROOM, %s",res);
+		if(imIds.length() > 0 && otherNameAndId != null){
+			imIds.deleteCharAt(imIds.length()-1);
+			imNames.deleteCharAt(imIds.length()-1);
+			String message = String.format("%s,%s %s,%s %s",
+					userBo.getId(),
+					imIds,
+					userBo.getUserName(),
+					imNames,
+					otherNameAndId.toString());
+
+			String res = IMUtil.notifyInChatRoom(Constant.SOME_ONE_BE_INVITED_OT_CHAT_ROOM, chatroomid, message);
+			if(!IMUtil.FINISH.equals(res)){
+				logger.error("failed notifyInChatRoom Constant.SOME_ONE_BE_INVITED_OT_CHAT_ROOM, %s",res);
+			}
 		}
+
 
 		return Constant.COM_RESP;
 	}
@@ -725,17 +752,61 @@ public class ChatroomController extends BaseContorller {
 		userService.updateChatrooms(userBo);
 		addChatroomUser(chatroomService, userBo, chatroom.getId(), userBo.getUserName());
 		if(!isNew){
-			// 向群中发某人加入群聊通知
-			String message = String.format("%s", userBo.getUserName());
-			String res2 = IMUtil.notifyInChatRoom(Constant.SOME_ONE_JOIN_CHAT_ROOM, chatroom.getId(), message);
-			if(!IMUtil.FINISH.equals(res2)){
-				logger.error("failed notifyInChatRoom Constant.SOME_ONE_JOIN_CHAT_ROOM, %s",res2);
+			LinkedHashSet<String> users = chatroom.getUsers();
+			String[] tt = new String[users.size()-1];
+			int i=0;
+			for(String uu: users){
+				if(uu.equals(userBo.getId())) continue;
+				tt[i++] = uu;
 			}
+			String otherNameAndId = getUserNamesAndIds(tt);
+
+			if(otherNameAndId != null){
+				String message = String.format("%s %s %s", userBo.getId(), userBo.getUserName(), otherNameAndId);
+				// 向群中发某人加入群聊通知
+				String res2 = IMUtil.notifyInChatRoom(Constant.SOME_ONE_JOIN_CHAT_ROOM, chatroom.getId(), message);
+				if(!IMUtil.FINISH.equals(res2)){
+					logger.error("failed notifyInChatRoom Constant.SOME_ONE_JOIN_CHAT_ROOM, %s",res2);
+				}
+			}
+
 		}
 		Map<String, Object> map = new HashMap<>();
 		map.put("ret", 0);
 		map.put("channelId", chatroom.getId());
 		return JSONObject.fromObject(map).toString();
+	}
+
+	/**
+	 *  生成 userName0,userName1,userName2 id0,id1,id2的形式
+	 *
+	 *  为IMUtil.notifyInChatRoom处使用
+	 * @param userIds
+	 * @return
+	 */
+	private String getUserNamesAndIds(String[] userIds){
+		StringBuilder nameBuilder = new StringBuilder();
+		StringBuilder idBuilder = new StringBuilder();
+		for(String userId: userIds){
+			UserBo userBo = userService.getUser(userId);
+			if(userBo == null){
+				logger.error(String.format("userId:%s is not exists"));
+			}else{
+				nameBuilder.append(userBo.getUserName());
+				nameBuilder.append(",");
+
+				idBuilder.append(userId);
+				idBuilder.append(",");
+			}
+		}
+
+		if(idBuilder.length() == 0) return null;
+
+		idBuilder.deleteCharAt(idBuilder.length()-1);
+		nameBuilder.deleteCharAt(nameBuilder.length()-1);
+
+		return nameBuilder.toString() + " " + idBuilder.toString();
+
 	}
 
 	private ChatroomBo getChatroomBo(int seq, double[] position, UserBo userBo){
