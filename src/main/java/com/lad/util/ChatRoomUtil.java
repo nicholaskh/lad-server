@@ -39,4 +39,40 @@ public class ChatRoomUtil {
         return null;
 
     }
+
+    /**
+     *  生成 userName0,userName1,userName2 id0,id1,id2的形式
+     *
+     *  为IMUtil.notifyInChatRoom处使用
+     * @param userIds
+     * @return
+     */
+    public static String getUserNamesAndIds(IUserService userService, String[] userIds, Logger logger){
+        StringBuilder nameBuilder = new StringBuilder();
+        StringBuilder idBuilder = new StringBuilder();
+        for(String userId: userIds){
+            UserBo userBo = userService.getUser(userId);
+            if(userBo == null){
+                if(logger != null){
+                    logger.error(String.format("userId:%s is not exists"));
+                }
+
+            }else{
+                nameBuilder.append(userBo.getUserName());
+                nameBuilder.append(",");
+
+                idBuilder.append(userId);
+                idBuilder.append(",");
+            }
+        }
+
+        if(idBuilder.length() == 0) return null;
+
+        idBuilder.deleteCharAt(idBuilder.length()-1);
+        nameBuilder.deleteCharAt(nameBuilder.length()-1);
+
+        return nameBuilder.toString() + " " + idBuilder.toString();
+
+    }
+
 }

@@ -318,4 +318,26 @@ public class Constant {
 	public static final String QUICK_LOGIN =
 			"您已成功登录“天天老友” 。登录账号为您本次登录使用的手机号码，登录初始密码为您本次登录使用的手机号码后6位。为了您的账户安全，“天天老友”建议您及时修改登录密码";
 
+	/**
+	 * 群聊中的系统通知类型
+	 */
+
+	// 某人加入群聊
+	public static final int SOME_ONE_JOIN_CHAT_ROOM = 4;
+
+	// 某人退出群聊
+	public static final int SOME_ONE_QUIT_CHAT_ROOM = 5;
+
+	// 某人被踢出群聊
+	public static final int SOME_ONE_EXPELLED_FROM_CHAT_ROOM = 6;
+
+	// 某人修改了群名称
+	public static final int SOME_ONE_MODIFY_NAME_OF_CHAT_ROOM = 7;
+
+	// 某人被邀请加入群聊
+	public static final int SOME_ONE_BE_INVITED_OT_CHAT_ROOM = 8;
+
+	// 群聊解散
+	public static final int SOME_ONE_DISMISS_CHAT_ROOM = 9;
+
 }

@@ -15,6 +15,48 @@ public class IMUtil {
 	private static String term = "";
 
 	/**
+	 * 向某群聊中发系统通知
+	 * @param type
+	 * @param chatRoomId
+	 * @param msg
+	 * @return
+	 */
+	public static String notifyInChatRoom(int type, String chatRoomId, String msg){
+		ImAssistant assistent = ImAssistant.init(Constant.PUSHD_IP, Constant.PUSHD_POST);
+		if (assistent == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.PUSHED_CONNECT_ERROR.getIndex(),
+					ERRORCODE.PUSHED_CONNECT_ERROR.getReason());
+		}
+
+
+		String res = "";
+
+		assistent.setServerTerm(term);
+		Message message = assistent.publishNotificationInChatRoom(type, chatRoomId, msg);
+		if (message.getStatus() == Message.Status.termError) {
+			try {
+				term = getTerm(assistent);
+			} catch (Exception e) {
+				term = "";
+			}
+			if(!"".equals(term)){
+				message = assistent.publishNotificationInChatRoom(type, chatRoomId, msg);
+			}
+
+		}
+
+		if (Message.Status.success != message.getStatus()) {
+			res = CommonUtil.toErrorResult(ERRORCODE.PUSHED_ERROR.getIndex(), message.getMsg());
+		}
+
+		assistent.close();
+		if (StringUtils.isEmpty(res)) res = FINISH;
+
+		return res;
+	}
+
+	/**
 
 	 *  在pushd中创建用户
 
