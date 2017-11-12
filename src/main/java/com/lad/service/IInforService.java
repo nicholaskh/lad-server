@@ -183,6 +183,10 @@ public interface IInforService {
      */
     List<BroadcastBo> findBroadByPage(String groupName, int page, int limit);
 
+    List<BroadcastBo> findBroadByClassName(String groupName, String className);
+
+    List<BroadcastBo> findByClassNamePage(String groupName, String className, int start, int end);
+
     List<VideoBo> findVideoByPage(String groupName, int page, int limit);
 
     VideoBo findVideoById(String id);

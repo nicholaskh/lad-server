@@ -187,6 +187,11 @@ public class InforSerivceImpl implements IInforService {
     }
 
     @Override
+    public List<BroadcastBo> findBroadByClassName(String groupName, String className) {
+        return broadcastDao.findByClassName(groupName, className);
+    }
+
+    @Override
     public List<VideoBo> findVideoByPage(String groupName, int page, int limit) {
         return videoDao.findByPage(groupName, page, limit);
     }
@@ -204,6 +209,11 @@ public class InforSerivceImpl implements IInforService {
     @Override
     public List<VideoBo> selectVideoClassByGroups(String groupName) {
         return videoDao.selectClassByGroups(groupName);
+    }
+
+    @Override
+    public List<BroadcastBo> findByClassNamePage(String groupName, String className, int start, int end) {
+        return broadcastDao.findByClassNamePage(groupName, className, start, end);
     }
 
     @Override

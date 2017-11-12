@@ -26,4 +26,9 @@ public interface IBroadcastDao {
     List<BroadcastBo> findByLimit(int limit);
 
 
+    List<BroadcastBo> findByClassName(String groupName, String className);
+
+
+    List<BroadcastBo> findByClassNamePage(String groupName, String className, int start, int end);
+
 }

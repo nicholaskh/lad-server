@@ -381,6 +381,48 @@ public class InforController extends BaseContorller {
         return JSONObject.fromObject(map).toString();
     }
 
+
+
+    @RequestMapping("/radio-classes")
+    @ResponseBody
+    public String radioGroups(String module,
+                            HttpServletRequest request, HttpServletResponse response){
+        List<BroadcastBo> broadcastBos = inforService.selectBroadClassByGroups(module);
+        List<String> groups = new ArrayList<>();
+        for (BroadcastBo bo : broadcastBos) {
+           groups.add(bo.getId());
+        }
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("ret", 0);
+        map.put("radioClasses", groups);
+        return JSONObject.fromObject(map).toString();
+    }
+
+  
+    @RequestMapping("/radio-groups")
+    @ResponseBody
+    public String radioGroups(String module, String className,int start, int end,
+                              HttpServletRequest request, HttpServletResponse response){
+        List<BroadcastBo> broadcastBos = inforService.findByClassNamePage(module, className,start, end);
+        List<BroadcastVo> vos = new ArrayList<>();
+        for (BroadcastBo bo : broadcastBos) {
+            BroadcastVo broadcastVo = new BroadcastVo();
+            BeanUtils.copyProperties(bo, broadcastVo);
+            broadcastVo.setInforid(bo.getId());
+            vos.add(broadcastVo);
+        }
+        UserBo userBo =  getUserLogin(request);
+        if (userBo != null) {
+            updateUserReadHis(userBo, module, Constant.INFOR_RADIO);
+        }
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("ret", 0);
+        map.put("radioGroups", vos);
+        return JSONObject.fromObject(map).toString();
+    }
+
+
+
     @RequestMapping("/radio-infor")
     @ResponseBody
     public String radioInfors(String radioid, HttpServletRequest request, HttpServletResponse response){
