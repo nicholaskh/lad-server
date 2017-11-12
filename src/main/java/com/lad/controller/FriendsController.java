@@ -559,6 +559,10 @@ public class FriendsController extends BaseContorller {
 		 */
 		userSet.remove(userBo.getId());
 		String[] tt = new String[userSet.size()];
+		int i=0;
+		for(String uu: userSet){
+			tt[i++] = uu;
+		}
 		String nameAndIdsTemp = ChatRoomUtil.getUserNamesAndIds(userService, tt, null);
 		String nameAndIds = null;
 		if(nameAndIdsTemp != null){

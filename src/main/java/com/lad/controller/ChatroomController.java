@@ -179,7 +179,7 @@ public class ChatroomController extends BaseContorller {
 		// 向群中某人被邀请加入群聊通知
 		if(imIds.length() > 0 && otherNameAndId != null){
 			imIds.deleteCharAt(imIds.length()-1);
-			imNames.deleteCharAt(imIds.length()-1);
+			imNames.deleteCharAt(imNames.length()-1);
 			String message = String.format("%s,%s %s,%s %s",
 					userBo.getId(),
 					imIds,
