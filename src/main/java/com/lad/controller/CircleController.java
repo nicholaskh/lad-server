@@ -1670,6 +1670,7 @@ public class CircleController extends BaseContorller {
 			vo.setUsername(friend.getUserName());
 			vo.setPicture(friend.getHeadPictureName());
 			vo.setBackname(friendsBo.getBackname());
+			vo.setUserid("");
 			voList.add(vo);
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
