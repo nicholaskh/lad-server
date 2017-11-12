@@ -588,6 +588,14 @@ public class FriendsController extends BaseContorller {
 			return res;
 		}
 		JPushUtil.pushTo(userBo.getUserName() + JPushUtil.MULTI_INSERT, idsList);
+
+		// 某人被邀请加入群聊通知
+		String message = String.format("%s,%s", userBo.getId(), friendids);
+		String res2 = IMUtil.notifyInChatRoom(Constant.SOME_ONE_BE_INVITED_OT_CHAT_ROOM, chatroomBo.getId(), message);
+//		if(!IMUtil.FINISH.equals(res2)){
+//			logger.error("failed notifyInChatRoom Constant.SOME_ONE_BE_INVITED_OT_CHAT_ROOM, %s",res2);
+//		}
+
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("channelId", chatroomBo.getId());

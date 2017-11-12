@@ -814,7 +814,7 @@ public class ChatroomController extends BaseContorller {
 					ERRORCODE.CIRCLE_USER_NULL.getReason());
 		}
 
-		// 向群中发某人加入群聊通知
+		// 向群中发某人修改群聊名称通知
 		String message = String.format("%s,%s", userBo.getId(), name);
 		String res2 = IMUtil.notifyInChatRoom(Constant.SOME_ONE_MODIFY_NAME_OF_CHAT_ROOM, chatroomid, message);
 		if(!IMUtil.FINISH.equals(res2)){
