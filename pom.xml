@@ -172,7 +172,7 @@
 			<groupId>com.lad</groupId>
 			<artifactId>pushdTool</artifactId>
 			<version>1.0.5</version>
-			<systemPath>${basedir}/lib/pushdTool-1.0.5.jar</systemPath>
+			<systemPath>${basedir}/lib/pushdTool-1.0.6.jar</systemPath>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
