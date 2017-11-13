@@ -221,6 +221,8 @@ public class NoteDaoImpl implements INoteDao {
 		Query query = new Query();
 		query.addCriteria(new Criteria("circleId").is(circleId));
 		query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "top")));
+		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "essence")));
 		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
 		if (!StringUtils.isEmpty(startId)) {
 			query.addCriteria(new Criteria("_id").gt(startId));
