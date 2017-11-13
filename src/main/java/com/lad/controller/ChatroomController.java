@@ -193,10 +193,9 @@ public class ChatroomController extends BaseContorller {
 			}
 		}
 
-
 		return Constant.COM_RESP;
 	}
-	
+
 
 	@RequestMapping("/delete-user")
 	@ResponseBody
@@ -228,6 +227,9 @@ public class ChatroomController extends BaseContorller {
 			return result;
 		}
 
+		StringBuilder imIds = new StringBuilder();
+		StringBuilder imNames = new StringBuilder();
+
 		LinkedHashSet<String> set = chatroomBo.getUsers();
 		for (String userid : useridArr) {
 			//只能删除非自己以外人员，自己需要退出
@@ -239,6 +241,12 @@ public class ChatroomController extends BaseContorller {
 			UserBo user = userService.getUser(userid);
 			if (null != user) {
 				updateFriendChatroom(user, chatroomid);
+
+				imIds.append(user.getId());
+				imIds.append(",");
+
+				imNames.append(user.getUserName());
+				imNames.append(",");
 			}
 		}
 		//聊天室少于2人则直接删除
@@ -269,11 +277,17 @@ public class ChatroomController extends BaseContorller {
 			chatroomService.updateUsers(chatroomBo);
 		}
 
-		// 向群中发踢人通知
-		String message = String.format("%s,%s", userBo.getId(), userids);
-		String res = IMUtil.notifyInChatRoom(Constant.SOME_ONE_EXPELLED_FROM_CHAT_ROOM, chatroomid, message);
-		if(!IMUtil.FINISH.equals(res)){
-			logger.error("failed notifyInChatRoom Constant.SOME_ONE_EXPELLED_FROM_CHAT_ROOM, %s",res);
+		if(imIds.length() > 0 ){
+
+			imIds.deleteCharAt(imIds.length()-1);
+			imNames.deleteCharAt(imNames.length()-1);
+
+			// 向群中发踢人通知
+			String message = String.format("%s,%s %s,%s", userBo.getId(), imIds.toString(), userBo.getUserName(), imNames.toString());
+			String res = IMUtil.notifyInChatRoom(Constant.SOME_ONE_EXPELLED_FROM_CHAT_ROOM, chatroomid, message);
+			if(!IMUtil.FINISH.equals(res)){
+				logger.error("failed notifyInChatRoom Constant.SOME_ONE_EXPELLED_FROM_CHAT_ROOM, %s",res);
+			}
 		}
 
 		return Constant.COM_RESP;
@@ -348,7 +362,7 @@ public class ChatroomController extends BaseContorller {
 			chatroomService.updateUsers(chatroomBo);
 
 			// 向群中发某人退出群聊通知
-			String message = String.format("%s", userBo.getId());
+			String message = String.format("%s %s", userBo.getId(), userBo.getUserName());
 			String res = IMUtil.notifyInChatRoom(Constant.SOME_ONE_QUIT_CHAT_ROOM, chatroomid, message);
 			if(!IMUtil.FINISH.equals(res)){
 				logger.error("failed notifyInChatRoom Constant.SOME_ONE_QUIT_CHAT_ROOM, %s",res);
@@ -759,7 +773,7 @@ public class ChatroomController extends BaseContorller {
 				if(uu.equals(userBo.getId())) continue;
 				tt[i++] = uu;
 			}
-			String otherNameAndId = getUserNamesAndIds(tt);
+			String otherNameAndId = ChatRoomUtil.getUserNamesAndIds(userService, tt, logger);
 
 			if(otherNameAndId != null){
 				String message = String.format("%s %s %s", userBo.getId(), userBo.getUserName(), otherNameAndId);
@@ -777,37 +791,6 @@ public class ChatroomController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	/**
-	 *  生成 userName0,userName1,userName2 id0,id1,id2的形式
-	 *
-	 *  为IMUtil.notifyInChatRoom处使用
-	 * @param userIds
-	 * @return
-	 */
-	private String getUserNamesAndIds(String[] userIds){
-		StringBuilder nameBuilder = new StringBuilder();
-		StringBuilder idBuilder = new StringBuilder();
-		for(String userId: userIds){
-			UserBo userBo = userService.getUser(userId);
-			if(userBo == null){
-				logger.error(String.format("userId:%s is not exists"));
-			}else{
-				nameBuilder.append(userBo.getUserName());
-				nameBuilder.append(",");
-
-				idBuilder.append(userId);
-				idBuilder.append(",");
-			}
-		}
-
-		if(idBuilder.length() == 0) return null;
-
-		idBuilder.deleteCharAt(idBuilder.length()-1);
-		nameBuilder.deleteCharAt(nameBuilder.length()-1);
-
-		return nameBuilder.toString() + " " + idBuilder.toString();
-
-	}
 
 	private ChatroomBo getChatroomBo(int seq, double[] position, UserBo userBo){
 		ChatroomBo chatroom = new ChatroomBo();
@@ -886,7 +869,7 @@ public class ChatroomController extends BaseContorller {
 		}
 
 		// 向群中发某人修改群聊名称通知
-		String message = String.format("%s,%s", userBo.getId(), name);
+		String message = String.format("%s,%s,%s", userBo.getId(), userBo.getUserName(), name);
 		String res2 = IMUtil.notifyInChatRoom(Constant.SOME_ONE_MODIFY_NAME_OF_CHAT_ROOM, chatroomid, message);
 		if(!IMUtil.FINISH.equals(res2)){
 			logger.error("failed notifyInChatRoom Constant.SOME_ONE_MODIFY_NAME_OF_CHAT_ROOM, %s",res2);
