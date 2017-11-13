@@ -171,7 +171,7 @@
 		<dependency>
 			<groupId>com.lad</groupId>
 			<artifactId>pushdTool</artifactId>
-			<version>1.0.5</version>
+			<version>1.0.6</version>
 			<systemPath>${basedir}/lib/pushdTool-1.0.6.jar</systemPath>
 		</dependency>
 		<dependency>
