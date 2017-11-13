@@ -765,6 +765,8 @@ public class ChatroomController extends BaseContorller {
 		userBo.setChatrooms(chatrooms);
 		userService.updateChatrooms(userBo);
 		addChatroomUser(chatroomService, userBo, chatroom.getId(), userBo.getUserName());
+
+		// 发送通知推送
 		if(!isNew){
 			LinkedHashSet<String> users = chatroom.getUsers();
 			String[] tt = new String[users.size()-1];
@@ -778,13 +780,26 @@ public class ChatroomController extends BaseContorller {
 			if(otherNameAndId != null){
 				String message = String.format("%s %s %s", userBo.getId(), userBo.getUserName(), otherNameAndId);
 				// 向群中发某人加入群聊通知
-				String res2 = IMUtil.notifyInChatRoom(Constant.SOME_ONE_JOIN_CHAT_ROOM, chatroom.getId(), message);
+				String res2 = IMUtil.notifyInChatRoom(
+						Constant.SOME_ONE_JOIN_CHAT_ROOM,
+						chatroom.getId(),
+						message);
 				if(!IMUtil.FINISH.equals(res2)){
-					logger.error("failed notifyInChatRoom Constant.SOME_ONE_JOIN_CHAT_ROOM, %s",res2);
+					logger.error("failed notifyInChatRoom Constant.FACE_TO_FACE_SOME_ONE_JOIN_CHAT_ROOM, %s",res2);
 				}
 			}
 
+		}else{
+			String message = String.format("%s,%s,%d", userBo.getId(), userBo.getUserName(), seq);
+			String res2 = IMUtil.notifyInChatRoom(
+					Constant.FACE_TO_FACE_SOME_ONE_JOIN_CHAT_ROOM,
+					chatroom.getId(),
+					message);
+			if(!IMUtil.FINISH.equals(res2)){
+				logger.error("failed notifyInChatRoom Constant.FACE_TO_FACE_SOME_ONE_JOIN_CHAT_ROOM, %s",res2);
+			}
 		}
+
 		Map<String, Object> map = new HashMap<>();
 		map.put("ret", 0);
 		map.put("channelId", chatroom.getId());
