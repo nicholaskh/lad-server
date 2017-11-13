@@ -337,6 +337,9 @@ public class Constant {
 	// 某人被邀请加入群聊
 	public static final int SOME_ONE_BE_INVITED_OT_CHAT_ROOM = 8;
 
+	// 面对面群中某人加入群聊
+	public static final int FACE_TO_FACE_SOME_ONE_JOIN_CHAT_ROOM = 9;
+
 	// 群聊解散
 	public static final int SOME_ONE_DISMISS_CHAT_ROOM = 9;
 
