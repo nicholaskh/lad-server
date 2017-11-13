@@ -1244,6 +1244,7 @@ public class CircleController extends BaseContorller {
 		for (String userId : users) {
 			UserBo user = userService.getUser(userId);
 			UserBaseVo userBaseVo = new UserBaseVo();
+			BeanUtils.copyProperties(user, userBaseVo);
 			if (circleBo.getCreateuid().equals(userId)) {
 			   userBaseVo.setRole(2);
 			} else if (masters.contains(userId)){
@@ -1251,7 +1252,6 @@ public class CircleController extends BaseContorller {
 			} else {
 				userBaseVo.setRole(0);
 			}
-			BeanUtils.copyProperties(user, userBaseVo);
 			userList.add(userBaseVo);
 		}
 		Map<String, Object> map = new HashMap<>();
@@ -1676,6 +1676,80 @@ public class CircleController extends BaseContorller {
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("userVos", voList);
+		return JSONObject.fromObject(map).toString();
+	}
+
+
+
+	/**
+	 * 圈子好友搜索
+	 * @param circleid
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@RequestMapping("/user-search")
+	@ResponseBody
+	public String userSearch(String circleid, String keyword,
+							 HttpServletRequest request, HttpServletResponse response) {
+
+		UserBo userBo = getUserLogin(request);
+
+		CircleBo circleBo = circleService.selectById(circleid);
+		if (circleBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_IS_NULL.getIndex(),
+					ERRORCODE.CIRCLE_IS_NULL.getReason());
+		}
+
+		List<String> userHas = new ArrayList<>();
+		List<UserBo> userBos = userService.searchCircleUsers(circleBo.getUsers(), keyword);
+		HashSet<String> masters = circleBo.getMasters();
+		List<UserBaseVo> userList = new ArrayList<>();
+		for (UserBo user : userBos) {
+			String userid =user.getId();
+			if (userBo != null && userBo.getId().equals(userid)) {
+				continue;
+			}
+			UserBaseVo userBaseVo = new UserBaseVo();
+			BeanUtils.copyProperties(user, userBaseVo);
+			if (circleBo.getCreateuid().equals(userid)) {
+				userBaseVo.setRole(2);
+			} else if (masters.contains(userid)){
+				userBaseVo.setRole(1);
+			} else {
+				userBaseVo.setRole(0);
+			}
+			userList.add(userBaseVo);
+			userHas.add(userid);
+		}
+		//登录后可以查询好友信息的
+		if (userBo != null){
+			List<FriendsBo> friendsBos = friendsService.searchCircleUsers(circleBo.getUsers(),userBo.getId(),
+					keyword);
+			for (FriendsBo friend : friendsBos) {
+				String friendid = friend.getFriendid();
+				if (userHas.contains(friendid)) {
+					continue;
+				}
+				UserBo user = userService.getUser(friendid);
+				if (user == null){
+					continue;
+				}
+				UserBaseVo userBaseVo = new UserBaseVo();
+				BeanUtils.copyProperties(user, userBaseVo);
+				if (circleBo.getCreateuid().equals(friendid)) {
+					userBaseVo.setRole(2);
+				} else if (masters.contains(friendid)){
+					userBaseVo.setRole(1);
+				} else {
+					userBaseVo.setRole(0);
+				}
+				userList.add(userBaseVo);
+			}
+		}
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("userVos", userList);
 		return JSONObject.fromObject(map).toString();
 	}
 

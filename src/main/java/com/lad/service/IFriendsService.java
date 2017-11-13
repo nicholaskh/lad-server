@@ -37,4 +37,10 @@ public interface IFriendsService extends IBaseService {
 	
 	public FriendsBo get(String id);
 
+
+	/**
+	 * 更具关键字查找圈子中的用户
+	 * @return
+	 */
+	List<FriendsBo> searchCircleUsers(HashSet<String> circleUsers,String userid, String keywords);
 }

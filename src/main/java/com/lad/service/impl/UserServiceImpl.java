@@ -10,6 +10,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -271,5 +272,10 @@ public class UserServiceImpl implements IUserService{
 	@Override
 	public List<UserBo> getUserByPhoneAndTime(List<String> phones,Date timestamp) {
 		return userDao.getUserByPhoneAndTime(phones,timestamp);
+	}
+
+	@Override
+	public List<UserBo> searchCircleUsers(HashSet<String> circleUsers, String keywords) {
+		return userDao.searchCircleUsers(circleUsers, keywords);
 	}
 }

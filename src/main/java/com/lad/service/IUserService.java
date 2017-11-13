@@ -7,6 +7,7 @@ import com.lad.bo.UserTasteBo;
 import com.mongodb.WriteResult;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -142,4 +143,10 @@ public interface IUserService extends IBaseService {
 	 * @return
 	 */
 	List<UserBo> getUserByPhoneAndTime(List<String> phones,Date timestamp);
+
+	/**
+	 * 更具关键字查找圈子中的用户
+	 * @return
+	 */
+	List<UserBo> searchCircleUsers(HashSet<String> circleUsers, String keywords);
 }

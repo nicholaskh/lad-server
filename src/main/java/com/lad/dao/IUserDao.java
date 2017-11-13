@@ -5,6 +5,7 @@ import com.lad.bo.UserBo;
 import com.mongodb.WriteResult;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -89,5 +90,12 @@ public interface IUserDao extends IBaseDao {
      * @return
      */
     WriteResult updateUserStatus(String id, int status);
+
+
+    /**
+     * 更具关键字查找圈子中的用户
+     * @return
+     */
+    List<UserBo> searchCircleUsers(HashSet<String> circleUsers, String keywords);
 
 }

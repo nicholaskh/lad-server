@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.regex.Pattern;
 
 @Repository("friendsDao")
 public class FriendsDaoImpl implements IFriendsDao {
@@ -151,4 +152,13 @@ public class FriendsDaoImpl implements IFriendsDao {
 		return mongoTemplate.findOne(query, FriendsBo.class);
 	}
 
+	@Override
+	public List<FriendsBo> searchCircleUsers(HashSet<String> circleUsers, String userid, String keywords) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("userid").is(userid));
+		query.addCriteria(new Criteria("friendid").in(circleUsers));
+		Pattern pattern = Pattern.compile("^.*"+keywords+".*$", Pattern.CASE_INSENSITIVE);
+		query.addCriteria(new Criteria("backname").regex(pattern));
+		return mongoTemplate.find(query, FriendsBo.class);
+	}
 }

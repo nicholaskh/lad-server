@@ -13,8 +13,10 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * 功能描述：
@@ -232,5 +234,14 @@ public class UserDaoImpl implements IUserDao {
         Update update = new Update();
         update.set("deleted", status);
         return mongoTemplate.updateFirst(query, update, UserBo.class);
+    }
+
+    @Override
+    public List<UserBo> searchCircleUsers(HashSet<String> circleUsers, String keywords) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("_id").in(circleUsers));
+        Pattern pattern = Pattern.compile("^.*"+keywords+".*$", Pattern.CASE_INSENSITIVE);
+        query.addCriteria(new Criteria("userName").regex(pattern));
+        return mongoTemplate.find(query, UserBo.class);
     }
 }

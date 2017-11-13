@@ -75,7 +75,9 @@ public class FriendsServiceImpl implements IFriendsService {
 	public FriendsBo get(String id) {
 		return friendsDao.get(id);
 	}
-	
-	
 
+	@Override
+	public List<FriendsBo> searchCircleUsers(HashSet<String> circleUsers, String userid, String keywords) {
+		return friendsDao.searchCircleUsers(circleUsers, userid, keywords);
+	}
 }
