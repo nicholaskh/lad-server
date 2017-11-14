@@ -137,9 +137,9 @@ public class ChatroomController extends BaseContorller {
 			if(uu.equals(userBo.getId())) continue;
 			tt[i++] = uu;
 		}
-		String otherNameAndId = ChatRoomUtil.getUserNamesAndIds(userService, tt, logger);
-		StringBuilder imNames = new StringBuilder();
-		StringBuilder imIds = new StringBuilder();
+		Object[] otherNameAndId = ChatRoomUtil.getUserNamesAndIds(userService, tt, logger);
+		ArrayList<String> imNames = new ArrayList<>();
+		ArrayList<String> imIds = new ArrayList<>();
 
 		for (String userid : useridArr) {
 			if (set.contains(userid)) {
@@ -157,10 +157,8 @@ public class ChatroomController extends BaseContorller {
 				}
 
 				set.add(userid);
-				imNames.append(user.getUserName());
-				imNames.append(",");
-				imIds.append(user.getId());
-				imIds.append(",");
+				imNames.add(user.getUserName());
+				imIds.add(user.getId());
 
 				JPushUtil.pushTo(String.format("%s邀请您加入群聊", user.getUserName()), userid);
 
@@ -177,17 +175,17 @@ public class ChatroomController extends BaseContorller {
 		chatroomService.updateUsers(chatroomBo);
 
 		// 向群中某人被邀请加入群聊通知
-		if(imIds.length() > 0 && otherNameAndId != null){
-			imIds.deleteCharAt(imIds.length()-1);
-			imNames.deleteCharAt(imNames.length()-1);
-			String message = String.format("%s,%s %s,%s %s",
-					userBo.getId(),
-					imIds,
-					userBo.getUserName(),
-					imNames,
-					otherNameAndId.toString());
+		if(imIds.size() > 0 && otherNameAndId[0] != null){
 
-			String res = IMUtil.notifyInChatRoom(Constant.SOME_ONE_BE_INVITED_OT_CHAT_ROOM, chatroomid, message);
+			JSONObject json = new JSONObject();
+			json.put("masterId", userBo.getId());
+			json.put("masterName", userBo.getUserName());
+			json.put("hitIds", imIds);
+			json.put("hitNames", imNames);
+			json.put("otherIds", otherNameAndId[1]);
+			json.put("otherNames", otherNameAndId[0]);
+
+			String res = IMUtil.notifyInChatRoom(Constant.SOME_ONE_BE_INVITED_OT_CHAT_ROOM, chatroomid, json.toString());
 			if(!IMUtil.FINISH.equals(res)){
 				logger.error("failed notifyInChatRoom Constant.SOME_ONE_BE_INVITED_OT_CHAT_ROOM, %s",res);
 			}
@@ -227,12 +225,16 @@ public class ChatroomController extends BaseContorller {
 		 *
 		 * 之所以先发通知，是因为调用了IMUtil.unSubscribe这个后，订阅的关系都解除了，就没法基于群聊发通知了，被踢出的人就不能收到消息
 		 */
-		String nameAndIds = ChatRoomUtil.getUserNamesAndIds(userService, useridArr, logger);
-		if (nameAndIds != null){
-			String[] nameIds = nameAndIds.split(" ");
+		Object[] nameAndIds = ChatRoomUtil.getUserNamesAndIds(userService, useridArr, logger);
+		if (nameAndIds[0] != null){
+			JSONObject json = new JSONObject();
+			json.put("masterId", userBo.getId());
+			json.put("masterName", userBo.getUserName());
+			json.put("hitIds", nameAndIds[1]);
+			json.put("hitNames", nameAndIds[0]);
+
 			// 向群中发踢人通知
-			String message = String.format("%s,%s %s,%s", userBo.getId(), nameIds[1], userBo.getUserName(), nameIds[0]);
-			String res = IMUtil.notifyInChatRoom(Constant.SOME_ONE_EXPELLED_FROM_CHAT_ROOM, chatroomid, message);
+			String res = IMUtil.notifyInChatRoom(Constant.SOME_ONE_EXPELLED_FROM_CHAT_ROOM, chatroomid, json.toString());
 			if(!IMUtil.FINISH.equals(res)){
 				logger.error("failed notifyInChatRoom Constant.SOME_ONE_EXPELLED_FROM_CHAT_ROOM, %s",res);
 				return res;
@@ -323,8 +325,10 @@ public class ChatroomController extends BaseContorller {
 		 * 目前先这样处理，之后需要添加基于个人的发送通知功能
 		 */
 		// 向群中发某人退出群聊通知
-		String message = String.format("%s %s", userBo.getId(), userBo.getUserName());
-		String res2 = IMUtil.notifyInChatRoom(Constant.SOME_ONE_QUIT_CHAT_ROOM, chatroomid, message);
+		JSONObject json = new JSONObject();
+		json.put("masterId", userBo.getId());
+		json.put("masterName", userBo.getUserName());
+		String res2 = IMUtil.notifyInChatRoom(Constant.SOME_ONE_QUIT_CHAT_ROOM, chatroomid, json.toString());
 		if(!IMUtil.FINISH.equals(res2)){
 			logger.error("failed notifyInChatRoom Constant.SOME_ONE_QUIT_CHAT_ROOM, %s",res2);
 			return res2;
@@ -784,26 +788,36 @@ public class ChatroomController extends BaseContorller {
 				if(uu.equals(userBo.getId())) continue;
 				tt[i++] = uu;
 			}
-			String otherNameAndId = ChatRoomUtil.getUserNamesAndIds(userService, tt, logger);
+			Object[] otherNameAndId = ChatRoomUtil.getUserNamesAndIds(userService, tt, logger);
 
-			if(otherNameAndId != null){
-				String message = String.format("%s %s %s", userBo.getId(), userBo.getUserName(), otherNameAndId);
+			if(otherNameAndId[0] != null){
+				JSONObject json = new JSONObject();
+				json.put("masterId", userBo.getId());
+				json.put("masterName", userBo.getUserName());
+				json.put("otherIds", otherNameAndId[1]);
+				json.put("otherNames", otherNameAndId[0]);
+
 				// 向群中发某人加入群聊通知
 				String res2 = IMUtil.notifyInChatRoom(
 						Constant.SOME_ONE_JOIN_CHAT_ROOM,
 						chatroom.getId(),
-						message);
+						json.toString());
 				if(!IMUtil.FINISH.equals(res2)){
 					logger.error("failed notifyInChatRoom Constant.FACE_TO_FACE_SOME_ONE_JOIN_CHAT_ROOM, %s",res2);
 				}
 			}
 
 		}else{
-			String message = String.format("%s,%s,%d", userBo.getId(), userBo.getUserName(), seq);
+
+			JSONObject json = new JSONObject();
+			json.put("masterId", userBo.getId());
+			json.put("masterName", userBo.getUserName());
+			json.put("number", seq);
+
 			String res2 = IMUtil.notifyInChatRoom(
 					Constant.FACE_TO_FACE_SOME_ONE_JOIN_CHAT_ROOM,
 					chatroom.getId(),
-					message);
+					json.toString());
 			if(!IMUtil.FINISH.equals(res2)){
 				logger.error("failed notifyInChatRoom Constant.FACE_TO_FACE_SOME_ONE_JOIN_CHAT_ROOM, %s",res2);
 			}
@@ -893,8 +907,11 @@ public class ChatroomController extends BaseContorller {
 		}
 
 		// 向群中发某人修改群聊名称通知
-		String message = String.format("%s,%s,%s", userBo.getId(), userBo.getUserName(), name);
-		String res2 = IMUtil.notifyInChatRoom(Constant.SOME_ONE_MODIFY_NAME_OF_CHAT_ROOM, chatroomid, message);
+		JSONObject json = new JSONObject();
+		json.put("masterId", userBo.getId());
+		json.put("masterName", userBo.getUserName());
+		json.put("chatRoomName", name);
+		String res2 = IMUtil.notifyInChatRoom(Constant.SOME_ONE_MODIFY_NAME_OF_CHAT_ROOM, chatroomid, json.toString());
 		if(!IMUtil.FINISH.equals(res2)){
 			logger.error("failed notifyInChatRoom Constant.SOME_ONE_MODIFY_NAME_OF_CHAT_ROOM, %s",res2);
 		}

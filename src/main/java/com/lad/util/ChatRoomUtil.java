@@ -4,6 +4,7 @@ import com.lad.bo.UserBo;
 import com.lad.service.IUserService;
 import org.apache.logging.log4j.Logger;
 
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 
 /**
@@ -41,15 +42,16 @@ public class ChatRoomUtil {
     }
 
     /**
-     *  生成 userName0,userName1,userName2 id0,id1,id2的形式
-     *
      *  为IMUtil.notifyInChatRoom处使用
      * @param userIds
      * @return
      */
-    public static String getUserNamesAndIds(IUserService userService, String[] userIds, Logger logger){
-        StringBuilder nameBuilder = new StringBuilder();
-        StringBuilder idBuilder = new StringBuilder();
+    public static Object[] getUserNamesAndIds(IUserService userService, String[] userIds, Logger logger){
+
+        Object[] objects = new Object[2];
+        ArrayList<String> ids = new ArrayList<>(userIds.length);
+        ArrayList<String> names = new ArrayList<>(userIds.length);
+
         for(String userId: userIds){
             UserBo userBo = userService.getUser(userId);
             if(userBo == null){
@@ -58,20 +60,16 @@ public class ChatRoomUtil {
                 }
 
             }else{
-                nameBuilder.append(userBo.getUserName());
-                nameBuilder.append(",");
-
-                idBuilder.append(userId);
-                idBuilder.append(",");
+                names.add(userBo.getUserName());
+                ids.add(userId);
             }
         }
 
-        if(idBuilder.length() == 0) return null;
+        if(ids.size() == 0) return objects;
 
-        idBuilder.deleteCharAt(idBuilder.length()-1);
-        nameBuilder.deleteCharAt(nameBuilder.length()-1);
-
-        return nameBuilder.toString() + " " + idBuilder.toString();
+        objects[0] = names;
+        objects[1] = ids;
+        return objects;
 
     }
 

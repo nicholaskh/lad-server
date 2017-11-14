@@ -572,12 +572,7 @@ public class FriendsController extends BaseContorller {
 		for(String uu: userSet){
 			tt[i++] = uu;
 		}
-		String nameAndIdsTemp = ChatRoomUtil.getUserNamesAndIds(userService, tt, null);
-		String nameAndIds = null;
-		if(nameAndIdsTemp != null){
-			String[] cc = nameAndIdsTemp.split(" ");
-			nameAndIds = String.format("%s,%s %s,%s", userBo.getId(), cc[1], userBo.getUserName(), cc[0]);
-		}
+		Object[] nameAndIds = ChatRoomUtil.getUserNamesAndIds(userService, tt, null);
 
 		userSet.add(userBo.getId());
 		ChatroomBo chatroomBo = new ChatroomBo();
@@ -616,10 +611,18 @@ public class FriendsController extends BaseContorller {
 		JPushUtil.pushTo(userBo.getUserName() + JPushUtil.MULTI_INSERT, idsList);
 
 		// 某人被邀请加入群聊通知
-		if(nameAndIds != null){
+		if(nameAndIds[0] != null){
+			JSONObject json = new JSONObject();
+			json.put("masterId", userBo.getId());
+			json.put("masterName", userBo.getUserName());
+			json.put("hitIds", nameAndIds[1]);
+			json.put("hitNames", nameAndIds[0]);
+			json.put("otherIds", new ArrayList<String>());
+			json.put("otherNames", new ArrayList<String>());
+
 			String res2 = IMUtil.notifyInChatRoom(Constant.SOME_ONE_BE_INVITED_OT_CHAT_ROOM,
 					chatroomBo.getId(),
-					nameAndIds);
+					json.toString());
 
 			//		if(!IMUtil.FINISH.equals(res2)){
 			//			logger.error("failed notifyInChatRoom Constant.SOME_ONE_BE_INVITED_OT_CHAT_ROOM, %s",res2);
