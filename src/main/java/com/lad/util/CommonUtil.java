@@ -383,6 +383,21 @@ public class CommonUtil {
 
 	/**
 	 * 获取当前时间字符串
+	 * @param dateStr yyyy-MM-dd HH:mm:ss
+	 * @return date
+	 */
+	public static Date getDate(String dateStr, String format){
+		SimpleDateFormat sf = new SimpleDateFormat(format);
+		try {
+			return sf.parse(dateStr);
+		} catch (ParseException e) {
+			 logger.error(e);
+		}
+		return null;
+	}
+
+	/**
+	 * 获取当前时间字符串
 	 * @param date 当前时间
 	 * @return yyyy-MM-dd
 	 */
