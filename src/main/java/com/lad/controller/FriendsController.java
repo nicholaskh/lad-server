@@ -483,15 +483,24 @@ public class FriendsController extends BaseContorller {
 		}
 		ChatroomBo chatroomBo = chatroomService.selectByUserIdAndFriendid(
 				userBo.getId(), friendid);
-		if (null == chatroomBo) {
-			chatroomBo = chatroomService.selectByUserIdAndFriendid(
-					friendid,userBo.getId());
+		if (null != chatroomBo) {
+			String result = IMUtil.disolveRoom(chatroomBo.getId());
+			if (!result.equals(IMUtil.FINISH)) {
+				return result;
+			}
+			//删除好友互相设置信息user
+			chatroomService.deleteChatroomUser(userBo.getId(),chatroomBo.getId());
+			chatroomService.deleteChatroomUser(friendid,chatroomBo.getId());
+			chatroomService.delete(chatroomBo.getId());
 		}
+		chatroomBo = chatroomService.selectByUserIdAndFriendid(
+				friendid,userBo.getId());
 		if (chatroomBo != null) {
 			String result = IMUtil.disolveRoom(chatroomBo.getId());
 			if (!result.equals(IMUtil.FINISH)) {
 				return result;
 			}
+			chatroomService.delete(chatroomBo.getId());
 			//删除好友互相设置信息user
 			chatroomService.deleteChatroomUser(userBo.getId(),chatroomBo.getId());
 			chatroomService.deleteChatroomUser(friendid,chatroomBo.getId());
