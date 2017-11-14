@@ -1,6 +1,8 @@
 package com.lad.controller;
 
 import com.lad.util.CommonUtil;
+import com.lad.util.Constant;
+import com.lad.util.JPushUtil;
 import net.sf.json.JSONObject;
 import org.apache.log4j.Logger;
 import org.apache.log4j.spi.RootLogger;
@@ -13,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,6 +45,14 @@ public class TestController extends BaseContorller {
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("res", res);
 		return JSONObject.fromObject(map).toString();
+	}
+
+	@RequestMapping("/push-info")
+	@ResponseBody
+	public String pushInfor(String userid, HttpServletRequest request, HttpServletResponse response) {
+		String time = CommonUtil.getCurrentDate(new Date());
+		JPushUtil.pushTo("我的测试信息，推送到人:" + time, userid);
+		return Constant.COM_RESP;
 	}
 
 	@RequestMapping("/ff-pic")
