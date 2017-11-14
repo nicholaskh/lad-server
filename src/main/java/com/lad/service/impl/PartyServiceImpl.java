@@ -156,4 +156,9 @@ public class PartyServiceImpl implements IPartyService {
     public WriteResult updatePartyUser(PartyUserBo partyUserBo) {
         return partyUserDao.updatePartyUser(partyUserBo);
     }
+
+    @Override
+    public WriteResult updatePartyStatus(String id, int status) {
+        return partyDao.updatePartyStatus(id, status);
+    }
 }

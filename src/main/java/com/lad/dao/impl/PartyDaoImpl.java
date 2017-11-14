@@ -206,4 +206,13 @@ public class PartyDaoImpl implements IPartyDao {
     public WriteResult outParty(String id, String userid) {
         return null;
     }
+
+    @Override
+    public WriteResult updatePartyStatus(String id, int status) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("_id").is(id));
+        Update update = new Update();
+        update.set("status", status);
+        return mongoTemplate.updateFirst(query, update, PartyBo.class);
+    }
 }

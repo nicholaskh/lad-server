@@ -190,4 +190,11 @@ public interface IPartyService {
      * @return
      */
     WriteResult outParty(String id);
+
+    /**
+     * 聚会状态修改
+     * @param id
+     * @return
+     */
+    WriteResult updatePartyStatus(String id, int status);
 }
