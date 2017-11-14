@@ -12,6 +12,8 @@ public class PartyComment extends BaseVo {
     private String content;
     private boolean isSync;
 
+    private String parentid;
+
     public String getPartyid() {
         return partyid;
     }
@@ -34,5 +36,13 @@ public class PartyComment extends BaseVo {
 
     public void setSync(boolean sync) {
         isSync = sync;
+    }
+
+    public String getParentid() {
+        return parentid;
+    }
+
+    public void setParentid(String parentid) {
+        this.parentid = parentid;
     }
 }

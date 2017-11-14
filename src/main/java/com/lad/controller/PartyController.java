@@ -256,6 +256,13 @@ public class PartyController extends BaseContorller {
         }
         PartyVo partyVo = new PartyVo();
         BeanUtils.copyProperties(partyBo, partyVo);
+        if (partyBo.getStatus() == 1){
+            if (hasPartyEnd(partyid, partyBo.getStartTime())){
+                partyVo.setStatus(2);
+            } else {
+                partyBo.setStatus(partyBo.getStatus());
+            }
+        }
         partyVo.setPartyid(partyBo.getId());
         partyVo.setCircleName(circleBo.getName());
         partyVo.setCirclePic(circleBo.getHeadPicture());
@@ -301,20 +308,38 @@ public class PartyController extends BaseContorller {
     @ResponseBody
     public String enrollParty(String partyid,String phone, String joinInfo, int userNum, double amount,
                             HttpServletRequest request, HttpServletResponse response){
-        PartyBo partyBo = partyService.findById(partyid);
-        if (partyBo == null) {
-            return CommonUtil.toErrorResult(ERRORCODE.PARTY_NULL.getIndex(),
-                    ERRORCODE.PARTY_NULL.getReason());
-        }
         UserBo userBo;
         try {
             userBo = checkSession(request, userService);
         } catch (MyException e) {
             return e.getMessage();
         }
-        if (partyBo.getUserLimit() != 0 && partyBo.getUsers().size() >= partyBo.getUserLimit()) {
-            return CommonUtil.toErrorResult(ERRORCODE.PARTY_USER_MAX.getIndex(),
-                    ERRORCODE.PARTY_USER_MAX.getReason());
+
+        RLock lock = redisServer.getRLock("partyUserLock");
+        String chatroomid;
+        try {
+            lock.lock(2, TimeUnit.SECONDS);
+            PartyBo partyBo = partyService.findById(partyid);
+            if (partyBo == null) {
+                return CommonUtil.toErrorResult(ERRORCODE.PARTY_NULL.getIndex(),
+                        ERRORCODE.PARTY_NULL.getReason());
+            }
+            if (partyBo.getStatus() != 1) {
+                return CommonUtil.toErrorResult(ERRORCODE.PARTY_HAS_END.getIndex(),
+                        ERRORCODE.PARTY_HAS_END.getReason());
+            }
+            if (partyBo.getUserLimit() != 0 && partyBo.getUsers().size() >= partyBo.getUserLimit()) {
+                return CommonUtil.toErrorResult(ERRORCODE.PARTY_USER_MAX.getIndex(),
+                        ERRORCODE.PARTY_USER_MAX.getReason());
+            }
+            chatroomid = partyBo.getChatroomid();
+            LinkedList<String> users = partyBo.getUsers();
+            if (!users.contains(userBo.getId())) {
+                users.add(userBo.getId());
+                partyService.updateUser(partyid, users);
+            }
+        } finally {
+            lock.unlock();
         }
         String userid = userBo.getId();
         PartyUserBo partyUserBo = partyService.findPartyUserIgnoreDel(partyid, userid);
@@ -329,43 +354,44 @@ public class PartyController extends BaseContorller {
             partyUserBo.setStatus(1);
             partyService.addParty(partyUserBo);
         } else {
-            if (partyUserBo.getDeleted() == Constant.ACTIVITY) {
-                return CommonUtil.toErrorResult(ERRORCODE.PARTY_HAS_ADD.getIndex(),
-                        ERRORCODE.PARTY_HAS_ADD.getReason());
+            if (partyUserBo.getDeleted() == Constant.DELETED) {
+                partyUserBo.setAmount(amount);
+                partyUserBo.setJoinInfo(joinInfo);
+                partyUserBo.setJoinPhone(phone);
+                partyUserBo.setUserNum(userNum);
+                partyUserBo.setStatus(1);
+                partyUserBo.setDeleted(Constant.ACTIVITY);
+                partyService.updatePartyUser(partyUserBo);
             }
-            partyUserBo.setAmount(amount);
-            partyUserBo.setJoinInfo(joinInfo);
-            partyUserBo.setJoinPhone(phone);
-            partyUserBo.setUserNum(userNum);
-            partyUserBo.setStatus(1);
-            partyUserBo.setDeleted(Constant.ACTIVITY);
-            partyService.updatePartyUser(partyUserBo);
         }
-        LinkedList<String> users = partyBo.getUsers();
-        if (!users.contains(userBo.getId())) {
-            users.add(userBo.getId());
-            partyService.updateUser(partyid, users);
-        }
-        String chatroomid = partyBo.getChatroomid();
         if (StringUtils.isNotEmpty(chatroomid)) {
             ChatroomBo chatroomBo = chatroomService.get(chatroomid);
-
-            //第一个为返回结果信息，第二位term信息
-            String result = IMUtil.subscribe(1, chatroomid, userid);
-            if (!result.equals(IMUtil.FINISH)) {
-                return result;
+            LinkedHashSet<String> chatroomUsers = chatroomBo.getUsers();
+            if (!chatroomUsers.contains(userid)){
+                //第一个为返回结果信息，第二位term信息
+                String result = IMUtil.subscribe(1, chatroomid, userid);
+                if (!result.equals(IMUtil.FINISH)) {
+                    return result;
+                }
+                HashSet<String> chatroom = userBo.getChatrooms();
+                //个人聊天室中没有当前聊天室，则添加到个人的聊天室
+                if (!chatroom.contains(chatroomid)) {
+                    chatroom.add(chatroomid);
+                    userBo.setChatrooms(chatroom);
+                    userService.updateChatrooms(userBo);
+                }
+                chatroomUsers.add(userid);
+                chatroomBo.setUsers(chatroomUsers);
+                chatroomService.updateUsers(chatroomBo);
             }
-            LinkedHashSet<String> set = chatroomBo.getUsers();
-            HashSet<String> chatroom = userBo.getChatrooms();
-            //个人聊天室中没有当前聊天室，则添加到个人的聊天室
-            if (!chatroom.contains(chatroomid)) {
-                chatroom.add(chatroomid);
-                userBo.setChatrooms(chatroom);
-                userService.updateChatrooms(userBo);
-            }
-            set.add(userid);
-            chatroomBo.setUsers(set);
-            chatroomService.updateUsers(chatroomBo);
+        }
+        ChatroomUserBo chatroomUserBo = chatroomService.findChatUserByUserAndRoomid(userid, chatroomid);
+        if (chatroomUserBo == null){
+            chatroomUserBo = new ChatroomUserBo();
+            chatroomUserBo.setChatroomid(chatroomid);
+            chatroomUserBo.setUserid(userid);
+            chatroomUserBo.setUsername(userBo.getUserName());
+            chatroomService.insertUser(chatroomUserBo);
         }
         return Constant.COM_RESP;
     }
@@ -489,12 +515,36 @@ public class PartyController extends BaseContorller {
 
     private void bo2listVo(List<PartyBo> partyBos, List<PartyListVo> partyListVos){
         for(PartyBo partyBo : partyBos) {
+            LinkedHashSet<String> startTimes = partyBo.getStartTime();
             PartyListVo listVo = new PartyListVo();
             BeanUtils.copyProperties(partyBo, listVo);
+            if (partyBo.getStatus() == 1) {
+                if (hasPartyEnd(partyBo.getId(), startTimes)){
+                   listVo.setStatus(2);
+                }
+            }
             listVo.setPartyid(partyBo.getId());
             listVo.setUserNum(partyBo.getUsers().size());
             partyListVos.add(listVo);
         }
+    }
+
+    private boolean hasPartyEnd(String prtyid, LinkedHashSet<String> startTimes){
+
+        if (!CommonUtil.isEmpty(startTimes)) {
+            Iterator<String> iterator = startTimes.iterator();
+            String lastTime = "";
+            while (iterator.hasNext()){
+                lastTime = iterator.next();
+            }
+            Date lastDate = CommonUtil.getDate(lastTime, "yyy-MM-dd HH:mm");
+            //活动已经结束
+            if (lastDate != null && lastDate.getTime() <= System.currentTimeMillis()) {
+                partyService.updatePartyStatus(prtyid, 2);
+                return false;
+            }
+        }
+        return  true;
     }
 
     /**
@@ -760,6 +810,7 @@ public class PartyController extends BaseContorller {
         commentBo.setType(Constant.PARTY_TYPE);
         commentBo.setTargetid(comment.getPartyid());
         commentBo.setUserName(userBo.getUserName());
+        commentBo.setParentid(comment.getParentid());
 
         String userId = userBo.getId();
         Long time = Calendar.getInstance().getTimeInMillis();
@@ -883,6 +934,11 @@ public class PartyController extends BaseContorller {
                 vo.setUserName(userBo.getUserName());
                 vo.setUserBirth(userBo.getBirthDay());
                 vo.setUserid(userBo.getId());
+            }
+            if (!StringUtils.isEmpty(commentBo.getParentid())) {
+                CommentBo parent = commentService.findById(commentBo.getParentid());
+                vo.setParentUserName(parent.getUserName());
+                vo.setParentUserid(parent.getCreateuid());
             }
             vo.setContent(commentBo.getContent());
             vo.setCommentId(commentBo.getId());
