@@ -221,6 +221,24 @@ public class ChatroomController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_NOT_MASTER.getIndex(),
 					ERRORCODE.CIRCLE_NOT_MASTER.getReason());
 		}
+
+		/**
+		 * TODO 发通知成功，后面失败了如何处理
+		 *
+		 * 之所以先发通知，是因为调用了IMUtil.unSubscribe这个后，订阅的关系都解除了，就没法基于群聊发通知了，被踢出的人就不能收到消息
+		 */
+		String nameAndIds = ChatRoomUtil.getUserNamesAndIds(userService, useridArr, logger);
+		if (nameAndIds != null){
+			String[] nameIds = nameAndIds.split(" ");
+			// 向群中发踢人通知
+			String message = String.format("%s,%s %s,%s", userBo.getId(), nameIds[1], userBo.getUserName(), nameIds[0]);
+			String res = IMUtil.notifyInChatRoom(Constant.SOME_ONE_EXPELLED_FROM_CHAT_ROOM, chatroomid, message);
+			if(!IMUtil.FINISH.equals(res)){
+				logger.error("failed notifyInChatRoom Constant.SOME_ONE_EXPELLED_FROM_CHAT_ROOM, %s",res);
+				return res;
+			}
+		}
+
 		//第一个为返回结果信息，第二位term信息
 		String result = IMUtil.unSubscribe(chatroomid, useridArr);
 		if (!result.equals(IMUtil.FINISH) && !result.contains("not found")) {
@@ -249,6 +267,7 @@ public class ChatroomController extends BaseContorller {
 				imNames.append(",");
 			}
 		}
+
 		//聊天室少于2人则直接删除
 		if (set.size() < 2) {
 			String res = IMUtil.disolveRoom(chatroomid);
@@ -277,18 +296,7 @@ public class ChatroomController extends BaseContorller {
 			chatroomService.updateUsers(chatroomBo);
 		}
 
-		if(imIds.length() > 0 ){
 
-			imIds.deleteCharAt(imIds.length()-1);
-			imNames.deleteCharAt(imNames.length()-1);
-
-			// 向群中发踢人通知
-			String message = String.format("%s,%s %s,%s", userBo.getId(), imIds.toString(), userBo.getUserName(), imNames.toString());
-			String res = IMUtil.notifyInChatRoom(Constant.SOME_ONE_EXPELLED_FROM_CHAT_ROOM, chatroomid, message);
-			if(!IMUtil.FINISH.equals(res)){
-				logger.error("failed notifyInChatRoom Constant.SOME_ONE_EXPELLED_FROM_CHAT_ROOM, %s",res);
-			}
-		}
 
 		return Constant.COM_RESP;
 	}
@@ -307,6 +315,21 @@ public class ChatroomController extends BaseContorller {
 			updateUserChatroom(userBo, chatroomid);
 			return Constant.COM_RESP;
 		}
+
+		/**
+		 * TODO 发通知成功，后面失败了如何处理
+		 *
+		 * 之所以先发通知，是因为调用了IMUtil.unSubscribe这个后，订阅的关系都解除了，就没法基于群聊发通知了，被踢出的人就不能收到消息
+		 * 目前先这样处理，之后需要添加基于个人的发送通知功能
+		 */
+		// 向群中发某人退出群聊通知
+		String message = String.format("%s %s", userBo.getId(), userBo.getUserName());
+		String res2 = IMUtil.notifyInChatRoom(Constant.SOME_ONE_QUIT_CHAT_ROOM, chatroomid, message);
+		if(!IMUtil.FINISH.equals(res2)){
+			logger.error("failed notifyInChatRoom Constant.SOME_ONE_QUIT_CHAT_ROOM, %s",res2);
+			return res2;
+		}
+
 		String userid = userBo.getId();
 		//第一个为返回结果信息，第二位term信息
 		String result = IMUtil.unSubscribe(chatroomid, userid);
@@ -325,6 +348,9 @@ public class ChatroomController extends BaseContorller {
 		updateUserChatroom(userBo, chatroomid);
 		deleteNickname(userid, chatroomid);
 		set.remove(userid);
+
+
+
 		if (set.size() < 2) {
 			String res = IMUtil.disolveRoom(chatroomid);
 			if (!res.equals(IMUtil.FINISH) && !res.contains("not found")) {
@@ -340,16 +366,6 @@ public class ChatroomController extends BaseContorller {
 			}
 			chatroomService.delete(chatroomid);
 
-			/**
-			 * TODO 如何通知
-			 *
-			 * 问题在于：群聊已经被 disolve，在即时通讯系统中，这种群聊关系已经解除
-			 * 而这个通知基于群聊广播的
-			 *
-			 * 解决方案：1、改为基于用户的通知，（问题：用户不在线，此条通知如何保存成离线，因为离线也是基于群聊做的）
-			 *
-			 *
-			 */
 		} else {
 			// 如果群聊没有修改过名称，自动修改名称
 			if(!chatroomBo.isNameSet()){
@@ -360,13 +376,6 @@ public class ChatroomController extends BaseContorller {
 			}
 			chatroomBo.setUsers(set);
 			chatroomService.updateUsers(chatroomBo);
-
-			// 向群中发某人退出群聊通知
-			String message = String.format("%s %s", userBo.getId(), userBo.getUserName());
-			String res = IMUtil.notifyInChatRoom(Constant.SOME_ONE_QUIT_CHAT_ROOM, chatroomid, message);
-			if(!IMUtil.FINISH.equals(res)){
-				logger.error("failed notifyInChatRoom Constant.SOME_ONE_QUIT_CHAT_ROOM, %s",res);
-			}
 		}
 		return Constant.COM_RESP;
 	}
