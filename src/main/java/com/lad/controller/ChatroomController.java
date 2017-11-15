@@ -347,13 +347,24 @@ public class ChatroomController extends BaseContorller {
 				set.remove(userid);
 				String nextId = set.iterator().next();
 				chatroomService.updateMaster(chatroomid, nextId);
+
+				// 通知群主变更通知
+				UserBo nextMaster = userService.getUser(nextId);
+				if(nextMaster != null){
+					JSONObject json2 = new JSONObject();
+					json2.put("masterId", nextMaster.getId());
+					json2.put("masterName", nextMaster.getUserName());
+					String res3 = IMUtil.notifyInChatRoom(Constant.MASTER_CHANGE_CHAT_ROOM, chatroomid, json.toString());
+					if(!IMUtil.FINISH.equals(res3)){
+						logger.error("failed notifyInChatRoom Constant.SOME_ONE_QUIT_CHAT_ROOM, %s",res2);
+						return res3;
+					}
+				}
 			}
 		}
 		updateUserChatroom(userBo, chatroomid);
 		deleteNickname(userid, chatroomid);
 		set.remove(userid);
-
-
 
 		if (set.size() < 2) {
 			String res = IMUtil.disolveRoom(chatroomid);

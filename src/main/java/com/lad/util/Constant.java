@@ -341,6 +341,9 @@ public class Constant {
 	public static final int FACE_TO_FACE_SOME_ONE_JOIN_CHAT_ROOM = 9;
 
 	// 群聊解散
-	public static final int SOME_ONE_DISMISS_CHAT_ROOM = 9;
+	public static final int SOME_ONE_DISMISS_CHAT_ROOM = 10;
+
+	// 群主变更
+	public static final int MASTER_CHANGE_CHAT_ROOM = 11;
 
 }
