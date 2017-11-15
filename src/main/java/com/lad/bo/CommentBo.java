@@ -31,9 +31,8 @@ public class CommentBo extends BaseBo{
 
     private LinkedHashSet<String> photos;
 
-    private String video;
+    private int thumpsubNum;
 
-    private String videoPic;
 
     public String getUserName() {
         return userName;
@@ -98,19 +97,11 @@ public class CommentBo extends BaseBo{
         this.photos = photos;
     }
 
-    public String getVideo() {
-        return video;
+    public int getThumpsubNum() {
+        return thumpsubNum;
     }
 
-    public void setVideo(String video) {
-        this.video = video;
-    }
-
-    public String getVideoPic() {
-        return videoPic;
-    }
-
-    public void setVideoPic(String videoPic) {
-        this.videoPic = videoPic;
+    public void setThumpsubNum(int thumpsubNum) {
+        this.thumpsubNum = thumpsubNum;
     }
 }

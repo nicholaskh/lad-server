@@ -102,4 +102,9 @@ public class CommentService implements ICommentService {
     public List<CommentBo> selectByTargetUser(String targetid, String userid, int type) {
         return commentDao.selectByTargetUser(targetid, userid, type);
     }
+
+    @Override
+    public WriteResult updateThumpsubNum(String commentId, int num) {
+        return commentDao.updateThumpsubNum(commentId, num);
+    }
 }

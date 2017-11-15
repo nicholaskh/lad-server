@@ -138,4 +138,12 @@ public interface ICommentService {
      */
     List<CommentBo> selectByTargetUser(String targetid, String userid, int type);
 
+
+    /**
+     * 删除评论
+     * @param commentId
+     * @return
+     */
+    WriteResult updateThumpsubNum(String commentId, int num);
+
 }

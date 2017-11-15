@@ -66,6 +66,8 @@ public class PartyController extends BaseContorller {
     @Autowired
     private IFeedbackService feedbackService;
 
+    private int dayTimeMins = 24 * 60 * 60 * 1000;
+
 
     @RequestMapping("/create")
     @ResponseBody
@@ -121,7 +123,7 @@ public class PartyController extends BaseContorller {
             String path =  CommonUtil.upload(backPic, Constant.PARTY_PICTURE_PATH, fileName, 0);
             partyBo.setBackPic(path);
         }
-        partyBo.setStatus(0);
+        partyBo.setStatus(1);
         partyBo.setCreateuid(userId);
 
         ChatroomBo chatroomBo = new ChatroomBo();
@@ -257,7 +259,7 @@ public class PartyController extends BaseContorller {
         PartyVo partyVo = new PartyVo();
         BeanUtils.copyProperties(partyBo, partyVo);
         if (partyBo.getStatus() == 1){
-            if (hasPartyEnd(partyid, partyBo.getStartTime())){
+            if (hasPartyEnd(partyid, partyBo.getStartTime(), partyBo.getAppointment())){
                 partyVo.setStatus(2);
             } else {
                 partyBo.setStatus(partyBo.getStatus());
@@ -324,7 +326,7 @@ public class PartyController extends BaseContorller {
                 return CommonUtil.toErrorResult(ERRORCODE.PARTY_NULL.getIndex(),
                         ERRORCODE.PARTY_NULL.getReason());
             }
-            if (partyBo.getStatus() != 1) {
+            if (partyBo.getStatus() == 2) {
                 return CommonUtil.toErrorResult(ERRORCODE.PARTY_HAS_END.getIndex(),
                         ERRORCODE.PARTY_HAS_END.getReason());
             }
@@ -519,7 +521,7 @@ public class PartyController extends BaseContorller {
             PartyListVo listVo = new PartyListVo();
             BeanUtils.copyProperties(partyBo, listVo);
             if (partyBo.getStatus() == 1) {
-                if (hasPartyEnd(partyBo.getId(), startTimes)){
+                if (hasPartyEnd(partyBo.getId(), startTimes, partyBo.getAppointment())){
                    listVo.setStatus(2);
                 }
             }
@@ -529,7 +531,7 @@ public class PartyController extends BaseContorller {
         }
     }
 
-    private boolean hasPartyEnd(String prtyid, LinkedHashSet<String> startTimes){
+    private boolean hasPartyEnd(String prtyid, LinkedHashSet<String> startTimes, int appointment){
 
         if (!CommonUtil.isEmpty(startTimes)) {
             Iterator<String> iterator = startTimes.iterator();
@@ -537,14 +539,24 @@ public class PartyController extends BaseContorller {
             while (iterator.hasNext()){
                 lastTime = iterator.next();
             }
-            Date lastDate = CommonUtil.getDate(lastTime, "yyy-MM-dd HH:mm");
-            //活动已经结束
-            if (lastDate != null && lastDate.getTime() <= System.currentTimeMillis()) {
-                partyService.updatePartyStatus(prtyid, 2);
-                return false;
+            if (lastTime.equals("0")) {
+               return false;
+            }
+            Date lastDate = CommonUtil.getDate(lastTime, "yyyy-MM-dd HH:mm");
+            if (lastDate != null) {
+                long last = lastDate.getTime();
+                //减去提前预约天数
+                if (appointment > 0) {
+                    last = last - (appointment * dayTimeMins);
+                }
+                //活动已经结束
+                if (last <= System.currentTimeMillis()) {
+                    partyService.updatePartyStatus(prtyid, 2);
+                    return true;
+                }
             }
         }
-        return  true;
+        return  false;
     }
 
     /**
@@ -800,8 +812,17 @@ public class PartyController extends BaseContorller {
 
         List<CommentBo> commentBos = commentService.selectByTargetUser(comment.getPartyid(), userBo.getId(), Constant.PARTY_TYPE);
         if (commentBos != null && !commentBos.isEmpty()) {
-            return CommonUtil.toErrorResult(ERRORCODE.PARTY_HAS_COMMENT.getIndex(),
-                    ERRORCODE.PARTY_HAS_COMMENT.getReason());
+            boolean hasComment = false;
+            for (CommentBo commentBo : commentBos) {
+                if (StringUtils.isEmpty(commentBo.getParentid())){
+                    hasComment = true;
+                    break;
+                }
+            }
+            if (hasComment && StringUtils.isEmpty(comment.getParentid())) {
+                return CommonUtil.toErrorResult(ERRORCODE.PARTY_HAS_COMMENT.getIndex(),
+                        ERRORCODE.PARTY_HAS_COMMENT.getReason());
+            }
         }
 
         CommentBo commentBo = new CommentBo();
@@ -944,13 +965,12 @@ public class PartyController extends BaseContorller {
             vo.setCommentId(commentBo.getId());
             vo.setCreateTime(commentBo.getCreateTime());
             vo.setPhotos(commentBo.getPhotos());
-            vo.setVideo(commentBo.getVideo());
-            vo.setVideoPic(commentBo.getVideoPic());
             if (null != user) {
                 //判断当前用户是否点赞
                 ThumbsupBo thumbsupBo = thumbsupService.findHaveOwenidAndVisitorid(commentBo.getId(), user.getId());
                 vo.setMyThumbsup(thumbsupBo != null);
             }
+            vo.setThumpsubCount(commentBo.getThumpsubNum());
             commentVos.add(vo);
         }
         Map<String, Object> map = new HashMap<>();
@@ -1085,14 +1105,17 @@ public class PartyController extends BaseContorller {
                 thumbsupBo.setImage(userBo.getHeadPictureName());
                 thumbsupBo.setVisitor_id(userBo.getId());
                 thumbsupBo.setCreateuid(userBo.getId());
+                thumbsupService.insert(thumbsupBo);
             } else {
                 if (thumbsupBo.getDeleted() == Constant.DELETED) {
                     thumbsupService.udateDeleteById(thumbsupBo.getId());
                 }
             }
+            commentService.updateThumpsubNum(commentId, 1);
         } else if (type == 1) {
             if (null != thumbsupBo) {
                 thumbsupService.deleteById(thumbsupBo.getId());
+                commentService.updateThumpsubNum(commentId, -1);
             }
         } else {
             return CommonUtil.toErrorResult(ERRORCODE.TYPE_ERROR.getIndex(),

@@ -143,4 +143,13 @@ public class CommentDaoImpl implements ICommentDao {
         query.addCriteria(new Criteria("type").is(type));
         return mongoTemplate.find(query, CommentBo.class);
     }
+
+    @Override
+    public WriteResult updateThumpsubNum(String commentId, int num) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("_id").is(commentId));
+        Update update = new Update();
+        update.inc("thumpsubNum", num);
+        return mongoTemplate.updateFirst(query, update, CommentBo.class);
+    }
 }
