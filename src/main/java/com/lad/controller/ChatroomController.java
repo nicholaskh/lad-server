@@ -160,7 +160,7 @@ public class ChatroomController extends BaseContorller {
 				imNames.add(user.getUserName());
 				imIds.add(user.getId());
 
-				JPushUtil.pushTo(String.format("%s邀请您加入群聊", user.getUserName()), userid);
+				JPushUtil.pushTo(String.format("%s邀请您加入群聊", userBo.getUserName()), userid);
 
 			}
 		}
