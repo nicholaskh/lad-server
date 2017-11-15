@@ -145,7 +145,12 @@ public class FriendsController extends BaseContorller {
 		int type = isNew ? 0 : 1;
 		String res = IMUtil.subscribe(type,chatroomBo.getId(), userid, friendid);
 		if (!res.equals(IMUtil.FINISH)) {
-			return res;
+			if (res.contains("channelId is not exists")) {
+				res = IMUtil.subscribe(0,chatroomBo.getId(), userid, friendid);
+			}
+			if (!res.equals(IMUtil.FINISH)) {
+				return res;
+			}
 		}
 		
 		JPushUtil.pushTo(userBo.getUserName() + JPushUtil.AGREE_APPLY_FRIEND,
