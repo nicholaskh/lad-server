@@ -2,6 +2,7 @@ package com.lad.dao.impl;
 
 import com.lad.dao.IVideoDao;
 import com.lad.scrapybo.VideoBo;
+import com.lad.util.Constant;
 import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -81,6 +82,34 @@ public class VideoDaoImpl implements IVideoDao {
         query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
         query.limit(limit);
         return mongoTemplateTwo.find(query, VideoBo.class);
+    }
+
+    @Override
+    public WriteResult updateVideoNum(String inforid, int type, int num) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("_id").is(inforid));
+        Update update = new Update();
+        switch (type){
+            case Constant.VISIT_NUM:
+                update.inc("visitNum", num);
+                break;
+            case Constant.COMMENT_NUM:
+                update.inc("commnetNum", num);
+                break;
+            case Constant.SHARE_NUM:
+                update.inc("shareNum", num);
+                break;
+            case Constant.THUMPSUB_NUM:
+                update.inc("thumpsubNum", num);
+                break;
+            case Constant.COLLECT_NUM:
+                update.inc("collectNum", num);
+                break;
+            default:
+                update.inc("visitNum", num);
+                break;
+        }
+        return mongoTemplateTwo.updateFirst(query, update, VideoBo.class);
     }
 }
 

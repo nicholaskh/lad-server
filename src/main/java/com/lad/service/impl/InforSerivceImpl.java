@@ -246,4 +246,19 @@ public class InforSerivceImpl implements IInforService {
     public List<VideoBo> findVideoByLimit(int limit) {
         return videoDao.findByLimit(limit);
     }
+
+    @Override
+    public WriteResult updateVideoNum(String inforid, int type, int num) {
+        return videoDao.updateVideoNum(inforid, type, num);
+    }
+
+    @Override
+    public WriteResult updateSecurityNum(String inforid, int type, int num) {
+        return securityDao.updateSecurityNum(inforid, type, num);
+    }
+
+    @Override
+    public WriteResult updateRadioNum(String radioid, int type, int num) {
+        return broadcastDao.updateRadioNum(radioid, type, num);
+    }
 }

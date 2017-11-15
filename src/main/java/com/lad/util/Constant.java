@@ -296,6 +296,12 @@ public class Constant {
 	 */
 	public static final int INFOR_VIDEO = 4;
 
+	public static final int VISIT_NUM = 1;
+	public static final int COMMENT_NUM = 2;
+	public static final int SHARE_NUM = 3;
+	public static final int THUMPSUB_NUM = 4;
+	public static final int COLLECT_NUM = 5;
+
 	/**
 	 * 健康
 	 */

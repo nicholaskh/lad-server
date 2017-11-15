@@ -36,4 +36,13 @@ public interface IVideoDao {
      */
     List<VideoBo> findByLimit(int limit);
 
+    /**
+     * 更新各组访问量
+     * @param inforid
+     * @param type
+     * @param num
+     * @return
+     */
+    WriteResult updateVideoNum(String inforid, int type, int num);
+
 }

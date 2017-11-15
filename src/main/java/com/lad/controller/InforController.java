@@ -428,8 +428,8 @@ public class InforController extends BaseContorller {
     public String radioInfors(String radioid, HttpServletRequest request, HttpServletResponse response){
         BroadcastBo broadcastBo = inforService.findBroadById(radioid);
         BroadcastVo broadcastVo = null;
-
         if (broadcastBo != null) {
+            inforService.updateRadioNum(radioid, Constant.VISIT_NUM, 1);
             broadcastVo = new BroadcastVo();
             BeanUtils.copyProperties(broadcastBo, broadcastVo);
             broadcastVo.setInforid(broadcastBo.getId());
@@ -501,16 +501,9 @@ public class InforController extends BaseContorller {
                     ERRORCODE.INFOR_IS_NULL.getIndex(),
                     ERRORCODE.INFOR_IS_NULL.getReason());
         }
-        InforReadNumBo readNumBo = inforService.findReadByid(videoid);
-        if (readNumBo == null) {
-            readNumBo = new InforReadNumBo();
-            readNumBo.setClassName(videoBo.getClassName());
-            readNumBo.setInforid(videoid);
-            readNumBo.setVisitNum(1);
-            inforService.addReadNum(readNumBo);
-        } else {
-            inforService.updateReadNum(videoid);
-        }
+
+        inforService.updateVideoNum(videoid, Constant.VISIT_NUM, 1);
+
         VideoVo videoVo = new VideoVo();
 
         UserBo userBo = getUserLogin(request);
@@ -521,10 +514,9 @@ public class InforController extends BaseContorller {
         }
         videoVo.setInforid(videoid);
         BeanUtils.copyProperties( videoBo, videoVo);
-        long thuSupNum = thumbsupService.selectByOwnerIdCount(videoid);
-        videoVo.setThumpsubNum(thuSupNum);
-        videoVo.setCommentNum((long)readNumBo.getCommentNum());
-        videoVo.setReadNum(readNumBo.getVisitNum());
+        videoVo.setThumpsubNum((long)videoBo.getThumpsubNum());
+        videoVo.setCommentNum((long)videoBo.getCommnetNum());
+        videoVo.setReadNum((long)videoBo.getVisitNum());
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("ret", 0);
         map.put("video", videoVo);
@@ -697,20 +689,8 @@ public class InforController extends BaseContorller {
                     ERRORCODE.INFOR_IS_NULL.getIndex(),
                     ERRORCODE.INFOR_IS_NULL.getReason());
         }
-
-        InforReadNumBo readNumBo = inforService.findReadByid(inforid);
-        if (readNumBo == null) {
-            readNumBo = new InforReadNumBo();
-            readNumBo.setClassName(securityBo.getNewsType());
-            readNumBo.setInforid(securityBo.getId());
-            readNumBo.setVisitNum(1);
-            inforService.addReadNum(readNumBo);
-        } else {
-            inforService.updateReadNum(inforid);
-        }
+        inforService.updateSecurityNum(inforid, Constant.VISIT_NUM, 1);
         SecurityVo securityVo = new SecurityVo();
-
-
         UserBo userBo = getUserLogin(request);
         if (userBo != null) {
             ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(inforid, userBo.getId());
@@ -722,7 +702,7 @@ public class InforController extends BaseContorller {
         long thuSupNum = thumbsupService.selectByOwnerIdCount(inforid);
         securityVo.setThumpsubNum(thuSupNum);
         securityVo.setCommentNum(commentService.selectCommentByTypeCount(Constant.INFOR_TYPE, inforid));
-        securityVo.setReadNum(readNumBo.getVisitNum());
+        securityVo.setReadNum((long)securityBo.getVisitNum());
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("ret", 0);
         map.put("securityVo", securityVo);
@@ -762,9 +742,8 @@ public class InforController extends BaseContorller {
 
     @RequestMapping("/add-comment")
     @ResponseBody
-    public String addComment(@RequestParam String inforid,
-                             @RequestParam String countent,
-                             String parentid,
+    public String addComment(@RequestParam String inforid, @RequestParam String countent,
+                             String parentid, int inforType,
                              HttpServletRequest request, HttpServletResponse response){
 
         UserBo userBo;
@@ -787,8 +766,22 @@ public class InforController extends BaseContorller {
 
         userService.addUserLevel(userBo.getId(),1, Constant.LEVEL_COMMENT);
 
-        inforService.updateComment(inforid, 1);
-
+        switch (inforType){
+            case Constant.INFOR_HEALTH:
+                inforService.updateComment(inforid, 1);
+                break;
+            case Constant.INFOR_SECRITY:
+                inforService.updateSecurityNum(inforid, Constant.COMMENT_NUM, 1);
+                break;
+            case Constant.INFOR_RADIO:
+                inforService.updateRadioNum(inforid, Constant.COMMENT_NUM, 1);
+                break;
+            case Constant.INFOR_VIDEO:
+                inforService.updateVideoNum(inforid, Constant.COMMENT_NUM, 1);
+                break;
+            default:
+                break;
+        }
         CommentVo commentVo = comentBo2Vo(commentBo);
         Map<String, Object> map = new HashMap<>();
         map.put("ret", 0);
@@ -815,7 +808,7 @@ public class InforController extends BaseContorller {
 
     @RequestMapping("/thumbsup")
     @ResponseBody
-    public String inforThumbsup(@RequestParam String targetid, @RequestParam int type,
+    public String inforThumbsup(@RequestParam String targetid, @RequestParam int type, int inforType,
             HttpServletRequest request, HttpServletResponse response){
         UserBo userBo;
         try {
@@ -824,6 +817,7 @@ public class InforController extends BaseContorller {
             return e.getMessage();
         }
         ThumbsupBo thumbsupBo = thumbsupService.findHaveOwenidAndVisitorid(targetid, userBo.getId());
+        String inforid = targetid;
         if (null == thumbsupBo) {
             thumbsupBo = new ThumbsupBo();
             if (type == 0) {
@@ -837,6 +831,7 @@ public class InforController extends BaseContorller {
                             ERRORCODE.COMMENT_IS_NULL.getIndex(),
                             ERRORCODE.COMMENT_IS_NULL.getReason());
                 }
+                inforid = commentBo.getTargetid();
                 inforService.updateThumpsub(commentBo.getTargetid(), 1);
             } else {
                 return CommonUtil.toErrorResult(
@@ -848,19 +843,33 @@ public class InforController extends BaseContorller {
             thumbsupBo.setVisitor_id(userBo.getId());
             thumbsupBo.setCreateuid(userBo.getId());
             thumbsupService.insert(thumbsupBo);
-
         } else {
             if (thumbsupBo.getDeleted() == Constant.DELETED) {
                 thumbsupService.udateDeleteById(thumbsupBo.getId());
-                inforService.updateThumpsub(thumbsupBo.getOwner_id(), 1);
             }
+        }
+        switch (inforType){
+            case Constant.INFOR_HEALTH:
+                inforService.updateComment(inforid, 1);
+                break;
+            case Constant.INFOR_SECRITY:
+                inforService.updateSecurityNum(inforid, Constant.THUMPSUB_NUM, 1);
+                break;
+            case Constant.INFOR_RADIO:
+                inforService.updateRadioNum(inforid, Constant.THUMPSUB_NUM, 1);
+                break;
+            case Constant.INFOR_VIDEO:
+                inforService.updateVideoNum(inforid, Constant.THUMPSUB_NUM, 1);
+                break;
+            default:
+                break;
         }
         return Constant.COM_RESP;
     }
 
     @RequestMapping("/cancal-thumbsup")
     @ResponseBody
-    public String cancelThumbsup(@RequestParam String targetid, @RequestParam int type,
+    public String cancelThumbsup(@RequestParam String targetid, @RequestParam int type, int inforType,
                                  HttpServletRequest request, HttpServletResponse response){
         UserBo userBo;
         try {
@@ -879,6 +888,23 @@ public class InforController extends BaseContorller {
             if (commentBo != null) {
                 inforService.updateThumpsub(commentBo.getTargetid(), 1);
             }
+        }
+
+        switch (inforType){
+            case Constant.INFOR_HEALTH:
+                inforService.updateComment(targetid, -1);
+                break;
+            case Constant.INFOR_SECRITY:
+                inforService.updateSecurityNum(targetid, Constant.THUMPSUB_NUM, -1);
+                break;
+            case Constant.INFOR_RADIO:
+                inforService.updateRadioNum(targetid, Constant.THUMPSUB_NUM, -1);
+                break;
+            case Constant.INFOR_VIDEO:
+                inforService.updateVideoNum(targetid, Constant.THUMPSUB_NUM, -1);
+                break;
+            default:
+                break;
         }
 
         return Constant.COM_RESP;

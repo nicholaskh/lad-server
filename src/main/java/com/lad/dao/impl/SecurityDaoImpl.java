@@ -2,6 +2,8 @@ package com.lad.dao.impl;
 
 import com.lad.dao.ISecurityDao;
 import com.lad.scrapybo.SecurityBo;
+import com.lad.util.Constant;
+import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Sort;
@@ -12,6 +14,7 @@ import org.springframework.data.mongodb.core.aggregation.GroupOperation;
 import org.springframework.data.mongodb.core.aggregation.ProjectionOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
@@ -78,5 +81,33 @@ public class SecurityDaoImpl implements ISecurityDao {
         query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "time")));
         query.limit(limit);
         return mongoTemplateTwo.find(query, SecurityBo.class);
+    }
+
+    @Override
+    public WriteResult updateSecurityNum(String inforid, int type, int num) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("_id").is(inforid));
+        Update update = new Update();
+        switch (type){
+            case Constant.VISIT_NUM:
+                update.inc("visitNum", num);
+                break;
+            case Constant.COMMENT_NUM:
+                update.inc("commnetNum", num);
+                break;
+            case Constant.SHARE_NUM:
+                update.inc("shareNum", num);
+                break;
+            case Constant.THUMPSUB_NUM:
+                update.inc("thumpsubNum", num);
+                break;
+            case Constant.COLLECT_NUM:
+                update.inc("collectNum", num);
+                break;
+            default:
+                update.inc("visitNum", num);
+                break;
+        }
+        return mongoTemplateTwo.updateFirst(query, update, SecurityBo.class);
     }
 }

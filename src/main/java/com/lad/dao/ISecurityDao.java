@@ -1,6 +1,7 @@
 package com.lad.dao;
 
 import com.lad.scrapybo.SecurityBo;
+import com.mongodb.WriteResult;
 
 import java.util.List;
 
@@ -23,5 +24,14 @@ public interface ISecurityDao {
 
     //查找制定条数
     List<SecurityBo> findByLimiy(int limit);
+
+    /**
+     * 更新各组访问量
+     * @param inforid
+     * @param type
+     * @param num
+     * @return
+     */
+    WriteResult updateSecurityNum(String inforid, int type, int num);
 
 }

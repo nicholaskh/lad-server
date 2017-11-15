@@ -1,6 +1,7 @@
 package com.lad.dao;
 
 import com.lad.scrapybo.BroadcastBo;
+import com.mongodb.WriteResult;
 
 import java.util.List;
 
@@ -30,5 +31,9 @@ public interface IBroadcastDao {
 
 
     List<BroadcastBo> findByClassNamePage(String groupName, String className, int start, int end);
+
+
+    WriteResult updateRadioNum(String radioid, int type, int num);
+
 
 }

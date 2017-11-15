@@ -223,4 +223,31 @@ public interface IInforService {
 
 
     List<VideoBo> findVideoByLimit(int limit);
+
+    /**
+     * 更新视频访问量
+     * @param inforid
+     * @param type
+     * @param num
+     * @return
+     */
+    WriteResult updateVideoNum(String inforid, int type, int num);
+
+    /**
+     * 更新安防访问量
+     * @param inforid
+     * @param type
+     * @param num
+     * @return
+     */
+    WriteResult updateSecurityNum(String inforid, int type, int num);
+
+    /**
+     * 更新广播访问
+     * @param radioid
+     * @param type
+     * @param num
+     * @return
+     */
+    WriteResult updateRadioNum(String radioid, int type, int num);
 }

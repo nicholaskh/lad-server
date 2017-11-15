@@ -31,6 +31,16 @@ public class VideoBo implements Serializable {
 
     private String className;
 
+    private int visitNum;
+
+    private int shareNum;
+
+    private int commnetNum;
+
+    private int thumpsubNum;
+
+    private int collectNum;
+
     public String getId() {
         return id;
     }
@@ -93,5 +103,45 @@ public class VideoBo implements Serializable {
 
     public void setClassName(String className) {
         this.className = className;
+    }
+
+    public int getVisitNum() {
+        return visitNum;
+    }
+
+    public void setVisitNum(int visitNum) {
+        this.visitNum = visitNum;
+    }
+
+    public int getShareNum() {
+        return shareNum;
+    }
+
+    public void setShareNum(int shareNum) {
+        this.shareNum = shareNum;
+    }
+
+    public int getCommnetNum() {
+        return commnetNum;
+    }
+
+    public void setCommnetNum(int commnetNum) {
+        this.commnetNum = commnetNum;
+    }
+
+    public int getThumpsubNum() {
+        return thumpsubNum;
+    }
+
+    public void setThumpsubNum(int thumpsubNum) {
+        this.thumpsubNum = thumpsubNum;
+    }
+
+    public int getCollectNum() {
+        return collectNum;
+    }
+
+    public void setCollectNum(int collectNum) {
+        this.collectNum = collectNum;
     }
 }

@@ -2,6 +2,8 @@ package com.lad.dao.impl;
 
 import com.lad.dao.IBroadcastDao;
 import com.lad.scrapybo.BroadcastBo;
+import com.lad.util.Constant;
+import com.mongodb.WriteResult;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -10,6 +12,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.*;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -102,5 +105,33 @@ public class BroadcastDaoImpl implements IBroadcastDao {
         query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
         query.limit(limit);
         return mongoTemplateTwo.find(query, BroadcastBo.class);
+    }
+
+    @Override
+    public WriteResult updateRadioNum(String radioid, int type, int num) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("_id").is(radioid));
+        Update update = new Update();
+        switch (type){
+            case Constant.VISIT_NUM:
+                update.inc("visitNum", num);
+                break;
+            case Constant.COMMENT_NUM:
+                update.inc("commnetNum", num);
+                break;
+            case Constant.SHARE_NUM:
+                update.inc("shareNum", num);
+                break;
+            case Constant.THUMPSUB_NUM:
+                update.inc("thumpsubNum", num);
+                break;
+            case Constant.COLLECT_NUM:
+                update.inc("collectNum", num);
+                break;
+            default:
+                update.inc("visitNum", num);
+                break;
+        }
+        return mongoTemplateTwo.updateFirst(query, update, BroadcastBo.class);
     }
 }
