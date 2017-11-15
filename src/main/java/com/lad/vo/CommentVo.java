@@ -41,10 +41,6 @@ public class CommentVo extends BaseVo {
 
     private LinkedHashSet<String> photos;
 
-    private String video;
-
-    private String videoPic;
-
     public long getThumpsubCount() {
         return thumpsubCount;
     }
@@ -165,19 +161,4 @@ public class CommentVo extends BaseVo {
         this.photos = photos;
     }
 
-    public String getVideo() {
-        return video;
-    }
-
-    public void setVideo(String video) {
-        this.video = video;
-    }
-
-    public String getVideoPic() {
-        return videoPic;
-    }
-
-    public void setVideoPic(String videoPic) {
-        this.videoPic = videoPic;
-    }
 }
