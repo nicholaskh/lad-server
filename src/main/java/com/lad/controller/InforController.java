@@ -804,6 +804,28 @@ public class InforController extends BaseContorller {
         map.put("commentVoList", commentVos);
         return JSONObject.fromObject(map).toString();
     }
+
+    @RequestMapping("/delete-comment")
+    @ResponseBody
+    public String delelteComment(String commnetId,
+                             HttpServletRequest request, HttpServletResponse response){
+        UserBo userBo;
+        try {
+            userBo = checkSession(request, userService);
+        } catch (MyException e) {
+            return e.getMessage();
+        }
+        CommentBo commentBo = commentService.findById(commnetId);
+        if (commentBo != null) {
+            if (commentBo.getCreateuid().equals(userBo.getId())){
+                commentService.delete(commnetId);
+            } else {
+                return CommonUtil.toErrorResult(ERRORCODE.NOTE_NOT_MASTER.getIndex(),
+                        ERRORCODE.NOTE_NOT_MASTER.getReason());
+            }
+        }
+        return Constant.COM_RESP;
+    }
    
 
     @RequestMapping("/thumbsup")
