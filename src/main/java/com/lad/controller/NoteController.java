@@ -3,10 +3,7 @@ package com.lad.controller;
 import com.lad.bo.*;
 import com.lad.redis.RedisServer;
 import com.lad.service.*;
-import com.lad.util.CommonUtil;
-import com.lad.util.Constant;
-import com.lad.util.ERRORCODE;
-import com.lad.util.MyException;
+import com.lad.util.*;
 import com.lad.vo.CommentVo;
 import com.lad.vo.NoteVo;
 import com.lad.vo.UserBaseVo;
@@ -56,6 +53,8 @@ public class NoteController extends BaseContorller {
 
 	@Autowired
 	private IDynamicService dynamicService;
+
+	private String pushTitle = "互动通知";
 
 
 	@RequestMapping("/insert")
@@ -184,6 +183,11 @@ public class NoteController extends BaseContorller {
 		} catch (MyException e) {
 			return e.getMessage();
 		}
+		NoteBo noteBo = noteService.selectById(noteid);
+		if (noteBo ==null) {
+			return CommonUtil.toErrorResult(ERRORCODE.NOTE_IS_NULL.getIndex(),
+					ERRORCODE.NOTE_IS_NULL.getReason());
+		}
 		ThumbsupBo thumbsupBo = thumbsupService.findHaveOwenidAndVisitorid(noteid, userBo.getId());
 		boolean isThumsup = false;
 		if (null == thumbsupBo) {
@@ -201,7 +205,6 @@ public class NoteController extends BaseContorller {
 				isThumsup = true;
 			}
 		}
-		NoteBo noteBo = noteService.selectById(noteid);
 		updateCircleHot(circleService, redisServer, noteBo.getCircleId(), 1, Constant.CIRCLE_THUMP );
 		if (isThumsup) {
 			RLock lock = redisServer.getRLock(Constant.THUMB_LOCK);
@@ -213,6 +216,8 @@ public class NoteController extends BaseContorller {
 			}
 		}
 		updateDynamicNums(noteBo.getCreateuid(), 1, dynamicService, redisServer);
+		String path = "/note/note-info.do?noteid=" + noteid;
+		JPushUtil.push(pushTitle, "有人刚刚赞了你的帖子，快去看看吧!", path,  noteBo.getCreateuid());
 		return Constant.COM_RESP;
 	}
 
@@ -411,6 +416,14 @@ public class NoteController extends BaseContorller {
 		updateRedStar(userBo, noteBo, circleid, currentDate);
 		updateDynamicNums(noteBo.getCreateuid(), 1, dynamicService, redisServer);
 
+		String path = "/note/note-info.do?noteid=" + noteid;
+		JPushUtil.push(pushTitle, "有人刚刚评论了你的帖子，快去看看吧!", path,  noteBo.getCreateuid());
+		if (!StringUtils.isEmpty(parentid)) {
+			CommentBo comment = commentService.findById(parentid);
+			if (comment != null) {
+				JPushUtil.push(pushTitle, "有人刚刚回复了你的评论，快去看看吧!", path,  comment.getCreateuid());
+			}
+		}
 		Map<String, Object> map = new HashMap<>();
 		map.put("ret", 0);
 		map.put("commentVo", comentBo2Vo(commentBo));
