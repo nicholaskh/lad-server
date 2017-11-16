@@ -865,6 +865,15 @@ public class PartyController extends BaseContorller {
             commentBo.setPhotos(photo);
         }
         commentService.insert(commentBo);
+
+        String path = "/party/party-info.do?partyid=" + comment.getPartyid();
+        JPushUtil.pushMessage(titlePush, "有人刚刚评论了你的聚会，快去看看吧!", path,  partyBo.getCreateuid());
+        if (!org.springframework.util.StringUtils.isEmpty(comment.getParentid())) {
+            CommentBo commentBo1 = commentService.findById(comment.getParentid());
+            if (commentBo1 != null) {
+                JPushUtil.pushMessage(titlePush, "有人刚刚回复了你的评论，快去看看吧!", path,  commentBo1.getCreateuid());
+            }
+        }
         //圈子热度
         updateCircleHot(circleService, redisServer, partyBo.getCircleid(), 1, Constant.CIRCLE_PARTY_VISIT);
         if (comment.isSync()) {
@@ -1147,6 +1156,13 @@ public class PartyController extends BaseContorller {
             commentService.updateThumpsubNum(commentId, num);
         } finally {
             lock.unlock();
+        }
+        if (type == 1){
+            CommentBo commentBo = commentService.findById(commentId);
+            if (commentBo != null) {
+                String path = "/party/party-info.do?partyid=" + commentBo.getTargetid();
+                JPushUtil.pushMessage(titlePush, "有人刚刚赞了你的聚会，快去看看吧!", path,  commentBo.getCreateuid());
+            }
         }
         return Constant.COM_RESP;
     }

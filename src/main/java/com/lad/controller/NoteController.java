@@ -217,7 +217,7 @@ public class NoteController extends BaseContorller {
 		}
 		updateDynamicNums(noteBo.getCreateuid(), 1, dynamicService, redisServer);
 		String path = "/note/note-info.do?noteid=" + noteid;
-		JPushUtil.push(pushTitle, "有人刚刚赞了你的帖子，快去看看吧!", path,  noteBo.getCreateuid());
+		JPushUtil.pushMessage(pushTitle, "有人刚刚赞了你的帖子，快去看看吧!", path,  noteBo.getCreateuid());
 		return Constant.COM_RESP;
 	}
 
@@ -417,11 +417,11 @@ public class NoteController extends BaseContorller {
 		updateDynamicNums(noteBo.getCreateuid(), 1, dynamicService, redisServer);
 
 		String path = "/note/note-info.do?noteid=" + noteid;
-		JPushUtil.push(pushTitle, "有人刚刚评论了你的帖子，快去看看吧!", path,  noteBo.getCreateuid());
+		JPushUtil.pushMessage(pushTitle, "有人刚刚评论了你的帖子，快去看看吧!", path,  noteBo.getCreateuid());
 		if (!StringUtils.isEmpty(parentid)) {
 			CommentBo comment = commentService.findById(parentid);
 			if (comment != null) {
-				JPushUtil.push(pushTitle, "有人刚刚回复了你的评论，快去看看吧!", path,  comment.getCreateuid());
+				JPushUtil.pushMessage(pushTitle, "有人刚刚回复了你的评论，快去看看吧!", path,  comment.getCreateuid());
 			}
 		}
 		Map<String, Object> map = new HashMap<>();
