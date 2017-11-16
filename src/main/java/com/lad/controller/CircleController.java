@@ -55,6 +55,8 @@ public class CircleController extends BaseContorller {
 	@Autowired
 	private IFriendsService friendsService;
 
+	private String titlePush = "圈子通知";
+
 	/**
 	 * 圈子添加成员时锁
 	 */
@@ -235,8 +237,15 @@ public class CircleController extends BaseContorller {
 		reasonBo.setStatus(Constant.ADD_APPLY);
 		circleService.updateUsersApply(circleid, usersApply);
 		circleService.insertApplyReason(reasonBo);
-		JPushUtil.pushTo(String.format("%s申请加入圈子【%s】", userBo.getUserName(),
-				circleBo.getName()), userBo.getId());
+		String content = String.format("%s申请加入您的圈子【%s】，快去审核吧", userBo.getUserName(),
+				circleBo.getName());
+		String path = "/circle/user-apply.do?circleid=" + circleid;
+		JPushUtil.push(titlePush, content, path,  circleBo.getCreateuid());
+		HashSet<String> masters = circleBo.getMasters();
+		if (!CommonUtil.isEmpty(masters)) {
+			String[] pushUser = (String[]) masters.toArray();
+			JPushUtil.push(titlePush, content, path,  pushUser);
+		}
 		return Constant.COM_RESP;
 	}
 
@@ -328,8 +337,16 @@ public class CircleController extends BaseContorller {
 		HashSet<String> usersApply = circleBo.getUsersApply();
 		List<UserApplyVo> userApplyVos = new ArrayList<>();
 
+		HashSet<String> users = circleBo.getUsers();
+
 		boolean isChange = false;
+		HashSet<String> removeUsers = new LinkedHashSet<>();
 		for (String userid : usersApply) {
+			if (users.contains(userid)) {
+				removeUsers.add(userid);
+				isChange = true;
+				continue;
+			}
 			UserBo apply = userService.getUser(userid);
 			if (apply != null) {
 				UserApplyVo  userApplyVo = new UserApplyVo();
@@ -346,11 +363,12 @@ public class CircleController extends BaseContorller {
 				}
 				userApplyVos.add(userApplyVo);
 			} else {
-				usersApply.remove(userid);
+				removeUsers.add(userid);
 				isChange = true;
 			}
 		}
 		if (isChange) {
+			usersApply.removeAll(removeUsers);
 			circleService.updateUsersApply(circleid, usersApply);
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -378,8 +396,9 @@ public class CircleController extends BaseContorller {
 					ERRORCODE.CIRCLE_IS_NULL.getReason());
 		}
 		updateHistory(userBo.getId(), circleid, locationService, circleService);
+		String[] useridArr = CommonUtil.getIds(userids);
 		HashSet<String> users = circleBo.getUsers();
-		if (users.size() >= 500) {
+		if (users.size() >= 500 || (users.size() + useridArr.length) > 500) {
 			return CommonUtil.toErrorResult(
 					ERRORCODE.CIRCLE_USER_MAX.getIndex(),
 					ERRORCODE.CIRCLE_USER_MAX.getReason());
@@ -390,28 +409,53 @@ public class CircleController extends BaseContorller {
 					ERRORCODE.CIRCLE_NOT_MASTER.getIndex(),
 					ERRORCODE.CIRCLE_NOT_MASTER.getReason());
 		}
-		String[] useridArr = CommonUtil.getIds(userids);
 		HashSet<String> usersApply = circleBo.getUsersApply();
+		List<String> accepts = new ArrayList<>();
 		for (String userid : useridArr) {
 			UserBo user = userService.getUser(userid);
 			if (null == user) {
 				continue;
 			}
-			if (!usersApply.contains(userid)) {
-				return CommonUtil.toErrorResult(
-						ERRORCODE.CIRCLE_APPLY_USER_NULL.getIndex(),
-						ERRORCODE.CIRCLE_APPLY_USER_NULL.getReason());
-			}
-			usersApply.remove(userid);
-			users.add(userid);
-			userAddHis(userid, circleid, 1);
-			ReasonBo reasonBo = circleService.findByUserAndCircle(userid,circleid);
-			if (reasonBo != null) {
-				circleService.updateApply(reasonBo.getId(), Constant.ADD_AGREE, "");
+			if (usersApply.contains(userid)) {
+				usersApply.remove(userid);
+				users.add(userid);
+				userAddHis(userid, circleid, 1);
+				ReasonBo reasonBo = circleService.findByUserAndCircle(userid,circleid);
+				if (reasonBo != null) {
+					circleService.updateApply(reasonBo.getId(), Constant.ADD_AGREE, "");
+				}
+				accepts.add(userid);
 			}
 		}
 		circleService.updateApplyAgree(circleBo.getId(), users, usersApply);
+
+		String content = String.format("您加入圈子【%s】的申请已通过，快去看看吧", circleBo.getName());
+		String path = "/circle/circle-info.do?circleid=" + circleid;
+		if (!accepts.isEmpty()) {
+			JPushUtil.push(titlePush, content, path,  (String[]) accepts.toArray());
+			pushToFriends(circleBo, userBo.getUserName(), path, accepts);
+		}
 		return Constant.COM_RESP;
+	}
+
+	/**
+	 * 推送给好友
+	 * @param path
+	 * @param accepts
+	 */
+	@Async
+	private void pushToFriends(CircleBo circleBo, String userName, String path, List<String> accepts){
+		for (String userid : accepts) {
+			List<FriendsBo> friendsBos = friendsService.getFriendByUserid(userid);
+			List<String> friendids = new ArrayList<>();
+			for (FriendsBo friendsBo : friendsBos) {
+				friendids.add(friendsBo.getFriendid());
+			}
+			String content = String.format("%s已申请加入圈子【%s】，你也快去看看吧",userName, circleBo.getName());
+			if (!friendids.isEmpty()) {
+				JPushUtil.push(titlePush, content, path,  (String[]) friendids.toArray());
+			}
+		}
 	}
 
 	/**
@@ -779,20 +823,18 @@ public class CircleController extends BaseContorller {
 	@RequestMapping("/circle-info")
 	@ResponseBody
 	public String info(String circleid, HttpServletRequest request, HttpServletResponse response) {
-		UserBo userBo;
-		try {
-			userBo = checkSession(request, userService);
-		} catch (MyException e) {
-			return e.getMessage();
+		UserBo userBo = getUserLogin(request);
+		if (userBo != null) {
+			//更新访问记录
+			updateHistory(userBo.getId(), circleid, locationService, circleService);
 		}
+
 		CircleBo circleBo = circleService.selectById(circleid);
 		if (circleBo == null) {
 			return CommonUtil.toErrorResult(
 					ERRORCODE.CIRCLE_IS_NULL.getIndex(),
 					ERRORCODE.CIRCLE_IS_NULL.getReason());
 		}
-		//更新访问记录
-		updateHistory(userBo.getId(), circleid, locationService, circleService);
 		//圈子访问
 		updateCircleHot(circleService, redisServer, circleid, 1, Constant.CIRCLE_VISIT);
 
@@ -1621,10 +1663,10 @@ public class CircleController extends BaseContorller {
 			}
 			circleService.updateUsersApply(circleid, usersApply);
 		}
-		for (String user : useridArr) {
-			JPushUtil.pushTo(String.format("%s邀请您加入圈子【%s】", userBo.getUserName(),
-					circleBo.getName()), user);
-		}
+		String path = "/circle/circle-info.do?circleid=" + circleid;
+		String content = String.format("%s邀请您加入圈子【%s】，快去看看吧", userBo.getUserName(),
+				circleBo.getName());
+		JPushUtil.push(titlePush, content, path,  useridArr);
 		return Constant.COM_RESP;
 	}
 
