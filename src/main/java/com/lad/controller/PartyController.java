@@ -68,6 +68,8 @@ public class PartyController extends BaseContorller {
 
     private int dayTimeMins = 24 * 60 * 60 * 1000;
 
+    private String titlePush = "聚会通知";
+
 
     @RequestMapping("/create")
     @ResponseBody
@@ -146,6 +148,14 @@ public class PartyController extends BaseContorller {
         addChatroomUser(chatroomService, userBo, chatroomBo.getId(), userBo.getUserName());
         partyBo.setChatroomid(chatroomBo.getId());
         partyService.insert(partyBo);
+        HashSet<String> circleUsers = circleBo.getUsers();
+
+        if (circleUsers.size() > 0) {
+            String path = "/party/party-info.do?partyid=" + partyBo.getId();
+            String content = String.format("%s发起了聚会【%s】，快去看看吧", userBo.getUserName(),
+                    partyBo.getTitle());
+            JPushUtil.push(titlePush, content, path,  (String[])circleUsers.toArray());
+        }
 
         //用户等级
         userService.addUserLevel(userBo.getId(), 1, Constant.PARTY_TYPE);
@@ -159,6 +169,8 @@ public class PartyController extends BaseContorller {
         map.put("partyid", partyBo.getId());
         return JSONObject.fromObject(map).toString();
     }
+
+
 
     @RequestMapping("/update")
     @ResponseBody
@@ -319,9 +331,10 @@ public class PartyController extends BaseContorller {
 
         RLock lock = redisServer.getRLock("partyUserLock");
         String chatroomid;
+        PartyBo partyBo = null;
         try {
             lock.lock(2, TimeUnit.SECONDS);
-            PartyBo partyBo = partyService.findById(partyid);
+            partyBo = partyService.findById(partyid);
             if (partyBo == null) {
                 return CommonUtil.toErrorResult(ERRORCODE.PARTY_NULL.getIndex(),
                         ERRORCODE.PARTY_NULL.getReason());
@@ -395,6 +408,12 @@ public class PartyController extends BaseContorller {
             chatroomUserBo.setUsername(userBo.getUserName());
             chatroomService.insertUser(chatroomUserBo);
         }
+
+        String path = "/party/enroll-detail.do?partyid=" + partyid + "&userid=" + userid;
+        String content = String.format("%s报名了您发起的聚会【%s】，请尽快与他沟通参与事宜", userBo.getUserName(),
+                partyBo.getTitle());
+        JPushUtil.push(titlePush, content, path,  partyBo.getCreateuid());
+        
         return Constant.COM_RESP;
     }
 
