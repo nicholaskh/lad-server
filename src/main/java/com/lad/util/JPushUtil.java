@@ -22,7 +22,7 @@ public class JPushUtil {
 
 	private static String MASTER_SECRET = "db587bc126abddf27e548ecc";
 	private static String APP_KEY = "d53e8d39d6df18e379bf5da4";
-	public static String APPLY = "申请加我为好友";
+	public static String APPLY = "请求添加您为好友";
 	public static String AGREE_APPLY_FRIEND = "同意添加我为好友";
 	public static String REFUSE_APPLY_FRIEND = "拒绝添加我为好友";
 	public static String MULTI_INSERT = "邀请我加入群聊";
@@ -110,7 +110,7 @@ public class JPushUtil {
 	}
 
 	/**
-	 * 推送到人
+	 * 推送通知
 	 * @param title  推送标题
 	 * @param content  推送内容
 	 * @param path  推送落地页路径
@@ -128,6 +128,50 @@ public class JPushUtil {
 								.setTitle(title)
 								.addExtra("path", path).build())
 						.build())
+				.setMessage(Message.newBuilder()
+						.setMsgContent(content)
+						.setTitle(title)
+						.addExtra("path", path).build())
+				.setOptions(Options.newBuilder()
+						.setTimeToLive(432000).build())
+				.build();
+	}
+
+
+	@Async
+	public static boolean pushMessage(String title, String content, String path,
+							   String... alias) {
+		JPushClient jpushClient = new JPushClient(MASTER_SECRET, APP_KEY, null,
+				ClientConfig.getInstance());
+		PushPayload payload = buildPushObject_to_Message(title, content, path, alias);
+		logger.info("alias: {}",alias);
+		try {
+			PushResult result = jpushClient.sendPush(payload);
+			logger.info("Got result - {}",result);
+			return result.getResponseCode() == 200;
+		} catch (APIConnectionException e) {
+			logger.error("Connection error, should retry later : {}", e.getMessage());
+		} catch (APIRequestException e) {
+			logger.error("Should review the error, and fix the request : {}", e.getMessage());
+			logger.error("HTTP Status: {}", e.getStatus());
+			logger.error("Error Code: {}" ,e.getErrorCode());
+			logger.error("Error Message: {}", e.getErrorMessage());
+		}
+		return false;
+	}
+
+	/**
+	 * 推送消息
+	 * @param title  推送标题
+	 * @param content  推送内容
+	 * @param path  推送落地页路径
+	 * @param alias  推送人
+	 * @return
+	 */
+	public static PushPayload buildPushObject_to_Message(String title, String content, String path,
+															 String... alias) {
+		return PushPayload.newBuilder().setPlatform(Platform.all())
+				.setAudience(Audience.alias(alias))
 				.setMessage(Message.newBuilder()
 						.setMsgContent(content)
 						.setTitle(title)
