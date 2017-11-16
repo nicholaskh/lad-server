@@ -37,6 +37,8 @@ public class FriendsController extends BaseContorller {
 	@Autowired
 	private ITagService tagService;
 
+	private String pushTitle = "好友通知";
+
 	@RequestMapping("/apply")
 	@ResponseBody
 	public String apply(String friendid, HttpServletRequest request,
@@ -69,7 +71,8 @@ public class FriendsController extends BaseContorller {
 		friendsBo.setFriendid(friendid);
 		friendsBo.setApply(0);
 		friendsService.insert(friendsBo);
-		JPushUtil.pushTo(userBo.getUserName() + JPushUtil.APPLY, friendid);
+		String path = "/friends/apply-list.do";
+		JPushUtil.push(pushTitle,userBo.getUserName() + JPushUtil.APPLY, path, friendid);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();
@@ -490,7 +493,7 @@ public class FriendsController extends BaseContorller {
 				userBo.getId(), friendid);
 		if (null != chatroomBo) {
 			String result = IMUtil.disolveRoom(chatroomBo.getId());
-			if (!result.equals(IMUtil.FINISH)) {
+			if (!result.equals(IMUtil.FINISH) && !result.contains("not found")) {
 				return result;
 			}
 			//删除好友互相设置信息user
@@ -502,7 +505,7 @@ public class FriendsController extends BaseContorller {
 				friendid,userBo.getId());
 		if (chatroomBo != null) {
 			String result = IMUtil.disolveRoom(chatroomBo.getId());
-			if (!result.equals(IMUtil.FINISH)) {
+			if (!result.equals(IMUtil.FINISH) && !result.contains("not found")) {
 				return result;
 			}
 			chatroomService.delete(chatroomBo.getId());
