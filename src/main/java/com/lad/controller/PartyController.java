@@ -967,7 +967,7 @@ public class PartyController extends BaseContorller {
             vo.setPhotos(commentBo.getPhotos());
             if (null != user) {
                 //判断当前用户是否点赞
-                ThumbsupBo thumbsupBo = thumbsupService.findHaveOwenidAndVisitorid(commentBo.getId(), user.getId());
+                ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(commentBo.getId(), user.getId());
                 vo.setMyThumbsup(thumbsupBo != null);
             }
             vo.setThumpsubCount(commentBo.getThumpsubNum());
@@ -1097,6 +1097,7 @@ public class PartyController extends BaseContorller {
             return e.getMessage();
         }
         ThumbsupBo thumbsupBo = thumbsupService.findHaveOwenidAndVisitorid(commentId, userBo.getId());
+        int num = 0;
         if (type == 0) {
             if (null == thumbsupBo) {
                 thumbsupBo = new ThumbsupBo();
@@ -1111,15 +1112,22 @@ public class PartyController extends BaseContorller {
                     thumbsupService.udateDeleteById(thumbsupBo.getId());
                 }
             }
-            commentService.updateThumpsubNum(commentId, 1);
+            num = 1;
         } else if (type == 1) {
-            if (null != thumbsupBo) {
+            if (null != thumbsupBo && thumbsupBo.getDeleted() == Constant.ACTIVITY) {
                 thumbsupService.deleteById(thumbsupBo.getId());
-                commentService.updateThumpsubNum(commentId, -1);
+                num = -1;
             }
         } else {
             return CommonUtil.toErrorResult(ERRORCODE.TYPE_ERROR.getIndex(),
                     ERRORCODE.TYPE_ERROR.getReason());
+        }
+        RLock lock = redisServer.getRLock(commentId);
+        try {
+            lock.lock(1, TimeUnit.SECONDS);
+            commentService.updateThumpsubNum(commentId, num);
+        } finally {
+            lock.unlock();
         }
         return Constant.COM_RESP;
     }
