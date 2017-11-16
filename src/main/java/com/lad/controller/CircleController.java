@@ -1654,25 +1654,14 @@ public class CircleController extends BaseContorller {
 						ERRORCODE.CIRCLE_USER_MAX.getReason());
 			}
 		} else {
-			HashSet<String> usersApply = circleBo.getUsersApply();
-			HashSet<String> users = circleBo.getUsers();
-			String reason = "";
-			for (String inviteid : useridArr) {
-				if (users.contains(inviteid) || usersApply.contains(inviteid)){
-					continue;
-				}
-				usersApply.add(inviteid);
-				ReasonBo reasonBo = circleService.findByUserAndCircle(userid, circleid);
-				if (reasonBo == null) {
-					reasonBo = new ReasonBo();
-					reasonBo.setCircleid(circleid);
-					reasonBo.setReason(reason);
-					reasonBo.setCreateuid(userBo.getId());
-					reasonBo.setStatus(Constant.ADD_APPLY);
-					circleService.insertApplyReason(reasonBo);
-				}
+			if (circleBo.isVerify()){
+				return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_NEED_VERIFY.getIndex(),
+						ERRORCODE.CIRCLE_NEED_VERIFY.getReason());
 			}
-			circleService.updateUsersApply(circleid, usersApply);
+			if (!addUser(circleid, useridArr)){
+				return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_USER_MAX.getIndex(),
+						ERRORCODE.CIRCLE_USER_MAX.getReason());
+			}
 		}
 		String path = "/circle/circle-info.do?circleid=" + circleid;
 		String content = String.format("%s邀请您加入圈子【%s】，快去看看吧", userBo.getUserName(),
