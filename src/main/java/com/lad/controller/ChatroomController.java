@@ -354,9 +354,9 @@ public class ChatroomController extends BaseContorller {
 					JSONObject json2 = new JSONObject();
 					json2.put("masterId", nextMaster.getId());
 					json2.put("masterName", nextMaster.getUserName());
-					String res3 = IMUtil.notifyInChatRoom(Constant.MASTER_CHANGE_CHAT_ROOM, chatroomid, json.toString());
+					String res3 = IMUtil.notifyInChatRoom(Constant.MASTER_CHANGE_CHAT_ROOM, chatroomid, json2.toString());
 					if(!IMUtil.FINISH.equals(res3)){
-						logger.error("failed notifyInChatRoom Constant.SOME_ONE_QUIT_CHAT_ROOM, %s",res2);
+						logger.error("failed notifyInChatRoom Constant.SOME_ONE_QUIT_CHAT_ROOM, %s",res3);
 						return res3;
 					}
 				}
@@ -891,6 +891,17 @@ public class ChatroomController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_NOT_MASTER.getIndex(),
 					ERRORCODE.CIRCLE_NOT_MASTER.getReason());
 		}
+
+		// 通知群主变更通知
+		JSONObject json = new JSONObject();
+		json.put("masterId", master.getId());
+		json.put("masterName", master.getUserName());
+		String res3 = IMUtil.notifyInChatRoom(Constant.MASTER_CHANGE_CHAT_ROOM, chatroomid, json.toString());
+		if(!IMUtil.FINISH.equals(res3)){
+			logger.error("failed notifyInChatRoom Constant.SOME_ONE_QUIT_CHAT_ROOM, %s",res3);
+			return res3;
+		}
+
         JPushUtil.pushTo(userBo.getUserName()+"将"+chatroomBo.getName()+"转让给了您", userid);
 		return Constant.COM_RESP;
 	}
