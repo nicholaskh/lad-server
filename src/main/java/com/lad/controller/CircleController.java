@@ -1807,13 +1807,17 @@ public class CircleController extends BaseContorller {
 			lock.lock(4, TimeUnit.SECONDS);
 			CircleBo circleBo = circleService.selectById(circleid);
 			HashSet<String> users= circleBo.getUsers();
+			HashSet<String> applyUsers = circleBo.getUsersApply();
 			for (String userid : userids){
+				if (applyUsers.contains(userid)){
+					applyUsers.remove(userid);
+				}
 				users.add(userid);
 			}
 			if (users.size() > 500){
 				return false;
 			}
-			circleService.updateUsers(circleid, users);
+			circleService.updateApplyAgree(circleid, users, applyUsers);
 		} finally {
 		  	lock.unlock();
 		}
