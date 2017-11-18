@@ -844,7 +844,7 @@ public class ChatroomController extends BaseContorller {
 	private ChatroomBo getChatroomBo(int seq, double[] position, UserBo userBo){
 		ChatroomBo chatroom = new ChatroomBo();
 		chatroom.setSeq(seq);
-		chatroom.setUserid(userBo.getId());
+		chatroom.setCreateuid(userBo.getId());
 		LinkedHashSet<String> userSet = chatroom.getUsers();
 		userSet.add(userBo.getId());
 		chatroom.setUsers(userSet);
