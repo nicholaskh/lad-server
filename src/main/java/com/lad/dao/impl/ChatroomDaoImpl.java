@@ -260,8 +260,8 @@ public class ChatroomDaoImpl implements IChatroomDao {
 	public List<ChatroomBo> findMyChatrooms(String userid, Date timestamp) {
 
 		Criteria c = new Criteria();
-		Criteria single = new Criteria("userid").is(userid);
-		Criteria single2 = new Criteria("friendid").is(userid);
+		Criteria single = new Criteria("userid").is(userid).and("type").is(Constant.ROOM_SINGLE);
+		Criteria single2 = new Criteria("friendid").is(userid).and("type").is(Constant.ROOM_SINGLE);
 		Criteria mulit = new Criteria("users").in(userid);
 		c.orOperator(single,single2,mulit);
 		Query query = new Query();
@@ -271,7 +271,6 @@ public class ChatroomDaoImpl implements IChatroomDao {
 			query.addCriteria(new Criteria("createTime").gt(timestamp));
 		}
 		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "createTime")));
-		System.out.println(query.toString());
 		return mongoTemplate.find(query, ChatroomBo.class);
 	}
 }
