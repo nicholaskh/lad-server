@@ -1103,9 +1103,17 @@ public class PartyController extends BaseContorller {
             return CommonUtil.toErrorResult(ERRORCODE.PARTY_USER_NULL.getIndex(),
                     ERRORCODE.PARTY_USER_NULL.getReason());
         }
+        PartyUserDetail userDetail = new PartyUserDetail();
+        BeanUtils.copyProperties(partyUserBo, userDetail);
+        userDetail.setPartyAddr(partyBo.getAddrInfo());
+        UserBo userBo = userService.getUser(partyUserBo.getUserid());
+        if (userBo != null) {
+            userDetail.setUsername(userBo.getUserName());
+            userDetail.setUserPic(userBo.getHeadPictureName());
+        }
         Map<String, Object> map = new HashMap<>();
         map.put("ret", 0);
-        map.put("partyUser", partyUserBo);
+        map.put("partyUser", userDetail);
         return JSONObject.fromObject(map).toString();
     }
 
