@@ -9,6 +9,7 @@ import com.lad.scrapybo.VideoBo;
 import com.lad.service.*;
 import com.lad.util.*;
 import com.lad.vo.*;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -388,14 +389,17 @@ public class InforController extends BaseContorller {
     public String radioGroups(String module,
                             HttpServletRequest request, HttpServletResponse response){
         List<BroadcastBo> broadcastBos = inforService.selectBroadClassByGroups(module);
-        List<String> groups = new ArrayList<>();
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("ret", 0);
+        JSONArray array = new JSONArray();
         for (BroadcastBo bo : broadcastBos) {
-           groups.add(bo.getId());
+            JSONObject object = new JSONObject();
+            object.put("title", bo.getClassName());
+            object.put("intro", bo.getIntro());
+            array.add(object);
         }
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put("ret", 0);
-        map.put("radioClasses", groups);
-        return JSONObject.fromObject(map).toString();
+        jsonObject.put("radioClasses", array);
+        return jsonObject.toString();
     }
 
   

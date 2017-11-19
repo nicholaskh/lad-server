@@ -65,13 +65,13 @@ public class BroadcastDaoImpl implements IBroadcastDao {
     public List<BroadcastBo> selectClassByGroups(String groupName) {
         Criteria criteria = new Criteria("module").is(groupName);
         MatchOperation match = Aggregation.match(criteria);
-        ProjectionOperation project = Aggregation.project("_id","className");
-        GroupOperation groupOperation = Aggregation.group("className").count().as("nums");
+        ProjectionOperation project = Aggregation.project("_id","className","intro");
+        GroupOperation groupOperation = Aggregation.group("className", "intro");
         Aggregation aggregation = Aggregation.newAggregation(match, project, groupOperation,
-                Aggregation.sort(Sort.Direction.DESC, "_id"));
+                Aggregation.sort(Sort.Direction.ASC, "className"));
         AggregationResults<BroadcastBo> results = mongoTemplateTwo.aggregate(aggregation, "broadcast", BroadcastBo.class);
         return results.getMappedResults();
-    }
+}
 
     public List<BroadcastBo> findByClassName(String groupName, String className) {
         Query query = new Query();
