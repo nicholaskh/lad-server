@@ -141,6 +141,7 @@ public class CommentDaoImpl implements ICommentDao {
             query.addCriteria(new Criteria("createuid").is(userid));
         }
         query.addCriteria(new Criteria("type").is(type));
+        query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "createTime")));
         return mongoTemplate.find(query, CommentBo.class);
     }
 
