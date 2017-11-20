@@ -256,15 +256,11 @@ public class NoteController extends BaseContorller {
 					ERRORCODE.NOTE_IS_NULL.getIndex(),
 					ERRORCODE.NOTE_IS_NULL.getReason());
 		}
-		UserBo userBo;
+		UserBo userBo = getUserLogin(request);
 		ThumbsupBo thumbsupBo = null;
-		try {
-			userBo = checkSession(request, userService);
+		if (userBo != null) {
 			updateHistory(userBo.getId(), noteBo.getCircleId(), locationService, circleService);
-			thumbsupBo = thumbsupService.getByVidAndVisitorid(userBo.getId(), noteid);
-		} catch (MyException e) {
-			logger.error(e);
-			userBo = null;
+			thumbsupBo = thumbsupService.getByVidAndVisitorid(noteid, userBo.getId());
 		}
 		updateCircleHot(circleService, redisServer, noteBo.getCircleId(), 1, Constant.CIRCLE_NOTE_VISIT);
 		RLock lock = redisServer.getRLock(Constant.VISIT_LOCK);
@@ -532,24 +528,24 @@ public class NoteController extends BaseContorller {
 	@ResponseBody
 	public String getComments(String noteid, String start_id, boolean gt, int limit,
 							  HttpServletRequest request, HttpServletResponse response) {
-		UserBo userBo;
-		try {
-			userBo = checkSession(request, userService);
-		} catch (MyException e) {
-			return e.getMessage();
-		}
+		UserBo userBo = getUserLogin(request);
 		NoteBo noteBo = noteService.selectById(noteid);
 		if (noteBo == null) {
 			return CommonUtil.toErrorResult(
 					ERRORCODE.NOTE_IS_NULL.getIndex(),
 					ERRORCODE.NOTE_IS_NULL.getReason());
 		}
-		updateHistory(userBo.getId(), noteBo.getCircleId(), locationService, circleService);
+		String userid = "";
+		if (userBo != null){
+			updateHistory(userBo.getId(), noteBo.getCircleId(), locationService, circleService);
+			userid = userBo.getId();
+		}
+
 		List<CommentBo> commentBos = commentService.selectByNoteid(noteid, start_id, gt, limit);
 		List<CommentVo> commentVos = new ArrayList<>();
 		for (CommentBo commentBo : commentBos) {
 			CommentVo commentVo = comentBo2Vo(commentBo);
-			ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(commentBo.getId(), userBo.getId());
+			ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(commentBo.getId(), userid);
 			commentVo.setMyThumbsup(thumbsupBo != null);
 			long thums = thumbsupService.selectByOwnerIdCount(noteid);
 			commentVo.setThumpsubCount(thums);
