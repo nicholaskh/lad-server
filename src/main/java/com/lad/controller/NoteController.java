@@ -275,7 +275,7 @@ public class NoteController extends BaseContorller {
 			lock.unlock();
 		}
 		NoteVo noteVo = new NoteVo();
-		boToVo(noteBo, noteVo, userBo);
+		boToVo(noteBo, noteVo, userService.getUser(noteBo.getCreateuid()));
 		//这个帖子自己是否点赞
 		noteVo.setMyThumbsup(null != thumbsupBo);
 		Map<String, Object> map = new HashMap<String, Object>();
