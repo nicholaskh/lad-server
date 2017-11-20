@@ -24,12 +24,12 @@ public class Constant {
 	/**
 	 * pushd服务器ip
 	 */
-	public static final String PUSHD_IP =  "192.168.0.5";
+//	public static final String PUSHD_IP =  "192.168.0.5";
 
 	/**
 	 * pushd服务器ip
 	 */
-//	public static final String PUSHD_IP =  "180.76.138.200";
+	public static final String PUSHD_IP =  "180.76.138.200";
 
 	/**
 	 * push服务器端口
@@ -198,7 +198,10 @@ public class Constant {
 	 * 面对面聊
 	 */
 	public static final int ROOM_FACE_2_FACE= 3;
-
+	/**
+	 * 聚会临时聊天
+	 */
+	public static final int ROOM_TEMP_PARTY = 4;
 	/**
 	 * 置顶
 	 */

@@ -9,7 +9,7 @@ public class ChatroomBo extends BaseBo {
 
 	private String name;
 	private LinkedHashSet<String> users = new LinkedHashSet<>();
-	//1 表示一对一聊天室，2表示群聊，3表示面对面建群
+	//1 表示一对一聊天室，2表示群聊，3表示面对面建群 , 4表示聚会临时聊天
 	private int type;
 	private String userid;
 	private String friendid;
@@ -27,6 +27,9 @@ public class ChatroomBo extends BaseBo {
 	private String master;
 
 	private boolean isNameSet;
+	
+	//聚会id
+	private String targetid;
 
 	public String getName() {
 		return name;
@@ -130,6 +133,14 @@ public class ChatroomBo extends BaseBo {
 
 	public void setNameSet(boolean nameSet) {
 		isNameSet = nameSet;
+	}
+
+	public String getTargetid() {
+		return targetid;
+	}
+
+	public void setTargetid(String targetid) {
+		this.targetid = targetid;
 	}
 }
 

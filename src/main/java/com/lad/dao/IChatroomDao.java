@@ -121,4 +121,12 @@ public interface IChatroomDao extends IBaseDao {
 	 * @return
 	 */
 	WriteResult updateName(String chatRoomId, String name, boolean isNameSet);
+
+	/**
+	 * 删除临时聊天
+	 * @param targetid
+	 * @param roomType
+	 * @return
+	 */
+	WriteResult deleteTempChat(String targetid, int roomType);
 }

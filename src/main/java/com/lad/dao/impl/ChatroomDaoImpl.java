@@ -273,4 +273,15 @@ public class ChatroomDaoImpl implements IChatroomDao {
 		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "createTime")));
 		return mongoTemplate.find(query, ChatroomBo.class);
 	}
+
+	@Override
+	public WriteResult deleteTempChat(String targetid, int roomType) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("type").is(roomType));
+		query.addCriteria(new Criteria("targetid").is(targetid));
+		query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+		Update update = new Update();
+		update.set("deleted", Constant.DELETED);
+		return mongoTemplate.updateMulti(query, update, ChatroomBo.class);
+	}
 }

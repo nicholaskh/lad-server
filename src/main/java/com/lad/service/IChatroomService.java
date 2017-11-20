@@ -200,4 +200,13 @@ public interface IChatroomService extends IBaseService {
 	 * @return
 	 */
 	List<ChatroomBo> findMyChatrooms(String userid);
+
+
+	/**
+	 * 删除临时聊天
+	 * @param targetid
+	 * @param roomType
+	 * @return
+	 */
+	WriteResult deleteTempChat(String targetid, int roomType);
 }

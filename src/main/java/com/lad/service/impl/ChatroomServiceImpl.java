@@ -170,4 +170,9 @@ public class ChatroomServiceImpl implements IChatroomService {
 	public List<ChatroomBo> findMyChatrooms(String userid) {
 		return chatroomDao.findMyChatrooms(userid);
 	}
+
+	@Override
+	public WriteResult deleteTempChat(String targetid, int roomType) {
+		return chatroomDao.deleteTempChat(targetid, roomType);
+	}
 }
