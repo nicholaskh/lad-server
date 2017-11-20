@@ -637,10 +637,19 @@ public class CircleController extends BaseContorller {
 					ERRORCODE.CIRCLE_USER_NULL.getReason());
 		}
 		UserBo creater = userService.getUser(circleBo.getCreateuid());
+		if (creater == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.USER_NULL.getIndex(),
+					ERRORCODE.USER_NULL.getReason());
+		}
 		//创建者默认为群主
 		circleBo.setCreateuid(userid);
+		circleBo.setUpdateuid(userBo.getId());
 		circleService.updateCreateUser(circleBo);
-		circleService.updateMaster(circleBo);
+		LinkedHashSet<String> masters = circleBo.getMasters();
+		if (masters.contains(userid)) {
+			masters.remove(userid);
+			circleService.updateMaster(circleBo);
+		}
 		String content = String.format("%s将您设置为圈主",creater.getUserName());
 		String path = "/circle/persons.do?circleid=" + circleid;
 		JPushUtil.push("圈主转让通知", content, path,  userid);
@@ -693,10 +702,6 @@ public class CircleController extends BaseContorller {
 			for (String id : ids) {
 				if (users.contains(id)) {
 					masters.add(id);
-				} else {
-					return CommonUtil.toErrorResult(
-							ERRORCODE.CIRCLE_USER_NULL.getIndex(),
-							ERRORCODE.CIRCLE_USER_NULL.getReason());
 				}
 			}
 			content = String.format("%s将您设置为管理员",creater.getUserName());
