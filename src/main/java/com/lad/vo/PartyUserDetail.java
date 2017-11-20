@@ -1,5 +1,7 @@
 package com.lad.vo;
 
+import java.util.LinkedHashSet;
+
 /**
  * 功能描述：
  * Copyright: Copyright (c) 2017
@@ -7,6 +9,9 @@ package com.lad.vo;
  * Time:2017/11/18
  */
 public class PartyUserDetail extends BaseVo {
+
+    //聚会时间
+    private LinkedHashSet<String> startTime;
 
     private String userid;
 
@@ -26,7 +31,10 @@ public class PartyUserDetail extends BaseVo {
 
     private int userNum;
 
-    private String partyAddr;
+    //地点类型 0 线上； 1线下
+    private int addrType;
+    //具体地点，线上必填
+    private String addrInfo;
 
     public String getUserid() {
         return userid;
@@ -100,11 +108,27 @@ public class PartyUserDetail extends BaseVo {
         this.userNum = userNum;
     }
 
-    public String getPartyAddr() {
-        return partyAddr;
+    public int getAddrType() {
+        return addrType;
     }
 
-    public void setPartyAddr(String partyAddr) {
-        this.partyAddr = partyAddr;
+    public void setAddrType(int addrType) {
+        this.addrType = addrType;
+    }
+
+    public String getAddrInfo() {
+        return addrInfo;
+    }
+
+    public void setAddrInfo(String addrInfo) {
+        this.addrInfo = addrInfo;
+    }
+
+    public LinkedHashSet<String> getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(LinkedHashSet<String> startTime) {
+        this.startTime = startTime;
     }
 }

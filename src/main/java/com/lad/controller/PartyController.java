@@ -1148,12 +1148,14 @@ public class PartyController extends BaseContorller {
         }
         PartyUserDetail userDetail = new PartyUserDetail();
         BeanUtils.copyProperties(partyUserBo, userDetail);
-        userDetail.setPartyAddr(partyBo.getAddrInfo());
         UserBo userBo = userService.getUser(partyUserBo.getUserid());
         if (userBo != null) {
             userDetail.setUsername(userBo.getUserName());
             userDetail.setUserPic(userBo.getHeadPictureName());
         }
+        userDetail.setAddrType(partyBo.getAddrType());
+        userDetail.setAddrInfo(partyBo.getAddrInfo());
+        userDetail.setStartTime(partyBo.getStartTime());
         Map<String, Object> map = new HashMap<>();
         map.put("ret", 0);
         map.put("partyUser", userDetail);
