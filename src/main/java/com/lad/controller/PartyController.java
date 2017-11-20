@@ -21,6 +21,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.beans.BeanInfo;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -171,11 +174,22 @@ public class PartyController extends BaseContorller {
     }
 
 
-
+    /**
+     * 更新聚会信息
+     * @param partyid
+     * @param partyJson
+     * @param backPic
+     * @param photos
+     * @param delPhotos
+     * @param video
+     * @param request
+     * @param response
+     * @return
+     */
     @RequestMapping("/update")
     @ResponseBody
-    public String update(@RequestParam String partyJson, @RequestParam String partyid,
-                         MultipartFile backPic, MultipartFile[] photos, MultipartFile video,
+    public String update(@RequestParam String partyid, String partyJson,
+                         MultipartFile backPic, MultipartFile[] photos, String[] delPhotos, MultipartFile video,
                          HttpServletRequest request, HttpServletResponse response){
 
         logger.info("update partyJson : {}",partyJson);
@@ -188,8 +202,10 @@ public class PartyController extends BaseContorller {
         }
         PartyBo partyBo = null;
         try {
-            JSONObject jsonObject = JSONObject.fromObject(partyJson);
-            partyBo = (PartyBo)JSONObject.toBean(jsonObject, PartyBo.class);
+            if (StringUtils.isNotEmpty(partyJson)) {
+                JSONObject jsonObject = JSONObject.fromObject(partyJson);
+                partyBo = (PartyBo)JSONObject.toBean(jsonObject, PartyBo.class);
+            }
         } catch (Exception e) {
             return CommonUtil.toErrorResult(ERRORCODE.PARTY_ERROR.getIndex(),
                     ERRORCODE.PARTY_ERROR.getReason());
@@ -199,34 +215,40 @@ public class PartyController extends BaseContorller {
             return CommonUtil.toErrorResult(ERRORCODE.PARTY_NULL.getIndex(),
                     ERRORCODE.PARTY_NULL.getReason());
         }
-        partyBo.setStatus(oldParty.getStatus());
-        partyBo.setId(oldParty.getId());
-        partyBo.setCreateuid(oldParty.getCreateuid());
-        BeanUtils.copyProperties(partyBo, oldParty);
+        if (partyBo == null){
+            partyBo = oldParty;
+        } else {
+            copyOld(oldParty, partyBo);
+        }
         String userId = userBo.getId();
         Long time = Calendar.getInstance().getTimeInMillis();
         if (photos != null) {
-            LinkedHashSet<String> photo = oldParty.getPhotos();
+            LinkedHashSet<String> photo = partyBo.getPhotos();
             for (MultipartFile file : photos) {
                 String fileName = userId + "-" + time + "-" + file.getOriginalFilename();
                 String path = CommonUtil.upload(file, Constant.PARTY_PICTURE_PATH,
                         fileName, 0);
                 photo.add(path);
             }
-            oldParty.setPhotos(photo);
+        }
+        if (delPhotos != null && delPhotos.length > 0) {
+            LinkedHashSet<String> photo = partyBo.getPhotos();
+            for (String url : photo) {
+               photo.remove(url); 
+            }
         }
         if (video != null) {
             String fileName = userId + "-" + time + "-" + video.getOriginalFilename();
             String[] paths = CommonUtil.uploadVedio(video, Constant.PARTY_PICTURE_PATH, fileName, 0);
-            oldParty.setVideo(paths[0]);
-            oldParty.setVideoPic(paths[1]);
+            partyBo.setVideo(paths[0]);
+            partyBo.setVideoPic(paths[1]);
         }
         if (backPic != null) {
             String fileName = userId + "-" + time + "-" + backPic.getOriginalFilename();
             String path =  CommonUtil.upload(backPic, Constant.PARTY_PICTURE_PATH, fileName, 0);
-            oldParty.setBackPic(path);
+            partyBo.setBackPic(path);
         }
-        partyService.update(oldParty);
+        partyService.update(partyBo);
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("ret", 0);
         map.put("partyid", partyBo.getId());
@@ -271,10 +293,10 @@ public class PartyController extends BaseContorller {
         PartyVo partyVo = new PartyVo();
         BeanUtils.copyProperties(partyBo, partyVo);
         if (partyBo.getStatus() == 1){
-            if (hasPartyEnd(partyid, partyBo.getStartTime(), partyBo.getAppointment())){
-                partyVo.setStatus(2);
-            } else {
-                partyBo.setStatus(partyBo.getStatus());
+            int status = getPartyStatus(partyBo.getId(), partyBo.getStartTime(), partyBo.getAppointment());
+            if (status != 1){
+                partyVo.setStatus(status);
+                updatePartyStatus(partyBo.getId(), status);
             }
         }
         partyVo.setPartyid(partyBo.getId());
@@ -540,8 +562,10 @@ public class PartyController extends BaseContorller {
             PartyListVo listVo = new PartyListVo();
             BeanUtils.copyProperties(partyBo, listVo);
             if (partyBo.getStatus() == 1) {
-                if (hasPartyEnd(partyBo.getId(), startTimes, partyBo.getAppointment())){
-                   listVo.setStatus(2);
+                int status = getPartyStatus(partyBo.getId(), startTimes, partyBo.getAppointment());
+                if (status != 1){
+                   listVo.setStatus(status);
+                   updatePartyStatus(partyBo.getId(), status);
                 }
             }
             listVo.setPartyid(partyBo.getId());
@@ -550,32 +574,51 @@ public class PartyController extends BaseContorller {
         }
     }
 
-    private boolean hasPartyEnd(String prtyid, LinkedHashSet<String> startTimes, int appointment){
-
+    /**
+     * 获取聚会状态
+     * @param prtyid
+     * @param startTimes
+     * @param appointment
+     * @return  1 进行中， 2报名结束， -1活动结束
+     */
+    private int getPartyStatus(String prtyid, LinkedHashSet<String> startTimes, int appointment){
         if (!CommonUtil.isEmpty(startTimes)) {
+            Date currentZeroTime = CommonUtil.getZeroDate(new Date());
             Iterator<String> iterator = startTimes.iterator();
             String lastTime = "";
             while (iterator.hasNext()){
                 lastTime = iterator.next();
             }
             if (lastTime.equals("0")) {
-               return false;
+               return 1;
             }
             Date lastDate = CommonUtil.getDate(lastTime, "yyyy-MM-dd HH:mm");
             if (lastDate != null) {
                 long last = lastDate.getTime();
+                if (last <= currentZeroTime.getTime()) {
+                    return -1;
+                }
+
                 //减去提前预约天数
                 if (appointment > 0) {
                     last = last - (appointment * dayTimeMins);
                 }
                 //活动已经结束
                 if (last <= System.currentTimeMillis()) {
-                    partyService.updatePartyStatus(prtyid, 2);
-                    return true;
+                    return 2;
                 }
             }
         }
-        return  false;
+        return 1;
+    }
+
+    @Async
+    private void updatePartyStatus(String partyid, int status){
+        partyService.updatePartyStatus(partyid, status);
+        //聚会结束,删除所有临时聊天
+        if (status == -1) {
+            chatroomService.deleteTempChat(partyid, Constant.ROOM_TEMP_PARTY);
+        }
     }
 
     /**
@@ -1210,4 +1253,82 @@ public class PartyController extends BaseContorller {
             lock.unlock();
         }
     }
+
+    /**
+     * 复制参数 ,将old参数都复制到new上，如果new不存在，则复制
+     * @param oldParty
+     * @param newParty
+     */
+    private void copyOld(PartyBo oldParty, PartyBo newParty) {
+        // 获取属性
+        try {
+            BeanInfo sourceBean = Introspector.getBeanInfo(oldParty.getClass(), java.lang.Object.class);
+            PropertyDescriptor[] sourceProperty = sourceBean.getPropertyDescriptors();
+            BeanInfo destBean = Introspector.getBeanInfo(newParty.getClass(), java.lang.Object.class);
+            PropertyDescriptor[] destProperty = destBean.getPropertyDescriptors();
+            for (int i = 0; i < sourceProperty.length; i++) {
+                for (int j = 0; j < destProperty.length; j++) {
+                    PropertyDescriptor descriptors = destProperty[j];
+                    if (sourceProperty[i].getName().equals(descriptors.getName())) {
+                        Object value = descriptors.getReadMethod().invoke(newParty);
+                        //如果new的为空 或者
+                        if (value == null) {
+                            descriptors.getWriteMethod().invoke(newParty, sourceProperty[i].getReadMethod().invoke(oldParty));
+                        }
+                        break;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.error(e);
+        }
+    }
+
+    @RequestMapping("/temp-chatroom")
+    @ResponseBody
+    public String tempChatroom(String partyid, String friendid,
+                               HttpServletRequest request, HttpServletResponse response) {
+        UserBo userBo;
+        try {
+            userBo = checkSession(request, userService);
+        } catch (MyException e) {
+            return e.getMessage();
+        }
+        UserBo friend = userService.getUser(friendid);
+        if (friend == null) {
+            return CommonUtil.toErrorResult(ERRORCODE.USER_NULL.getIndex(),
+                    ERRORCODE.USER_NULL.getReason());
+        }
+        PartyBo partyBo = partyService.findById(partyid);
+        if (partyBo == null) {
+            return CommonUtil.toErrorResult(ERRORCODE.PARTY_HAS_END.getIndex(),
+                    ERRORCODE.PARTY_HAS_END.getReason());
+        }
+
+        String userid = userBo.getId();
+        ChatroomBo chatroomBo = chatroomService.selectByUserIdAndFriendid(userid, friendid);
+        if (chatroomBo == null) {
+            chatroomBo = chatroomService.selectByUserIdAndFriendid(friendid, userid);
+        }
+        //单人聊天也存在免打扰信息
+        if (chatroomBo == null) {
+            chatroomBo = new ChatroomBo();
+            chatroomBo.setName(friend.getUserName());
+            chatroomBo.setUserid(userid);
+            chatroomBo.setFriendid(friendid);
+            chatroomBo.setType(Constant.ROOM_TEMP_PARTY);
+            chatroomBo.setTargetid(partyid);
+            chatroomBo.setCreateuid(userid);
+            chatroomService.insert(chatroomBo);
+            String res = IMUtil.subscribe(0,chatroomBo.getId(), userid, friendid);
+            if (!res.equals(IMUtil.FINISH)) {
+                return res;
+            }
+        }
+        Map<String, Object> map = new HashMap<>();
+        map.put("ret", 0);
+        map.put("channelId", chatroomBo.getId());
+        return JSONObject.fromObject(map).toString();
+    }
+
 }
