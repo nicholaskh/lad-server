@@ -69,6 +69,7 @@ public class FriendsController extends BaseContorller {
 		FriendsBo friendsBo = new FriendsBo();
 		friendsBo.setUserid(userBo.getId());
 		friendsBo.setFriendid(friendid);
+		friendsBo.setUsername(friendBo.getUserName());
 		friendsBo.setApply(0);
 		friendsService.insert(friendsBo);
 		String path = "/friends/apply-list.do";
@@ -124,6 +125,7 @@ public class FriendsController extends BaseContorller {
 			FriendsBo friendsBo2 = new FriendsBo();
 			friendsBo2.setUserid(userid);
 			friendsBo2.setFriendid(friendid);
+			friendsBo2.setUsername(friendBo.getUserName());
 			friendsBo2.setApply(1);
 			friendsService.insert(friendsBo2);
 		}
