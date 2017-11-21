@@ -289,11 +289,13 @@ public class NoteController extends BaseContorller {
 							   HttpServletRequest request, HttpServletResponse response) {
 		List<NoteBo> noteBos = noteService.finyByCreateTime(circleid,start_id,gt,limit);
 		List<NoteVo> noteVos = new LinkedList<>();
+		UserBo loginUser = getUserLogin(request);
 		if (noteBos != null) {
 			for (NoteBo noteBo : noteBos) {
 				NoteVo note = new NoteVo();
 				UserBo userBo = userService.getUser(noteBo.getCreateuid());
 				boToVo(noteBo, note, userBo);
+				note.setMyThumbsup(hasThumbsup(loginUser, noteBo.getId()));
 				noteVos.add(note);
 			}
 		}
@@ -312,10 +314,12 @@ public class NoteController extends BaseContorller {
                            HttpServletResponse response) {
 		List<NoteBo> noteBos = noteService.findByTopEssence(circleid, Constant.NOTE_JIAJING, start_id, limit);
 		List<NoteVo> noteVoList = new LinkedList<>();
+		UserBo loginUser = getUserLogin(request);
 		for (NoteBo noteBo : noteBos) {
 			NoteVo noteVo = new NoteVo();
 			UserBo userBo = userService.getUser(noteBo.getCreateuid());
 			boToVo(noteBo, noteVo, userBo);
+			noteVo.setMyThumbsup(hasThumbsup(loginUser, noteBo.getId()));
 			noteVoList.add(noteVo);
 		}
         Map<String, Object> map = new HashMap<String, Object>();
@@ -335,12 +339,14 @@ public class NoteController extends BaseContorller {
 		if (limit < 1) {
 			limit = 2;
 		}
+		UserBo loginUser = getUserLogin(request);
 		List<NoteBo> noteBos = noteService.findByTopEssence(circleid, Constant.NOTE_TOP, start_id, limit);
 		List<NoteVo> noteVoList = new LinkedList<>();
 		if (noteBos != null) {
 			for (NoteBo noteBo : noteBos) {
 				NoteVo noteVo = new NoteVo();
 				boToVo(noteBo, noteVo, userService.getUser(noteBo.getCreateuid()));
+				noteVo.setMyThumbsup(hasThumbsup(loginUser, noteBo.getId()));
 				noteVoList.add(noteVo);
 			}
 		}
@@ -349,6 +355,8 @@ public class NoteController extends BaseContorller {
 		map.put("noteVoList", noteVoList);
 		return JSONObject.fromObject(map).toString();
 	}
+
+
 
 
 	/**
@@ -361,10 +369,12 @@ public class NoteController extends BaseContorller {
                            HttpServletResponse response) {
         List<NoteBo> noteBos = noteService.selectHotNotes(circleid);
 		List<NoteVo> noteVoList = new LinkedList<>();
+		UserBo loginUser = getUserLogin(request);
 		for (NoteBo noteBo : noteBos) {
 			NoteVo noteVo = new NoteVo();
 			UserBo userBo = userService.getUser(noteBo.getCreateuid());
 			boToVo(noteBo, noteVo, userBo);
+			noteVo.setMyThumbsup(hasThumbsup(loginUser, noteBo.getId()));
 			noteVoList.add(noteVo);
 		}
         Map<String, Object> map = new HashMap<>();
@@ -621,6 +631,7 @@ public class NoteController extends BaseContorller {
 			noteVo.setCirVisitNum(circleBo.getVisitNum());
 			UserBo author = userService.getUser(noteBo.getCreateuid());
 			boToVo(noteBo, noteVo, author);
+			noteVo.setMyThumbsup(hasThumbsup(userBo, noteBo.getId()));
 			noteVoList.add(noteVo);
 		}
 		Map<String, Object> map = new HashMap<>();
@@ -722,6 +733,7 @@ public class NoteController extends BaseContorller {
 			noteVo.setCirVisitNum(circleBo.getVisitNum());
 			userBo = userService.getUser(noteBo.getCreateuid());
 			boToVo(noteBo, noteVo, userBo);
+			noteVo.setMyThumbsup(hasThumbsup(userBo, noteBo.getId()));
 			noteVoList.add(noteVo);
 		}
 		Map<String, Object> map = new HashMap<>();
@@ -839,11 +851,13 @@ public class NoteController extends BaseContorller {
 					ERRORCODE.CIRCLE_IS_NULL.getIndex(),
 					ERRORCODE.CIRCLE_IS_NULL.getReason());
 		}
+		UserBo loginUser = getUserLogin(request);
 		List<NoteBo> noteBos = noteService.selectCircleNotes(circleid, start_id, limit);
 		List<NoteVo> noteVoList = new LinkedList<>();
 		for (NoteBo noteBo : noteBos) {
 			NoteVo noteVo = new NoteVo();
 			boToVo(noteBo, noteVo, userService.getUser(noteBo.getCreateuid()));
+			noteVo.setMyThumbsup(hasThumbsup(loginUser, noteBo.getId()));
 			noteVoList.add(noteVo);
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -911,12 +925,14 @@ public class NoteController extends BaseContorller {
 	@ResponseBody
 	public String topAndessence(String circleid, String start_id, int limit, HttpServletRequest request,
 						   HttpServletResponse response) {
+		UserBo loginUser = getUserLogin(request);
 		List<NoteBo> noteBos = noteService.findByTopAndEssence(circleid, start_id, limit);
 		List<NoteVo> noteVoList = new LinkedList<>();
 		for (NoteBo noteBo : noteBos) {
 			NoteVo noteVo = new NoteVo();
 			UserBo userBo = userService.getUser(noteBo.getCreateuid());
 			boToVo(noteBo, noteVo, userBo);
+			noteVo.setMyThumbsup(hasThumbsup(loginUser, noteBo.getId()));
 			noteVoList.add(noteVo);
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -996,6 +1012,20 @@ public class NoteController extends BaseContorller {
 		commentVo.setCommentId(commentBo.getId());
 		commentVo.setUserid(commentBo.getCreateuid());
 		return commentVo;
+	}
+
+	/**
+	 * 判断前用户是否点赞
+	 * @param loginUser
+	 * @param noteid
+	 * @return
+	 */
+	private boolean hasThumbsup(UserBo loginUser, String noteid){
+		if (null != loginUser) {
+			ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(noteid, loginUser.getId());
+			return thumbsupBo != null;
+		}
+		return false;
 	}
 
 
