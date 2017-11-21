@@ -157,7 +157,9 @@ public class PartyController extends BaseContorller {
             String path = "/party/party-info.do?partyid=" + partyBo.getId();
             String content = String.format("%s发起了聚会【%s】，快去看看吧", userBo.getUserName(),
                     partyBo.getTitle());
-            JPushUtil.push(titlePush, content, path,  (String[])circleUsers.toArray());
+            String[] userids = new String[circleUsers.size()];
+            circleUsers.toArray(userids);
+            JPushUtil.push(titlePush, content, path, userids);
         }
 
         //用户等级
@@ -188,8 +190,8 @@ public class PartyController extends BaseContorller {
      */
     @RequestMapping("/update")
     @ResponseBody
-    public String update(@RequestParam String partyid, String partyJson,
-                         MultipartFile backPic, MultipartFile[] photos, String[] delPhotos, MultipartFile video,
+    public String update(@RequestParam String partyid, String partyJson, String delPhotos,
+                         MultipartFile backPic, MultipartFile[] photos, MultipartFile video,
                          HttpServletRequest request, HttpServletResponse response){
 
         logger.info("update partyJson : {}",partyJson);
@@ -219,6 +221,8 @@ public class PartyController extends BaseContorller {
             partyBo = oldParty;
         } else {
             copyOld(oldParty, partyBo);
+            partyBo.setPhotos(oldParty.getPhotos());
+            partyBo.setUsers(oldParty.getUsers());
         }
         String userId = userBo.getId();
         Long time = Calendar.getInstance().getTimeInMillis();
@@ -231,10 +235,13 @@ public class PartyController extends BaseContorller {
                 photo.add(path);
             }
         }
-        if (delPhotos != null && delPhotos.length > 0) {
+        if (StringUtils.isNotEmpty(delPhotos)) {
             LinkedHashSet<String> photo = partyBo.getPhotos();
-            for (String url : photo) {
-               photo.remove(url); 
+            String[] paths = CommonUtil.getIds(delPhotos);
+            for (String url : paths) {
+                if (photo.contains(url)){
+                    photo.remove(url);
+                }
             }
         }
         if (video != null) {
