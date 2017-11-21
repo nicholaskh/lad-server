@@ -34,4 +34,10 @@ public interface ISecurityDao {
      */
     WriteResult updateSecurityNum(String inforid, int type, int num);
 
+    /**
+     * 根据id批量查找
+     * @param SecurityIds
+     * @return
+     */
+    List<SecurityBo> findSecurityByIds(List<String> SecurityIds);
 }

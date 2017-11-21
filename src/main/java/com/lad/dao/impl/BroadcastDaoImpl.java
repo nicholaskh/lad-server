@@ -134,4 +134,11 @@ public class BroadcastDaoImpl implements IBroadcastDao {
         }
         return mongoTemplateTwo.updateFirst(query, update, BroadcastBo.class);
     }
+
+    @Override
+    public List<BroadcastBo> findRadioByIds(List<String> radioIds) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("_id").in(radioIds));
+        return mongoTemplateTwo.find(query, BroadcastBo.class);
+    }
 }

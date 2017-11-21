@@ -110,4 +110,11 @@ public class SecurityDaoImpl implements ISecurityDao {
         }
         return mongoTemplateTwo.updateFirst(query, update, SecurityBo.class);
     }
+
+    @Override
+    public List<SecurityBo> findSecurityByIds(List<String> securityIds) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("_id").in(securityIds));
+        return mongoTemplateTwo.find(query, SecurityBo.class);
+    }
 }

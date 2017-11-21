@@ -261,4 +261,24 @@ public class InforSerivceImpl implements IInforService {
     public WriteResult updateRadioNum(String radioid, int type, int num) {
         return broadcastDao.updateRadioNum(radioid, type, num);
     }
+
+    @Override
+    public List<InforBo> findHealthByIds(List<String> healthIds) {
+        return inforDao.findHealthByIds(healthIds);
+    }
+
+    @Override
+    public List<SecurityBo> findSecurityByIds(List<String> securityIds) {
+        return securityDao.findSecurityByIds(securityIds);
+    }
+
+    @Override
+    public List<BroadcastBo> findRadioByIds(List<String> radioIds) {
+        return broadcastDao.findRadioByIds(radioIds);
+    }
+
+    @Override
+    public List<VideoBo> findVideoByIds(List<String> videoIds) {
+        return videoDao.findVideoByIds(videoIds);
+    }
 }

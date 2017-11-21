@@ -83,7 +83,7 @@ public interface IInforRecomService {
      * @param type
      * @return
      */
-    List<InforRecomBo> findRecomByType(int type);
+    List<InforRecomBo> findRecomByType(int type, int limit);
 
     InforUserReadBo addUserRead(InforUserReadBo userReadBo);
 

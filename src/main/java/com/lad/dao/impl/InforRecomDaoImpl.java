@@ -63,12 +63,12 @@ public class InforRecomDaoImpl implements IInforRecomDao{
     }
 
     @Override
-    public List<InforRecomBo> findRecomByType(int type) {
+    public List<InforRecomBo> findRecomByType(int type, int limit) {
         Query query = new Query();
         query.addCriteria(new Criteria("type").is(type));
         query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
         query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "halfyearNum")));
-        query.limit(50);
+        query.limit(limit);
         return mongoTemplate.find(query, InforRecomBo.class);
     }
 }

@@ -34,4 +34,6 @@ public interface IInforDao {
     List<InforBo> userHealthRecom(String userid, int limit);
 
 
+    List<InforBo> findHealthByIds(List<String> healthIds);
+
 }

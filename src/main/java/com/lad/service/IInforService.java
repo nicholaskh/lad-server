@@ -250,4 +250,16 @@ public interface IInforService {
      * @return
      */
     WriteResult updateRadioNum(String radioid, int type, int num);
+
+
+    List<InforBo> findHealthByIds(List<String> healthIds);
+
+
+    List<SecurityBo> findSecurityByIds(List<String> securityIds);
+
+
+    List<BroadcastBo> findRadioByIds(List<String> radioIds);
+
+
+    List<VideoBo> findVideoByIds(List<String> videoIds);
 }

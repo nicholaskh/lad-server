@@ -311,7 +311,7 @@ public class InforController extends BaseContorller {
     private void updateInforHistroy(String inforid, String module, int type){
         Date currenDate = CommonUtil.getZeroDate(new Date());
         Date halfTime = CommonUtil.getHalfYearTime(currenDate);
-        RLock lock = redisServer.getRLock("inforHis");
+        RLock lock = redisServer.getRLock(inforid);
         List<InforHistoryBo> historyBos = null;
         try {
             lock.lock(5, TimeUnit.SECONDS);
@@ -415,7 +415,7 @@ public class InforController extends BaseContorller {
             broadcastVo.setInforid(bo.getId());
             vos.add(broadcastVo);
         }
-        UserBo userBo =  getUserLogin(request);
+        UserBo userBo = getUserLogin(request);
         if (userBo != null) {
             updateUserReadHis(userBo, module, Constant.INFOR_RADIO);
         }
@@ -437,9 +437,10 @@ public class InforController extends BaseContorller {
             broadcastVo = new BroadcastVo();
             BeanUtils.copyProperties(broadcastBo, broadcastVo);
             broadcastVo.setInforid(broadcastBo.getId());
+            updateInforHistroy(radioid, broadcastBo.getModule(), Constant.INFOR_RADIO);
             UserBo userBo = getUserLogin(request);
             if (userBo != null) {
-                updateInforHistroy(radioid, broadcastBo.getModule(), Constant.INFOR_RADIO);
+                updateUserReadHis(userBo,broadcastBo.getModule(),Constant.INFOR_RADIO);
             }
         }
         Map<String, Object> map = new HashMap<String, Object>();
@@ -514,8 +515,9 @@ public class InforController extends BaseContorller {
         if (userBo != null) {
             ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(videoid, userBo.getId());
             videoVo.setSelfSub(thumbsupBo != null);
-            updateInforHistroy(videoid, videoBo.getModule(), Constant.INFOR_RADIO);
+            updateUserReadHis(userBo,videoBo.getModule(),Constant.INFOR_VIDEO);
         }
+        updateInforHistroy(videoid, videoBo.getModule(), Constant.INFOR_VIDEO);
         videoVo.setInforid(videoid);
         BeanUtils.copyProperties( videoBo, videoVo);
         videoVo.setThumpsubNum((long)videoBo.getThumpsubNum());
@@ -669,8 +671,9 @@ public class InforController extends BaseContorller {
         if (userBo != null) {
             ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(inforBo.getId(), userBo.getId());
             inforVo.setSelfSub(thumbsupBo != null);
-            updateInforHistroy(inforid, inforBo.getClassName(), Constant.INFOR_HEALTH);
+            updateUserReadHis(userBo,inforBo.getClassName(),Constant.INFOR_HEALTH);
         }
+        updateInforHistroy(inforid, inforBo.getClassName(), Constant.INFOR_HEALTH);
         inforVo.setInforid(inforBo.getId());
         BeanUtils.copyProperties(inforBo, inforVo);
         long thuSupNum = thumbsupService.selectByOwnerIdCount(inforBo.getId());
@@ -699,8 +702,9 @@ public class InforController extends BaseContorller {
         if (userBo != null) {
             ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(inforid, userBo.getId());
             securityVo.setSelfSub(thumbsupBo != null);
-            updateInforHistroy(inforid, securityBo.getNewsType(), Constant.INFOR_SECRITY);
+            updateUserReadHis(userBo,securityBo.getNewsType(),Constant.INFOR_SECRITY);
         }
+        updateInforHistroy(inforid, securityBo.getNewsType(), Constant.INFOR_SECRITY);
         securityVo.setInforid(securityBo.getId());
         BeanUtils.copyProperties(securityBo, securityVo);
         long thuSupNum = thumbsupService.selectByOwnerIdCount(inforid);
@@ -770,21 +774,33 @@ public class InforController extends BaseContorller {
 
         userService.addUserLevel(userBo.getId(),1, Constant.LEVEL_COMMENT);
 
+        String module = "";
         switch (inforType){
             case Constant.INFOR_HEALTH:
                 inforService.updateComment(inforid, 1);
+                InforBo inforBo = inforService.findById(inforid);
+                module = inforBo != null ? inforBo.getClassName() : "";
                 break;
             case Constant.INFOR_SECRITY:
                 inforService.updateSecurityNum(inforid, Constant.COMMENT_NUM, 1);
+                SecurityBo securityBo = inforService.findSecurityById(inforid);
+                module = securityBo != null ? securityBo.getNewsType() : "";
                 break;
             case Constant.INFOR_RADIO:
                 inforService.updateRadioNum(inforid, Constant.COMMENT_NUM, 1);
+                BroadcastBo broadcastBo = inforService.findBroadById(inforid);
+                module = broadcastBo != null ? broadcastBo.getModule() : "";
                 break;
             case Constant.INFOR_VIDEO:
                 inforService.updateVideoNum(inforid, Constant.COMMENT_NUM, 1);
+                VideoBo videoBo = inforService.findVideoById(inforid);
+                module = videoBo != null ? videoBo.getModule() : "";
                 break;
             default:
                 break;
+        }
+        if (!StringUtils.isEmpty(module)){
+           updateInforHistroy(inforid, module, inforType);
         }
         CommentVo commentVo = comentBo2Vo(commentBo);
         Map<String, Object> map = new HashMap<>();
@@ -872,22 +888,37 @@ public class InforController extends BaseContorller {
                 thumbsupService.udateDeleteById(thumbsupBo.getId());
             }
         }
+        thumpsubAsync(targetid, inforid, inforType, 1);
+
+        return Constant.COM_RESP;
+    }
+
+    private void thumpsubAsync(String targetid, String inforid, int inforType, int num){
         //根据每条资讯id加锁
         RLock lock = redisServer.getRLock(targetid);
+        String module = "";
         try {
-            lock.lock(1, TimeUnit.SECONDS);
+            lock.lock(2, TimeUnit.SECONDS);
             switch (inforType){
                 case Constant.INFOR_HEALTH:
-                    inforService.updateComment(inforid, 1);
+                    inforService.updateComment(inforid, num);
+                    InforBo inforBo = inforService.findById(inforid);
+                    module = inforBo != null ? inforBo.getClassName() : "";
                     break;
                 case Constant.INFOR_SECRITY:
-                    inforService.updateSecurityNum(inforid, Constant.THUMPSUB_NUM, 1);
+                    inforService.updateSecurityNum(inforid, Constant.THUMPSUB_NUM, num);
+                    SecurityBo securityBo = inforService.findSecurityById(inforid);
+                    module = securityBo != null ? securityBo.getNewsType() : "";
                     break;
                 case Constant.INFOR_RADIO:
-                    inforService.updateRadioNum(inforid, Constant.THUMPSUB_NUM, 1);
+                    inforService.updateRadioNum(inforid, Constant.THUMPSUB_NUM, num);
+                    BroadcastBo broadcastBo = inforService.findBroadById(inforid);
+                    module = broadcastBo != null ? broadcastBo.getModule() : "";
                     break;
                 case Constant.INFOR_VIDEO:
-                    inforService.updateVideoNum(inforid, Constant.THUMPSUB_NUM, 1);
+                    inforService.updateVideoNum(inforid, Constant.THUMPSUB_NUM, num);
+                    VideoBo videoBo = inforService.findVideoById(inforid);
+                    module = videoBo != null ? videoBo.getModule() : "";
                     break;
                 default:
                     break;
@@ -895,7 +926,9 @@ public class InforController extends BaseContorller {
         } finally {
             lock.unlock();
         }
-        return Constant.COM_RESP;
+        if (!"".equals(module)){
+            updateInforHistroy(inforid, module, inforType);
+        }
     }
 
     @RequestMapping("/cancal-thumbsup")
@@ -977,7 +1010,7 @@ public class InforController extends BaseContorller {
     @ResponseBody
     public String homeHealth(HttpServletRequest request, HttpServletResponse response){
 
-        List<InforRecomBo> recomBos = inforRecomService.findRecomByType(Constant.INFOR_HEALTH);
+        List<InforRecomBo> recomBos = inforRecomService.findRecomByType(Constant.INFOR_HEALTH, 50);
         List<InforVo> inforVos = new ArrayList<>();
         int num = 0;
         for (InforRecomBo recomBo : recomBos) {
@@ -1083,37 +1116,41 @@ public class InforController extends BaseContorller {
     @ResponseBody
     public String userHealth(HttpServletRequest request, HttpServletResponse response){
 
-        UserBo userBo;
-        try {
-            userBo = checkSession(request, userService);
-        } catch (MyException e) {
-            return e.getMessage();
-        }
+        UserBo userBo = getUserLogin(request);
         List<InforVo> inforVos = new ArrayList<>();
         int num = 0;
-        InforUserReadBo readBo = inforRecomService.findUserReadByUserid(userBo.getId());
-        if (readBo == null) {
-            readBo = new InforUserReadBo();
-            readBo.setUserid(userBo.getId());
-            inforRecomService.addUserRead(readBo);
-        } else {
-            LinkedHashSet<String> set = readBo.getHealths();
-            List<InforRecomBo> recomBos = null;
-            if (set.size() > 0) {
-                recomBos = inforRecomService.findRecomByTypeAndModule(Constant.INFOR_HEALTH, set);
+        List<InforRecomBo> recomBos = null;
+        if (userBo != null) {
+            InforUserReadBo readBo = inforRecomService.findUserReadByUserid(userBo.getId());
+            if (readBo == null) {
+                readBo = new InforUserReadBo();
+                readBo.setUserid(userBo.getId());
+                inforRecomService.addUserRead(readBo);
             } else {
-                recomBos = inforRecomService.findRecomByType(Constant.INFOR_HEALTH);
-            }
-            if (recomBos != null){
-                for (InforRecomBo recomBo : recomBos) {
-                    InforBo inforBo = inforService.findById(recomBo.getInforid());
-                    if (inforBo != null) {
-                        InforVo inforVo = new InforVo();
-                        bo2vo(inforBo, inforVo);
-                        num++;
-                        inforVos.add(inforVo);
-                    }
+                LinkedHashSet<String> set = readBo.getHealths();
+                if (set.size() > 0) {
+                    recomBos = inforRecomService.findRecomByTypeAndModule(Constant.INFOR_HEALTH, set);
                 }
+            }
+        }
+        if (recomBos == null) {
+            recomBos = inforRecomService.findRecomByType(Constant.INFOR_HEALTH, 50);
+        } else if (recomBos.size() < 50) {
+            List<InforRecomBo> recoms = inforRecomService.findRecomByType(Constant.INFOR_HEALTH,
+                    50 - recomBos.size());
+            recomBos.addAll(recoms);
+        }
+        if (recomBos != null){
+            List<String> ids = new ArrayList<>();
+            for (InforRecomBo recomBo : recomBos) {
+                ids.add(recomBo.getInforid());
+            }
+            List<InforBo> inforBos = inforService.findHealthByIds(ids);
+            for (InforBo inforBo : inforBos) {
+                InforVo inforVo = new InforVo();
+                bo2vo(inforBo, inforVo);
+                num++;
+                inforVos.add(inforVo);
             }
         }
         if (num < 50) {
@@ -1140,43 +1177,47 @@ public class InforController extends BaseContorller {
     @RequestMapping("/user-securitys")
     @ResponseBody
     public String userSecritys(HttpServletRequest request, HttpServletResponse response){
-        UserBo userBo;
-        try {
-            userBo = checkSession(request, userService);
-        } catch (MyException e) {
-            return e.getMessage();
-        }
+        UserBo userBo = getUserLogin(request);
         List<SecurityVo> inforVos = new ArrayList<>();
         int num = 0;
-        InforUserReadBo readBo = inforRecomService.findUserReadByUserid(userBo.getId());
-        if (readBo == null) {
-            readBo = new InforUserReadBo();
-            readBo.setUserid(userBo.getId());
-            inforRecomService.addUserRead(readBo);
-        } else {
-            LinkedHashSet<String> set = readBo.getSecuritys();
-            List<InforRecomBo> recomBos = null;
-            if (set.size() > 0) {
-                recomBos = inforRecomService.findRecomByTypeAndModule(Constant.INFOR_SECRITY, set);
+        List<InforRecomBo> recomBos = null;
+        if (userBo != null){
+            InforUserReadBo readBo = inforRecomService.findUserReadByUserid(userBo.getId());
+            if (readBo == null) {
+                readBo = new InforUserReadBo();
+                readBo.setUserid(userBo.getId());
+                inforRecomService.addUserRead(readBo);
             } else {
-                recomBos = inforRecomService.findRecomByType(Constant.INFOR_SECRITY);
-            }
-            if (recomBos != null){
-                for (InforRecomBo recomBo : recomBos) {
-                    SecurityBo inforBo = inforService.findSecurityById(recomBo.getInforid());
-                    if (inforBo != null) {
-                        SecurityVo inforVo = new SecurityVo();
-                        BeanUtils.copyProperties(inforBo,inforVo);
-                        inforVo.setText("");
-                        inforVo.setInforid(inforBo.getId());
-                        num++;
-                        inforVos.add(inforVo);
-                    }
+                LinkedHashSet<String> set = readBo.getSecuritys();
+                if (set.size() > 0) {
+                    recomBos = inforRecomService.findRecomByTypeAndModule(Constant.INFOR_SECRITY, set);
                 }
             }
         }
+        if (recomBos == null) {
+            recomBos = inforRecomService.findRecomByType(Constant.INFOR_SECRITY, 50);
+        } else if (recomBos.size() < 50) {
+            List<InforRecomBo> recoms = inforRecomService.findRecomByType(Constant.INFOR_SECRITY,
+                    50 - recomBos.size());
+            recomBos.addAll(recoms);
+        }
+        if (recomBos != null){
+            List<String> ids = new ArrayList<>();
+            for (InforRecomBo recomBo : recomBos) {
+                ids.add(recomBo.getInforid());
+            }
+            List<SecurityBo> inforBos = inforService.findSecurityByIds(ids);
+            for (SecurityBo securityBo : inforBos) {
+                SecurityVo inforVo = new SecurityVo();
+                BeanUtils.copyProperties(securityBo,inforVo);
+                inforVo.setText("");
+                inforVo.setInforid(securityBo.getId());
+                num++;
+                inforVos.add(inforVo);
+            }
+        }
         if (num < 50) {
-            List<SecurityBo> securityBos = inforService.findSecurityTypes();
+            List<SecurityBo> securityBos = inforService.findSecurityByLimit(50 - num);
             for (SecurityBo securityBo : securityBos) {
                 SecurityVo securityVo = new SecurityVo();
                 BeanUtils.copyProperties(securityBo,securityVo);
@@ -1201,53 +1242,122 @@ public class InforController extends BaseContorller {
     @RequestMapping("/user-radios")
     @ResponseBody
     public String userRadios(HttpServletRequest request, HttpServletResponse response){
-        UserBo userBo;
-        try {
-            userBo = checkSession(request, userService);
-        } catch (MyException e) {
-            return e.getMessage();
-        }
-        List<SecurityVo> inforVos = new ArrayList<>();
+        UserBo userBo = getUserLogin(request);
+
+        List<BroadcastVo> inforVos = new ArrayList<>();
         int num = 0;
-        InforUserReadBo readBo = inforRecomService.findUserReadByUserid(userBo.getId());
-        if (readBo == null) {
-            readBo = new InforUserReadBo();
-            readBo.setUserid(userBo.getId());
-            inforRecomService.addUserRead(readBo);
-        } else {
-            LinkedHashSet<String> set = readBo.getSecuritys();
-            List<InforRecomBo> recomBos = null;
-            if (set.size() > 0) {
-                recomBos = inforRecomService.findRecomByTypeAndModule(Constant.INFOR_SECRITY, set);
+        List<InforRecomBo> myRecomBos = null;
+        if (userBo != null) {
+            InforUserReadBo readBo = inforRecomService.findUserReadByUserid(userBo.getId());
+            if (readBo == null) {
+                readBo = new InforUserReadBo();
+                readBo.setUserid(userBo.getId());
+                inforRecomService.addUserRead(readBo);
             } else {
-                recomBos = inforRecomService.findRecomByType(Constant.INFOR_SECRITY);
-            }
-            if (recomBos != null){
-                for (InforRecomBo recomBo : recomBos) {
-                    SecurityBo inforBo = inforService.findSecurityById(recomBo.getInforid());
-                    if (inforBo != null) {
-                        SecurityVo inforVo = new SecurityVo();
-                        num++;
-                        inforVos.add(inforVo);
-                    }
+                LinkedHashSet<String> set = readBo.getRadios();
+                if (set.size() > 0) {
+                    myRecomBos = inforRecomService.findRecomByTypeAndModule(Constant.INFOR_RADIO, set);
                 }
             }
         }
+        if (myRecomBos == null) {
+            myRecomBos = inforRecomService.findRecomByType(Constant.INFOR_RADIO, 50);
+        } else if (myRecomBos.size() < 50) {
+            List<InforRecomBo> recomBos = inforRecomService.findRecomByType(Constant.INFOR_RADIO,
+                    50 - myRecomBos.size());
+            myRecomBos.addAll(recomBos);
+        }
+
+        if (myRecomBos != null) {
+            List<String> ids = new ArrayList<>();
+            for (InforRecomBo recomBo : myRecomBos) {
+                ids.add(recomBo.getInforid());
+            }
+            List<BroadcastBo> broadcastBos = inforService.findRadioByIds(ids);
+            for (BroadcastBo broadcastBo : broadcastBos) {
+                BroadcastVo broadcastVo = new BroadcastVo();
+                BeanUtils.copyProperties(broadcastBo, broadcastVo);
+                broadcastVo.setInforid(broadcastBo.getId());
+                num++;
+                inforVos.add(broadcastVo);
+            }
+        }
         if (num < 50) {
-            List<SecurityBo> securityBos = inforService.findSecurityTypes();
-            for (SecurityBo securityBo : securityBos) {
-                SecurityVo securityVo = new SecurityVo();
-                BeanUtils.copyProperties(securityBo,securityVo);
-                securityVo.setText("");
-                securityVo.setInforid(securityBo.getId());
-                inforVos.add(securityVo);
+            List<BroadcastBo> broadcastBos = inforService.findRadioByLimit(50 - num);
+            for (BroadcastBo broadcastBo : broadcastBos) {
+                BroadcastVo broadcastVo = new BroadcastVo();
+                BeanUtils.copyProperties(broadcastBo, broadcastVo);
+                broadcastVo.setInforid(broadcastBo.getId());
+                inforVos.add(broadcastVo);
             }
         }
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("ret", 0);
-        map.put("securityVoList", inforVos);
+        map.put("radioVoList", inforVos);
         return JSONObject.fromObject(map).toString();
     }
 
+
+    /**
+     * 广播个性推荐
+     * @param request
+     * @param response
+     * @return
+     */
+    @RequestMapping("/user-videos")
+    @ResponseBody
+    public String userVideos(HttpServletRequest request, HttpServletResponse response){
+        UserBo userBo = getUserLogin(request);
+        List<VideoVo> inforVos = new ArrayList<>();
+        int num = 0;
+        List<InforRecomBo> myRecomBos = null;
+        if (userBo != null) {
+            InforUserReadBo readBo = inforRecomService.findUserReadByUserid(userBo.getId());
+            if (readBo == null) {
+                readBo = new InforUserReadBo();
+                readBo.setUserid(userBo.getId());
+                inforRecomService.addUserRead(readBo);
+            } else {
+                LinkedHashSet<String> set = readBo.getVideos();
+                if (set.size() > 0) {
+                    myRecomBos = inforRecomService.findRecomByTypeAndModule(Constant.INFOR_VIDEO, set);
+                }
+            }
+        }
+        if (myRecomBos == null) {
+            myRecomBos = inforRecomService.findRecomByType(Constant.INFOR_VIDEO, 50);
+        } else if (myRecomBos.size() < 50) {
+            List<InforRecomBo> recomBos = inforRecomService.findRecomByType(Constant.INFOR_VIDEO,
+                    50 - myRecomBos.size());
+            myRecomBos.addAll(recomBos);
+        }
+        if (myRecomBos != null) {
+            List<String> ids = new ArrayList<>();
+            for (InforRecomBo recomBo : myRecomBos) {
+                ids.add(recomBo.getInforid());
+            }
+            List<VideoBo> videoBos = inforService.findVideoByIds(ids);
+            for (VideoBo videoBo : videoBos) {
+                VideoVo videoVo = new VideoVo();
+                BeanUtils.copyProperties(videoBo, videoVo);
+                videoVo.setInforid(videoBo.getId());
+                num++;
+                inforVos.add(videoVo);
+            }
+        }
+        if (num < 50) {
+            List<VideoBo> videoNews = inforService.findVideoByLimit(50 - num);
+            for (VideoBo videoBo : videoNews) {
+                VideoVo videoVo = new VideoVo();
+                BeanUtils.copyProperties(videoBo, videoVo);
+                videoVo.setInforid(videoBo.getId());
+                inforVos.add(videoVo);
+            }
+        }
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("ret", 0);
+        map.put("videoVoList", inforVos);
+        return JSONObject.fromObject(map).toString();
+    }
 
 }

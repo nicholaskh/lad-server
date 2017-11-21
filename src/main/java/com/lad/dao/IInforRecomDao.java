@@ -45,6 +45,6 @@ public interface IInforRecomDao {
      * @param type
      * @return
      */
-    List<InforRecomBo> findRecomByType(int type);
+    List<InforRecomBo> findRecomByType(int type, int limit);
     
 }

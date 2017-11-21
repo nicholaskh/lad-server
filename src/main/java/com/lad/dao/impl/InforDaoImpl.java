@@ -88,4 +88,11 @@ public class InforDaoImpl implements IInforDao {
         query.limit(limit);
         return mongoTemplateTwo.find(query, InforBo.class);
     }
+
+    @Override
+    public List<InforBo> findHealthByIds(List<String> healthIds) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("_id").in(healthIds));
+        return mongoTemplateTwo.find(query, InforBo.class);
+    }
 }

@@ -36,4 +36,6 @@ public interface IBroadcastDao {
     WriteResult updateRadioNum(String radioid, int type, int num);
 
 
+    List<BroadcastBo> findRadioByIds(List<String> radioIds);
+
 }

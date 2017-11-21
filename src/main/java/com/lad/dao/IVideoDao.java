@@ -45,4 +45,11 @@ public interface IVideoDao {
      */
     WriteResult updateVideoNum(String inforid, int type, int num);
 
+    /**
+     * 根据id批量查找
+     * @param videoIds
+     * @return
+     */
+    List<VideoBo> findVideoByIds(List<String> videoIds);
+
 }

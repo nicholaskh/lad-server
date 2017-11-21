@@ -85,8 +85,8 @@ public class InforRecomServiceImpl implements IInforRecomService {
     }
 
     @Override
-    public List<InforRecomBo> findRecomByType(int type) {
-        return inforRecomDao.findRecomByType(type);
+    public List<InforRecomBo> findRecomByType(int type, int limit) {
+        return inforRecomDao.findRecomByType(type, limit);
     }
 
     @Override

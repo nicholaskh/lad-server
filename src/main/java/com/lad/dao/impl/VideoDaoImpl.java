@@ -111,6 +111,13 @@ public class VideoDaoImpl implements IVideoDao {
         }
         return mongoTemplateTwo.updateFirst(query, update, VideoBo.class);
     }
+
+    @Override
+    public List<VideoBo> findVideoByIds(List<String> videoIds) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("_id").in(videoIds));
+        return mongoTemplateTwo.find(query, VideoBo.class);
+    }
 }
 
 
