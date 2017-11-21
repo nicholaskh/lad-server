@@ -88,16 +88,17 @@ public class JPushUtil {
 
 
 	@Async
-	public static boolean push(String title, String content, String path,
+	public static void push(String title, String content, String path,
 								  String... alias) {
 		JPushClient jpushClient = new JPushClient(MASTER_SECRET, APP_KEY, null,
 				ClientConfig.getInstance());
-		PushPayload payload = buildPushObject_to_alias_alert(title, content, path, alias);
-		logger.info("alias: {}",alias);
 		try {
+			PushPayload payload = buildPushObject_to_alias_alert(title, content, path, alias);
 			PushResult result = jpushClient.sendPush(payload);
 			logger.info("Got result - {}",result);
-			return result.getResponseCode() == 200;
+			if (result.getResponseCode() != 200) {
+				logger.error("push message fail  {}", result.getResponseCode());
+			}
 		} catch (APIConnectionException e) {
 			logger.error("Connection error, should retry later : {}", e.getMessage());
 		} catch (APIRequestException e) {
@@ -105,8 +106,9 @@ public class JPushUtil {
 			logger.error("HTTP Status: {}", e.getStatus());
 			logger.error("Error Code: {}" ,e.getErrorCode());
 			logger.error("Error Message: {}", e.getErrorMessage());
+		} catch (Exception e) {
+			logger.error(e);
 		}
-		return false;
 	}
 
 	/**
