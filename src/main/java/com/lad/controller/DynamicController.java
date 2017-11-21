@@ -14,7 +14,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -67,12 +66,9 @@ public class DynamicController extends BaseContorller {
      */
     @RequestMapping("/insert")
     @ResponseBody
-    public String insert(@RequestParam double px, @RequestParam double py,
-                                  @RequestParam String title, @RequestParam String content,
-                                  @RequestParam String landmark,
-                                  @RequestParam("pictures") MultipartFile[] pictures,
-                                  @RequestParam String type,
-                                  HttpServletRequest request, HttpServletResponse response){
+    public String insert(double px, double py, String title, String content, String landmark,
+                         MultipartFile[] pictures, String type, HttpServletRequest request,
+                         HttpServletResponse response){
         UserBo userBo;
         try {
             userBo = checkSession(request, userService);
@@ -88,7 +84,7 @@ public class DynamicController extends BaseContorller {
         dynamicBo.setCreateuid(userId);
         dynamicBo.setPicType(type);
         if (pictures != null) {
-            LinkedHashSet<String> images = dynamicBo.getImages();
+            LinkedHashSet<String> images = dynamicBo.getPhotos();
             Long time = Calendar.getInstance().getTimeInMillis();
             for (MultipartFile file : pictures) {
                 String fileName = userId + "-" + time + "-"
@@ -103,7 +99,7 @@ public class DynamicController extends BaseContorller {
                     images.add(path);
                 }
             }
-            dynamicBo.setImages(images);
+            dynamicBo.setPhotos(images);
         }
         dynamicService.addDynamic(dynamicBo);
         addDynamicMsgs(userId, dynamicBo.getId(), Constant.DYNAMIC_TYPE, dynamicService);
@@ -356,7 +352,7 @@ public class DynamicController extends BaseContorller {
             DynamicBo dynamicBo = dynamicService.findDynamicById(id);
             DynamicVo dynamicVo = new DynamicVo();
             BeanUtils.copyProperties(dynamicBo, dynamicVo);
-            dynamicVo.setPhotos(new ArrayList<>(dynamicBo.getImages()));
+            dynamicVo.setPhotos(new ArrayList<>(dynamicBo.getPhotos()));
             map.put("dynamicVo", dynamicVo);
         }
         return JSONObject.fromObject(map).toString();
@@ -426,7 +422,7 @@ public class DynamicController extends BaseContorller {
             } else if (type == Constant.DYNAMIC_TYPE) {
                 DynamicBo dynamicBo = dynamicService.findDynamicById(id);
                 BeanUtils.copyProperties(dynamicBo, dynamicVo);
-                dynamicVo.setPhotos(new ArrayList<>(dynamicBo.getImages()));
+                dynamicVo.setPhotos(new ArrayList<>(dynamicBo.getPhotos()));
 
             }
             dynamicVos.add(dynamicVo);
