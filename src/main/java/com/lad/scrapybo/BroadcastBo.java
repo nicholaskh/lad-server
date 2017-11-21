@@ -33,6 +33,10 @@ public class BroadcastBo implements Serializable {
 
     private String broadcast_url;
 
+    private int random_num;
+
+    private String edition;
+
     private int visitNum;
 
     private int shareNum;
@@ -153,5 +157,21 @@ public class BroadcastBo implements Serializable {
 
     public void setCollectNum(int collectNum) {
         this.collectNum = collectNum;
+    }
+
+    public int getRandom_num() {
+        return random_num;
+    }
+
+    public void setRandom_num(int random_num) {
+        this.random_num = random_num;
+    }
+
+    public String getEdition() {
+        return edition;
+    }
+
+    public void setEdition(String edition) {
+        this.edition = edition;
     }
 }

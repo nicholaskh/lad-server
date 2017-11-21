@@ -34,7 +34,7 @@ public class NoteVo extends BaseVo {
 
     private Long transCount;
 
-    private Boolean isMyThumbsup;
+    private boolean isMyThumbsup;
 
     private String type;
 
@@ -56,11 +56,11 @@ public class NoteVo extends BaseVo {
     //视频缩略图
     private String videoPic;
 
-    public Boolean getMyThumbsup() {
+    public boolean getMyThumbsup() {
         return isMyThumbsup;
     }
 
-    public void setMyThumbsup(Boolean myThumbsup) {
+    public void setMyThumbsup(boolean myThumbsup) {
         isMyThumbsup = myThumbsup;
     }
 

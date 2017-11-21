@@ -18,7 +18,7 @@ public class DynamicBo extends BaseBo {
     //内容
     private String content;
     //图片
-    private LinkedHashSet<String> images = new LinkedHashSet<>();
+    private LinkedHashSet<String> photos = new LinkedHashSet<>();
     //经纬度
     private double[] postion;
     //转发量
@@ -33,6 +33,13 @@ public class DynamicBo extends BaseBo {
     private String picType;
     //视频缩略图
     private String videoPic;
+
+    //原作者
+    private String owner;
+    //来源类型
+    private int sourceType;
+    //来源id
+    private String sourceid;
 
     public String getTitle() {
         return title;
@@ -50,12 +57,12 @@ public class DynamicBo extends BaseBo {
         this.content = content;
     }
 
-    public LinkedHashSet<String> getImages() {
-        return images;
+    public LinkedHashSet<String> getPhotos() {
+        return photos;
     }
 
-    public void setImages(LinkedHashSet<String> images) {
-        this.images = images;
+    public void setPhotos(LinkedHashSet<String> photos) {
+        this.photos = photos;
     }
 
     public double[] getPostion() {
@@ -112,5 +119,29 @@ public class DynamicBo extends BaseBo {
 
     public void setVideoPic(String videoPic) {
         this.videoPic = videoPic;
+    }
+
+    public int getSourceType() {
+        return sourceType;
+    }
+
+    public void setSourceType(int sourceType) {
+        this.sourceType = sourceType;
+    }
+
+    public String getOwner() {
+        return owner;
+    }
+
+    public void setOwner(String owner) {
+        this.owner = owner;
+    }
+
+    public String getSourceid() {
+        return sourceid;
+    }
+
+    public void setSourceid(String sourceid) {
+        this.sourceid = sourceid;
     }
 }
