@@ -161,4 +161,16 @@ public class FriendsDaoImpl implements IFriendsDao {
 		query.addCriteria(new Criteria("backname").regex(pattern));
 		return mongoTemplate.find(query, FriendsBo.class);
 	}
+
+
+	public List<FriendsBo> searchInviteCircleUsers(HashSet<String> circleUsers, String userid, String keywords) {
+		Query query = new Query();
+		Criteria criteria = new Criteria("userid").is(userid);
+		criteria.and("friendid").nin(circleUsers);
+		Pattern pattern = Pattern.compile("^.*"+keywords+".*$", Pattern.CASE_INSENSITIVE);
+		Criteria backname = new Criteria("backname").regex(pattern);
+		Criteria username = new Criteria("username").regex(pattern);
+		criteria.orOperator(backname, username);
+		return mongoTemplate.find(query, FriendsBo.class);
+	}
 }

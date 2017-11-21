@@ -15,6 +15,7 @@ public class FriendsBo extends BaseBo {
 	private String description;
 	private Integer VIP = 0;
 	private Integer black = 0;
+	private String username;
 	private String lastTime;
 
 	public String getUserid() {
@@ -81,4 +82,11 @@ public class FriendsBo extends BaseBo {
 		this.apply = apply;
 	}
 
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
 }

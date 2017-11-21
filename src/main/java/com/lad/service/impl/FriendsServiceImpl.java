@@ -80,4 +80,9 @@ public class FriendsServiceImpl implements IFriendsService {
 	public List<FriendsBo> searchCircleUsers(HashSet<String> circleUsers, String userid, String keywords) {
 		return friendsDao.searchCircleUsers(circleUsers, userid, keywords);
 	}
+
+	@Override
+	public List<FriendsBo> searchInviteCircleUsers(HashSet<String> circleUsers, String userid, String keywords) {
+		return friendsDao.searchInviteCircleUsers(circleUsers, userid, keywords);
+	}
 }

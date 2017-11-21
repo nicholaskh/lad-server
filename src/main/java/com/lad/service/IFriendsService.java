@@ -43,4 +43,6 @@ public interface IFriendsService extends IBaseService {
 	 * @return
 	 */
 	List<FriendsBo> searchCircleUsers(HashSet<String> circleUsers,String userid, String keywords);
+
+	List<FriendsBo> searchInviteCircleUsers(HashSet<String> circleUsers, String userid, String keywords);
 }

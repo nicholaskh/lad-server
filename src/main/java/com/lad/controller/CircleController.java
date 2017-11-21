@@ -1757,15 +1757,7 @@ public class CircleController extends BaseContorller {
 			if (userBo != null && userBo.getId().equals(userid)) {
 				continue;
 			}
-			UserBaseVo userBaseVo = new UserBaseVo();
-			BeanUtils.copyProperties(user, userBaseVo);
-			if (circleBo.getCreateuid().equals(userid)) {
-				userBaseVo.setRole(2);
-			} else if (masters.contains(userid)){
-				userBaseVo.setRole(1);
-			} else {
-				userBaseVo.setRole(0);
-			}
+			UserBaseVo userBaseVo = circleUser2Vo(user, circleBo.getCreateuid(), masters);
 			userList.add(userBaseVo);
 			userHas.add(userid);
 		}
@@ -1782,15 +1774,7 @@ public class CircleController extends BaseContorller {
 				if (user == null){
 					continue;
 				}
-				UserBaseVo userBaseVo = new UserBaseVo();
-				BeanUtils.copyProperties(user, userBaseVo);
-				if (circleBo.getCreateuid().equals(friendid)) {
-					userBaseVo.setRole(2);
-				} else if (masters.contains(friendid)){
-					userBaseVo.setRole(1);
-				} else {
-					userBaseVo.setRole(0);
-				}
+				UserBaseVo userBaseVo = circleUser2Vo(user, circleBo.getCreateuid(), masters);
 				userList.add(userBaseVo);
 			}
 		}
@@ -1798,6 +1782,58 @@ public class CircleController extends BaseContorller {
 		map.put("ret", 0);
 		map.put("userVos", userList);
 		return JSONObject.fromObject(map).toString();
+	}
+
+	/**
+	 * 邀请好友搜索
+	 * @param circleid
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@RequestMapping("/invite-user-search")
+	@ResponseBody
+	public String inviteUserSearch(String circleid, String keyword,
+							 HttpServletRequest request, HttpServletResponse response) {
+
+		UserBo userBo = getUserLogin(request);
+		CircleBo circleBo = circleService.selectById(circleid);
+		if (circleBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_IS_NULL.getIndex(),
+					ERRORCODE.CIRCLE_IS_NULL.getReason());
+		}
+		HashSet<String> masters = circleBo.getMasters();
+		List<UserBaseVo> userList = new ArrayList<>();
+		//登录后可以查询好友信息的
+		if (userBo != null){
+			List<FriendsBo> friendsBos = friendsService.searchInviteCircleUsers(circleBo.getUsers(),userBo.getId(),
+					keyword);
+			for (FriendsBo friend : friendsBos) {
+				String friendid = friend.getFriendid();
+				UserBo user = userService.getUser(friendid);
+				if (user == null){
+					continue;
+				}
+				userList.add(circleUser2Vo(user, circleBo.getCreateuid(), masters));
+			}
+		}
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("userVos", userList);
+		return JSONObject.fromObject(map).toString();
+	}
+
+	private UserBaseVo circleUser2Vo(UserBo userBo, String createuid, HashSet<String> masters){
+		UserBaseVo userBaseVo = new UserBaseVo();
+		BeanUtils.copyProperties(userBo, userBaseVo);
+		if (createuid.equals(userBo.getId())) {
+			userBaseVo.setRole(2);
+		} else if (masters.contains(userBo.getId())){
+			userBaseVo.setRole(1);
+		} else {
+			userBaseVo.setRole(0);
+		}
+		return userBaseVo;
 	}
 
 

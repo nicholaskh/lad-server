@@ -43,4 +43,12 @@ public interface IFriendsDao extends IBaseDao {
 	 */
 	List<FriendsBo> searchCircleUsers(HashSet<String> circleUsers, String userid,  String keywords);
 
+	/**
+	 * 查找不在指定中的用户
+	 * @param circleUsers
+	 * @param userid
+	 * @param keywords
+	 * @return
+	 */
+	List<FriendsBo> searchInviteCircleUsers(HashSet<String> circleUsers, String userid, String keywords);
 }
