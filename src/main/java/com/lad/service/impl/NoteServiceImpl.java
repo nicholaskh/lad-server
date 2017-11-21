@@ -123,4 +123,9 @@ public class NoteServiceImpl implements INoteService {
 	public List<NoteBo> findByTopEssence(String circleid, int type, String startId, int limit) {
 		return noteDao.findByTopEssence(circleid, type, startId, limit);
 	}
+
+	@Override
+	public List<NoteBo> findByTopAndEssence(String circleid, String startId, int limit) {
+		return noteDao.findByTopAndEssence(circleid, startId, limit);
+	}
 }
