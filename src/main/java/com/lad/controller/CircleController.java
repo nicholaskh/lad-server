@@ -1298,19 +1298,25 @@ public class CircleController extends BaseContorller {
 		}
 		HashSet<String> users = circleBo.getUsers();
 		HashSet<String> masters = circleBo.getMasters();
-		List<UserBaseVo> userList = new ArrayList<>();
+		List<UserCircleVo> userList = new ArrayList<>();
 		for (String userId : users) {
 			UserBo user = userService.getUser(userId);
-			UserBaseVo userBaseVo = new UserBaseVo();
-			BeanUtils.copyProperties(user, userBaseVo);
-			if (circleBo.getCreateuid().equals(userId)) {
-			   userBaseVo.setRole(2);
-			} else if (masters.contains(userId)){
-				userBaseVo.setRole(1);
-			} else {
-				userBaseVo.setRole(0);
+			if (user == null) {
+				continue;
 			}
-			userList.add(userBaseVo);
+			long circleNums = circleService.findCreateCricles(userId);
+			UserCircleVo userCircleVo = new UserCircleVo();
+			BeanUtils.copyProperties(user, userCircleVo);
+			if (circleBo.getCreateuid().equals(userId)) {
+				userCircleVo.setRole(2);
+			} else if (masters.contains(userId)){
+				userCircleVo.setRole(1);
+			} else {
+				userCircleVo.setRole(0);
+			}
+			userCircleVo.setMaxCircleNum(userCircleVo.getLevel() * 5);
+			userCircleVo.setHasCircleNum((int)circleNums);
+			userList.add(userCircleVo);
 		}
 		Map<String, Object> map = new HashMap<>();
 		map.put("ret", 0);

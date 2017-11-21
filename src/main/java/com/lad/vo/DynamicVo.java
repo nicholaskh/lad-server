@@ -32,6 +32,13 @@ public class DynamicVo extends BaseVo {
     private String landmark;
 
     private Boolean isMyThumbsup;
+    //原作者
+    private String owner;
+    //来源类型
+    private int sourceType;
+    //来源id
+    private String sourceid;
+
     public String getMsgid() {
         return msgid;
     }
@@ -118,5 +125,29 @@ public class DynamicVo extends BaseVo {
 
     public void setUserPic(String userPic) {
         this.userPic = userPic;
+    }
+
+    public String getOwner() {
+        return owner;
+    }
+
+    public void setOwner(String owner) {
+        this.owner = owner;
+    }
+
+    public int getSourceType() {
+        return sourceType;
+    }
+
+    public void setSourceType(int sourceType) {
+        this.sourceType = sourceType;
+    }
+
+    public String getSourceid() {
+        return sourceid;
+    }
+
+    public void setSourceid(String sourceid) {
+        this.sourceid = sourceid;
     }
 }
