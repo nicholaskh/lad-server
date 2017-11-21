@@ -262,5 +262,19 @@ public class NoteDaoImpl implements INoteDao {
 		query.limit(limit);
 		return mongoTemplate.find(query, NoteBo.class);
 	}
-	
+
+	@Override
+	public List<NoteBo> findByTopAndEssence(String circleid, String startId, int limit) {
+		Query query = new Query();
+		Criteria criteria = new Criteria("circleId").is(circleid).and("deleted").is(Constant.ACTIVITY);
+		Criteria top = new Criteria("top").is(1);
+		Criteria essence  = new Criteria("essence").is(1);
+		query.addCriteria(criteria.orOperator(top, essence));
+		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
+		if (!StringUtils.isEmpty(startId)) {
+			query.addCriteria(new Criteria("_id").gt(startId));
+		}
+		query.limit(limit);
+		return mongoTemplate.find(query, NoteBo.class);
+	}
 }

@@ -152,5 +152,11 @@ public interface INoteDao extends IBaseDao {
 	List<NoteBo> findByTopEssence(String circleid, int type, String startId, int limit);
 
 
+	/**
+	 * 查找加精和置顶帖子
+	 * @param circleid
+	 * @return
+	 */
+	List<NoteBo> findByTopAndEssence(String circleid, String startId, int limit);
 
 }

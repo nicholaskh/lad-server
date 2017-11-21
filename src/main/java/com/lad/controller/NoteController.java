@@ -903,6 +903,64 @@ public class NoteController extends BaseContorller {
 		return Constant.COM_RESP;
 	}
 
+
+	/**
+	 * 置顶和精华帖子
+	 */
+	@RequestMapping("/top-essence")
+	@ResponseBody
+	public String topAndessence(String circleid, String start_id, int limit, HttpServletRequest request,
+						   HttpServletResponse response) {
+		List<NoteBo> noteBos = noteService.findByTopAndEssence(circleid, start_id, limit);
+		List<NoteVo> noteVoList = new LinkedList<>();
+		for (NoteBo noteBo : noteBos) {
+			NoteVo noteVo = new NoteVo();
+			UserBo userBo = userService.getUser(noteBo.getCreateuid());
+			boToVo(noteBo, noteVo, userBo);
+			noteVoList.add(noteVo);
+		}
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("noteVoList", noteVoList);
+		return JSONObject.fromObject(map).toString();
+	}
+
+	/**
+	 * 转发到我的动态
+	 */
+	@RequestMapping("/forward-dynamic")
+	@ResponseBody
+	public String forwardDynamic(String noteid, HttpServletRequest request,
+								HttpServletResponse response) {
+		UserBo userBo;
+		try {
+			userBo = checkSession(request, userService);
+		} catch (MyException e) {
+			return e.getMessage();
+		}
+		NoteBo noteBo = noteService.selectById(noteid);
+		if (null == noteBo) {
+			return CommonUtil.toErrorResult(ERRORCODE.NOTE_IS_NULL.getIndex(),
+					ERRORCODE.NOTE_IS_NULL.getReason());
+		}
+		DynamicBo dynamicBo = new DynamicBo();
+		dynamicBo.setTitle(noteBo.getSubject());
+		dynamicBo.setContent(noteBo.getContent());
+		dynamicBo.setOwner(noteBo.getCreateuid());
+		dynamicBo.setPhotos(new LinkedHashSet<>(noteBo.getPhotos()));
+		dynamicBo.setSourceType(Constant.NOTE_TYPE);
+		dynamicBo.setSourceid(noteid);
+		dynamicBo.setCreateuid(userBo.getId());
+		dynamicService.addDynamic(dynamicBo);
+		addDynamicMsgs(userBo.getId(), dynamicBo.getId(), Constant.NOTE_TYPE, dynamicService);
+		Map<String, Object> map = new HashMap<>();
+		map.put("ret", 0);
+		map.put("dynamicid", dynamicBo.getId());
+		return JSONObject.fromObject(map).toString();
+	}
+
+
+
 	private RedstarBo setRedstarBo(String userid, String circleid, int weekNo, int year){
 		RedstarBo redstarBo = new RedstarBo();
 		redstarBo.setUserid(userid);
