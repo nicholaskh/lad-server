@@ -360,6 +360,7 @@ public class CircleController extends BaseContorller {
 				if (reasonBo != null) {
 					userApplyVo.setReason(reasonBo.getReason());
 					userApplyVo.setStatus(reasonBo.getStatus());
+					userApplyVo.setApplyTime(reasonBo.getCreateTime());
 				}
 				userApplyVos.add(userApplyVo);
 			} else {
@@ -432,7 +433,8 @@ public class CircleController extends BaseContorller {
 		String content = String.format("您加入圈子【%s】的申请已通过，快去看看吧", circleBo.getName());
 		String path = "/circle/circle-info.do?circleid=" + circleid;
 		if (!accepts.isEmpty()) {
-			JPushUtil.push(titlePush, content, path,  (String[]) accepts.toArray());
+			String[] userArr = new String[accepts.size()];
+			JPushUtil.push(titlePush, content, path,  userArr);
 			pushToFriends(circleBo, userBo.getUserName(), path, accepts);
 		}
 		return Constant.COM_RESP;
@@ -447,13 +449,17 @@ public class CircleController extends BaseContorller {
 	private void pushToFriends(CircleBo circleBo, String userName, String path, List<String> accepts){
 		for (String userid : accepts) {
 			List<FriendsBo> friendsBos = friendsService.getFriendByUserid(userid);
-			List<String> friendids = new ArrayList<>();
-			for (FriendsBo friendsBo : friendsBos) {
-				friendids.add(friendsBo.getFriendid());
-			}
-			String content = String.format("%s已申请加入圈子【%s】，你也快去看看吧",userName, circleBo.getName());
-			if (!friendids.isEmpty()) {
-				JPushUtil.push(titlePush, content, path,  (String[]) friendids.toArray());
+			int i = 0;
+			if (!CommonUtil.isEmpty(friendsBos)) {
+				String[] friendidsArr = new String[friendsBos.size()];
+				for (FriendsBo friendsBo : friendsBos) {
+					friendidsArr[i] = friendsBo.getFriendid();
+					i++;
+				}
+				String content = String.format("%s已申请加入圈子【%s】，你也快去看看吧",userName, circleBo.getName());
+				if (i > 0) {
+					JPushUtil.push(titlePush, content, path, friendidsArr);
+				}
 			}
 		}
 	}
