@@ -243,7 +243,8 @@ public class CircleController extends BaseContorller {
 		JPushUtil.push(titlePush, content, path,  circleBo.getCreateuid());
 		HashSet<String> masters = circleBo.getMasters();
 		if (!CommonUtil.isEmpty(masters)) {
-			String[] pushUser = (String[]) masters.toArray();
+			String[] pushUser = new String[masters.size()];
+            masters.toArray(pushUser);
 			JPushUtil.push(titlePush, content, path,  pushUser);
 		}
 		return Constant.COM_RESP;
@@ -1672,8 +1673,11 @@ public class CircleController extends BaseContorller {
 			}
 		} else {
 			if (circleBo.isVerify()){
-				return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_NEED_VERIFY.getIndex(),
-						ERRORCODE.CIRCLE_NEED_VERIFY.getReason());
+                String path = "/circle/circle-info.do?circleid=" + circleid;
+                String content = String.format("%s邀请您加入圈子【%s】，快去看看吧", userBo.getUserName(),
+                        circleBo.getName());
+                JPushUtil.push(titlePush, content, path,  useridArr);
+                return Constant.COM_RESP;
 			}
 			if (!addUser(circleid, useridArr)){
 				return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_USER_MAX.getIndex(),
