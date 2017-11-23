@@ -435,6 +435,7 @@ public class CircleController extends BaseContorller {
 		String path = "/circle/circle-info.do?circleid=" + circleid;
 		if (!accepts.isEmpty()) {
 			String[] userArr = new String[accepts.size()];
+			accepts.toArray(userArr);
 			JPushUtil.push(titlePush, content, path,  userArr);
 			pushToFriends(circleBo, userBo.getUserName(), path, accepts);
 		}
