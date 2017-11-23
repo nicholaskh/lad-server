@@ -95,6 +95,8 @@ public class JPushUtil {
 		try {
 			PushPayload payload = buildPushObject_to_alias_alert(title, content, path, alias);
 			PushResult result = jpushClient.sendPush(payload);
+			logger.info("userids  - {}",alias);
+			logger.info("push title : {},  pushInfo  : {}", title,  content);
 			logger.info("Got result - {}",result);
 			if (result.getResponseCode() != 200) {
 				logger.error("push message fail  {}", result.getResponseCode());

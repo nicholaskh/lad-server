@@ -442,7 +442,7 @@ public class CircleController extends BaseContorller {
 			String[] userArr = new String[accepts.size()];
 			accepts.toArray(userArr);
 			JPushUtil.push(titlePush, content, path,  userArr);
-			pushToFriends(circleBo, path, pushFriends);
+			pushToFriends(circleBo.getName(), path, pushFriends);
 		}
 		return Constant.COM_RESP;
 	}
@@ -453,27 +453,27 @@ public class CircleController extends BaseContorller {
 	 * @param accepts
 	 */
 	@Async
-	private void pushToFriends(CircleBo circleBo, String path, List<String> accepts){
-
-		String circleName = circleBo.getName();
+	private void pushToFriends(String circleName, String path, List<String> accepts){
 		for (String userid : accepts) {
 			UserBo userBo = userService.getUser(userid);
 			if (userBo == null) {
 				continue;
 			}
 			List<FriendsBo> friendsBos = friendsService.getFriendByUserid(userid);
-			if (!CommonUtil.isEmpty(friendsBos)) {
-				for (FriendsBo friendsBo : friendsBos) {
-					String name = "";
-					FriendsBo bo = friendsService.getFriendByIdAndVisitorIdAgree(friendsBo.getFriendid(), userid);
-				   	if (bo != null) {
-						name = StringUtils.isNotEmpty(bo.getBackname()) ? bo.getBackname() : bo.getUsername();
-					} else {
-						name = userBo.getUserName();
-					}
-					String content = String.format("%s已申请加入圈子【%s】，你也快去看看吧",name, circleName);
-					JPushUtil.push(titlePush, content, path, friendsBo.getFriendid());
+			for (FriendsBo friendsBo : friendsBos) {
+				UserBo friend = userService.getUser(friendsBo.getFriendid());
+				if (friend == null) {
+					continue;
 				}
+				String name = "";
+				FriendsBo bo = friendsService.getFriendByIdAndVisitorIdAgree(friendsBo.getFriendid(), userid);
+				if (bo != null) {
+					name = StringUtils.isNotEmpty(bo.getBackname()) ? bo.getBackname() : bo.getUsername();
+				} else {
+					name = userBo.getUserName();
+				}
+				String content = String.format("%s已申请加入圈子【%s】，你也快去看看吧",name, circleName);
+				JPushUtil.push(titlePush, content, path, friend.getId());
 			}
 		}
 	}
