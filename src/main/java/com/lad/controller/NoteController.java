@@ -59,14 +59,8 @@ public class NoteController extends BaseContorller {
 
 	@RequestMapping("/insert")
 	@ResponseBody
-	public String isnert(@RequestParam double px,
-						 @RequestParam double py,
-						 @RequestParam String subject,
-						 @RequestParam(required = false)String landmark,
-						 @RequestParam String content,
-						 @RequestParam String circleid,
-						 @RequestParam(required = false) MultipartFile[] pictures,
-						 @RequestParam(required = false) String type,
+	public String isnert(double px, double py, String subject, String landmark, String content, String circleid,
+						 MultipartFile[] pictures, String type, boolean isAsync,
 			HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
 		try {
@@ -122,7 +116,10 @@ public class NoteController extends BaseContorller {
 		} finally {
 			lock.unlock();
 		}
-		addDynamicMsgs(userId, noteBo.getId(), Constant.NOTE_TYPE, dynamicService);
+		if (isAsync) {
+            //动态信息表
+            addDynamicMsgs(userId, noteBo.getId(), Constant.NOTE_TYPE, dynamicService);
+		}
 		userService.addUserLevel(userBo.getId(), 1, Constant.LEVEL_NOTE);
 		updateCircleHot(circleService, redisServer, circleid, 1, Constant.CIRCLE_NOTE);
 		updateCircleHot(circleService, redisServer, circleid, 1, Constant.CIRCLE_NOTE_VISIT);
@@ -265,7 +262,7 @@ public class NoteController extends BaseContorller {
 		updateCircleHot(circleService, redisServer, noteBo.getCircleId(), 1, Constant.CIRCLE_NOTE_VISIT);
 		RLock lock = redisServer.getRLock(Constant.VISIT_LOCK);
 		try {
-			lock.lock(3,TimeUnit.SECONDS);
+			lock.lock(1,TimeUnit.SECONDS);
 			noteService.updateVisitCount(noteid);
 		} finally {
 			lock.unlock();
