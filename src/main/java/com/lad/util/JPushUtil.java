@@ -62,7 +62,7 @@ public class JPushUtil {
 		JPushClient jpushClient = new JPushClient(MASTER_SECRET, APP_KEY, null,
 				ClientConfig.getInstance());
 		PushPayload payload = buildPushObject_to_alias_alert(content, alias);
-		logger.info("alias: {}",alias);
+		logger.info("push alias {},  pushInfo  : {}", alias,   content);
 		try {
 			PushResult result = jpushClient.sendPush(payload);
 			logger.info("Got result - {}",result);
@@ -90,13 +90,12 @@ public class JPushUtil {
 	@Async
 	public static void push(String title, String content, String path,
 								  String... alias) {
-		JPushClient jpushClient = new JPushClient(MASTER_SECRET, APP_KEY, null,
-				ClientConfig.getInstance());
 		try {
+			JPushClient jpushClient = new JPushClient(MASTER_SECRET, APP_KEY, null,
+					ClientConfig.getInstance());
+			logger.info("push alias {},  push title : {},  pushInfo  : {}", alias,  title,  content);
 			PushPayload payload = buildPushObject_to_alias_alert(title, content, path, alias);
 			PushResult result = jpushClient.sendPush(payload);
-			logger.info("userids  - {}",alias);
-			logger.info("push title : {},  pushInfo  : {}", title,  content);
 			logger.info("Got result - {}",result);
 			if (result.getResponseCode() != 200) {
 				logger.error("push message fail  {}", result.getResponseCode());
@@ -148,7 +147,7 @@ public class JPushUtil {
 		JPushClient jpushClient = new JPushClient(MASTER_SECRET, APP_KEY, null,
 				ClientConfig.getInstance());
 		PushPayload payload = buildPushObject_to_Message(title, content, path, alias);
-		logger.info("alias: {}",alias);
+		logger.info("push alias {},  push title : {},  pushInfo  : {}", alias,  title,  content);
 		try {
 			PushResult result = jpushClient.sendPush(payload);
 			logger.info("Got result - {}",result);
