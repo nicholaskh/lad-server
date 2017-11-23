@@ -1,5 +1,7 @@
 package com.lad.vo;
 
+import java.util.Date;
+
 /**
  * 功能描述：
  * Version: 1.0
@@ -24,6 +26,8 @@ public class UserApplyVo extends BaseVo {
     private String reason;
 
     private String refuse;
+
+    private Date applyTime;
 
     public String getUserid() {
         return userid;
@@ -95,5 +99,13 @@ public class UserApplyVo extends BaseVo {
 
     public void setRefuse(String refuse) {
         this.refuse = refuse;
+    }
+
+    public Date getApplyTime() {
+        return applyTime;
+    }
+
+    public void setApplyTime(Date applyTime) {
+        this.applyTime = applyTime;
     }
 }

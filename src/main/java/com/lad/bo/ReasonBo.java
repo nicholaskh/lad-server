@@ -20,6 +20,8 @@ public class ReasonBo extends BaseBo {
     //状态，0 表示申请； 1 表示通过， -1表示b拒绝
     private int status;
 
+    private boolean isNotice;
+
 
     public String getCircleid() {
         return circleid;
@@ -51,5 +53,13 @@ public class ReasonBo extends BaseBo {
 
     public void setStatus(int status) {
         this.status = status;
+    }
+
+    public boolean isNotice() {
+        return isNotice;
+    }
+
+    public void setNotice(boolean notice) {
+        isNotice = notice;
     }
 }
