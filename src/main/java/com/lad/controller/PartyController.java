@@ -130,6 +130,9 @@ public class PartyController extends BaseContorller {
         }
         partyBo.setStatus(1);
         partyBo.setCreateuid(userId);
+        LinkedList<String> partyUsers = partyBo.getUsers();
+        partyUsers.add(userId);
+        partyBo.setPartyUserNum(1);
 
         ChatroomBo chatroomBo = new ChatroomBo();
         chatroomBo.setName(partyBo.getTitle());
@@ -299,11 +302,11 @@ public class PartyController extends BaseContorller {
         }
         PartyVo partyVo = new PartyVo();
         BeanUtils.copyProperties(partyBo, partyVo);
-        if (partyBo.getStatus() == 1){
-            int status = getPartyStatus(partyBo.getId(), partyBo.getStartTime(), partyBo.getAppointment());
-            if (status != 1){
-                partyVo.setStatus(status);
+        if (partyBo.getStatus() != -1){
+            int status = getPartyStatus(partyBo.getStartTime(), partyBo.getAppointment());
+            if (status != partyBo.getStatus()){
                 updatePartyStatus(partyBo.getId(), status);
+                partyBo.setStatus(status);
             }
         }
         partyVo.setPartyid(partyBo.getId());
@@ -358,7 +361,7 @@ public class PartyController extends BaseContorller {
             return e.getMessage();
         }
 
-        RLock lock = redisServer.getRLock("partyUserLock");
+        RLock lock = redisServer.getRLock(partyid+"partyUserLock");
         String chatroomid;
         PartyBo partyBo = null;
         try {
@@ -372,15 +375,20 @@ public class PartyController extends BaseContorller {
                 return CommonUtil.toErrorResult(ERRORCODE.PARTY_HAS_END.getIndex(),
                         ERRORCODE.PARTY_HAS_END.getReason());
             }
-            if (partyBo.getUserLimit() != 0 && partyBo.getUsers().size() >= partyBo.getUserLimit()) {
+            int userTotal = partyBo.getPartyUserNum() + userNum;
+            if (partyBo.getUserLimit() != 0 && userTotal > partyBo.getUserLimit()) {
                 return CommonUtil.toErrorResult(ERRORCODE.PARTY_USER_MAX.getIndex(),
                         ERRORCODE.PARTY_USER_MAX.getReason());
             }
+            partyBo.setPartyUserNum(userTotal);
             chatroomid = partyBo.getChatroomid();
             LinkedList<String> users = partyBo.getUsers();
             if (!users.contains(userBo.getId())) {
                 users.add(userBo.getId());
-                partyService.updateUser(partyid, users);
+                partyService.updateUser(partyid, users, userTotal);
+            } else {
+                return CommonUtil.toErrorResult(ERRORCODE.PARTY_HAS_ADD.getIndex(),
+                        ERRORCODE.PARTY_HAS_ADD.getReason());
             }
         } finally {
             lock.unlock();
@@ -438,7 +446,7 @@ public class PartyController extends BaseContorller {
             chatroomService.insertUser(chatroomUserBo);
         }
 
-        String path = "/party/enroll-detail.do?partyid=" + partyid + "&userid=" + userid;
+        String path = String.format("/party/enroll-detail.do?partyid=%s&userid=%s", partyid, userid);
         String content = String.format("%s报名了您发起的聚会【%s】，请尽快与他沟通参与事宜", userBo.getUserName(),
                 partyBo.getTitle());
         JPushUtil.push(titlePush, content, path,  partyBo.getCreateuid());
@@ -568,9 +576,9 @@ public class PartyController extends BaseContorller {
             LinkedHashSet<String> startTimes = partyBo.getStartTime();
             PartyListVo listVo = new PartyListVo();
             BeanUtils.copyProperties(partyBo, listVo);
-            if (partyBo.getStatus() == 1) {
-                int status = getPartyStatus(partyBo.getId(), startTimes, partyBo.getAppointment());
-                if (status != 1){
+            if (partyBo.getStatus() != -1) {
+                int status = getPartyStatus(startTimes, partyBo.getAppointment());
+                if (status != partyBo.getStatus()){
                    listVo.setStatus(status);
                    updatePartyStatus(partyBo.getId(), status);
                 }
@@ -583,12 +591,11 @@ public class PartyController extends BaseContorller {
 
     /**
      * 获取聚会状态
-     * @param prtyid
      * @param startTimes
      * @param appointment
      * @return  1 进行中， 2报名结束， -1活动结束
      */
-    private int getPartyStatus(String prtyid, LinkedHashSet<String> startTimes, int appointment){
+    private int getPartyStatus(LinkedHashSet<String> startTimes, int appointment){
         if (!CommonUtil.isEmpty(startTimes)) {
             Date currentZeroTime = CommonUtil.getZeroDate(new Date());
             Iterator<String> iterator = startTimes.iterator();
@@ -1090,7 +1097,7 @@ public class PartyController extends BaseContorller {
         } catch (MyException e) {
             return e.getMessage();
         }
-        RLock lock = redisServer.getRLock("partyUserLock");
+        RLock lock = redisServer.getRLock(partyid + "partyUserLock");
         PartyBo partyBo = null;
         try {
             lock.lock(3, TimeUnit.SECONDS);
@@ -1103,7 +1110,14 @@ public class PartyController extends BaseContorller {
             if (users.contains(userBo.getId())) {
                 users.remove(userBo.getId());
             }
-            partyService.updateUser(partyid, users);
+            PartyUserBo partyUserBo = partyService.findPartyUser(partyid, userBo.getId());
+            int userTotal = partyBo.getPartyUserNum();
+            if (partyUserBo != null) {
+                userTotal = userTotal - partyUserBo.getUserNum();
+            } else {
+                userTotal--;
+            }
+            partyService.updateUser(partyid, users, userTotal);
         } finally {
             lock.unlock();
         }
@@ -1254,7 +1268,7 @@ public class PartyController extends BaseContorller {
 
     @Async
     private void updatePartyCollectNum(String partyid, int num){
-        RLock lock = redisServer.getRLock("partyCollect");
+        RLock lock = redisServer.getRLock(partyid + "partyCollect");
         try {
             lock.lock(2, TimeUnit.SECONDS);
             partyService.updateCollect(partyid, num);
@@ -1338,6 +1352,43 @@ public class PartyController extends BaseContorller {
         map.put("ret", 0);
         map.put("channelId", chatroomBo.getId());
         return JSONObject.fromObject(map).toString();
+    }
+
+
+    @RequestMapping("/send-notice")
+    @ResponseBody
+    public String sendNotice(String partyid, String content,
+                               HttpServletRequest request, HttpServletResponse response) {
+        UserBo userBo;
+        try {
+            userBo = checkSession(request, userService);
+        } catch (MyException e) {
+            return e.getMessage();
+        }
+        PartyBo partyBo = partyService.findById(partyid);
+        if (partyBo == null) {
+            return CommonUtil.toErrorResult(ERRORCODE.PARTY_HAS_END.getIndex(),
+                    ERRORCODE.PARTY_HAS_END.getReason());
+        }
+        if (!partyBo.getCreateuid().equals(userBo.getId())) {
+            return CommonUtil.toErrorResult(ERRORCODE.NOTE_NOT_MASTER.getIndex(),
+                    ERRORCODE.NOTE_NOT_MASTER.getReason());
+        }
+        LinkedList users = partyBo.getUsers();
+        if (users.size() > 0) {
+
+//            String path = "/party/party-info.do?partyid=" + partyBo.getId();
+//            String pushInfor = String.format("%s发起了聚会【%s】，快去看看吧", userBo.getUserName(),
+//                    partyBo.getTitle());
+//            String[] userids = new String[users.size()];
+//            users.toArray(userids);
+//            JPushUtil.push(titlePush, pushInfor, path, userids);
+            
+        }
+
+
+
+        return "";
     }
 
 }

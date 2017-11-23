@@ -62,8 +62,8 @@ public class PartyServiceImpl implements IPartyService {
     }
 
     @Override
-    public WriteResult updateUser(String id, List<String> users) {
-        return partyDao.updateUser(id, users);
+    public WriteResult updateUser(String id, List<String> users, int userNum) {
+        return partyDao.updateUser(id, users, userNum);
     }
 
     @Override

@@ -68,7 +68,7 @@ public interface IPartyService {
      * @param users
      * @return
      */
-    WriteResult updateUser(String id, List<String> users);
+    WriteResult updateUser(String id, List<String> users, int userNum);
 
 
 

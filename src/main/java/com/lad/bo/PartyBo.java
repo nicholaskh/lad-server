@@ -70,6 +70,8 @@ public class PartyBo extends BaseBo {
     private int collectNum;
     //举报数量
     private int reportNum;
+    //聚会人数,包括报名的和报名时额外添加的人数
+    private int partyUserNum;
 
     public LinkedList<String> getUsers() {
         return users;
@@ -295,5 +297,13 @@ public class PartyBo extends BaseBo {
 
     public void setVideoPic(String videoPic) {
         this.videoPic = videoPic;
+    }
+
+    public int getPartyUserNum() {
+        return partyUserNum;
+    }
+
+    public void setPartyUserNum(int partyUserNum) {
+        this.partyUserNum = partyUserNum;
     }
 }

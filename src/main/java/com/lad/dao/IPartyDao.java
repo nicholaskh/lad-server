@@ -61,7 +61,7 @@ public interface IPartyDao {
      * @param users
      * @return
      */
-    WriteResult updateUser(String id, List<String> users);
+    WriteResult updateUser(String id, List<String> users, int userNum);
 
     /**
      * 更新已拒绝的用户
