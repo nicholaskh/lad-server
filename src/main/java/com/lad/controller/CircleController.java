@@ -207,7 +207,7 @@ public class CircleController extends BaseContorller {
 
 	@RequestMapping("/apply-insert")
 	@ResponseBody
-	public String applyIsnert(@RequestParam(required = true) String circleid, String reason,
+	public String applyIsnert(@RequestParam(required = true) String circleid, String reason, boolean isNotice,
 			HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
 		try {
@@ -233,6 +233,7 @@ public class CircleController extends BaseContorller {
 		ReasonBo reasonBo = new ReasonBo();
 		reasonBo.setCircleid(circleid);
 		reasonBo.setReason(reason);
+		reasonBo.setNotice(isNotice);
 		reasonBo.setCreateuid(userBo.getId());
 		reasonBo.setStatus(Constant.ADD_APPLY);
 		circleService.updateUsersApply(circleid, usersApply);
@@ -413,6 +414,7 @@ public class CircleController extends BaseContorller {
 		}
 		HashSet<String> usersApply = circleBo.getUsersApply();
 		List<String> accepts = new ArrayList<>();
+		List<String> pushFriends = new ArrayList<>();
 		for (String userid : useridArr) {
 			UserBo user = userService.getUser(userid);
 			if (null == user) {
@@ -425,6 +427,9 @@ public class CircleController extends BaseContorller {
 				ReasonBo reasonBo = circleService.findByUserAndCircle(userid,circleid);
 				if (reasonBo != null) {
 					circleService.updateApply(reasonBo.getId(), Constant.ADD_AGREE, "");
+					if (reasonBo.isNotice()) {
+						pushFriends.add(userid);
+					}
 				}
 				accepts.add(userid);
 			}
@@ -437,7 +442,7 @@ public class CircleController extends BaseContorller {
 			String[] userArr = new String[accepts.size()];
 			accepts.toArray(userArr);
 			JPushUtil.push(titlePush, content, path,  userArr);
-			pushToFriends(circleBo, userBo.getUserName(), path, accepts);
+			pushToFriends(circleBo, userBo.getUserName(), path, pushFriends);
 		}
 		return Constant.COM_RESP;
 	}
@@ -527,6 +532,7 @@ public class CircleController extends BaseContorller {
 				}
 				usersApply.remove(userid);
 				usersRefuse.add(userid);
+				userAddHis(userid, circleid, 0);
 				ReasonBo reasonBo = circleService.findByUserAndCircle(userid, circleid);
 				if (reasonBo != null) {
 					circleService.updateApply(reasonBo.getId(), Constant.ADD_REFUSE, refuse);
@@ -600,6 +606,7 @@ public class CircleController extends BaseContorller {
 				if (circles.contains(circleid)) {
 					circles.remove(circleid);
 					userService.updateTopCircles(userid, circles);
+					userAddHis(userid, circleid, 2);
 				}
 			}
 			if (users.contains(userid)) {
@@ -1774,7 +1781,11 @@ public class CircleController extends BaseContorller {
 			if (userBo != null && userBo.getId().equals(userid)) {
 				continue;
 			}
-			UserBaseVo userBaseVo = circleUser2Vo(user, circleBo.getCreateuid(), masters);
+			UserCircleVo userBaseVo = circleUser2Vo(user, circleBo.getCreateuid(), masters);
+			long circleNum = circleService.findCreateCricles(userid);
+
+			userBaseVo.setHasCircleNum((int)circleNum);
+			userBaseVo.setMaxCircleNum(user.getLevel() * 5);
 			userList.add(userBaseVo);
 			userHas.add(userid);
 		}
@@ -1791,13 +1802,16 @@ public class CircleController extends BaseContorller {
 				if (user == null){
 					continue;
 				}
-				UserBaseVo userBaseVo = circleUser2Vo(user, circleBo.getCreateuid(), masters);
+				UserCircleVo userBaseVo = circleUser2Vo(user, circleBo.getCreateuid(), masters);
+				long circleNum = circleService.findCreateCricles(friendid);
+				userBaseVo.setHasCircleNum((int)circleNum);
+				userBaseVo.setMaxCircleNum(user.getLevel() * 5);
 				userList.add(userBaseVo);
 			}
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
-		map.put("userVos", userList);
+		map.put("userVoList", userList);
 		return JSONObject.fromObject(map).toString();
 	}
 
@@ -1831,17 +1845,21 @@ public class CircleController extends BaseContorller {
 				if (user == null){
 					continue;
 				}
-				userList.add(circleUser2Vo(user, circleBo.getCreateuid(), masters));
+				UserCircleVo userBaseVo = circleUser2Vo(user, circleBo.getCreateuid(), masters);
+				long circleNum = circleService.findCreateCricles(friendid);
+				userBaseVo.setHasCircleNum((int)circleNum);
+				userBaseVo.setMaxCircleNum(user.getLevel() * 5);
+				userList.add(userBaseVo);
 			}
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
-		map.put("userVos", userList);
+		map.put("userVoList", userList);
 		return JSONObject.fromObject(map).toString();
 	}
 
-	private UserBaseVo circleUser2Vo(UserBo userBo, String createuid, HashSet<String> masters){
-		UserBaseVo userBaseVo = new UserBaseVo();
+	private UserCircleVo circleUser2Vo(UserBo userBo, String createuid, HashSet<String> masters){
+		UserCircleVo userBaseVo = new UserCircleVo();
 		BeanUtils.copyProperties(userBo, userBaseVo);
 		if (createuid.equals(userBo.getId())) {
 			userBaseVo.setRole(2);
