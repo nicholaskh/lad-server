@@ -1,5 +1,6 @@
 package com.lad.controller;
 
+import com.alibaba.fastjson.JSON;
 import com.lad.bo.*;
 import com.lad.redis.RedisServer;
 import com.lad.scrapybo.BroadcastBo;
@@ -69,44 +70,12 @@ public class InforController extends BaseContorller {
         Map<String, Object> map = new HashMap<>();
 
         RMapCache<String, Object> cache = redisServer.getCacheMap(Constant.TEST_CACHE);
-
         logger.info(cache.get("securityTypes"));
-
-        List<InforBo> inforBos = inforService.findAllGroups();
-        int size =  inforBos.size();
-        HashSet<String> groupTypes = new LinkedHashSet<>();
-        for (int i = 0; i< size; i++) {
-            //聚合查询后，分类名称值被放置到id上了
-            groupTypes.add(inforBos.get(i).getClassName());
-        }
-
-        List<SecurityBo> securityBos = inforService.findSecurityTypes();
-
-        HashSet<String> securityTypes = new LinkedHashSet<>();
-        for (SecurityBo securityBo : securityBos) {
-            securityTypes.add(securityBo.getId());
-        }
-
-        List<BroadcastBo> broadcastBos = inforService.selectBroadGroups();
-        HashSet<String> broadTypes = new LinkedHashSet<>();
-        for (BroadcastBo broadcastBo : broadcastBos) {
-            broadTypes.add(broadcastBo.getId());
-        }
-
-        List<VideoBo> videoBos = inforService.selectVdeoGroups();
-        HashSet<String> videoTypes = new LinkedHashSet<>();
-        for (VideoBo videoBo : videoBos) {
-            videoTypes.add(videoBo.getId());
-        }
-        cache.clear();
-        cache.put(Constant.SECRITY_NAME, securityTypes, 0, TimeUnit.MINUTES);
-        cache.put(Constant.HEALTH_NAME, groupTypes, 0, TimeUnit.MINUTES);
-        cache.put(Constant.RADIO_NAME, broadTypes, 0, TimeUnit.MINUTES);
-        cache.put(Constant.VIDEO_NAME, videoTypes, 0, TimeUnit.MINUTES);
-        map.put(Constant.HEALTH_NAME, groupTypes);
-        map.put(Constant.SECRITY_NAME, securityTypes);
-        map.put(Constant.VIDEO_NAME, videoTypes);
-        map.put(Constant.RADIO_NAME, broadTypes);
+        initCache(cache);
+        map.put(Constant.HEALTH_NAME, cache.get(Constant.HEALTH_NAME));
+        map.put(Constant.SECRITY_NAME, cache.get(Constant.SECRITY_NAME));
+        map.put(Constant.RADIO_NAME, cache.get(Constant.RADIO_NAME));
+        map.put(Constant.VIDEO_NAME, cache.get(Constant.VIDEO_NAME));
         return JSONObject.fromObject(map).toString();
     }
 
@@ -145,6 +114,13 @@ public class InforController extends BaseContorller {
                         map.put(Constant.VIDEO_NAME, mySub.getVideos());
                     }
                     isGetType  = true;
+                    logger.info("============== userid {}, inforSub {}", userBo.getId(),
+                            JSON.toJSONString(map));
+                } else {
+                    mySub = new InforSubscriptionBo();
+                    mySub.setUserid(userBo.getId());
+                    addCacheToSub(mySub, cache);
+                    inforService.insertSub(mySub);
                 }
             }
         }
@@ -202,8 +178,14 @@ public class InforController extends BaseContorller {
         List<InforBo> inforBos = inforService.findClassInfos(groupName, inforTime, limit);
         LinkedList<InforVo> inforVos = new LinkedList<>();
         for (InforBo inforBo : inforBos) {
+            InforReadNumBo readNumBo = inforService.findReadByid(inforBo.getId());
             InforVo inforVo = new InforVo();
             bo2vo(inforBo, inforVo);
+            if (readNumBo != null) {
+                inforVo.setReadNum((int)readNumBo.getVisitNum());
+                inforVo.setCommentNum(readNumBo.getCommentNum());
+                inforVo.setThumpsubNum(readNumBo.getThumpsubNum());
+            }
             inforVos.add(inforVo);
         }
         UserBo userBo =  getUserLogin(request);
@@ -546,16 +528,17 @@ public class InforController extends BaseContorller {
         } catch (MyException e) {
             return e.getMessage();
         }
+        RMapCache<String, Object> cache = redisServer.getCacheMap(Constant.TEST_CACHE);
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("ret", 0);
         InforSubscriptionBo mySub = inforService.findMySubs(userBo.getId());
         if (mySub == null) {
             mySub = new InforSubscriptionBo();
+            addCacheToSub(mySub, cache);
             mySub.setUserid(userBo.getId());
             inforService.insertSub(mySub);
         }
         HashSet<String> mySubs = null;
-        RMapCache<String, Object> cache = redisServer.getCacheMap(Constant.TEST_CACHE);
         String keys = "";
         switch (type){
             case Constant.INFOR_HEALTH:
@@ -683,9 +666,9 @@ public class InforController extends BaseContorller {
         inforVo.setInforid(inforBo.getId());
         BeanUtils.copyProperties(inforBo, inforVo);
         long thuSupNum = thumbsupService.selectByOwnerIdCount(inforBo.getId());
-        inforVo.setThumpsubNum(thuSupNum);
-        inforVo.setCommentNum(commentService.selectCommentByTypeCount(Constant.INFOR_TYPE, inforid));
-        inforVo.setReadNum(readNumBo.getVisitNum());
+        inforVo.setThumpsubNum((int)thuSupNum);
+        inforVo.setCommentNum((int)commentService.selectCommentByTypeCount(Constant.INFOR_TYPE, inforid));
+        inforVo.setReadNum((int)readNumBo.getVisitNum());
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("ret", 0);
         map.put("inforVo", inforVo);
@@ -907,7 +890,7 @@ public class InforController extends BaseContorller {
             lock.lock(2, TimeUnit.SECONDS);
             switch (inforType){
                 case Constant.INFOR_HEALTH:
-                    inforService.updateComment(inforid, num);
+                    inforService.updateThumpsub(inforid, num);
                     InforBo inforBo = inforService.findById(inforid);
                     module = inforBo != null ? inforBo.getClassName() : "";
                     break;
@@ -1364,6 +1347,51 @@ public class InforController extends BaseContorller {
         map.put("ret", 0);
         map.put("videoVoList", inforVos);
         return JSONObject.fromObject(map).toString();
+    }
+
+    /**
+     * 
+     * @param subBo
+     * @param cache
+     */
+    private void addCacheToSub(InforSubscriptionBo subBo, RMapCache<String, Object> cache){
+        subBo.setSubscriptions((LinkedHashSet<String>) cache.get(Constant.HEALTH_NAME));
+        subBo.setSecuritys((LinkedHashSet<String>) cache.get(Constant.SECRITY_NAME));
+        subBo.setRadios((LinkedHashSet<String>) cache.get(Constant.RADIO_NAME));
+        subBo.setVideos((LinkedHashSet<String>) cache.get(Constant.VIDEO_NAME));
+    }
+
+
+    private void initCache(RMapCache<String, Object> cache ){
+        List<InforBo> inforBos = inforService.findAllGroups();
+        int size =  inforBos.size();
+        HashSet<String> groupTypes = new LinkedHashSet<>();
+        for (int i = 0; i< size; i++) {
+            //聚合查询后，分类名称值被放置到id上了
+            groupTypes.add(inforBos.get(i).getClassName());
+        }
+        List<SecurityBo> securityBos = inforService.findSecurityTypes();
+        HashSet<String> securityTypes = new LinkedHashSet<>();
+        for (SecurityBo securityBo : securityBos) {
+            securityTypes.add(securityBo.getId());
+        }
+
+        List<BroadcastBo> broadcastBos = inforService.selectBroadGroups();
+        HashSet<String> broadTypes = new LinkedHashSet<>();
+        for (BroadcastBo broadcastBo : broadcastBos) {
+            broadTypes.add(broadcastBo.getId());
+        }
+
+        List<VideoBo> videoBos = inforService.selectVdeoGroups();
+        HashSet<String> videoTypes = new LinkedHashSet<>();
+        for (VideoBo videoBo : videoBos) {
+            videoTypes.add(videoBo.getId());
+        }
+        cache.clear();
+        cache.put(Constant.SECRITY_NAME, securityTypes, 0, TimeUnit.MINUTES);
+        cache.put(Constant.HEALTH_NAME, groupTypes, 0, TimeUnit.MINUTES);
+        cache.put(Constant.RADIO_NAME, broadTypes, 0, TimeUnit.MINUTES);
+        cache.put(Constant.VIDEO_NAME, videoTypes, 0, TimeUnit.MINUTES);
     }
 
 }

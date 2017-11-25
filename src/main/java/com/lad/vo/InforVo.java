@@ -28,11 +28,13 @@ public class InforVo extends BaseVo {
 
     private String text;
 
-    private Long readNum;
+    private int readNum;
 
-    private Long thumpsubNum;
+    private int thumpsubNum;
 
-    private Long commentNum;
+    private int commentNum;
+
+    private int shareNum;
 
     private boolean selfSub;
 
@@ -118,20 +120,32 @@ public class InforVo extends BaseVo {
         this.text = text;
     }
 
-    public Long getReadNum() {
+    public int getReadNum() {
         return readNum;
     }
 
-    public void setReadNum(Long readNum) {
+    public void setReadNum(int readNum) {
         this.readNum = readNum;
     }
 
-    public Long getThumpsubNum() {
+    public int getThumpsubNum() {
         return thumpsubNum;
     }
 
-    public void setThumpsubNum(Long thumpsubNum) {
+    public void setThumpsubNum(int thumpsubNum) {
         this.thumpsubNum = thumpsubNum;
+    }
+
+    public void setCommentNum(int commentNum) {
+        this.commentNum = commentNum;
+    }
+
+    public int getShareNum() {
+        return shareNum;
+    }
+
+    public void setShareNum(int shareNum) {
+        this.shareNum = shareNum;
     }
 
     public boolean isSelfSub() {
@@ -142,11 +156,4 @@ public class InforVo extends BaseVo {
         this.selfSub = selfSub;
     }
 
-    public Long getCommentNum() {
-        return commentNum;
-    }
-
-    public void setCommentNum(Long commentNum) {
-        this.commentNum = commentNum;
-    }
 }
