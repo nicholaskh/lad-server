@@ -27,10 +27,6 @@ public class JPushUtil {
 	public static String REFUSE_APPLY_FRIEND = "拒绝添加我为好友";
 	public static String MULTI_INSERT = "邀请我加入群聊";
 
-	public static String MEDIA_APPLY_SINGLE = "申请和我语音聊天";
-
-	public static String MEDIA_APPLY_MULTI = "邀请我加入语音聊天";
-
 	public static void pushAll(String content) {
 		JPushClient jpushClient = new JPushClient(MASTER_SECRET, APP_KEY, null,
 				ClientConfig.getInstance());
@@ -112,6 +108,63 @@ public class JPushUtil {
 		}
 	}
 
+	@Async
+	public static void pushParams(String title, String content, String path, String paramKey, String params,
+							String... alias) {
+		try {
+			JPushClient jpushClient = new JPushClient(MASTER_SECRET, APP_KEY, null,
+					ClientConfig.getInstance());
+			logger.info("push params alias {},  push title : {},  pushInfo  : {}, params key {}, value{}", alias,
+					title,
+					content, paramKey, params);
+			PushPayload payload = buildPushObject_to_alias_params(title, content, path, paramKey, params, alias);
+			PushResult result = jpushClient.sendPush(payload);
+			logger.info("Got result - {}",result);
+			if (result.getResponseCode() != 200) {
+				logger.error("push message fail  {}", result.getResponseCode());
+			}
+		} catch (APIConnectionException e) {
+			logger.error("Connection error, should retry later : {}", e.getMessage());
+		} catch (APIRequestException e) {
+			logger.error("Should review the error, and fix the request : {}", e.getMessage());
+			logger.error("HTTP Status: {}", e.getStatus());
+			logger.error("Error Code: {}" ,e.getErrorCode());
+			logger.error("Error Message: {}", e.getErrorMessage());
+		} catch (Exception e) {
+			logger.error(e);
+		}
+	}
+
+	/**
+	 * 推送通知
+	 * @param title  推送标题
+	 * @param content  推送内容
+	 * @param path  推送落地页路径
+	 * @param alias  推送人
+	 * @return
+	 */
+	public static PushPayload buildPushObject_to_alias_params(String title, String content, String path,  String
+			paramKey, String params,
+															 String... alias) {
+		return PushPayload.newBuilder().setPlatform(Platform.all())
+				.setAudience(Audience.alias(alias))
+				.setNotification(Notification.newBuilder().
+						setAlert(content)
+						.addPlatformNotification(AndroidNotification.newBuilder()
+								.setAlert(content)
+								.setTitle(title)
+								.addExtra("path", path).addExtra(paramKey, params).build())
+						.build())
+				.setMessage(Message.newBuilder()
+						.setMsgContent(content)
+						.setTitle(title)
+						.addExtra("path", path).build())
+				.setOptions(Options.newBuilder()
+						.setTimeToLive(432000).build())
+				.build();
+	}
+
+
 	/**
 	 * 推送通知
 	 * @param title  推送标题
@@ -147,7 +200,7 @@ public class JPushUtil {
 		JPushClient jpushClient = new JPushClient(MASTER_SECRET, APP_KEY, null,
 				ClientConfig.getInstance());
 		PushPayload payload = buildPushObject_to_Message(title, content, path, alias);
-		logger.info("push alias {},  push title : {},  pushInfo  : {}", alias,  title,  content);
+		logger.info("pushMessage alias {},  push title : {},  pushInfo  : {}", alias,  title,  content);
 		try {
 			PushResult result = jpushClient.sendPush(payload);
 			logger.info("Got result - {}",result);
