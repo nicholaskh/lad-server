@@ -468,8 +468,9 @@ public class CircleController extends BaseContorller {
 				String name = "";
 				FriendsBo bo = friendsService.getFriendByIdAndVisitorIdAgree(friendsBo.getFriendid(), userid);
 				if (bo != null) {
-					name = StringUtils.isNotEmpty(bo.getBackname()) ? bo.getBackname() : bo.getUsername();
-				} else {
+					name = bo.getBackname();
+				}
+				if  (StringUtils.isEmpty(name)) {
 					name = userBo.getUserName();
 				}
 				String content = String.format("%s已申请加入圈子【%s】，你也快去看看吧",name, circleName);
@@ -1673,36 +1674,25 @@ public class CircleController extends BaseContorller {
 		}
 		CircleBo circleBo = circleService.selectById(circleid);
 		if (circleBo == null) {
-			return CommonUtil.toErrorResult(
-					ERRORCODE.CIRCLE_IS_NULL.getIndex(),
+			return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_IS_NULL.getIndex(),
 					ERRORCODE.CIRCLE_IS_NULL.getReason());
 		}
 		String userid = userBo.getId();
 		String[] useridArr = CommonUtil.getIds(userids);
-		updateHistory(userid, circleid, locationService, circleService);
-		if (circleBo.getCreateuid().equals(userid) ||
-				circleBo.getMasters().contains(userid)) {
-			if (!addUser(circleid, useridArr)){
-				return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_USER_MAX.getIndex(),
-						ERRORCODE.CIRCLE_USER_MAX.getReason());
-			}
-		} else {
-			if (circleBo.isVerify()){
-                String path = "/circle/circle-info.do?circleid=" + circleid;
-                String content = String.format("%s邀请您加入圈子【%s】，快去看看吧", userBo.getUserName(),
-                        circleBo.getName());
-                JPushUtil.push(titlePush, content, path,  useridArr);
-                return Constant.COM_RESP;
-			}
-			if (!addUser(circleid, useridArr)){
-				return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_USER_MAX.getIndex(),
-						ERRORCODE.CIRCLE_USER_MAX.getReason());
-			}
+		if ((circleBo.getUsers().size() + useridArr.length) > 500) {
+			return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_USER_MAX.getIndex(),
+					ERRORCODE.CIRCLE_USER_MAX.getReason());
 		}
 		String path = "/circle/circle-info.do?circleid=" + circleid;
 		String content = String.format("%s邀请您加入圈子【%s】，快去看看吧", userBo.getUserName(),
 				circleBo.getName());
-		JPushUtil.push(titlePush, content, path,  useridArr);
+		updateHistory(userid, circleid, locationService, circleService);
+		if (circleBo.getCreateuid().equals(userid) ||
+				circleBo.getMasters().contains(userid)) {
+				JPushUtil.pushParams(titlePush, content, path, "master", "true",  useridArr);
+		} else {
+			JPushUtil.pushParams(titlePush, content, path, "master", "false",  useridArr);
+		}
 		return Constant.COM_RESP;
 	}
 
@@ -1885,7 +1875,7 @@ public class CircleController extends BaseContorller {
 	 * @param userids
 	 */
 	private boolean addUser(String circleid, String... userids) {
-		RLock lock = redisServer.getRLock(circleAddUserLock);
+		RLock lock = redisServer.getRLock(circleid + circleAddUserLock);
 		try {
 			lock.lock(4, TimeUnit.SECONDS);
 			CircleBo circleBo = circleService.selectById(circleid);
