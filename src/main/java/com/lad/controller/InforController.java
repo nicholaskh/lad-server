@@ -121,29 +121,31 @@ public class InforController extends BaseContorller {
         RMapCache<String, Object> cache = redisServer.getCacheMap(Constant.TEST_CACHE);
         if (!session.isNew() && session.getAttribute("isLogin") != null) {
             UserBo userBo = (UserBo) session.getAttribute("userBo");
-            InforSubscriptionBo mySub = inforService.findMySubs(userBo.getId());
-            if (mySub != null) {
-                if (mySub.getSubscriptions().isEmpty()) {
-                    map.put(Constant.HEALTH_NAME, cache.get(Constant.HEALTH_NAME));
-                } else {
-                    map.put(Constant.HEALTH_NAME, mySub.getSubscriptions());
+            if (userBo != null) {
+                InforSubscriptionBo mySub = inforService.findMySubs(userBo.getId());
+                if (mySub != null) {
+                    if (mySub.getSubscriptions().isEmpty()) {
+                        map.put(Constant.HEALTH_NAME, cache.get(Constant.HEALTH_NAME));
+                    } else {
+                        map.put(Constant.HEALTH_NAME, mySub.getSubscriptions());
+                    }
+                    if (mySub.getSecuritys().isEmpty()) {
+                        map.put(Constant.SECRITY_NAME, cache.get(Constant.SECRITY_NAME));
+                    } else {
+                        map.put(Constant.SECRITY_NAME, mySub.getSecuritys());
+                    }
+                    if (mySub.getRadios().isEmpty()) {
+                        map.put(Constant.RADIO_NAME, cache.get(Constant.RADIO_NAME));
+                    } else {
+                        map.put(Constant.RADIO_NAME, mySub.getRadios());
+                    }
+                    if (mySub.getVideos().isEmpty()) {
+                        map.put(Constant.VIDEO_NAME, cache.get(Constant.VIDEO_NAME));
+                    } else {
+                        map.put(Constant.VIDEO_NAME, mySub.getVideos());
+                    }
+                    isGetType  = true;
                 }
-                if (mySub.getSecuritys().isEmpty()) {
-                    map.put(Constant.HEALTH_NAME, cache.get(Constant.SECRITY_NAME));
-                } else {
-                    map.put(Constant.HEALTH_NAME, mySub.getSecuritys());
-                }
-                if (mySub.getRadios().isEmpty()) {
-                    map.put(Constant.HEALTH_NAME, cache.get(Constant.RADIO_NAME));
-                } else {
-                    map.put(Constant.HEALTH_NAME, mySub.getRadios());
-                }
-                if (mySub.getVideos().isEmpty()) {
-                    map.put(Constant.HEALTH_NAME, cache.get(Constant.VIDEO_NAME));
-                } else {
-                    map.put(Constant.HEALTH_NAME, mySub.getVideos());
-                }
-                isGetType  = true;
             }
         }
         if (!isGetType) {
