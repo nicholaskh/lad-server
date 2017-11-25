@@ -370,6 +370,9 @@ public class InforController extends BaseContorller {
             BroadcastVo broadcastVo = new BroadcastVo();
             BeanUtils.copyProperties(bo, broadcastVo);
             broadcastVo.setInforid(bo.getId());
+            broadcastVo.setReadNum(bo.getVisitNum());
+            broadcastVo.setCommentNum(bo.getCommnetNum());
+            broadcastVo.setThumpsubNum(bo.getThumpsubNum());
             vos.add(broadcastVo);
         }
         UserBo userBo =  getUserLogin(request);
@@ -459,6 +462,7 @@ public class InforController extends BaseContorller {
         for (VideoBo bo : videoBos) {
             VideoVo videoVo = new VideoVo();
             BeanUtils.copyProperties(bo, videoVo);
+            videoVo.setReadNum(bo.getVisitNum());
             //缩略图
             if (StringUtils.isEmpty(bo.getPoster())){
                 String picName = FFmpegUtil.inforTransfer(bo.getUrl(), Constant.INFOR_PICTURE_PATH, bo.getId());
@@ -520,9 +524,9 @@ public class InforController extends BaseContorller {
         updateInforHistroy(videoid, videoBo.getModule(), Constant.INFOR_VIDEO);
         videoVo.setInforid(videoid);
         BeanUtils.copyProperties( videoBo, videoVo);
-        videoVo.setThumpsubNum((long)videoBo.getThumpsubNum());
-        videoVo.setCommentNum((long)videoBo.getCommnetNum());
-        videoVo.setReadNum((long)videoBo.getVisitNum());
+        videoVo.setThumpsubNum(videoBo.getThumpsubNum());
+        videoVo.setCommentNum(videoBo.getCommnetNum());
+        videoVo.setReadNum(videoBo.getVisitNum());
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("ret", 0);
         map.put("video", videoVo);
@@ -708,9 +712,9 @@ public class InforController extends BaseContorller {
         securityVo.setInforid(securityBo.getId());
         BeanUtils.copyProperties(securityBo, securityVo);
         long thuSupNum = thumbsupService.selectByOwnerIdCount(inforid);
-        securityVo.setThumpsubNum(thuSupNum);
-        securityVo.setCommentNum(commentService.selectCommentByTypeCount(Constant.INFOR_TYPE, inforid));
-        securityVo.setReadNum((long)securityBo.getVisitNum());
+        securityVo.setThumpsubNum((int)thuSupNum);
+        securityVo.setCommentNum(securityBo.getCommnetNum());
+        securityVo.setReadNum(securityBo.getVisitNum());
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("ret", 0);
         map.put("securityVo", securityVo);
@@ -728,13 +732,13 @@ public class InforController extends BaseContorller {
         LinkedList<SecurityVo> vos = new LinkedList<>();
         for (SecurityBo securityBo : securityBos) {
             SecurityVo securityVo = new SecurityVo();
-            securityVo.setInforid(securityBo.getId());
-            securityVo.setCity(securityBo.getCity());
+            BeanUtils.copyProperties(securityBo, securityVo);
             securityVo.setInforid(securityBo.getId());
             securityVo.setNewsType(newsType);
-            securityVo.setTime(securityBo.getTime());
-            securityVo.setTitle(securityBo.getTitle());
-            securityVo.setSourceUrl(securityBo.getSourceUrl());
+            securityVo.setText("");
+            securityVo.setReadNum(securityBo.getVisitNum());
+            securityVo.setCommentNum(securityBo.getCommnetNum());
+            securityVo.setThumpsubNum(securityBo.getThumpsubNum());
             vos.add(securityVo);
         }
         UserBo userBo =  getUserLogin(request);

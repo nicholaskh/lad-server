@@ -26,6 +26,14 @@ public class BroadcastVo extends BaseVo {
 
     private String broadcast_url;
 
+    private int shareNum;
+
+    private int readNum;
+
+    private int thumpsubNum;
+
+    private int commentNum;
+
     public String getInforid() {
         return inforid;
     }
@@ -96,5 +104,36 @@ public class BroadcastVo extends BaseVo {
 
     public void setBroadcast_url(String broadcast_url) {
         this.broadcast_url = broadcast_url;
+    }
+
+    public int getShareNum() {
+        return shareNum;
+    }
+
+    public void setShareNum(int shareNum) {
+        this.shareNum = shareNum;
+    }
+    public int getReadNum() {
+        return readNum;
+    }
+
+    public void setReadNum(int readNum) {
+        this.readNum = readNum;
+    }
+
+    public int getThumpsubNum() {
+        return thumpsubNum;
+    }
+
+    public void setThumpsubNum(int thumpsubNum) {
+        this.thumpsubNum = thumpsubNum;
+    }
+
+    public int getCommentNum() {
+        return commentNum;
+    }
+
+    public void setCommentNum(int commentNum) {
+        this.commentNum = commentNum;
     }
 }
