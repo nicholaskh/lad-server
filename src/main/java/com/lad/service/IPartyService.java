@@ -1,6 +1,7 @@
 package com.lad.service;
 
 import com.lad.bo.PartyBo;
+import com.lad.bo.PartyNoticeBo;
 import com.lad.bo.PartyUserBo;
 import com.mongodb.WriteResult;
 
@@ -197,4 +198,43 @@ public interface IPartyService {
      * @return
      */
     WriteResult updatePartyStatus(String id, int status);
+
+    /**
+     * 添加通知
+     * @param noticeBo
+     * @return
+     */
+    PartyNoticeBo addPartyNotice(PartyNoticeBo noticeBo);
+
+    /**
+     *
+     * @param id
+     * @return
+     */
+    PartyNoticeBo findNoticeById(String id);
+
+    /**
+     *
+     * @param id
+     * @return
+     */
+    WriteResult deleteNotice(String id);
+
+    /**
+     *
+     * @param partyid
+     * @param page
+     * @param limit
+     * @return
+     */
+    List<PartyNoticeBo> findNoticeByPartyid(String partyid, int page, int limit);
+
+    /**
+     *
+     * @param userid
+     * @param page
+     * @param limit
+     * @return
+     */
+    List<PartyNoticeBo> findNoticeByUserid(String userid, int page, int limit);
 }

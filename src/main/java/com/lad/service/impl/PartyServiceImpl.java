@@ -1,8 +1,10 @@
 package com.lad.service.impl;
 
 import com.lad.bo.PartyBo;
+import com.lad.bo.PartyNoticeBo;
 import com.lad.bo.PartyUserBo;
 import com.lad.dao.IPartyDao;
+import com.lad.dao.IPartyNoticeDao;
 import com.lad.dao.IPartyUserDao;
 import com.lad.service.IPartyService;
 import com.mongodb.WriteResult;
@@ -25,6 +27,9 @@ public class PartyServiceImpl implements IPartyService {
 
     @Autowired
     private IPartyUserDao partyUserDao;
+
+    @Autowired
+    private IPartyNoticeDao partyNoticeDao;
 
     @Override
     public PartyBo insert(PartyBo partyBo) {
@@ -160,5 +165,31 @@ public class PartyServiceImpl implements IPartyService {
     @Override
     public WriteResult updatePartyStatus(String id, int status) {
         return partyDao.updatePartyStatus(id, status);
+    }
+
+
+    @Override
+    public PartyNoticeBo addPartyNotice(PartyNoticeBo noticeBo) {
+        return partyNoticeDao.addPartyNotice(noticeBo);
+    }
+
+    @Override
+    public PartyNoticeBo findNoticeById(String id) {
+        return partyNoticeDao.findNoticeById(id);
+    }
+
+    @Override
+    public WriteResult deleteNotice(String id) {
+        return partyNoticeDao.deleteNotice(id);
+    }
+
+    @Override
+    public List<PartyNoticeBo> findNoticeByPartyid(String partyid, int page, int limit) {
+        return partyNoticeDao.findByPartyid(partyid, page, limit);
+    }
+
+    @Override
+    public List<PartyNoticeBo> findNoticeByUserid(String userid, int page, int limit) {
+        return partyNoticeDao.findByUserid(userid, page, limit);
     }
 }

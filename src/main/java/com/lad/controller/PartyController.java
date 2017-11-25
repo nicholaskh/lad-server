@@ -328,7 +328,7 @@ public class PartyController extends BaseContorller {
             List<CommentBo> commentBos = commentService.selectByTargetUser(partyid, userid, Constant.PARTY_TYPE);
             partyVo.setComment(commentBos != null && !commentBos.isEmpty());
         }
-        partyVo.setUserNum(partyBo.getUsers().size());
+        partyVo.setUserNum(partyBo.getPartyUserNum());
         partyService.updateVisit(partyid);
         //圈子热度
         updateCircleHot(circleService, redisServer, partyBo.getCircleid(), 1, Constant.CIRCLE_PARTY_VISIT);
@@ -562,7 +562,7 @@ public class PartyController extends BaseContorller {
             PartyListVo listVo = new PartyListVo();
             BeanUtils.copyProperties(partyBo, listVo);
             listVo.setPartyid(partyBo.getId());
-            listVo.setUserNum(partyBo.getUsers().size());
+            listVo.setUserNum(partyBo.getPartyUserNum());
             partyListVos.add(listVo);
         }
         Map<String, Object> map = new HashMap<>();
@@ -584,7 +584,7 @@ public class PartyController extends BaseContorller {
                 }
             }
             listVo.setPartyid(partyBo.getId());
-            listVo.setUserNum(partyBo.getUsers().size());
+            listVo.setUserNum(partyBo.getPartyUserNum());
             partyListVos.add(listVo);
         }
     }
@@ -631,7 +631,7 @@ public class PartyController extends BaseContorller {
         partyService.updatePartyStatus(partyid, status);
         //聚会结束,删除所有临时聊天
         if (status == -1) {
-            chatroomService.deleteTempChat(partyid, Constant.ROOM_TEMP_PARTY);
+            chatroomService.deleteTempChat(partyid, Constant.ROOM_SINGLE);
         }
     }
 
@@ -1109,15 +1109,16 @@ public class PartyController extends BaseContorller {
             LinkedList<String> users = partyBo.getUsers();
             if (users.contains(userBo.getId())) {
                 users.remove(userBo.getId());
+                PartyUserBo partyUserBo = partyService.findPartyUser(partyid, userBo.getId());
+                int userTotal = partyBo.getPartyUserNum();
+                if (partyUserBo != null) {
+                    userTotal = userTotal - partyUserBo.getUserNum();
+                } else {
+                    userTotal--;
+                }
+                userTotal = userTotal < 0 ? 0 : userTotal;
+                partyService.updateUser(partyid, users, userTotal);
             }
-            PartyUserBo partyUserBo = partyService.findPartyUser(partyid, userBo.getId());
-            int userTotal = partyBo.getPartyUserNum();
-            if (partyUserBo != null) {
-                userTotal = userTotal - partyUserBo.getUserNum();
-            } else {
-                userTotal--;
-            }
-            partyService.updateUser(partyid, users, userTotal);
         } finally {
             lock.unlock();
         }
@@ -1339,7 +1340,7 @@ public class PartyController extends BaseContorller {
             chatroomBo.setName(friend.getUserName());
             chatroomBo.setUserid(userid);
             chatroomBo.setFriendid(friendid);
-            chatroomBo.setType(Constant.ROOM_TEMP_PARTY);
+            chatroomBo.setType(Constant.ROOM_SINGLE);
             chatroomBo.setTargetid(partyid);
             chatroomBo.setCreateuid(userid);
             chatroomService.insert(chatroomBo);
@@ -1354,7 +1355,14 @@ public class PartyController extends BaseContorller {
         return JSONObject.fromObject(map).toString();
     }
 
-
+    /**
+     * 发送通知
+     * @param partyid
+     * @param content
+     * @param request
+     * @param response
+     * @return
+     */
     @RequestMapping("/send-notice")
     @ResponseBody
     public String sendNotice(String partyid, String content,
@@ -1367,28 +1375,97 @@ public class PartyController extends BaseContorller {
         }
         PartyBo partyBo = partyService.findById(partyid);
         if (partyBo == null) {
-            return CommonUtil.toErrorResult(ERRORCODE.PARTY_HAS_END.getIndex(),
-                    ERRORCODE.PARTY_HAS_END.getReason());
+            return CommonUtil.toErrorResult(ERRORCODE.PARTY_HAS_END.getIndex(), ERRORCODE.PARTY_HAS_END.getReason());
         }
         if (!partyBo.getCreateuid().equals(userBo.getId())) {
-            return CommonUtil.toErrorResult(ERRORCODE.NOTE_NOT_MASTER.getIndex(),
-                    ERRORCODE.NOTE_NOT_MASTER.getReason());
+            return CommonUtil.toErrorResult(ERRORCODE.NOTE_NOT_MASTER.getIndex(), ERRORCODE.NOTE_NOT_MASTER.getReason());
         }
         LinkedList users = partyBo.getUsers();
+        PartyNoticeBo noticeBo = new PartyNoticeBo();
+        noticeBo.setPartyid(partyid);
+        noticeBo.setContent(content);
+        noticeBo.setUsers(users);
+        noticeBo.setCreateuid(userBo.getId());
+        partyService.addPartyNotice(noticeBo);
+
         if (users.size() > 0) {
-
-//            String path = "/party/party-info.do?partyid=" + partyBo.getId();
-//            String pushInfor = String.format("%s发起了聚会【%s】，快去看看吧", userBo.getUserName(),
-//                    partyBo.getTitle());
-//            String[] userids = new String[users.size()];
-//            users.toArray(userids);
-//            JPushUtil.push(titlePush, pushInfor, path, userids);
-            
+            String path = "/party/notice.do?noticeid=" +noticeBo.getId();
+            String[] userids = new String[users.size()];
+            users.toArray(userids);
+            JPushUtil.push(titlePush, content, path, userids);
         }
+        return Constant.COM_RESP;
+    }
 
+    /**
+     * 通知详情
+     * @param noticeid
+     * @param request
+     * @param response
+     * @return
+     */
+    @RequestMapping("/notice")
+    @ResponseBody
+    public String getNotice(String noticeid,
+            HttpServletRequest request, HttpServletResponse response) {
 
+        PartyNoticeBo partyNoticeBo = partyService.findNoticeById(noticeid);
+        if (partyNoticeBo == null) {
+            return CommonUtil.toErrorResult(ERRORCODE.PARTY_NOTICE_NULL.getIndex(),
+                    ERRORCODE.PARTY_NOTICE_NULL.getReason());
+        }
+        Map<String, Object> map = new HashMap<>();
+        map.put("noticeVo", partyNoticeBo);
+        return JSONObject.fromObject(map).toString();
+    }
 
-        return "";
+    /**
+     * 聚会的所有通知
+     * @param partyid
+     * @param page
+     * @param limit
+     * @param request
+     * @param response
+     * @return
+     */
+    @RequestMapping("/party-notice")
+    @ResponseBody
+    public String partyNotice(String partyid, int page, int limit,
+                            HttpServletRequest request, HttpServletResponse response) {
+        PartyBo partyBo = partyService.findById(partyid);
+        if (partyBo == null) {
+            return CommonUtil.toErrorResult(ERRORCODE.PARTY_HAS_END.getIndex(), ERRORCODE.PARTY_HAS_END.getReason());
+        }
+        List<PartyNoticeBo> noticeBos = partyService.findNoticeByPartyid(partyid, page, limit);
+        Map<String, Object> map = new HashMap<>();
+        map.put("ret", 0);
+        map.put("noticeVos", noticeBos);
+        return JSONObject.fromObject(map).toString();
+    }
+
+    /**
+     * 我收到的通知
+     * @param page
+     * @param limit
+     * @param request
+     * @param response
+     * @return
+     */
+    @RequestMapping("/get-my-notices")
+    @ResponseBody
+    public String getPartyNotices(int page, int limit,
+                              HttpServletRequest request, HttpServletResponse response) {
+        UserBo userBo;
+        try {
+            userBo = checkSession(request, userService);
+        } catch (MyException e) {
+            return e.getMessage();
+        }
+        List<PartyNoticeBo> noticeBos = partyService.findNoticeByPartyid(userBo.getId(), page, limit);
+        Map<String, Object> map = new HashMap<>();
+        map.put("ret", 0);
+        map.put("noticeVos", noticeBos);
+        return JSONObject.fromObject(map).toString();
     }
 
 }

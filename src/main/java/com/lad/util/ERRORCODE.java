@@ -91,6 +91,7 @@ public enum ERRORCODE {
 	PARTY_NO_AUTH(140007, "没有权限"),
 	PARTY_USER_NULL(140008, "聚会报名用户不存在"),
 	PARTY_HAS_END(140009, "聚会已经结束"),
+	PARTY_NOTICE_NULL(140010, "聚会通知不存在"),
 
 	COLLECT_IS_NULL(150001, "收藏不存在"),
 	COLLECT_TYPE_ERR(150002, "收藏类型错误"),
