@@ -4,9 +4,7 @@ import com.lad.bo.LocationBo;
 import com.lad.bo.UserBo;
 import com.lad.service.ILocationService;
 import com.lad.service.IUserService;
-import com.lad.util.CommonUtil;
 import com.lad.util.Constant;
-import com.lad.util.ERRORCODE;
 import com.lad.vo.UserVo;
 import net.sf.json.JSONObject;
 import org.apache.commons.beanutils.BeanUtils;
@@ -17,7 +15,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.util.*;
 
 @Controller
@@ -32,26 +29,16 @@ public class LocationController extends BaseContorller {
 	@RequestMapping("/near")
 	@ResponseBody
 	public String near(double px, double py, HttpServletRequest request, HttpServletResponse response) throws Exception {
-		HttpSession session = request.getSession();
-		if (session.isNew()) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(), ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-		}
-		if (session.getAttribute("isLogin") == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(), ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-		}
-		UserBo userBo = (UserBo) session.getAttribute("userBo");
-		if (userBo == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(), ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-		}
-		userBo = userService.getUser(userBo.getId());
 		List<LocationBo> locationBoList = locationService.findCircleNear(px, py, 5000);
 		List<UserVo> list = new LinkedList<UserVo>();
 		for (LocationBo bo : locationBoList) {
 			String userid = bo.getUserid();
 			UserBo temp = userService.getUser(userid);
-			UserVo vo = new UserVo();
-			BeanUtils.copyProperties(vo, temp);
-			list.add(vo);
+			if (temp !=  null) {
+				UserVo vo = new UserVo();
+				BeanUtils.copyProperties(vo, temp);
+				list.add(vo);
+			}
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);

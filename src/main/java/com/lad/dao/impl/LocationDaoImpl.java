@@ -20,11 +20,10 @@ public class LocationDaoImpl implements ILocationDao {
 	
 	public List<LocationBo> findCircleNear(Point point, double maxDistance) {
 		Query query = new Query();
-		Criteria criteria1 = Criteria.where("position").nearSphere(point).maxDistance(maxDistance);
+		Criteria criteria1 = Criteria.where("position").nearSphere(point).maxDistance(maxDistance/6378137.0);
 		query.addCriteria(criteria1);
-		query.limit(1000);
-		List<LocationBo> list = mongoTemplate.find(query, LocationBo.class);
-		return list;
+		query.limit(50);
+		return mongoTemplate.find(query, LocationBo.class);
 	}
 
 	public LocationBo insertUserPoint(LocationBo locationBo) {
@@ -47,8 +46,7 @@ public class LocationDaoImpl implements ILocationDao {
 		Criteria criteria1 = new Criteria("_id").is(locationId);
 		query.addCriteria(new Criteria("deleted").is(0));
 		query.addCriteria(criteria1);
-		LocationBo locationBo = mongoTemplate.findOne(query, LocationBo.class);
-		return locationBo;
+		return mongoTemplate.findOne(query, LocationBo.class);
 	}
 
 	public LocationBo getLocationBoByUserid(String userid) {
@@ -56,7 +54,6 @@ public class LocationDaoImpl implements ILocationDao {
 		Criteria criteria1 = new Criteria("userid").is(userid);
 		query.addCriteria(new Criteria("deleted").is(0));
 		query.addCriteria(criteria1);
-		LocationBo locationBo = mongoTemplate.findOne(query, LocationBo.class);
-		return locationBo;
+		return  mongoTemplate.findOne(query, LocationBo.class);
 	}
 }
