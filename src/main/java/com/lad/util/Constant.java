@@ -24,12 +24,12 @@ public class Constant {
 	/**
 	 * pushd服务器ip
 	 */
-//	public static final String PUSHD_IP =  "192.168.0.5";
+	public static final String PUSHD_IP =  "192.168.0.5";
 
 	/**
 	 * pushd服务器ip
 	 */
-	public static final String PUSHD_IP =  "180.76.138.200";
+//	public static final String PUSHD_IP =  "180.76.138.200";
 
 	/**
 	 * push服务器端口
@@ -87,7 +87,12 @@ public class Constant {
 	/**
 	 * 申请拒绝
 	 */
-	public static final int ADD_REFUSE= -1;
+	public static final int ADD_REFUSE= 2;
+
+	/**
+	 * 申请过期
+	 */
+	public static final int ADD_FAIL= -1;
 
 
 	/** 

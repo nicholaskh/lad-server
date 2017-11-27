@@ -55,6 +55,10 @@ public class CircleController extends BaseContorller {
 	@Autowired
 	private IFriendsService friendsService;
 
+	@Autowired
+	private IReasonService reasonService;
+
+
 	private String titlePush = "圈子通知";
 
 	/**
@@ -230,14 +234,19 @@ public class CircleController extends BaseContorller {
 		}
 		usersApply.add(userBo.getId());
 
-		ReasonBo reasonBo = new ReasonBo();
-		reasonBo.setCircleid(circleid);
-		reasonBo.setReason(reason);
-		reasonBo.setNotice(isNotice);
-		reasonBo.setCreateuid(userBo.getId());
-		reasonBo.setStatus(Constant.ADD_APPLY);
+		ReasonBo reasonBo = reasonService.findByUserAndCircle(userBo.getId(), circleid);
+		if (reasonBo == null) {
+			reasonBo = new ReasonBo();
+			reasonBo.setCircleid(circleid);
+			reasonBo.setReason(reason);
+			reasonBo.setNotice(isNotice);
+			reasonBo.setCreateuid(userBo.getId());
+			reasonBo.setStatus(Constant.ADD_APPLY);
+			reasonService.insert(reasonBo);
+		} else {
+			reasonService.updateApply(reasonBo.getId(), Constant.ADD_APPLY, reason);
+		}
 		circleService.updateUsersApply(circleid, usersApply);
-		circleService.insertApplyReason(reasonBo);
 		String content = String.format("%s申请加入您的圈子【%s】，快去审核吧", userBo.getUserName(),
 				circleBo.getName());
 		String path = "/circle/user-apply.do?circleid=" + circleid;
@@ -275,16 +284,12 @@ public class CircleController extends BaseContorller {
 		}
 		updateHistory(userBo.getId(), circleid, locationService, circleService);
 		HashSet<String> users= circleBo.getUsers();
-		if (users.size() >= 500) {
+		if (users.size() + 1 >= 500) {
 			return CommonUtil.toErrorResult(
 					ERRORCODE.CIRCLE_USER_MAX.getIndex(),
 					ERRORCODE.CIRCLE_USER_MAX.getReason());
 		}
-		if(!addUser(circleid, userBo.getId())){
-			return CommonUtil.toErrorResult(
-					ERRORCODE.CIRCLE_USER_MAX.getIndex(),
-					ERRORCODE.CIRCLE_USER_MAX.getReason());
-		}
+		addUser(circleid, userBo.getId());
 		userAddHis(userBo.getId(), circleBo.getId(), 1);
 		return Constant.COM_RESP;
 	}
@@ -358,7 +363,7 @@ public class CircleController extends BaseContorller {
 				userApplyVo.setUserid(apply.getId());
 				userApplyVo.setUserName(apply.getUserName());
 				userApplyVo.setSex(apply.getSex());
-				ReasonBo reasonBo = circleService.findByUserAndCircle(apply.getId(), circleid);
+				ReasonBo reasonBo = reasonService.findByUserAndCircle(apply.getId(), circleid);
 				if (reasonBo != null) {
 					userApplyVo.setReason(reasonBo.getReason());
 					userApplyVo.setStatus(reasonBo.getStatus());
@@ -424,9 +429,9 @@ public class CircleController extends BaseContorller {
 				usersApply.remove(userid);
 				users.add(userid);
 				userAddHis(userid, circleid, 1);
-				ReasonBo reasonBo = circleService.findByUserAndCircle(userid,circleid);
+				ReasonBo reasonBo = reasonService.findByUserAndCircle(userid,circleid);
 				if (reasonBo != null) {
-					circleService.updateApply(reasonBo.getId(), Constant.ADD_AGREE, "");
+					reasonService.updateApply(reasonBo.getId(), Constant.ADD_AGREE, "");
 					if (reasonBo.isNotice()) {
 						pushFriends.add(userid);
 					}
@@ -541,9 +546,9 @@ public class CircleController extends BaseContorller {
 				usersApply.remove(userid);
 				usersRefuse.add(userid);
 				userAddHis(userid, circleid, 0);
-				ReasonBo reasonBo = circleService.findByUserAndCircle(userid, circleid);
+				ReasonBo reasonBo = reasonService.findByUserAndCircle(userid, circleid);
 				if (reasonBo != null) {
-					circleService.updateApply(reasonBo.getId(), Constant.ADD_REFUSE, refuse);
+					reasonService.updateApply(reasonBo.getId(), Constant.ADD_REFUSE, refuse);
 				}
 			}
 		}
@@ -1689,9 +1694,21 @@ public class CircleController extends BaseContorller {
 		updateHistory(userid, circleid, locationService, circleService);
 		if (circleBo.getCreateuid().equals(userid) ||
 				circleBo.getMasters().contains(userid)) {
-				JPushUtil.pushParams(titlePush, content, path, "master", "true",  useridArr);
+			for (String inviteId : useridArr) {
+				ReasonBo reasonBo = reasonService.findByUserAndCircle(inviteId, circleid);
+				if (reasonBo == null) {
+					reasonBo = new ReasonBo();
+					reasonBo.setCircleid(circleid);
+					reasonBo.setCreateuid(userBo.getId());
+					reasonBo.setStatus(Constant.ADD_APPLY);
+					reasonService.insert(reasonBo);
+				} else {
+					reasonService.updateApply(reasonBo.getId(), Constant.ADD_APPLY, "");
+				}
+			}
+				JPushUtil.push(titlePush, content, path, useridArr);
 		} else {
-			JPushUtil.pushParams(titlePush, content, path, "master", "false",  useridArr);
+			JPushUtil.push(titlePush, content, path,  useridArr);
 		}
 		return Constant.COM_RESP;
 	}
@@ -1855,6 +1872,61 @@ public class CircleController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
+
+
+	/**
+	 * 邀请好友搜索
+	 * @param circleid
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@RequestMapping("/add-in-circle")
+	@ResponseBody
+	public String applyAddInsert(String circleid,HttpServletRequest request, HttpServletResponse response) {
+
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		CircleBo circleBo = circleService.selectById(circleid);
+		if (circleBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_IS_NULL.getIndex(),
+					ERRORCODE.CIRCLE_IS_NULL.getReason());
+		}
+		updateHistory(userBo.getId(), circleid, locationService, circleService);
+		HashSet<String> users= circleBo.getUsers();
+		if (users.size() >= 500) {
+			return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_USER_MAX.getIndex(),
+					ERRORCODE.CIRCLE_USER_MAX.getReason());
+		}
+		boolean isAdd = false;
+		if (!circleBo.isVerify()) {
+			addUser(circleid, userBo.getId());
+			isAdd = true;
+		} else {
+			ReasonBo reasonBo = reasonService.findByUserAndCircle(userBo.getId(), circleid);
+			if (reasonBo != null) {
+			   isAdd = reasonBo.isMasterApply();
+			   if (isAdd) {
+				   addUser(circleid, userBo.getId());
+			   	   reasonService.updateApply(reasonBo.getId(), Constant.ADD_AGREE, "");
+			   }
+			}
+		}
+		Map<String, Object> map = new HashMap<String, Object>();
+		if (isAdd) {
+			userAddHis(userBo.getId(), circleBo.getId(), 1);
+			map.put("ret", 0);
+		} else {
+			map.put("ret", -1);
+		}
+		return JSONObject.fromObject(map).toString();
+	}
+
+
+
 	private UserCircleVo circleUser2Vo(UserBo userBo, String createuid, HashSet<String> masters){
 		UserCircleVo userBaseVo = new UserCircleVo();
 		BeanUtils.copyProperties(userBo, userBaseVo);
@@ -1874,7 +1946,7 @@ public class CircleController extends BaseContorller {
 	 * @param circleid
 	 * @param userids
 	 */
-	private boolean addUser(String circleid, String... userids) {
+	private void addUser(String circleid, String... userids) {
 		RLock lock = redisServer.getRLock(circleid + circleAddUserLock);
 		try {
 			lock.lock(4, TimeUnit.SECONDS);
@@ -1887,14 +1959,10 @@ public class CircleController extends BaseContorller {
 				}
 				users.add(userid);
 			}
-			if (users.size() > 500){
-				return false;
-			}
 			circleService.updateApplyAgree(circleid, users, applyUsers);
 		} finally {
 		  	lock.unlock();
 		}
-		return true;
 	}
 
 	/**

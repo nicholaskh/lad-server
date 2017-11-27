@@ -59,12 +59,6 @@ public interface ICircleService extends IBaseService {
 	 */
 	List<CircleBo> selectUsersPre(String userid);
 
-	ReasonBo insertApplyReason(ReasonBo reasonBo);
-
-	ReasonBo findByUserAndCircle(String userid, String circleid);
-
-	WriteResult updateApply(String reasonId, int status, String refuse);
-
 
 	WriteResult updateCreateUser(CircleBo circleBo);
 

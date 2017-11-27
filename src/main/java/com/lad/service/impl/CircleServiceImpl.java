@@ -16,9 +16,6 @@ public class CircleServiceImpl implements ICircleService {
 
 	@Autowired
 	private ICircleDao circleDao;
-
-	@Autowired
-	private IReasonDao reasonDao;
 	
 	@Autowired
 	private ICircleHistoryDao circleHistoryDao;
@@ -90,18 +87,6 @@ public class CircleServiceImpl implements ICircleService {
 	@Override
 	public List<CircleBo> selectUsersPre(String userid) {
 		return circleDao.selectUsersPre(userid);
-	}
-
-	public ReasonBo insertApplyReason(ReasonBo reasonBo){
-		return reasonDao.insert(reasonBo);
-	}
-
-	public ReasonBo findByUserAndCircle(String userid, String circleid){
-		return reasonDao.findByUserAndCircle(userid, circleid);
-	}
-
-	public WriteResult updateApply(String reasonId, int status, String refuse){
-		return reasonDao.updateApply(reasonId, status,refuse);
 	}
 
 	@Override

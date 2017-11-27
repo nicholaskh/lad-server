@@ -24,6 +24,9 @@ public class ReasonBo extends BaseBo {
 
     private String chatroomid;
 
+    //是否是群主邀请，群主邀请
+    private boolean isMasterApply;
+
 
     public String getCircleid() {
         return circleid;
@@ -71,5 +74,13 @@ public class ReasonBo extends BaseBo {
 
     public void setChatroomid(String chatroomid) {
         this.chatroomid = chatroomid;
+    }
+
+    public boolean isMasterApply() {
+        return isMasterApply;
+    }
+
+    public void setMasterApply(boolean masterApply) {
+        isMasterApply = masterApply;
     }
 }
