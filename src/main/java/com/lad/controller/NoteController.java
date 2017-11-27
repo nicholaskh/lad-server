@@ -554,8 +554,7 @@ public class NoteController extends BaseContorller {
 			CommentVo commentVo = comentBo2Vo(commentBo);
 			ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(commentBo.getId(), userid);
 			commentVo.setMyThumbsup(thumbsupBo != null);
-			long thums = thumbsupService.selectByOwnerIdCount(noteid);
-			commentVo.setThumpsubCount(thums);
+			commentVo.setThumpsubCount(commentBo.getThumpsubNum());
 			if (!StringUtils.isEmpty(commentBo.getParentid())) {
 				CommentBo parent = commentService.findById(commentBo.getParentid());
 				commentVo.setParentUserName(parent.getUserName());
@@ -638,12 +637,14 @@ public class NoteController extends BaseContorller {
 	}
 
 	/**
-	 * 评论点赞
+	 * 评论点赞或取消点赞
 	 * @return
 	 */
 	@RequestMapping("/comment-thumbsup")
 	@ResponseBody
-	public String commentThumbsup(String commentid,HttpServletRequest request, HttpServletResponse response) {
+	public String commentThumbsup(String commentid, boolean isThumnbsup, HttpServletRequest request,
+								  HttpServletResponse
+			response) {
 		UserBo userBo;
 		try {
 			userBo = checkSession(request, userService);
@@ -651,20 +652,49 @@ public class NoteController extends BaseContorller {
 			return e.getMessage();
 		}
 		ThumbsupBo thumbsupBo = thumbsupService.findHaveOwenidAndVisitorid(commentid, userBo.getId());
-		if (null == thumbsupBo) {
-			thumbsupBo = new ThumbsupBo();
-			thumbsupBo.setType(Constant.NOTE_COM_TYPE);
-			thumbsupBo.setOwner_id(commentid);
-			thumbsupBo.setImage(userBo.getHeadPictureName());
-			thumbsupBo.setVisitor_id(userBo.getId());
-			thumbsupBo.setCreateuid(userBo.getId());
-			thumbsupService.insert(thumbsupBo);
+		int num = 0;
+		if (isThumnbsup) {
+			if (null == thumbsupBo) {
+				thumbsupBo = new ThumbsupBo();
+				thumbsupBo.setType(Constant.NOTE_COM_TYPE);
+				thumbsupBo.setOwner_id(commentid);
+				thumbsupBo.setImage(userBo.getHeadPictureName());
+				thumbsupBo.setVisitor_id(userBo.getId());
+				thumbsupBo.setCreateuid(userBo.getId());
+				thumbsupService.insert(thumbsupBo);
+				num ++;
+			} else {
+				if (thumbsupBo.getDeleted() == Constant.DELETED) {
+					thumbsupService.udateDeleteById(thumbsupBo.getId());
+					num++;
+				}
+			}
 		} else {
-			if (thumbsupBo.getDeleted() == Constant.DELETED) {
-				thumbsupService.udateDeleteById(thumbsupBo.getId());
+			if (null != thumbsupBo && thumbsupBo.getDeleted() == Constant.ACTIVITY) {
+				thumbsupService.deleteById(thumbsupBo.getId());
+				num--;
 			}
 		}
+		updateCommentThumbsup(commentid, num);
 		return Constant.COM_RESP;
+	}
+
+	/**
+	 * 点赞
+	 * @param commentid
+	 * @param num
+	 */
+	@Async
+	private void updateCommentThumbsup(String commentid, int num){
+		if (num != 0){
+			RLock lock = redisServer.getRLock(commentid);
+			try {
+				lock.lock(1, TimeUnit.SECONDS);
+				commentService.updateThumpsubNum(commentid, num);
+			} finally {
+				lock.unlock();
+			}
+		}
 	}
 
 
