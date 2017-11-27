@@ -121,6 +121,8 @@ public class InforController extends BaseContorller {
                     mySub.setUserid(userBo.getId());
                     addCacheToSub(mySub, cache);
                     inforService.insertSub(mySub);
+                    logger.info("============== userid {}, inforSub {}", userBo.getId(),
+                            JSON.toJSONString(mySub));
                 }
             }
         }

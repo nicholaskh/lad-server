@@ -148,6 +148,10 @@ public class InforVo extends BaseVo {
         this.shareNum = shareNum;
     }
 
+    public int getCommentNum() {
+        return commentNum;
+    }
+
     public boolean isSelfSub() {
         return selfSub;
     }
