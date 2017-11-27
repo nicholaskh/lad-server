@@ -482,6 +482,12 @@ public class PartyController extends BaseContorller {
         }
         List<PartyUserBo> partyUserBos = partyService.findPartyUser(partyid, 1);
         List<PartyUserVo> partyUserVos = new ArrayList<>();
+        UserBo creater = userService.getUser(partyBo.getCreateuid());
+        if (creater != null) {
+            PartyUserVo userVo = new PartyUserVo();
+            partyUserBo2Vo(creater, userVo);
+            partyUserVos.add(userVo);
+        }
         for (PartyUserBo partyUserBo : partyUserBos) {
             UserBo user =  userService.getUser(partyUserBo.getUserid());
             if (user !=null) {
