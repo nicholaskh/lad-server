@@ -3,7 +3,7 @@ package com.lad.bo;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
- * 功能描述： 申请加好友或加圈子时的理由
+ * 功能描述： 申请加群聊或加圈子时的理由
  * Copyright: Copyright (c) 2017
  * Version: 1.0
  * Time:2017/7/5
@@ -21,6 +21,8 @@ public class ReasonBo extends BaseBo {
     private int status;
 
     private boolean isNotice;
+
+    private String chatroomid;
 
 
     public String getCircleid() {
@@ -61,5 +63,13 @@ public class ReasonBo extends BaseBo {
 
     public void setNotice(boolean notice) {
         isNotice = notice;
+    }
+
+    public String getChatroomid() {
+        return chatroomid;
+    }
+
+    public void setChatroomid(String chatroomid) {
+        this.chatroomid = chatroomid;
     }
 }

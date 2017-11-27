@@ -1,4 +1,4 @@
-package com.lad.dao;
+package com.lad.service;
 
 import com.lad.bo.ReasonBo;
 import com.mongodb.WriteResult;
@@ -7,11 +7,11 @@ import java.util.List;
 
 /**
  * 功能描述：
+ * Copyright: Copyright (c) 2017
  * Version: 1.0
- * Time:2017/7/5
+ * Time:2017/11/27
  */
-public interface IReasonDao extends IBaseDao{
-
+public interface IReasonService {
 
     ReasonBo insert(ReasonBo reasonBo);
 
@@ -48,31 +48,31 @@ public interface IReasonDao extends IBaseDao{
     List<ReasonBo> findByCircle(String circleid);
 
     /**
-     * 查找圈子申请历史记录
-     * @return
-     */
-    List<ReasonBo> findByCircleHis(String circleid, int page, int limit);
-
-    /**
-     * 查找所有聊天室申请
-     * @param chatroomid
-     * @return
-     */
-    List<ReasonBo> findByChatroomHis(String chatroomid, int page, int limit);
-
-    /**
-     * 查找所有聊天室申请
-     * @param chatroomid
-     * @return
-     */
-    List<ReasonBo> findByChatroom(String chatroomid);
-
-    /**
      * 查找单个申请
      * @param userid
      * @param chatroomid
      * @return
      */
     ReasonBo findByUserAndChatroom(String userid, String chatroomid);
+
+    /**
+     * 查找圈子申请历史记录
+     * @return
+     */
+    List<ReasonBo> findByCircleHis(String circleid, int page, int limit);
+
+    /**
+     * 查找所有聊天室申请记录
+     * @param chatroomid
+     * @return
+     */
+    List<ReasonBo> findByChatroomHis(String chatroomid, int page, int limit);
+
+    /**
+     * 查找聊天室申请
+     * @param chatroomid
+     * @return
+     */
+    List<ReasonBo> findByChatroom(String chatroomid);
 
 }

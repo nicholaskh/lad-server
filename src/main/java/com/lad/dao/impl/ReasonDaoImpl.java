@@ -5,6 +5,7 @@ import com.lad.dao.IReasonDao;
 import com.lad.util.Constant;
 import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -77,6 +78,50 @@ public class ReasonDaoImpl implements IReasonDao {
         Query query = new Query();
         query.addCriteria(new Criteria("circleid").is(circleid));
         query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+        query.addCriteria(new Criteria("status").is(Constant.ADD_APPLY));
+        query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "createTime")));
+        return mongoTemplate.find(query, ReasonBo.class);
+    }
+
+
+    public List<ReasonBo> findByChatroom(String chatroomid) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("chatroomid").is(chatroomid));
+        query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+        query.addCriteria(new Criteria("status").is(Constant.ADD_APPLY));
+        query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "createTime")));
+        return mongoTemplate.find(query, ReasonBo.class);
+    }
+
+
+    public ReasonBo findByUserAndChatroom(String userid, String chatroomid) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("chatroomid").is(chatroomid));
+        query.addCriteria(new Criteria("createuid").is(userid));
+        query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+        query.addCriteria(new Criteria("status").is(Constant.ADD_APPLY));
+        return mongoTemplate.findOne(query, ReasonBo.class);
+    }
+
+    @Override
+    public List<ReasonBo> findByCircleHis(String circleid, int page, int limit) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("circleid").is(circleid));
+        query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+        query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "createTime")));
+        query.skip(page < 1 ? 1: page);
+        query.limit(limit);
+        return mongoTemplate.find(query, ReasonBo.class);
+    }
+
+    @Override
+    public List<ReasonBo> findByChatroomHis(String chatroomid, int page, int limit) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("chatroomid").is(chatroomid));
+        query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+        query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "createTime")));
+        query.skip(page < 1 ? 1: page);
+        query.limit(limit);
         return mongoTemplate.find(query, ReasonBo.class);
     }
 }

@@ -146,9 +146,6 @@ public class UserServiceImpl implements IUserService{
 	@Async
 	public void addUserLevel(String userid, long num, int type) {
 		UserBo userBo = userDao.getUser(userid);
-		if (userBo.getLevel() >= 6) {
-			return;
-		}
 		UserLevelBo userLevelBo = userLevelDao.findByUserid(userid);
 		int level = 1;
 		if (userLevelBo == null) {
@@ -172,6 +169,7 @@ public class UserServiceImpl implements IUserService{
 				default:
 					break;
 			}
+			userLevelDao.insert(userLevelBo);
 		} else {
 			switch (type){
 				case Constant.LEVEL_HOUR:
@@ -194,7 +192,9 @@ public class UserServiceImpl implements IUserService{
 			userLevelDao.update(userLevelBo.getId(), num, type);
 			level = getLevel(userLevelBo);
 		}
-		userDao.updateLevel(userLevelBo.getUserid(), level);
+		if (userBo.getLevel() < 6 && userBo.getLevel() != level) {
+			userDao.updateLevel(userLevelBo.getUserid(), level);
+		}
 	}
 
 
