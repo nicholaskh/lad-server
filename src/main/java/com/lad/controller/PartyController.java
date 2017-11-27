@@ -284,10 +284,40 @@ public class PartyController extends BaseContorller {
             return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_IS_NULL.getIndex(),
                     ERRORCODE.CIRCLE_IS_NULL.getReason());
         }
+
+        PartyVo partyVo = new PartyVo();
+        BeanUtils.copyProperties(partyBo, partyVo);
+        if (partyBo.getStatus() != -1){
+            int status = getPartyStatus(partyBo.getStartTime(), partyBo.getAppointment());
+            if (status != partyBo.getStatus()){
+                updatePartyStatus(partyBo.getId(), status);
+                partyBo.setStatus(status);
+            }
+        }
         List<PartyUserVo> partyUserVos = new ArrayList<>();
+        int userAdd = 0;
+        UserBo createBo = null;
+        if (userBo != null && userBo.getId().equals(partyBo.getCreateuid())){
+            createBo = userBo;
+        } else {
+            userService.getUser(partyBo.getCreateuid());
+        }
+        if (createBo != null) {
+            PartyUserVo createVo = new PartyUserVo();
+            partyUserBo2Vo(createBo, createVo);
+            partyUserVos.add(createVo);
+            partyVo.setCreater(createVo);
+            userAdd ++;
+        }
+        partyVo.setPartyid(partyBo.getId());
+        partyVo.setCircleName(circleBo.getName());
+        partyVo.setCirclePic(circleBo.getHeadPicture());
+        partyVo.setInCircle(circleBo.getUsers().contains(userid));
+
+
         LinkedList<String> users = partyBo.getUsers();
         int length = users.size() -1;
-        int userAdd = 0;
+
         for (int i = length; i >=0 ; i--) {
             UserBo user =  userService.getUser(users.get(i));
             if (userAdd > 10) {
@@ -300,27 +330,9 @@ public class PartyController extends BaseContorller {
                 userAdd ++;
             }
         }
-        PartyVo partyVo = new PartyVo();
-        BeanUtils.copyProperties(partyBo, partyVo);
-        if (partyBo.getStatus() != -1){
-            int status = getPartyStatus(partyBo.getStartTime(), partyBo.getAppointment());
-            if (status != partyBo.getStatus()){
-                updatePartyStatus(partyBo.getId(), status);
-                partyBo.setStatus(status);
-            }
-        }
-        partyVo.setPartyid(partyBo.getId());
-        partyVo.setCircleName(circleBo.getName());
-        partyVo.setCirclePic(circleBo.getHeadPicture());
-        partyVo.setInCircle(circleBo.getUsers().contains(userid));
         partyVo.setUsers(partyUserVos);
         partyVo.setCreate(partyBo.getCreateuid().equals(userid));
-        UserBo createBo = userService.getUser(partyBo.getCreateuid());
-        if (createBo != null) {
-            PartyUserVo createVo = new PartyUserVo();
-            partyUserBo2Vo(createBo, createVo);
-            partyVo.setCreater(createVo);
-        }
+
         if (StringUtils.isNotEmpty(userid)){
             PartyUserBo partyUserBo = partyService.findPartyUserIgnoreDel(partyid, userid);
             partyVo.setInParty(partyUserBo != null && partyUserBo.getDeleted() == 0);
@@ -467,12 +479,6 @@ public class PartyController extends BaseContorller {
         if (partyBo == null) {
             return CommonUtil.toErrorResult(ERRORCODE.PARTY_NULL.getIndex(),
                     ERRORCODE.PARTY_NULL.getReason());
-        }
-        UserBo userBo;
-        try {
-            userBo = checkSession(request, userService);
-        } catch (MyException e) {
-            return e.getMessage();
         }
         List<PartyUserBo> partyUserBos = partyService.findPartyUser(partyid, 1);
         List<PartyUserVo> partyUserVos = new ArrayList<>();
