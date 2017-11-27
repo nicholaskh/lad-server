@@ -124,4 +124,15 @@ public class ReasonDaoImpl implements IReasonDao {
         query.limit(limit);
         return mongoTemplate.find(query, ReasonBo.class);
     }
+
+    @Override
+    public WriteResult updateMasterApply(String id, int status, boolean isMasterApply) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("_id").is(id));
+        query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+        Update update = new Update();
+        update.set("status", status);
+        update.set("isMasterApply", isMasterApply);
+        return mongoTemplate.updateFirst(query,update, ReasonBo.class);
+    }
 }

@@ -75,4 +75,11 @@ public interface IReasonService {
      */
     List<ReasonBo> findByChatroom(String chatroomid);
 
+    /**
+     * 是否管理员邀请修改
+     * @param id
+     * @return
+     */
+    WriteResult updateMasterApply(String id, int status, boolean isMasterApply);
+
 }

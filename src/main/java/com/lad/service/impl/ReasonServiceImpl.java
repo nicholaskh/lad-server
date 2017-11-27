@@ -70,4 +70,9 @@ public class ReasonServiceImpl implements IReasonService {
     public List<ReasonBo> findByChatroom(String chatroomid) {
         return reasonDao.findByChatroom(chatroomid);
     }
+
+    @Override
+    public WriteResult updateMasterApply(String id, int status, boolean isMasterApply) {
+        return reasonDao.updateMasterApply(id, status, isMasterApply);
+    }
 }

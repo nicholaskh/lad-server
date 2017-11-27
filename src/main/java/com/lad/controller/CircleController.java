@@ -1700,10 +1700,11 @@ public class CircleController extends BaseContorller {
 					reasonBo = new ReasonBo();
 					reasonBo.setCircleid(circleid);
 					reasonBo.setCreateuid(userBo.getId());
+					reasonBo.setMasterApply(true);
 					reasonBo.setStatus(Constant.ADD_APPLY);
 					reasonService.insert(reasonBo);
 				} else {
-					reasonService.updateApply(reasonBo.getId(), Constant.ADD_APPLY, "");
+					reasonService.updateMasterApply(reasonBo.getId(), Constant.ADD_APPLY, true);
 				}
 			}
 				JPushUtil.push(titlePush, content, path, useridArr);
@@ -1875,7 +1876,7 @@ public class CircleController extends BaseContorller {
 
 
 	/**
-	 * 邀请好友搜索
+	 * 加入圈子
 	 * @param circleid
 	 * @param request
 	 * @param response
@@ -1894,6 +1895,10 @@ public class CircleController extends BaseContorller {
 		if (circleBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_IS_NULL.getIndex(),
 					ERRORCODE.CIRCLE_IS_NULL.getReason());
+		}
+		if (!circleBo.isOpen()) {
+			return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_NEED_VERIFY.getIndex(),
+					ERRORCODE.CIRCLE_NEED_VERIFY.getReason());
 		}
 		updateHistory(userBo.getId(), circleid, locationService, circleService);
 		HashSet<String> users= circleBo.getUsers();
@@ -1949,7 +1954,7 @@ public class CircleController extends BaseContorller {
 	private void addUser(String circleid, String... userids) {
 		RLock lock = redisServer.getRLock(circleid + circleAddUserLock);
 		try {
-			lock.lock(4, TimeUnit.SECONDS);
+			lock.lock(3, TimeUnit.SECONDS);
 			CircleBo circleBo = circleService.selectById(circleid);
 			HashSet<String> users= circleBo.getUsers();
 			HashSet<String> applyUsers = circleBo.getUsersApply();
