@@ -1169,10 +1169,7 @@ public class ChatroomController extends BaseContorller {
 					ERRORCODE.CHATROOM_NULL.getReason());
 		}
 		if (chatroomBo.isVerify()) {
-
-
-
-			return "";
+			return Constant.COM_FAIL_RESP;
 		} else {
 			//第一个为返回结果信息，第二位term信息
 			String result = IMUtil.subscribe(1,chatroomid, userBo.getId());
@@ -1255,7 +1252,7 @@ public class ChatroomController extends BaseContorller {
 	}
 
 	/**
-	 * 加群验证信息提交
+	 * 加群验证申请信息
 	 * @param chatroomid
 	 * @param request
 	 * @param response
@@ -1293,7 +1290,7 @@ public class ChatroomController extends BaseContorller {
 	}
 
 	/**
-	 * 加群验证信息提交
+	 * 加群验证操作
 	 * @param chatroomid
 	 * @param refues
 	 * @param request
