@@ -774,7 +774,7 @@ public class FriendsController extends BaseContorller {
 
 	@RequestMapping("/get-friends-time")
 	@ResponseBody
-	public String getFriendsTime(HttpServletRequest request, String timestamp, HttpServletResponse response) {
+	public String getFriendsTime( String timestamp, HttpServletRequest request,HttpServletResponse response) {
 		UserBo userBo;
 		try {
 			userBo = checkSession(request, userService);
