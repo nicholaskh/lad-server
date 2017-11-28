@@ -7,6 +7,7 @@ import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 
@@ -64,8 +65,8 @@ public class FriendsServiceImpl implements IFriendsService {
 		return friendsDao.delete(userid, friendid);
 	}
 
-	public WriteResult updateApply(String id, int apply) {
-		return friendsDao.updateApply(id, apply);
+	public WriteResult updateApply(String id, int apply, String chatroomid) {
+		return friendsDao.updateApply(id, apply, chatroomid);
 	}
 
 	public List<FriendsBo> getApplyFriendByuserid(String userid) {
@@ -84,5 +85,15 @@ public class FriendsServiceImpl implements IFriendsService {
 	@Override
 	public List<FriendsBo> searchInviteCircleUsers(HashSet<String> circleUsers, String userid, String keywords) {
 		return friendsDao.searchInviteCircleUsers(circleUsers, userid, keywords);
+	}
+
+	@Override
+	public List<FriendsBo> getFriendByUserid(String userid, Date timestap) {
+		return friendsDao.getFriendByUserid(userid, timestap);
+	}
+
+	@Override
+	public WriteResult updateUsernameByFriend(String friendid, String username, String userHeadPic) {
+		return friendsDao.updateUsernameByFriend(friendid, username, userHeadPic);
 	}
 }

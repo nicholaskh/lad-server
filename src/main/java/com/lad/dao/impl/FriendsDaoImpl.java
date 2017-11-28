@@ -2,14 +2,18 @@ package com.lad.dao.impl;
 
 import com.lad.bo.FriendsBo;
 import com.lad.dao.IFriendsDao;
+import com.lad.util.Constant;
 import com.mongodb.WriteResult;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -21,6 +25,7 @@ public class FriendsDaoImpl implements IFriendsDao {
 	private MongoTemplate mongoTemplate;
 
 	public FriendsBo insert(FriendsBo friendsBo) {
+		friendsBo.setUpdateTime(new Date());
 		mongoTemplate.insert(friendsBo);
 		return friendsBo;
 	}
@@ -32,6 +37,7 @@ public class FriendsDaoImpl implements IFriendsDao {
 		query.addCriteria(new Criteria("deleted").is(0));
 		Update update = new Update();
 		update.set("backname", backname);
+		update.set("updateTime", new Date());
 		return mongoTemplate.updateFirst(query, update, FriendsBo.class);
 	}
 
@@ -42,6 +48,7 @@ public class FriendsDaoImpl implements IFriendsDao {
 		query.addCriteria(new Criteria("deleted").is(0));
 		Update update = new Update();
 		update.set("tag", tag);
+		update.set("updateTime", new Date());
 		return mongoTemplate.updateFirst(query, update, FriendsBo.class);
 	}
 
@@ -52,6 +59,7 @@ public class FriendsDaoImpl implements IFriendsDao {
 		query.addCriteria(new Criteria("deleted").is(0));
 		Update update = new Update();
 		update.set("phone", phones);
+		update.set("updateTime", new Date());
 		return mongoTemplate.updateFirst(query, update, FriendsBo.class);
 	}
 
@@ -62,6 +70,7 @@ public class FriendsDaoImpl implements IFriendsDao {
 		query.addCriteria(new Criteria("deleted").is(0));
 		Update update = new Update();
 		update.set("description", description);
+		update.set("updateTime", new Date());
 		return mongoTemplate.updateFirst(query, update, FriendsBo.class);
 	}
 
@@ -72,6 +81,7 @@ public class FriendsDaoImpl implements IFriendsDao {
 		query.addCriteria(new Criteria("deleted").is(0));
 		Update update = new Update();
 		update.set("VIP", VIP);
+		update.set("updateTime", new Date());
 		return mongoTemplate.updateFirst(query, update, FriendsBo.class);
 	}
 
@@ -82,6 +92,7 @@ public class FriendsDaoImpl implements IFriendsDao {
 		query.addCriteria(new Criteria("deleted").is(0));
 		Update update = new Update();
 		update.set("black", black);
+		update.set("updateTime", new Date());
 		return mongoTemplate.updateFirst(query, update, FriendsBo.class);
 	}
 
@@ -128,12 +139,16 @@ public class FriendsDaoImpl implements IFriendsDao {
 		return mongoTemplate.updateFirst(query, update, FriendsBo.class);
 	}
 
-	public WriteResult updateApply(String id, int apply) {
+	public WriteResult updateApply(String id, int apply, String chatroomid) {
 		Query query = new Query();
 		query.addCriteria(new Criteria("_id").is(id));
 		query.addCriteria(new Criteria("deleted").is(0));
 		Update update = new Update();
 		update.set("apply", apply);
+		if (StringUtils.isNotEmpty(chatroomid)){
+			update.set("chatroomid", chatroomid);
+		}
+		update.set("updateTime", new Date());
 		return mongoTemplate.updateFirst(query, update, FriendsBo.class);
 	}
 
@@ -172,5 +187,34 @@ public class FriendsDaoImpl implements IFriendsDao {
 		Criteria username = new Criteria("username").regex(pattern);
 		criteria.orOperator(backname, username);
 		return mongoTemplate.find(query, FriendsBo.class);
+	}
+
+	@Override
+	public List<FriendsBo> getFriendByUserid(String userid, Date timestap) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("userid").is(userid));
+		query.addCriteria(new Criteria("apply").is(Constant.ADD_AGREE));
+		query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+		query.with(new Sort(new Sort.Order(Sort.Direction.DESC,"updateTime")));
+		if (null != timestap) {
+			query.addCriteria(new Criteria("updateTime").gt(timestap));
+		}
+		return mongoTemplate.find(query, FriendsBo.class);
+	}
+
+	@Override
+	public WriteResult updateUsernameByFriend(String friendid, String username, String userHeadPic) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("friendid").is(friendid));
+		query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+		Update update = new Update();
+		if (StringUtils.isNotEmpty(userHeadPic)) {
+			update.set("friendHeadPic", userHeadPic);
+		}
+		if (StringUtils.isNotEmpty(username)) {
+			update.set("username", username);
+		}
+		update.set("updateTime", new Date());
+		return mongoTemplate.updateMulti(query, update, FriendsBo.class);
 	}
 }

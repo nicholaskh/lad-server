@@ -16,7 +16,8 @@ public class FriendsBo extends BaseBo {
 	private Integer VIP = 0;
 	private Integer black = 0;
 	private String username;
-	private String lastTime;
+	private String friendHeadPic;
+	private String chatroomid;
 
 	public String getUserid() {
 		return userid;
@@ -88,5 +89,21 @@ public class FriendsBo extends BaseBo {
 
 	public void setUsername(String username) {
 		this.username = username;
+	}
+
+	public String getFriendHeadPic() {
+		return friendHeadPic;
+	}
+
+	public void setFriendHeadPic(String friendHeadPic) {
+		this.friendHeadPic = friendHeadPic;
+	}
+
+	public String getChatroomid() {
+		return chatroomid;
+	}
+
+	public void setChatroomid(String chatroomid) {
+		this.chatroomid = chatroomid;
 	}
 }

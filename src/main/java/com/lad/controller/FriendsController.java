@@ -116,22 +116,6 @@ public class FriendsController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_ERROR.getIndex(),
 					ERRORCODE.FRIEND_ERROR.getReason());
 		}
-		FriendsBo temp = friendsService.getFriendByIdAndVisitorId(
-				userid, friendid);
-		if (temp != null) {
-			friendsService.updateApply(temp.getId(), 1);
-		} else {
-			//更新同意人的好友信息
-			FriendsBo friendsBo2 = new FriendsBo();
-			friendsBo2.setUserid(userid);
-			friendsBo2.setFriendid(friendid);
-			friendsBo2.setUsername(friendBo.getUserName());
-			friendsBo2.setApply(1);
-			friendsService.insert(friendsBo2);
-		}
-		//更新申请人的好友信息
-		friendsService.updateApply(id, 1);
-
 		ChatroomBo chatroomBo = chatroomService.selectByUserIdAndFriendid(
 				userid, friendid);
 		boolean isNew = false;
@@ -157,6 +141,22 @@ public class FriendsController extends BaseContorller {
 				return res;
 			}
 		}
+		FriendsBo temp = friendsService.getFriendByIdAndVisitorId(
+				userid, friendid);
+		if (temp != null) {
+			friendsService.updateApply(temp.getId(), 1, chatroomBo.getId());
+		} else {
+			//更新同意人的好友信息
+			FriendsBo friendsBo2 = new FriendsBo();
+			friendsBo2.setUserid(userid);
+			friendsBo2.setFriendid(friendid);
+			friendsBo2.setUsername(friendBo.getUserName());
+			friendsBo2.setApply(1);
+			friendsBo2.setChatroomid(chatroomBo.getId());
+			friendsService.insert(friendsBo2);
+		}
+		//更新申请人的好友信息
+		friendsService.updateApply(id, 1, chatroomBo.getId());
 		
 		JPushUtil.pushTo(userBo.getUserName() + JPushUtil.AGREE_APPLY_FRIEND,
 				friendid);
@@ -214,7 +214,7 @@ public class FriendsController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NULL.getIndex(),
 					ERRORCODE.FRIEND_NULL.getReason());
 		}
-		friendsService.updateApply(id, -1);
+		friendsService.updateApply(id, -1, "");
 		JPushUtil.pushTo(userBo.getUserName() + JPushUtil.REFUSE_APPLY_FRIEND,
 				friendsBo.getUserid());
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -476,6 +476,8 @@ public class FriendsController extends BaseContorller {
 		map.put("tag", voList);
 		return JSONObject.fromObject(map).toString();
 	}
+
+
 
 	@RequestMapping("/delete")
 	@ResponseBody
@@ -765,6 +767,81 @@ public class FriendsController extends BaseContorller {
 		map.put("ret", 0);
 		map.put("timestamp", StringUtils.isNotEmpty(timeStr) ? timeStr : timestamp);
 		map.put("userVos", userBaseVos);
+		return JSONObject.fromObject(map).toString();
+	}
+
+
+
+	@RequestMapping("/get-friends-time")
+	@ResponseBody
+	public String getFriendsTime(HttpServletRequest request, String timestamp, HttpServletResponse response) {
+		UserBo userBo;
+		try {
+			userBo = checkSession(request, userService);
+		} catch (MyException e) {
+			return e.getMessage();
+		}
+		String userid = userBo.getId();
+		List<FriendsVo> voList = new LinkedList<>();
+		String timeStr = "";
+		try {
+			Date times = CommonUtil.getDate(timestamp);
+			List<FriendsBo> list = friendsService.getFriendByUserid(userid, times);
+			if (!CommonUtil.isEmpty(list)) {
+				FriendsBo first = list.get(0);
+				timeStr = CommonUtil.getDateStr(first.getUpdateTime(),"yyyy-MM-dd HH:mm:ss");
+			}
+			for (FriendsBo friendsBo : list) {
+				FriendsVo vo = new FriendsVo();
+				BeanUtils.copyProperties(friendsBo, vo);
+				String friendid = friendsBo.getFriendid();
+				List<TagBo> tagBos = tagService.getTagBoListByUseridAndFrinedid(userid, friendid);
+				List<String> tagList = new ArrayList<>();
+				for (TagBo tagBo : tagBos) {
+					tagList.add(tagBo.getName());
+				}
+				vo.setPicture(friendsBo.getFriendHeadPic());
+				vo.setTag(tagList);
+				if (StringUtils.isEmpty(friendsBo.getBackname())) {
+					UserBo friend = userService.getUser(friendid);
+					vo.setBackname(friend.getUserName());
+					vo.setUsername(friend.getUserName());
+				} else {
+					vo.setBackname(friendsBo.getBackname());
+					vo.setUsername(friendsBo.getUsername());
+				}
+				if (StringUtils.isEmpty(friendsBo.getChatroomid())) {
+					//如果当初没有创建成功
+					ChatroomBo chatroomBo = chatroomService.selectByUserIdAndFriendid(
+							userBo.getId(), friendsBo.getFriendid());
+					if (chatroomBo == null) {
+						chatroomBo = chatroomService.selectByUserIdAndFriendid(
+								friendsBo.getFriendid(), userBo.getId());
+						if (chatroomBo == null) {
+							UserBo friend = userService.getUser(friendsBo.getFriendid());
+							chatroomBo = savekUserAndFriendChatroom(userBo, friend, chatroomBo);
+							//首次创建聊天室，需要输入名称
+							String res = IMUtil.subscribe(0, chatroomBo.getId(), userid, friend.getId());
+							if (!res.equals(IMUtil.FINISH)) {
+								return res;
+							}
+						}
+					}
+					friendsService.updateApply(friendsBo.getId(), Constant.ADD_AGREE, chatroomBo.getId());
+					vo.setChannelId(friendsBo.getChatroomid());
+				} else {
+					vo.setChannelId(friendsBo.getChatroomid());
+				}
+				voList.add(vo);
+			}
+		} catch (ParseException e){
+			return CommonUtil.toErrorResult(ERRORCODE.FORMAT_ERROR.getIndex(),
+					ERRORCODE.FORMAT_ERROR.getReason());
+		}
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("timestamp", StringUtils.isNotEmpty(timeStr) ? timeStr : timestamp);
+		map.put("tag", voList);
 		return JSONObject.fromObject(map).toString();
 	}
 }

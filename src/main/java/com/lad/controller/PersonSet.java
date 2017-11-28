@@ -1,31 +1,30 @@
 package com.lad.controller;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
-import net.sf.json.JSONObject;
-
-import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-
 import com.lad.bo.LocationBo;
 import com.lad.bo.UserBo;
+import com.lad.service.IFriendsService;
 import com.lad.service.ILocationService;
 import com.lad.service.IRegistService;
 import com.lad.service.IUserService;
 import com.lad.util.CommonUtil;
 import com.lad.util.ERRORCODE;
 import com.lad.vo.UserVo;
+import net.sf.json.JSONObject;
+import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("person-set")
@@ -37,6 +36,9 @@ public class PersonSet extends BaseContorller {
 	private IRegistService registService;
 	@Autowired
 	private ILocationService locationService;
+
+	@Autowired
+	private IFriendsService friendsService;
 
 	@RequestMapping("/username")
 	@ResponseBody
@@ -61,6 +63,7 @@ public class PersonSet extends BaseContorller {
 		}
 		userBo.setUserName(username);
 		userService.updateUserName(userBo);
+		updateUserName(userBo.getId(), username);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();
@@ -311,6 +314,11 @@ public class PersonSet extends BaseContorller {
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();
+	}
+
+	@Async
+	private void updateUserName(String userid, String username){
+		friendsService.updateUsernameByFriend(userid, username, "");
 	}
 
 }

@@ -3,6 +3,7 @@ package com.lad.service;
 import com.lad.bo.FriendsBo;
 import com.mongodb.WriteResult;
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 
@@ -31,7 +32,7 @@ public interface IFriendsService extends IBaseService {
 
 	public WriteResult delete(String userid, String friendid);
 	
-	public WriteResult updateApply(String id, int apply);
+	public WriteResult updateApply(String id, int apply, String chatroomid);
 	
 	public List<FriendsBo> getApplyFriendByuserid(String userid);
 	
@@ -45,4 +46,18 @@ public interface IFriendsService extends IBaseService {
 	List<FriendsBo> searchCircleUsers(HashSet<String> circleUsers,String userid, String keywords);
 
 	List<FriendsBo> searchInviteCircleUsers(HashSet<String> circleUsers, String userid, String keywords);
+
+	/**
+	 * 增量查询好友
+	 * @param userid
+	 * @param timestap
+	 * @return
+	 */
+	List<FriendsBo> getFriendByUserid(String userid, Date timestap);
+
+	/**
+	 * 用户名称和头像修改，修改好友信息
+	 * @return
+	 */
+	WriteResult updateUsernameByFriend(String friendid, String username, String userHeadPic);
 }

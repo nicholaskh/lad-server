@@ -34,6 +34,7 @@ public class UserDaoImpl implements IUserDao {
     }
 
     public UserBo save(UserBo userBo) {
+        userBo.setUpdateTime(new Date());
         mongoTemplate.save(userBo);
         return userBo;
     }
@@ -127,6 +128,7 @@ public class UserDaoImpl implements IUserDao {
         query.addCriteria(new Criteria("deleted").is(0));
         Update update = new Update();
         update.set("headPictureName", userBo.getHeadPictureName());
+        update.set("updateTime", new Date());
         return mongoTemplate.updateFirst(query, update, UserBo.class);
     }
 
@@ -136,6 +138,7 @@ public class UserDaoImpl implements IUserDao {
         query.addCriteria(new Criteria("deleted").is(0));
         Update update = new Update();
         update.set("userName", userBo.getUserName());
+        update.set("updateTime", new Date());
         return mongoTemplate.updateFirst(query, update, UserBo.class);
     }
 
@@ -145,6 +148,7 @@ public class UserDaoImpl implements IUserDao {
         query.addCriteria(new Criteria("deleted").is(0));
         Update update = new Update();
         update.set("sex", userBo.getSex());
+        update.set("updateTime", new Date());
         return mongoTemplate.updateFirst(query, update, UserBo.class);
     }
 
@@ -154,6 +158,7 @@ public class UserDaoImpl implements IUserDao {
         query.addCriteria(new Criteria("deleted").is(0));
         Update update = new Update();
         update.set("personalizedSignature", userBo.getPersonalizedSignature());
+        update.set("updateTime", new Date());
         return mongoTemplate.updateFirst(query, update, UserBo.class);
     }
 
@@ -163,6 +168,7 @@ public class UserDaoImpl implements IUserDao {
         query.addCriteria(new Criteria("deleted").is(0));
         Update update = new Update();
         update.set("birthDay", userBo.getBirthDay());
+        update.set("updateTime", new Date());
         return mongoTemplate.updateFirst(query, update, UserBo.class);
     }
     /**
@@ -224,6 +230,7 @@ public class UserDaoImpl implements IUserDao {
         query.addCriteria(new Criteria("deleted").is(0));
         Update update = new Update();
         update.set("level", level);
+        update.set("updateTime", new Date());
         return mongoTemplate.updateFirst(query, update, UserBo.class);
     }
 
@@ -233,6 +240,7 @@ public class UserDaoImpl implements IUserDao {
         query.addCriteria(new Criteria("_id").is(id));
         Update update = new Update();
         update.set("deleted", status);
+        update.set("updateTime", new Date());
         return mongoTemplate.updateFirst(query, update, UserBo.class);
     }
 
