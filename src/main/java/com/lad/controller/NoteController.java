@@ -7,6 +7,7 @@ import com.lad.util.*;
 import com.lad.vo.CommentVo;
 import com.lad.vo.NoteVo;
 import com.lad.vo.UserBaseVo;
+import com.lad.vo.UserThumbsupVo;
 import com.mongodb.BasicDBObject;
 import net.sf.json.JSONObject;
 import org.apache.logging.log4j.LogManager;
@@ -719,8 +720,9 @@ public class NoteController extends BaseContorller {
 		for (ThumbsupBo thumbsupBo : thumbsupBos) {
 			UserBo user = userService.getUser(thumbsupBo.getVisitor_id());
 			if (user != null) {
-				UserBaseVo userBaseVo = new UserBaseVo();
+				UserThumbsupVo userBaseVo = new UserThumbsupVo();
 				BeanUtils.copyProperties(user, userBaseVo);
+				userBaseVo.setThumbsupTime(thumbsupBo.getCreateTime());
 				userBaseVos.add(userBaseVo);
 			}
 		}
