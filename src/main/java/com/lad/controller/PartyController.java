@@ -319,10 +319,14 @@ public class PartyController extends BaseContorller {
         int length = users.size() -1;
 
         for (int i = length; i >=0 ; i--) {
-            UserBo user =  userService.getUser(users.get(i));
+            String userStr = users.get(i);
+            if (userStr.equals(partyBo.getCreateuid())) {
+                continue;
+            }
             if (userAdd > 10) {
                 break;
             }
+            UserBo user =  userService.getUser(userStr);
             if (user !=null) {
                 PartyUserVo userVo = new PartyUserVo();
                 partyUserBo2Vo(user, userVo);
@@ -1387,7 +1391,7 @@ public class PartyController extends BaseContorller {
         }
         PartyBo partyBo = partyService.findById(partyid);
         if (partyBo == null) {
-            return CommonUtil.toErrorResult(ERRORCODE.PARTY_HAS_END.getIndex(), ERRORCODE.PARTY_HAS_END.getReason());
+            return CommonUtil.toErrorResult(ERRORCODE.PARTY_NULL.getIndex(), ERRORCODE.PARTY_NULL.getReason());
         }
         if (!partyBo.getCreateuid().equals(userBo.getId())) {
             return CommonUtil.toErrorResult(ERRORCODE.NOTE_NOT_MASTER.getIndex(), ERRORCODE.NOTE_NOT_MASTER.getReason());
