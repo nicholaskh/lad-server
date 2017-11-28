@@ -310,6 +310,8 @@ public class CircleController extends BaseContorller {
 		for (CircleBo circleBo : circleBoList) {
 			CircleVo circleVo = new CircleVo();
 			BeanUtils.copyProperties(circleBo, circleVo);
+			circleVo.setUserAdd(1);
+			circleVo.setNotesSize(circleBo.getNoteSize());
 			circleVoList.add(circleVo);
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -1699,7 +1701,7 @@ public class CircleController extends BaseContorller {
 				if (reasonBo == null) {
 					reasonBo = new ReasonBo();
 					reasonBo.setCircleid(circleid);
-					reasonBo.setCreateuid(userBo.getId());
+					reasonBo.setCreateuid(inviteId);
 					reasonBo.setMasterApply(true);
 					reasonBo.setStatus(Constant.ADD_APPLY);
 					reasonService.insert(reasonBo);
@@ -1707,7 +1709,7 @@ public class CircleController extends BaseContorller {
 					reasonService.updateMasterApply(reasonBo.getId(), Constant.ADD_APPLY, true);
 				}
 			}
-				JPushUtil.push(titlePush, content, path, useridArr);
+			JPushUtil.push(titlePush, content, path, useridArr);
 		} else {
 			JPushUtil.push(titlePush, content, path,  useridArr);
 		}
