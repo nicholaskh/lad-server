@@ -380,6 +380,7 @@ public class PartyController extends BaseContorller {
         RLock lock = redisServer.getRLock(partyid+"partyUserLock");
         String chatroomid;
         PartyBo partyBo = null;
+        boolean isMax = false;
         try {
             lock.lock(2, TimeUnit.SECONDS);
             partyBo = partyService.findById(partyid);
@@ -396,6 +397,7 @@ public class PartyController extends BaseContorller {
                 return CommonUtil.toErrorResult(ERRORCODE.PARTY_USER_MAX.getIndex(),
                         ERRORCODE.PARTY_USER_MAX.getReason());
             }
+            isMax = userTotal == partyBo.getUserLimit();
             partyBo.setPartyUserNum(userTotal);
             chatroomid = partyBo.getChatroomid();
             LinkedList<String> users = partyBo.getUsers();
@@ -461,7 +463,9 @@ public class PartyController extends BaseContorller {
             chatroomUserBo.setUsername(userBo.getUserName());
             chatroomService.insertUser(chatroomUserBo);
         }
-
+        if (isMax) {
+            updatePartyStatus(partyid, 2);
+        }
         String path = String.format("/party/enroll-detail.do?partyid=%s&userid=%s", partyid, userid);
         String content = String.format("%s报名了您发起的聚会【%s】，请尽快与他沟通参与事宜", userBo.getUserName(),
                 partyBo.getTitle());
