@@ -198,6 +198,7 @@ public class PartyController extends BaseContorller {
                          HttpServletRequest request, HttpServletResponse response){
 
         logger.info("update partyJson : {}",partyJson);
+        logger.info("update delPhotos : {}" , delPhotos);
 
         UserBo userBo;
         try {
@@ -228,24 +229,27 @@ public class PartyController extends BaseContorller {
             partyBo.setUsers(oldParty.getUsers());
         }
         String userId = userBo.getId();
+        LinkedHashSet<String> photo = partyBo.getPhotos();
         Long time = Calendar.getInstance().getTimeInMillis();
+        if (StringUtils.isNotEmpty(delPhotos)) {
+            logger.info("party delete  photos ");
+            String[] paths = CommonUtil.getIds(delPhotos);
+            logger.info("party delete  photos : {}" , paths);
+            for (String url : paths) {
+                if (photo.contains(url)){
+                    photo.remove(url);
+                }
+            }
+            partyBo.setPhotos(photo);
+        }
         if (photos != null) {
-            LinkedHashSet<String> photo = partyBo.getPhotos();
             for (MultipartFile file : photos) {
                 String fileName = userId + "-" + time + "-" + file.getOriginalFilename();
                 String path = CommonUtil.upload(file, Constant.PARTY_PICTURE_PATH,
                         fileName, 0);
                 photo.add(path);
             }
-        }
-        if (StringUtils.isNotEmpty(delPhotos)) {
-            LinkedHashSet<String> photo = partyBo.getPhotos();
-            String[] paths = CommonUtil.getIds(delPhotos);
-            for (String url : paths) {
-                if (photo.contains(url)){
-                    photo.remove(url);
-                }
-            }
+            partyBo.setPhotos(photo);
         }
         if (video != null) {
             String fileName = userId + "-" + time + "-" + video.getOriginalFilename();
@@ -300,7 +304,7 @@ public class PartyController extends BaseContorller {
         if (userBo != null && userBo.getId().equals(partyBo.getCreateuid())){
             createBo = userBo;
         } else {
-            userService.getUser(partyBo.getCreateuid());
+            createBo = userService.getUser(partyBo.getCreateuid());
         }
         if (createBo != null) {
             PartyUserVo createVo = new PartyUserVo();
