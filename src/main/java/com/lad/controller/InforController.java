@@ -402,6 +402,9 @@ public class InforController extends BaseContorller {
             BroadcastVo broadcastVo = new BroadcastVo();
             BeanUtils.copyProperties(bo, broadcastVo);
             broadcastVo.setInforid(bo.getId());
+            broadcastVo.setReadNum(bo.getVisitNum());
+            broadcastVo.setCommentNum(bo.getCommnetNum());
+            broadcastVo.setThumpsubNum(bo.getThumpsubNum());
             vos.add(broadcastVo);
         }
         UserBo userBo = getUserLogin(request);
@@ -426,6 +429,9 @@ public class InforController extends BaseContorller {
             broadcastVo = new BroadcastVo();
             BeanUtils.copyProperties(broadcastBo, broadcastVo);
             broadcastVo.setInforid(broadcastBo.getId());
+            broadcastVo.setReadNum(broadcastBo.getVisitNum());
+            broadcastVo.setCommentNum(broadcastBo.getCommnetNum());
+            broadcastVo.setThumpsubNum(broadcastBo.getThumpsubNum());
             updateInforHistroy(radioid, broadcastBo.getModule(), Constant.INFOR_RADIO);
             UserBo userBo = getUserLogin(request);
             if (userBo != null) {
