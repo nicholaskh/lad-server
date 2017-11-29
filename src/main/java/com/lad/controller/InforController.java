@@ -475,7 +475,11 @@ public class InforController extends BaseContorller {
                         videoVo.setPicture(path);
                         file.delete();
                     }
+                } else {
+                    inforService.updateVideoPicById(bo.getId(), "noPic");
                 }
+            } else if (bo.getPoster().equals("noPic")) {
+                videoVo.setPicture("");
             } else {
                 videoVo.setPicture(bo.getPoster());
             }
