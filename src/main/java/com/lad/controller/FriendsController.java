@@ -32,7 +32,7 @@ public class FriendsController extends BaseContorller {
 	@Autowired
 	private IUserService userService;
 	@Autowired
-	private IIMTermService iMTermService;
+	private ILocationService locationService;
 
 	@Autowired
 	private ITagService tagService;
@@ -842,6 +842,45 @@ public class FriendsController extends BaseContorller {
 		map.put("ret", 0);
 		map.put("timestamp", StringUtils.isNotEmpty(timeStr) ? timeStr : timestamp);
 		map.put("tag", voList);
+		return JSONObject.fromObject(map).toString();
+	}
+
+
+
+	@RequestMapping("/near-friends")
+	@ResponseBody
+	public String nearFriends(double px, double py, HttpServletRequest request,
+								 HttpServletResponse response) {
+		UserBo userBo = getUserLogin(request);
+		if (userBo ==null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		List<LocationBo> locationBos = locationService.findCircleNear(px, py, 5000);
+		List<String> friendids = new LinkedList<>();
+		for (LocationBo bo : locationBos) {
+			friendids.add(bo.getUserid());
+		}
+		List<FriendsVo> voList = new LinkedList<>();
+		if (!friendids.isEmpty()) {
+			List<FriendsBo> friendsBos = friendsService.getFriendByInList(userBo.getId(), friendids);
+			for (FriendsBo friendsBo : friendsBos) {
+				FriendsVo vo = new FriendsVo();
+				BeanUtils.copyProperties(friendsBo, vo);
+				String friendid = friendsBo.getFriendid();
+				vo.setPicture(friendsBo.getFriendHeadPic());
+				if (StringUtils.isEmpty(friendsBo.getBackname())) {
+					UserBo friend = userService.getUser(friendid);
+					vo.setBackname(friend.getUserName());
+					vo.setUsername(friend.getUserName());
+				}
+				vo.setChannelId(friendsBo.getChatroomid());
+				voList.add(vo);
+			}
+		}
+		Map<String, Object> map = new HashMap<>();
+		map.put("ret", 0);
+		map.put("friendVos", voList);
 		return JSONObject.fromObject(map).toString();
 	}
 }

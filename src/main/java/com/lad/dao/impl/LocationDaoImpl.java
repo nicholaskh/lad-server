@@ -56,4 +56,14 @@ public class LocationDaoImpl implements ILocationDao {
 		query.addCriteria(criteria1);
 		return  mongoTemplate.findOne(query, LocationBo.class);
 	}
+
+	@Override
+	public List<LocationBo> findNearFriends(double[] position, double maxDistance, List<String> friendids) {
+		Query query = new Query();
+		Point point = new Point(position[0], position[1]);
+		Criteria criteria1 = Criteria.where("position").nearSphere(point).maxDistance(maxDistance/6378137.0);
+		query.addCriteria(criteria1);
+		query.addCriteria(new Criteria("userid").in(friendids));
+		return mongoTemplate.find(query, LocationBo.class);
+	}
 }

@@ -1,14 +1,13 @@
 package com.lad.service.impl;
 
-import java.util.List;
-
+import com.lad.bo.LocationBo;
+import com.lad.dao.ILocationDao;
+import com.lad.service.ILocationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.geo.Point;
 import org.springframework.stereotype.Service;
 
-import com.lad.bo.LocationBo;
-import com.lad.dao.ILocationDao;
-import com.lad.service.ILocationService;
+import java.util.List;
 
 @Service("locationService")
 public class LocationServiceImpl implements ILocationService {
@@ -38,4 +37,9 @@ public class LocationServiceImpl implements ILocationService {
 		return locationDao.getLocationBoByUserid(userid);
 	}
 
+
+	@Override
+	public List<LocationBo> findNearFriends(double[] position, double maxDistance, List<String> friendids) {
+		return locationDao.findNearFriends(position, maxDistance, friendids);
+	}
 }

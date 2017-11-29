@@ -217,4 +217,14 @@ public class FriendsDaoImpl implements IFriendsDao {
 		update.set("updateTime", new Date());
 		return mongoTemplate.updateMulti(query, update, FriendsBo.class);
 	}
+
+	@Override
+	public List<FriendsBo> getFriendByInList(String userid, List<String> friendids) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("userid").is(userid));
+		query.addCriteria(new Criteria("apply").is(Constant.ADD_AGREE));
+		query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+		query.addCriteria(new Criteria("friendid").in(friendids));
+		return mongoTemplate.find(query, FriendsBo.class);
+	}
 }

@@ -96,4 +96,9 @@ public class FriendsServiceImpl implements IFriendsService {
 	public WriteResult updateUsernameByFriend(String friendid, String username, String userHeadPic) {
 		return friendsDao.updateUsernameByFriend(friendid, username, userHeadPic);
 	}
+
+	@Override
+	public List<FriendsBo> getFriendByInList(String userid, List<String> friendids) {
+		return friendsDao.getFriendByInList(userid, friendids);
+	}
 }

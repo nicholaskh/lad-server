@@ -60,4 +60,13 @@ public interface IFriendsService extends IBaseService {
 	 * @return
 	 */
 	WriteResult updateUsernameByFriend(String friendid, String username, String userHeadPic);
+
+
+	/**
+	 * 获取指定列表中的好友
+	 * @param userid
+	 * @param friendids
+	 * @return
+	 */
+	List<FriendsBo> getFriendByInList(String userid, List<String> friendids);
 }
