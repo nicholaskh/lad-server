@@ -109,7 +109,7 @@ public class CircleDaoImpl implements ICircleDao {
 		query.addCriteria(new Criteria("_id").is(circleBoId));
 		query.addCriteria(new Criteria("deleted").is(0));
 		Update update = new Update();
-		update.set("noteSize", noteSize);
+		update.inc("noteSize", noteSize);
 		return mongoTemplate.updateFirst(query, update, CircleBo.class);
 	}
 

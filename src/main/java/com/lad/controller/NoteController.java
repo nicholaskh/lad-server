@@ -60,8 +60,7 @@ public class NoteController extends BaseContorller {
 
 	@RequestMapping("/insert")
 	@ResponseBody
-	public String isnert(double px, double py, String subject, String landmark, String content, String circleid,
-						 MultipartFile[] pictures, String type, boolean isAsync,
+	public String insert(String noteJson, boolean isAsync, MultipartFile[] pictures,
 			HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
 		try {
@@ -69,22 +68,20 @@ public class NoteController extends BaseContorller {
 		} catch (MyException e) {
 			return e.getMessage();
 		}
-		CircleBo circleBo = circleService.selectById(circleid);
-		if (null == circleBo) {
-			return CommonUtil.toErrorResult(
-					ERRORCODE.CIRCLE_IS_NULL.getIndex(),
-					ERRORCODE.CIRCLE_IS_NULL.getReason());
+		NoteBo noteBo = null;
+		try {
+			JSONObject jsonObject = JSONObject.fromObject(noteJson);
+			noteBo = (NoteBo)JSONObject.toBean(jsonObject, NoteBo.class);
+		} catch (Exception e) {
+			return CommonUtil.toErrorResult(ERRORCODE.FORMAT_ERROR.getIndex(),
+					ERRORCODE.FORMAT_ERROR.getReason());
 		}
+
+		String circleid = noteBo.getCircleId();
+
 		updateHistory(userBo.getId(), circleid, locationService, circleService);
-		NoteBo noteBo = new NoteBo();
-		noteBo.setPosition(new double[] { px, py });
-		noteBo.setLandmark(landmark);
-		noteBo.setSubject(subject);
-		noteBo.setContent(content);
 		noteBo.setVisitcount(1);
 		noteBo.setCreateuid(userBo.getId());
-		noteBo.setCircleId(circleid);
-		noteBo.setType(type);
 		noteBo.setVisitcount(1);
 		noteBo.setTemp(1);
 		LinkedList<String> photos = new LinkedList<>();
@@ -96,7 +93,7 @@ public class NoteController extends BaseContorller {
 						+ file.getOriginalFilename();
 				System.out.println("----file: " + file.getOriginalFilename() + ",  size: " + file.getSize());
 				logger.info(fileName);
-				if ("video".equals(type)) {
+				if ("video".equals(noteBo.getType())) {
 					String[] paths = CommonUtil.uploadVedio(file, Constant.NOTE_PICTURE_PATH, fileName, 0);
 					photos.add(paths[0]);
 					noteBo.setVideoPic(paths[1]);
@@ -110,10 +107,10 @@ public class NoteController extends BaseContorller {
 		}
 		noteBo.setPhotos(photos);
 		noteService.insert(noteBo);
-		RLock lock = redisServer.getRLock("noteSize");
+		RLock lock = redisServer.getRLock(circleid + "noteSize");
 		try {
 			lock.lock(2,TimeUnit.SECONDS);
-			circleService.updateNotes(circleid, circleBo.getNoteSize() + 1);
+			circleService.updateNotes(circleid, 1);
 		} finally {
 			lock.unlock();
 		}
@@ -806,10 +803,10 @@ public class NoteController extends BaseContorller {
 				}
 			}
 			if (notes != 0) {
-				RLock lock = redisServer.getRLock("noteSize");
+				RLock lock = redisServer.getRLock(circleBo.getId()+"noteSize");
 				try {
 					lock.lock(2,TimeUnit.SECONDS);
-					circleService.updateNotes(circleid, circleBo.getNoteSize() - notes);
+					circleService.updateNotes(circleid, -notes);
 				} finally {
 					lock.unlock();
 				}
@@ -855,10 +852,10 @@ public class NoteController extends BaseContorller {
 			}
 		}
 		if (circleBo != null && notes != 0) {
-			RLock lock = redisServer.getRLock("noteSize");
+			RLock lock = redisServer.getRLock(circleBo.getId()+"noteSize");
 			try {
 				lock.lock(2,TimeUnit.SECONDS);
-				circleService.updateNotes(circleBo.getId(), circleBo.getNoteSize() - notes);
+				circleService.updateNotes(circleBo.getId(), -notes);
 			} finally {
 				lock.unlock();
 			}
