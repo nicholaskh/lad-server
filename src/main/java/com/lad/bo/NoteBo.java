@@ -35,6 +35,9 @@ public class NoteBo extends BaseBo {
 	//总数
 	private long temp;
 
+	//是否同步个人动态
+	private boolean isAsync;
+
 	public String getSubject() {
 		return subject;
 	}
@@ -153,5 +156,13 @@ public class NoteBo extends BaseBo {
 
 	public void setVideoPic(String videoPic) {
 		this.videoPic = videoPic;
+	}
+
+	public boolean isAsync() {
+		return isAsync;
+	}
+
+	public void setAsync(boolean async) {
+		isAsync = async;
 	}
 }

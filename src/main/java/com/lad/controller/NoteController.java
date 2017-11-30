@@ -60,7 +60,7 @@ public class NoteController extends BaseContorller {
 
 	@RequestMapping("/insert")
 	@ResponseBody
-	public String insert(String noteJson, boolean isAsync, MultipartFile[] pictures,
+	public String insert(String noteJson, MultipartFile[] pictures,
 			HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
 		try {
@@ -114,7 +114,7 @@ public class NoteController extends BaseContorller {
 		} finally {
 			lock.unlock();
 		}
-		if (isAsync) {
+		if (noteBo.isAsync()) {
             //动态信息表
             addDynamicMsgs(userId, noteBo.getId(), Constant.NOTE_TYPE, dynamicService);
 		}
