@@ -57,6 +57,11 @@ public class PartyDaoImpl implements IPartyDao {
         update.set("isPhone", partyBo.isPhone());
         update.set("isOpen", partyBo.isOpen());
         update.set("reminder", partyBo.getReminder());
+        update.set("photos", partyBo.getPhotos());
+        update.set("status", partyBo.getStatus());
+        update.set("video", partyBo.getVideo());
+        update.set("videoPic", partyBo.getVideoPic());
+        update.set("backPic", partyBo.getBackPic());
         return mongoTemplate.updateFirst(query, update, PartyBo.class);
     }
 
