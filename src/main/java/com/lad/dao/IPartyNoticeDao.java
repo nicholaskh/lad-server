@@ -51,6 +51,14 @@ public interface IPartyNoticeDao {
      * @return
      */
     List<PartyNoticeBo> findByUserid(String userid, int page, int limit);
+
+
+    /**
+     * 添加通知
+     * @param partyid
+     * @return
+     */
+    PartyNoticeBo findPartyNotice(String partyid);
     
 
 

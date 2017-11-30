@@ -581,9 +581,11 @@ public class PartyController extends BaseContorller {
             if (partyUserBo != null && partyUserBo.getUserDelete() == Constant.DELETED) {
                 continue;
             }
+            PartyNoticeBo partyNoticeBo = partyService.findPartyNotice(partyBo.getId());
             PartyListVo listVo = new PartyListVo();
             BeanUtils.copyProperties(partyBo, listVo);
             listVo.setPartyid(partyBo.getId());
+            listVo.setHasNotice(partyNoticeBo != null);
             listVo.setUserNum(partyBo.getPartyUserNum());
             partyListVos.add(listVo);
         }
@@ -596,7 +598,9 @@ public class PartyController extends BaseContorller {
     private void bo2listVo(List<PartyBo> partyBos, List<PartyListVo> partyListVos){
         for(PartyBo partyBo : partyBos) {
             LinkedHashSet<String> startTimes = partyBo.getStartTime();
+            PartyNoticeBo partyNoticeBo = partyService.findPartyNotice(partyBo.getId());
             PartyListVo listVo = new PartyListVo();
+            listVo.setHasNotice(partyNoticeBo != null);
             BeanUtils.copyProperties(partyBo, listVo);
             if (partyBo.getStatus() != -1) {
                 int status = getPartyStatus(startTimes, partyBo.getAppointment());

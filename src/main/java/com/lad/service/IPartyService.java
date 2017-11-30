@@ -237,4 +237,11 @@ public interface IPartyService {
      * @return
      */
     List<PartyNoticeBo> findNoticeByUserid(String userid, int page, int limit);
+
+    /**
+     * 查找通知
+     * @param partyid
+     * @return
+     */
+    PartyNoticeBo findPartyNotice(String partyid);
 }

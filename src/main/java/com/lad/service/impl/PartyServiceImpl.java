@@ -192,4 +192,9 @@ public class PartyServiceImpl implements IPartyService {
     public List<PartyNoticeBo> findNoticeByUserid(String userid, int page, int limit) {
         return partyNoticeDao.findByUserid(userid, page, limit);
     }
+
+    @Override
+    public PartyNoticeBo findPartyNotice(String partyid) {
+        return partyNoticeDao.findPartyNotice(partyid);
+    }
 }

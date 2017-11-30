@@ -67,4 +67,12 @@ public class PartyNoticeDaoImpl implements IPartyNoticeDao {
         query.limit(limit);
         return mongoTemplate.find(query, PartyNoticeBo.class);
     }
+
+    @Override
+    public PartyNoticeBo findPartyNotice(String partyid) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("partyid").is(partyid));
+        query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+        return mongoTemplate.findOne(query, PartyNoticeBo.class);
+    }
 }

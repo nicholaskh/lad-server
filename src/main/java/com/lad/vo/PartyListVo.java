@@ -32,6 +32,8 @@ public class PartyListVo extends BaseVo {
 
     private int userNum;
 
+    private boolean hasNotice;
+
     public String getPartyid() {
         return partyid;
     }
@@ -118,5 +120,13 @@ public class PartyListVo extends BaseVo {
 
     public void setUserNum(int userNum) {
         this.userNum = userNum;
+    }
+
+    public boolean isHasNotice() {
+        return hasNotice;
+    }
+
+    public void setHasNotice(boolean hasNotice) {
+        this.hasNotice = hasNotice;
     }
 }
