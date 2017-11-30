@@ -232,9 +232,7 @@ public class PartyController extends BaseContorller {
         LinkedHashSet<String> photo = partyBo.getPhotos();
         Long time = Calendar.getInstance().getTimeInMillis();
         if (StringUtils.isNotEmpty(delPhotos)) {
-            logger.info("party delete  photos ");
             String[] paths = CommonUtil.getIds(delPhotos);
-            logger.info("party delete  photos : {}" , paths);
             for (String url : paths) {
                 if (photo.contains(url)){
                     photo.remove(url);
