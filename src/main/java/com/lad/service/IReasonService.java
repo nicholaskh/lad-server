@@ -3,6 +3,7 @@ package com.lad.service;
 import com.lad.bo.ReasonBo;
 import com.mongodb.WriteResult;
 
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -81,5 +82,38 @@ public interface IReasonService {
      * @return
      */
     WriteResult updateMasterApply(String id, int status, boolean isMasterApply);
+
+
+    /**
+     * 更新未读数量信息
+     * @param userid
+     * @param circleid
+     * @param num
+     * @return
+     */
+    WriteResult updateUnReadNum(String userid, String circleid, int num);
+
+    /**
+     * 清零未读数量
+     * @param id
+     * @return
+     */
+    WriteResult updateUnReadNumZero(String id);
+
+    /**
+     * 清零未读数量信息
+     * @param userid
+     * @param circleid
+     * @return
+     */
+    WriteResult updateUnReadNumZero(String userid, String circleid);
+
+    /**
+     * 更新未读数量信息
+     * @param userids
+     * @param circleid
+     * @return
+     */
+    WriteResult updateUnReadNum(HashSet<String> userids, String circleid);
 
 }

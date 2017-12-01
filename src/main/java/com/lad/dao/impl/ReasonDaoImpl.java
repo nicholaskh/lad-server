@@ -12,6 +12,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -96,8 +97,8 @@ public class ReasonDaoImpl implements IReasonDao {
 
     public ReasonBo findByUserAndChatroom(String userid, String chatroomid) {
         Query query = new Query();
-        query.addCriteria(new Criteria("chatroomid").is(chatroomid));
         query.addCriteria(new Criteria("createuid").is(userid));
+        query.addCriteria(new Criteria("chatroomid").is(chatroomid));
         query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
         query.addCriteria(new Criteria("status").is(Constant.ADD_APPLY));
         return mongoTemplate.findOne(query, ReasonBo.class);
@@ -134,5 +135,52 @@ public class ReasonDaoImpl implements IReasonDao {
         update.set("status", status);
         update.set("isMasterApply", isMasterApply);
         return mongoTemplate.updateFirst(query,update, ReasonBo.class);
+    }
+
+    @Override
+    public WriteResult updateUnReadNum(String userid, String circleid, int num) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("createuid").is(userid));
+        query.addCriteria(new Criteria("circleid").is(circleid));
+        query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+        query.addCriteria(new Criteria("status").is(Constant.ADD_APPLY));
+        Update update = new Update();
+        update.inc("unReadNum", num);
+        return mongoTemplate.updateFirst(query, update, ReasonBo.class);
+    }
+
+    @Override
+    public WriteResult updateUnReadNumZero(String id) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("_id").is(id));
+        query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+        query.addCriteria(new Criteria("status").is(Constant.ADD_APPLY));
+        Update update = new Update();
+        update.set("unReadNum", 0);
+        return mongoTemplate.updateFirst(query, update, ReasonBo.class);
+    }
+
+    @Override
+    public WriteResult updateUnReadNumZero(String userid, String circleid) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("createuid").is(userid));
+        query.addCriteria(new Criteria("circleid").is(circleid));
+        query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+        query.addCriteria(new Criteria("status").is(Constant.ADD_APPLY));
+        Update update = new Update();
+        update.set("unReadNum", 0);
+        return mongoTemplate.updateFirst(query, update, ReasonBo.class);
+    }
+
+    @Override
+    public WriteResult updateUnReadNum(HashSet<String> userids, String circleid) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("createuid").in(userids));
+        query.addCriteria(new Criteria("circleid").is(circleid));
+        query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+        query.addCriteria(new Criteria("status").is(Constant.ADD_APPLY));
+        Update update = new Update();
+        update.inc("unReadNum", 1);
+        return mongoTemplate.updateMulti(query, update, ReasonBo.class);
     }
 }

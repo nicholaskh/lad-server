@@ -27,6 +27,9 @@ public class ReasonBo extends BaseBo {
     //是否是群主邀请，群主邀请
     private boolean isMasterApply;
 
+    //圈子内未读数据，为了减少数据冗余，放到reason表中
+    private int unReadNum;
+
 
     public String getCircleid() {
         return circleid;
@@ -82,5 +85,13 @@ public class ReasonBo extends BaseBo {
 
     public void setMasterApply(boolean masterApply) {
         isMasterApply = masterApply;
+    }
+
+    public int getUnReadNum() {
+        return unReadNum;
+    }
+
+    public void setUnReadNum(int unReadNum) {
+        this.unReadNum = unReadNum;
     }
 }

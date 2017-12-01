@@ -7,6 +7,7 @@ import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -74,5 +75,26 @@ public class ReasonServiceImpl implements IReasonService {
     @Override
     public WriteResult updateMasterApply(String id, int status, boolean isMasterApply) {
         return reasonDao.updateMasterApply(id, status, isMasterApply);
+    }
+
+
+    @Override
+    public WriteResult updateUnReadNum(String userid, String circleid, int num) {
+        return reasonDao.updateUnReadNum(userid, circleid, num);
+    }
+
+    @Override
+    public WriteResult updateUnReadNumZero(String id) {
+        return reasonDao.updateUnReadNumZero(id);
+    }
+
+    @Override
+    public WriteResult updateUnReadNumZero(String userid, String circleid) {
+        return reasonDao.updateUnReadNumZero(userid, circleid);
+    }
+
+    @Override
+    public WriteResult updateUnReadNum(HashSet<String> userids, String circleid) {
+        return reasonDao.updateUnReadNum(userids, circleid);
     }
 }

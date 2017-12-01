@@ -7,8 +7,8 @@ import com.lad.util.*;
 import com.lad.vo.*;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
-import org.apache.log4j.spi.RootLogger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.redisson.api.RLock;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +29,8 @@ import java.util.concurrent.TimeUnit;
 @RequestMapping("circle")
 public class CircleController extends BaseContorller {
 
-	private final static Logger logger = RootLogger.getLogger(CircleController.class);
+
+	private static Logger logger = LogManager.getLogger(ChatroomController.class);
 
 	@Autowired
 	private ICircleService circleService;
@@ -202,7 +203,12 @@ public class CircleController extends BaseContorller {
 					ERRORCODE.CIRCLE_IS_NULL.getIndex(),
 					ERRORCODE.CIRCLE_IS_NULL.getReason());
 		}
+		if (!circleBo.getMasters().contains(userId) && !circleBo.getCreateuid().equals(userId)){
+			return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_NOT_MASTER.getIndex(),
+					ERRORCODE.CIRCLE_NOT_MASTER.getReason());
+		}
 		circleService.updateHeadPicture(circleid, path);
+		logger.info("circle update  {} ,  user  {}  update  headPic {} : ", circleid, userId, path);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("path", path);
@@ -288,6 +294,16 @@ public class CircleController extends BaseContorller {
 			return CommonUtil.toErrorResult(
 					ERRORCODE.CIRCLE_USER_MAX.getIndex(),
 					ERRORCODE.CIRCLE_USER_MAX.getReason());
+		}
+		ReasonBo reasonBo = reasonService.findByUserAndCircle(userBo.getId(), circleid);
+		if (reasonBo == null) {
+			reasonBo = new ReasonBo();
+			reasonBo.setCircleid(circleid);
+			reasonBo.setCreateuid(userBo.getId());
+			reasonBo.setStatus(Constant.ADD_APPLY);
+			reasonService.insert(reasonBo);
+		} else {
+			reasonService.updateApply(reasonBo.getId(), Constant.ADD_APPLY, "");
 		}
 		addUser(circleid, userBo.getId());
 		userAddHis(userBo.getId(), circleBo.getId(), 1);
@@ -825,6 +841,7 @@ public class CircleController extends BaseContorller {
 		//未置顶的圈子
 		List<CircleBo> noTops = new LinkedList<>();
 		List<CircleVo> voList = new LinkedList<>();
+		String userid = userBo.getId();
 		//筛选出置顶的圈子
 		for (CircleBo circleBo : circleBos) {
 			if (circleBo.getTotal() == 0) {
@@ -918,6 +935,8 @@ public class CircleController extends BaseContorller {
 		UserBaseVo userHostVo = new UserBaseVo();
 		BeanUtils.copyProperties(hostBo, userHostVo);
 		userHostVo.setRole(2);
+		//清零访问
+		updateCircieUnReadZero(userBo.getId(), circleid);
 		Map<String, Object> map = new LinkedHashMap<>();
 		map.put("ret", 0);
 		map.put("creater", userHostVo);
@@ -2018,6 +2037,11 @@ public class CircleController extends BaseContorller {
 		circleVo.setUsersSize(circleBo.getTotal());
 		circleVo.setTop(top);
 		if (null != userBo) {
+			ReasonBo reasonBo = reasonService.findByUserAndCircle(userBo.getId(), circleBo.getId());
+			//圈子未读数量信息
+			if (reasonBo != null) {
+				circleVo.setUnReadNum(reasonBo.getUnReadNum());
+			}
 			//查找圈子加入历史
 			CircleAddBo addBo = circleService.findHisByUserAndCircle(userBo.getId(), circleBo.getId());
 			if (null != addBo) {
@@ -2025,5 +2049,23 @@ public class CircleController extends BaseContorller {
 			}
 		}
 		return circleVo;
+	}
+
+
+
+	/**
+	 * 清零数据
+	 * @param userid
+	 * @param circleid
+	 */
+	@Async
+	private void updateCircieUnReadZero(String userid, String circleid){
+		RLock lock = redisServer.getRLock(userid + "UnReadNumLock");
+		try{
+			lock.lock(2, TimeUnit.SECONDS);
+			reasonService.updateUnReadNumZero(userid, circleid);
+		} finally {
+			lock.unlock();
+		}
 	}
 }
