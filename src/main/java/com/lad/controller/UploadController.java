@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -46,7 +47,8 @@ public class UploadController extends BaseContorller {
 		}
 		userBo = userService.getUser(userBo.getId());
 		String userId = userBo.getId();
-		String fileName = userId + file.getOriginalFilename();
+		long time = Calendar.getInstance().getTimeInMillis();
+		String fileName = String.format("%s-%d-%s", userId, time, file.getOriginalFilename());
 		String path = CommonUtil.upload(file, Constant.HEAD_PICTURE_PATH, fileName, 0);
 		userBo.setHeadPictureName(path);
 		userService.updateHeadPictureName(userBo);
@@ -79,7 +81,8 @@ public class UploadController extends BaseContorller {
 		}
 		userBo = userService.getUser(userBo.getId());
 		String userId = userBo.getId();
-		String fileName = userId + file.getOriginalFilename();
+		long time = Calendar.getInstance().getTimeInMillis();
+		String fileName = String.format("%s-%d-%s", userId, time, file.getOriginalFilename());
 		String path = CommonUtil.upload(file, Constant.FEEDBACK_PICTURE_PATH, fileName, 0);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
@@ -102,7 +105,8 @@ public class UploadController extends BaseContorller {
 		if (userBo == null) {
 			return "{\"ret\":20002,\"error\":\"未登录\"}";
 		}
-		String fileName = imfile.getOriginalFilename();
+		long time = Calendar.getInstance().getTimeInMillis();
+		String fileName = String.format("%d-%s", time, imfile.getOriginalFilename());
 		String path = CommonUtil.upload(imfile, Constant.IMFILE_PATH, fileName, 1);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);

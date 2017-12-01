@@ -101,33 +101,7 @@ public class PartyController extends BaseContorller {
                     ERRORCODE.CIRCLE_IS_NULL.getReason());
         }
         String userId = userBo.getId();
-        Long time = Calendar.getInstance().getTimeInMillis();
-        if (photos != null) {
-            LinkedHashSet<String> photo = new LinkedHashSet<>();
-            for (MultipartFile file : photos) {
-                String fileName = userId + "-" + time + "-" + file.getOriginalFilename();
-                String path = CommonUtil.upload(file, Constant.PARTY_PICTURE_PATH,
-                        fileName, 0);
-                photo.add(path);
-            }
-            partyBo.setPhotos(photo);
-        }
-        if (video != null) {
-            try {
-                String fileName = userId + "-" + time + "-" + video.getOriginalFilename();
-                logger.info("---- party file: {} ,  size: {}" , video.getOriginalFilename(), video.getSize());
-                String[] paths = CommonUtil.uploadVedio(video, Constant.PARTY_PICTURE_PATH, fileName, 0);
-                partyBo.setVideo(paths[0]);
-                partyBo.setVideoPic(paths[1]);
-            } catch (Exception e) {
-                logger.error(e);
-            }
-        }
-        if (backPic != null) {
-            String fileName = userId + "-" + time + "-" + backPic.getOriginalFilename();
-            String path =  CommonUtil.upload(backPic, Constant.PARTY_PICTURE_PATH, fileName, 0);
-            partyBo.setBackPic(path);
-        }
+        addPicVideo(userId, partyBo, backPic, photos, video);
         partyBo.setStatus(1);
         partyBo.setCreateuid(userId);
         LinkedList<String> partyUsers = partyBo.getUsers();
@@ -230,7 +204,6 @@ public class PartyController extends BaseContorller {
         }
         String userId = userBo.getId();
         LinkedHashSet<String> photo = partyBo.getPhotos();
-        Long time = Calendar.getInstance().getTimeInMillis();
         if (StringUtils.isNotEmpty(delPhotos)) {
             String[] paths = CommonUtil.getIds(delPhotos);
             for (String url : paths) {
@@ -240,9 +213,29 @@ public class PartyController extends BaseContorller {
             }
             partyBo.setPhotos(photo);
         }
+        addPicVideo(userId, partyBo, backPic, photos, video);
+        partyService.update(partyBo);
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("ret", 0);
+        map.put("partyid", partyBo.getId());
+        return JSONObject.fromObject(map).toString();
+    }
+
+    /**
+     * 图片及视频文件添加
+     * @param userId
+     * @param partyBo
+     * @param backPic
+     * @param photos
+     * @param video
+     */
+    private void addPicVideo(String userId, PartyBo partyBo,  MultipartFile backPic,
+                             MultipartFile[] photos, MultipartFile video){
         if (photos != null) {
+            LinkedHashSet<String> photo = new LinkedHashSet<>();
             for (MultipartFile file : photos) {
-                String fileName = userId + "-" + time + "-" + file.getOriginalFilename();
+                Long time = Calendar.getInstance().getTimeInMillis();
+                String fileName = String.format("%s-%d-%s", userId, time, file.getOriginalFilename());
                 String path = CommonUtil.upload(file, Constant.PARTY_PICTURE_PATH,
                         fileName, 0);
                 photo.add(path);
@@ -250,21 +243,23 @@ public class PartyController extends BaseContorller {
             partyBo.setPhotos(photo);
         }
         if (video != null) {
-            String fileName = userId + "-" + time + "-" + video.getOriginalFilename();
-            String[] paths = CommonUtil.uploadVedio(video, Constant.PARTY_PICTURE_PATH, fileName, 0);
-            partyBo.setVideo(paths[0]);
-            partyBo.setVideoPic(paths[1]);
+            try {
+                Long time = Calendar.getInstance().getTimeInMillis();
+                String fileName = String.format("%s-%d-%s", userId, time, video.getOriginalFilename());
+                logger.info("---- party file: {} ,  size: {}" , video.getOriginalFilename(), video.getSize());
+                String[] paths = CommonUtil.uploadVedio(video, Constant.PARTY_PICTURE_PATH, fileName, 0);
+                partyBo.setVideo(paths[0]);
+                partyBo.setVideoPic(paths[1]);
+            } catch (Exception e) {
+                logger.error(e);
+            }
         }
         if (backPic != null) {
-            String fileName = userId + "-" + time + "-" + backPic.getOriginalFilename();
+            Long time = Calendar.getInstance().getTimeInMillis();
+            String fileName = String.format("%s-%d-%s", userId, time, backPic.getOriginalFilename());
             String path =  CommonUtil.upload(backPic, Constant.PARTY_PICTURE_PATH, fileName, 0);
             partyBo.setBackPic(path);
         }
-        partyService.update(partyBo);
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put("ret", 0);
-        map.put("partyid", partyBo.getId());
-        return JSONObject.fromObject(map).toString();
     }
 
 

@@ -89,10 +89,9 @@ public class NoteController extends BaseContorller {
 		LinkedList<String> photos = new LinkedList<>();
 		String userId =  userBo.getId();
 		if (pictures != null) {
-			Long time = Calendar.getInstance().getTimeInMillis();
 			for (MultipartFile file : pictures) {
-				String fileName = userId + "-" + time + "-"
-						+ file.getOriginalFilename();
+				Long time = Calendar.getInstance().getTimeInMillis();
+				String fileName = String.format("%s-%d-%s", userId, time, file.getOriginalFilename());
 				logger.info(fileName);
 				if ("video".equals(noteBo.getType())) {
 					String[] paths = CommonUtil.uploadVedio(file, Constant.NOTE_PICTURE_PATH, fileName, 0);
@@ -147,7 +146,6 @@ public class NoteController extends BaseContorller {
 			return e.getMessage();
 		}
 		String userId = userBo.getId();
-		Long time = Calendar.getInstance().getTimeInMillis();
 
 		NoteBo noteBo = noteService.selectById(noteid);
 		if (null == noteBo) {
@@ -157,8 +155,8 @@ public class NoteController extends BaseContorller {
 		LinkedList<String> photos = noteBo.getPhotos();
 		List<String> paths = new ArrayList<>();
 		for (MultipartFile file : files) {
-			String fileName = userId + "-" + time + "-"
-					+ file.getOriginalFilename();
+			Long time = Calendar.getInstance().getTimeInMillis();
+			String fileName = String.format("%s-%d-%s", userId, time, file.getOriginalFilename());
 			String path = CommonUtil.upload(file, Constant.NOTE_PICTURE_PATH,
 					fileName, 0);
 			photos.add(path);

@@ -89,10 +89,9 @@ public class FeedbackController extends BaseContorller {
 		LinkedList<String> images = feedbackBo.getImages();
 		String userId =  userBo.getId();
 		if (pictures != null) {
-			Long time = Calendar.getInstance().getTimeInMillis();
 			for (MultipartFile file : pictures) {
-				String fileName = userId + "-" + time + "-"
-						+ file.getOriginalFilename();
+				long time = Calendar.getInstance().getTimeInMillis();
+				String fileName = String.format("%s-%d-%s", userId, time, file.getOriginalFilename());
 				String path = CommonUtil.upload(file, Constant.FEEDBACK_PICTURE_PATH,
 						fileName, 0);
 				images.add(path);

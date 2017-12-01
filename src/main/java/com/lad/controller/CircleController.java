@@ -120,10 +120,12 @@ public class CircleController extends BaseContorller {
 		String userId = userBo.getId();
 		//圈子头像
 		if (head_picture != null){
-			String fileName = userId + head_picture.getOriginalFilename();
+			long time = Calendar.getInstance().getTimeInMillis();
+			String fileName = String.format("%s-%d-%s", userId, time, head_picture.getOriginalFilename());
 			String path = CommonUtil.upload(head_picture,
 					Constant.CIRCLE_HEAD_PICTURE_PATH, fileName, 0);
 			circleBo.setHeadPicture(path);
+			logger.info("circle create headPic : {}", path);
 		}
 		HashSet<String> users = new HashSet<String>();
 		users.add(userBo.getId());
@@ -194,7 +196,8 @@ public class CircleController extends BaseContorller {
 			return e.getMessage();
 		}
 		String userId = userBo.getId();
-		String fileName = userId + file.getOriginalFilename();
+		long time = Calendar.getInstance().getTimeInMillis();
+		String fileName = String.format("%s-%d-%s", userId, time, file.getOriginalFilename());
 		String path = CommonUtil.upload(file,
 				Constant.CIRCLE_HEAD_PICTURE_PATH, fileName, 0);
 		CircleBo circleBo = circleService.selectById(circleid);
@@ -208,7 +211,7 @@ public class CircleController extends BaseContorller {
 					ERRORCODE.CIRCLE_NOT_MASTER.getReason());
 		}
 		circleService.updateHeadPicture(circleid, path);
-		logger.info("circle update  {} ,  user  {}  update  headPic {} : ", circleid, userId, path);
+		logger.info("circle headPic update  {} ,  user  {}, headPic {} : ", circleid, userId, path);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("path", path);
