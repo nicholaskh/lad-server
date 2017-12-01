@@ -143,7 +143,7 @@ public class ChatroomController extends BaseContorller {
 
 		// 为IMUtil通知做数据准备
 		LinkedHashSet<String> set = chatroomBo.getUsers();
-		String[] tt = new String[set.size()-1];
+		String[] tt = new String[set.size()];
 		int i=0;
 		for(String uu: set){
 			if(uu.equals(userBo.getId())) continue;
@@ -1186,10 +1186,9 @@ public class ChatroomController extends BaseContorller {
 			}
 			// 为IMUtil通知做数据准备
 			LinkedHashSet<String> set = chatroomBo.getUsers();
-			String[] tt = new String[set.size()-1];
+			String[] tt = new String[set.size()];
 			int i=0;
 			for(String uu: set){
-				if(uu.equals(userBo.getId())) continue;
 				tt[i++] = uu;
 			}
 			Object[] otherNameAndId = ChatRoomUtil.getUserNamesAndIds(userService, tt, logger);
@@ -1332,10 +1331,9 @@ public class ChatroomController extends BaseContorller {
 			}
 			// 为IMUtil通知做数据准备
 			LinkedHashSet<String> set = chatroomBo.getUsers();
-			String[] tt = new String[set.size()-1];
+			String[] tt = new String[set.size()];
 			int i=0;
 			for(String uu: set){
-				if(uu.equals(userBo.getId())) continue;
 				tt[i++] = uu;
 			}
 			Object[] otherNameAndId = ChatRoomUtil.getUserNamesAndIds(userService, tt, logger);
