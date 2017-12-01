@@ -411,6 +411,7 @@ public class DynamicController extends BaseContorller {
             if (type == Constant.NOTE_TYPE) {
                 NoteBo noteBo = noteService.selectById(id);
                 dynamicVo.setTitle(noteBo.getSubject());
+                dynamicVo.setContent(noteBo.getContent());
                 dynamicVo.setPhotos(noteBo.getPhotos());
                 dynamicVo.setCommentNum(noteBo.getCommentcount());
                 dynamicVo.setThumpNum(noteBo.getThumpsubcount());
