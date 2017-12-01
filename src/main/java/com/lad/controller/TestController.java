@@ -51,7 +51,7 @@ public class TestController extends BaseContorller {
 	@ResponseBody
 	public String pushInfor(String userid, HttpServletRequest request, HttpServletResponse response) {
 		String time = CommonUtil.getCurrentDate(new Date());
-		JPushUtil.pushTo("我的测试信息，推送到人:" + time, userid);
+		JPushUtil.push("聚会通知", "通知我的测试信息，推送到人:" + time,"123..s", userid);
 		return Constant.COM_RESP;
 	}
 
