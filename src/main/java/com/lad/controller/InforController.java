@@ -1096,6 +1096,12 @@ public class InforController extends BaseContorller {
 
 
     private void bo2vo(InforBo inforBo, InforVo inforVo){
+        InforReadNumBo readNumBo = inforService.findReadByid(inforBo.getId());
+        if (readNumBo != null) {
+            inforVo.setReadNum((int)readNumBo.getVisitNum());
+            inforVo.setThumpsubNum(readNumBo.getThumpsubNum());
+            inforVo.setCommentNum(readNumBo.getCommentNum());
+        }
         inforVo.setInforid(inforBo.getId());
         inforVo.setClassName(inforBo.getClassName());
         inforVo.setImageUrls(inforBo.getImageUrls());
@@ -1213,6 +1219,9 @@ public class InforController extends BaseContorller {
                 BeanUtils.copyProperties(securityBo,inforVo);
                 inforVo.setText("");
                 inforVo.setInforid(securityBo.getId());
+                inforVo.setReadNum(securityBo.getVisitNum());
+                inforVo.setCommentNum(securityBo.getCommnetNum());
+                inforVo.setThumpsubNum(securityBo.getThumpsubNum());
                 num++;
                 inforVos.add(inforVo);
             }
@@ -1224,6 +1233,9 @@ public class InforController extends BaseContorller {
                 BeanUtils.copyProperties(securityBo,securityVo);
                 securityVo.setText("");
                 securityVo.setInforid(securityBo.getId());
+                securityVo.setReadNum(securityBo.getVisitNum());
+                securityVo.setCommentNum(securityBo.getCommnetNum());
+                securityVo.setThumpsubNum(securityBo.getThumpsubNum());
                 inforVos.add(securityVo);
             }
         }
@@ -1279,6 +1291,9 @@ public class InforController extends BaseContorller {
                 BroadcastVo broadcastVo = new BroadcastVo();
                 BeanUtils.copyProperties(broadcastBo, broadcastVo);
                 broadcastVo.setInforid(broadcastBo.getId());
+                broadcastVo.setReadNum(broadcastBo.getVisitNum());
+                broadcastVo.setCommentNum(broadcastBo.getCommnetNum());
+                broadcastVo.setThumpsubNum(broadcastBo.getThumpsubNum());
                 num++;
                 inforVos.add(broadcastVo);
             }
@@ -1289,6 +1304,9 @@ public class InforController extends BaseContorller {
                 BroadcastVo broadcastVo = new BroadcastVo();
                 BeanUtils.copyProperties(broadcastBo, broadcastVo);
                 broadcastVo.setInforid(broadcastBo.getId());
+                broadcastVo.setReadNum(broadcastBo.getVisitNum());
+                broadcastVo.setCommentNum(broadcastBo.getCommnetNum());
+                broadcastVo.setThumpsubNum(broadcastBo.getThumpsubNum());
                 inforVos.add(broadcastVo);
             }
         }
@@ -1342,6 +1360,9 @@ public class InforController extends BaseContorller {
                 VideoVo videoVo = new VideoVo();
                 BeanUtils.copyProperties(videoBo, videoVo);
                 videoVo.setInforid(videoBo.getId());
+                videoVo.setReadNum(videoBo.getVisitNum());
+                videoBo.setCommnetNum(videoBo.getCommnetNum());
+                videoBo.setThumpsubNum(videoBo.getThumpsubNum());
                 num++;
                 inforVos.add(videoVo);
             }
@@ -1351,6 +1372,9 @@ public class InforController extends BaseContorller {
             for (VideoBo videoBo : videoNews) {
                 VideoVo videoVo = new VideoVo();
                 BeanUtils.copyProperties(videoBo, videoVo);
+                videoVo.setReadNum(videoBo.getVisitNum());
+                videoBo.setCommnetNum(videoBo.getCommnetNum());
+                videoBo.setThumpsubNum(videoBo.getThumpsubNum());
                 videoVo.setInforid(videoBo.getId());
                 inforVos.add(videoVo);
             }
