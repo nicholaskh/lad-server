@@ -79,7 +79,8 @@ public class BroadcastDaoImpl implements IBroadcastDao {
         if (StringUtils.isNotEmpty(className)) {
             query.addCriteria(new Criteria("className").is(className));
         }
-        query.with(new Sort(new Sort.Order(Sort.Direction.ASC,"title")));
+        query.with(new Sort(new Sort.Order(Sort.Direction.ASC,"edition")));
+        query.with(new Sort(new Sort.Order(Sort.Direction.ASC,"random_num")));
         return mongoTemplateTwo.find(query, BroadcastBo.class);
     }
 
@@ -89,7 +90,8 @@ public class BroadcastDaoImpl implements IBroadcastDao {
         if (StringUtils.isNotEmpty(className)) {
             query.addCriteria(new Criteria("className").is(className));
         }
-        query.with(new Sort(new Sort.Order(Sort.Direction.ASC,"title")));
+        query.with(new Sort(new Sort.Order(Sort.Direction.ASC,"edition")));
+        query.with(new Sort(new Sort.Order(Sort.Direction.ASC,"random_num")));
         if (start != 0 && end > 0) {
             start = start < 1 ? 1 : start;
             query.skip(start - 1);
