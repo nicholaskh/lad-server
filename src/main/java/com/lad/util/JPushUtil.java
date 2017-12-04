@@ -22,8 +22,8 @@ public class JPushUtil {
 
 //	private static String MASTER_SECRET = "db587bc126abddf27e548ecc";
 //	private static String APP_KEY = "d53e8d39d6df18e379bf5da4";
-	private static String MASTER_SECRET = "ca8cc37939809b64829b5eeb";
-	private static String APP_KEY = "5c0c7744590b80fae9f069e2";
+	private static String MASTER_SECRET = "5c0c7744590b80fae9f069e2";
+	private static String APP_KEY = "ca8cc37939809b64829b5eeb";
 
 	public static String APPLY = "请求添加您为好友";
 	public static String AGREE_APPLY_FRIEND = "同意添加我为好友";
