@@ -58,6 +58,10 @@ public class NoteController extends BaseContorller {
 	@Autowired
 	private IReasonService reasonService;
 
+	@Autowired
+	private IFriendsService friendsService;
+
+
 	private String pushTitle = "互动通知";
 
 
@@ -124,7 +128,7 @@ public class NoteController extends BaseContorller {
 		updateDynamicNums(userId, 1, dynamicService, redisServer);
 		updateCircieNoteUnReadNum(userId, circleid);
 		NoteVo noteVo = new NoteVo();
-		boToVo(noteBo, noteVo, userBo);
+		boToVo(noteBo, noteVo, userBo, "");
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("noteVo", noteVo);
@@ -267,7 +271,8 @@ public class NoteController extends BaseContorller {
 			lock.unlock();
 		}
 		NoteVo noteVo = new NoteVo();
-		boToVo(noteBo, noteVo, userService.getUser(noteBo.getCreateuid()));
+		String userid = userBo != null ? userBo.getId() : "";
+		boToVo(noteBo, noteVo, userService.getUser(noteBo.getCreateuid()),userid);
 		//这个帖子自己是否点赞
 		noteVo.setMyThumbsup(null != thumbsupBo);
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -286,20 +291,16 @@ public class NoteController extends BaseContorller {
 		List<NoteBo> noteBos = noteService.finyByCreateTime(circleid,start_id,gt,limit);
 		List<NoteVo> noteVos = new LinkedList<>();
 		UserBo loginUser = getUserLogin(request);
+		String userid = loginUser != null ? loginUser.getId() : "";
 		if (noteBos != null) {
-			for (NoteBo noteBo : noteBos) {
-				NoteVo note = new NoteVo();
-				UserBo userBo = userService.getUser(noteBo.getCreateuid());
-				boToVo(noteBo, note, userBo);
-				note.setMyThumbsup(hasThumbsup(loginUser, noteBo.getId()));
-				noteVos.add(note);
-			}
+			vosToList(noteBos, noteVos, userid);
 		}
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("ret", 0);
         map.put("noteVoList", noteVos);
         return JSONObject.fromObject(map).toString();
 	}
+
 
 	/**
 	 * 精华帖子，（字数100以上,按浏览量倒序，取消）,取前10
@@ -311,13 +312,8 @@ public class NoteController extends BaseContorller {
 		List<NoteBo> noteBos = noteService.findByTopEssence(circleid, Constant.NOTE_JIAJING, start_id, limit);
 		List<NoteVo> noteVoList = new LinkedList<>();
 		UserBo loginUser = getUserLogin(request);
-		for (NoteBo noteBo : noteBos) {
-			NoteVo noteVo = new NoteVo();
-			UserBo userBo = userService.getUser(noteBo.getCreateuid());
-			boToVo(noteBo, noteVo, userBo);
-			noteVo.setMyThumbsup(hasThumbsup(loginUser, noteBo.getId()));
-			noteVoList.add(noteVo);
-		}
+		String userid = loginUser != null ? loginUser.getId() : "";
+		vosToList(noteBos, noteVoList, userid);
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("ret", 0);
         map.put("noteVoList", noteVoList);
@@ -336,15 +332,11 @@ public class NoteController extends BaseContorller {
 			limit = 2;
 		}
 		UserBo loginUser = getUserLogin(request);
+		String userid = loginUser != null ? loginUser.getId() : "";
 		List<NoteBo> noteBos = noteService.findByTopEssence(circleid, Constant.NOTE_TOP, start_id, limit);
 		List<NoteVo> noteVoList = new LinkedList<>();
 		if (noteBos != null) {
-			for (NoteBo noteBo : noteBos) {
-				NoteVo noteVo = new NoteVo();
-				boToVo(noteBo, noteVo, userService.getUser(noteBo.getCreateuid()));
-				noteVo.setMyThumbsup(hasThumbsup(loginUser, noteBo.getId()));
-				noteVoList.add(noteVo);
-			}
+			vosToList(noteBos, noteVoList, userid);
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
@@ -366,12 +358,9 @@ public class NoteController extends BaseContorller {
         List<NoteBo> noteBos = noteService.selectHotNotes(circleid);
 		List<NoteVo> noteVoList = new LinkedList<>();
 		UserBo loginUser = getUserLogin(request);
+		String userid = loginUser != null ? loginUser.getId() : "";
 		for (NoteBo noteBo : noteBos) {
-			NoteVo noteVo = new NoteVo();
-			UserBo userBo = userService.getUser(noteBo.getCreateuid());
-			boToVo(noteBo, noteVo, userBo);
-			noteVo.setMyThumbsup(hasThumbsup(loginUser, noteBo.getId()));
-			noteVoList.add(noteVo);
+			vosToList(noteBos, noteVoList, userid);
 		}
         Map<String, Object> map = new HashMap<>();
         map.put("ret", 0);
@@ -549,6 +538,8 @@ public class NoteController extends BaseContorller {
 			userid = userBo.getId();
 		}
 
+		boolean isLogin = userBo != null;
+
 		List<CommentBo> commentBos = commentService.selectByNoteid(noteid, start_id, gt, limit);
 		List<CommentVo> commentVos = new ArrayList<>();
 		for (CommentBo commentBo : commentBos) {
@@ -558,10 +549,25 @@ public class NoteController extends BaseContorller {
 			commentVo.setThumpsubCount(commentBo.getThumpsubNum());
 			if (!StringUtils.isEmpty(commentBo.getParentid())) {
 				CommentBo parent = commentService.findById(commentBo.getParentid());
-				commentVo.setParentUserName(parent.getUserName());
+				if (isLogin && !userid.equals(commentBo.getParentid())) {
+					FriendsBo bo = friendsService.getFriendByIdAndVisitorIdAgree(userid, commentBo.getParentid());
+					if (StringUtils.isEmpty(bo.getBackname())) {
+						commentVo.setParentUserName(parent.getUserName());
+					} else {
+						commentVo.setParentUserName(bo.getBackname());
+					}
+				}
 				commentVo.setParentUserid(parent.getCreateuid());
 			}
 			UserBo comUser = userService.getUser(commentBo.getCreateuid());
+			if (isLogin && !userid.equals(commentBo.getCreateuid())) {
+				FriendsBo bo = friendsService.getFriendByIdAndVisitorIdAgree(userid,commentBo.getCreateuid());
+				if (StringUtils.isEmpty(bo.getBackname())) {
+					commentVo.setParentUserName(comUser.getUserName());
+				} else {
+					commentVo.setParentUserName(bo.getBackname());
+				}
+			}
 			commentVo.setUserHeadPic(comUser.getHeadPictureName());
 			commentVo.setUserid(commentBo.getCreateuid());
 			commentVo.setUserBirth(comUser.getBirthDay());
@@ -614,6 +620,7 @@ public class NoteController extends BaseContorller {
 		} catch (MyException e) {
 			return e.getMessage();
 		}
+		String userid = userBo.getId();
 		List<BasicDBObject> objects = commentService.selectMyNoteReply(userBo.getId(),start_id,limit );
 		List<NoteVo> noteVoList = new LinkedList<>();
 		for (BasicDBObject object : objects) {
@@ -627,8 +634,8 @@ public class NoteController extends BaseContorller {
 			noteVo.setCirNoteNum(circleBo.getNoteSize());
 			noteVo.setCirVisitNum(circleBo.getVisitNum());
 			UserBo author = userService.getUser(noteBo.getCreateuid());
-			boToVo(noteBo, noteVo, author);
-			noteVo.setMyThumbsup(hasThumbsup(userBo, noteBo.getId()));
+			boToVo(noteBo, noteVo, author, userid);
+			noteVo.setMyThumbsup(hasThumbsup(userid, noteBo.getId()));
 			noteVoList.add(noteVo);
 		}
 		Map<String, Object> map = new HashMap<>();
@@ -762,9 +769,8 @@ public class NoteController extends BaseContorller {
 			noteVo.setCirNoteNum(circleBo.getNoteSize());
 			noteVo.setCirHeadPic(circleBo.getHeadPicture());
 			noteVo.setCirVisitNum(circleBo.getVisitNum());
-			userBo = userService.getUser(noteBo.getCreateuid());
-			boToVo(noteBo, noteVo, userBo);
-			noteVo.setMyThumbsup(hasThumbsup(userBo, noteBo.getId()));
+			boToVo(noteBo, noteVo, userBo, "");
+			noteVo.setMyThumbsup(hasThumbsup(userBo.getId(), noteBo.getId()));
 			noteVoList.add(noteVo);
 		}
 		Map<String, Object> map = new HashMap<>();
@@ -883,13 +889,11 @@ public class NoteController extends BaseContorller {
 					ERRORCODE.CIRCLE_IS_NULL.getReason());
 		}
 		UserBo loginUser = getUserLogin(request);
+		String userid = loginUser == null ? "" : loginUser.getId();
 		List<NoteBo> noteBos = noteService.selectCircleNotes(circleid, start_id, limit);
 		List<NoteVo> noteVoList = new LinkedList<>();
-		for (NoteBo noteBo : noteBos) {
-			NoteVo noteVo = new NoteVo();
-			boToVo(noteBo, noteVo, userService.getUser(noteBo.getCreateuid()));
-			noteVo.setMyThumbsup(hasThumbsup(loginUser, noteBo.getId()));
-			noteVoList.add(noteVo);
+		if (noteBos != null) {
+			vosToList(noteBos, noteVoList, userid);
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
@@ -957,14 +961,11 @@ public class NoteController extends BaseContorller {
 	public String topAndessence(String circleid, String start_id, int limit, HttpServletRequest request,
 						   HttpServletResponse response) {
 		UserBo loginUser = getUserLogin(request);
+		String userid = loginUser == null ? "" : loginUser.getId();
 		List<NoteBo> noteBos = noteService.findByTopAndEssence(circleid, start_id, limit);
 		List<NoteVo> noteVoList = new LinkedList<>();
-		for (NoteBo noteBo : noteBos) {
-			NoteVo noteVo = new NoteVo();
-			UserBo userBo = userService.getUser(noteBo.getCreateuid());
-			boToVo(noteBo, noteVo, userBo);
-			noteVo.setMyThumbsup(hasThumbsup(loginUser, noteBo.getId()));
-			noteVoList.add(noteVo);
+		if (noteBos != null) {
+			vosToList(noteBos, noteVoList, userid);
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
@@ -1020,14 +1021,46 @@ public class NoteController extends BaseContorller {
 	}
 
 
-	private void boToVo(NoteBo noteBo, NoteVo noteVo, UserBo userBo){
+	/**
+	 * 
+	 * @param noteBos
+	 * @param noteVoList
+	 * @param loginUserid
+	 */
+	private void vosToList(List<NoteBo> noteBos, List<NoteVo> noteVoList, String loginUserid){
+		for (NoteBo noteBo : noteBos) {
+			NoteVo noteVo = new NoteVo();
+			UserBo userBo = userService.getUser(noteBo.getCreateuid());
+			boToVo(noteBo, noteVo, userBo, loginUserid);
+			noteVo.setMyThumbsup(hasThumbsup(loginUserid, noteBo.getId()));
+			noteVoList.add(noteVo);
+		}
+	}
+
+	/**
+	 * 
+	 * @param noteBo
+	 * @param noteVo
+	 * @param creatBo
+	 * @param userid
+	 */
+	private void boToVo(NoteBo noteBo, NoteVo noteVo, UserBo creatBo, String userid){
 		BeanUtils.copyProperties(noteBo, noteVo);
-		if (userBo!= null) {
-			noteVo.setSex(userBo.getSex());
-			noteVo.setBirthDay(userBo.getBirthDay());
-			noteVo.setHeadPictureName(userBo.getHeadPictureName());
-			noteVo.setUsername(userBo.getUserName());
-			noteVo.setUserLevel(userBo.getLevel());
+		if (creatBo!= null) {
+			if (!"".equals(userid) && !userid.equals(creatBo.getId())) {
+				FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(userid, creatBo.getId());
+				if (friendsBo != null && !StringUtils.isEmpty(friendsBo.getBackname())) {
+					noteVo.setUsername(friendsBo.getBackname());
+				} else {
+					noteVo.setUsername(creatBo.getUserName());
+				}
+			} else {
+				noteVo.setUsername(creatBo.getUserName());
+			}
+			noteVo.setUserLevel(creatBo.getLevel());
+			noteVo.setSex(creatBo.getSex());
+			noteVo.setBirthDay(creatBo.getBirthDay());
+			noteVo.setHeadPictureName(creatBo.getHeadPictureName());
 		}
 		noteVo.setPosition(noteBo.getPosition());
 		noteVo.setCommontCount(noteBo.getCommentcount());
@@ -1047,13 +1080,13 @@ public class NoteController extends BaseContorller {
 
 	/**
 	 * 判断前用户是否点赞
-	 * @param loginUser
+	 * @param loginUserid
 	 * @param noteid
 	 * @return
 	 */
-	private boolean hasThumbsup(UserBo loginUser, String noteid){
-		if (null != loginUser) {
-			ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(noteid, loginUser.getId());
+	private boolean hasThumbsup(String loginUserid, String noteid){
+		if (!"".equals(loginUserid)) {
+			ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(noteid, loginUserid);
 			return thumbsupBo != null;
 		}
 		return false;
