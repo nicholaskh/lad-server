@@ -551,7 +551,7 @@ public class NoteController extends BaseContorller {
 				CommentBo parent = commentService.findById(commentBo.getParentid());
 				if (isLogin && !userid.equals(commentBo.getParentid())) {
 					FriendsBo bo = friendsService.getFriendByIdAndVisitorIdAgree(userid, commentBo.getParentid());
-					if (StringUtils.isEmpty(bo.getBackname())) {
+					if (bo == null || StringUtils.isEmpty(bo.getBackname())) {
 						commentVo.setParentUserName(parent.getUserName());
 					} else {
 						commentVo.setParentUserName(bo.getBackname());
@@ -562,7 +562,7 @@ public class NoteController extends BaseContorller {
 			UserBo comUser = userService.getUser(commentBo.getCreateuid());
 			if (isLogin && !userid.equals(commentBo.getCreateuid())) {
 				FriendsBo bo = friendsService.getFriendByIdAndVisitorIdAgree(userid,commentBo.getCreateuid());
-				if (StringUtils.isEmpty(bo.getBackname())) {
+				if (bo == null || StringUtils.isEmpty(bo.getBackname())) {
 					commentVo.setParentUserName(comUser.getUserName());
 				} else {
 					commentVo.setParentUserName(bo.getBackname());
