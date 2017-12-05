@@ -945,38 +945,37 @@ public class InforController extends BaseContorller {
         ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(targetid, userBo.getId());
         if (thumbsupBo != null) {
             thumbsupService.deleteById(thumbsupBo.getId());
-        }
-        if (type == 0) {
-            //根据每条资讯id加锁
-            RLock lock = redisServer.getRLock(targetid);
-            try {
-                lock.lock(1, TimeUnit.SECONDS);
-                switch (inforType){
-                    case Constant.INFOR_HEALTH:
-                        inforService.updateComment(targetid, -1);
-                        break;
-                    case Constant.INFOR_SECRITY:
-                        inforService.updateSecurityNum(targetid, Constant.THUMPSUB_NUM, -1);
-                        break;
-                    case Constant.INFOR_RADIO:
-                        inforService.updateRadioNum(targetid, Constant.THUMPSUB_NUM, -1);
-                        break;
-                    case Constant.INFOR_VIDEO:
-                        inforService.updateVideoNum(targetid, Constant.THUMPSUB_NUM, -1);
-                        break;
-                    default:
-                        break;
+            if (type == 0) {
+                //根据每条资讯id加锁
+                RLock lock = redisServer.getRLock(targetid);
+                try {
+                    lock.lock(1, TimeUnit.SECONDS);
+                    switch (inforType){
+                        case Constant.INFOR_HEALTH:
+                            inforService.updateComment(targetid, -1);
+                            break;
+                        case Constant.INFOR_SECRITY:
+                            inforService.updateSecurityNum(targetid, Constant.THUMPSUB_NUM, -1);
+                            break;
+                        case Constant.INFOR_RADIO:
+                            inforService.updateRadioNum(targetid, Constant.THUMPSUB_NUM, -1);
+                            break;
+                        case Constant.INFOR_VIDEO:
+                            inforService.updateVideoNum(targetid, Constant.THUMPSUB_NUM, -1);
+                            break;
+                        default:
+                            break;
+                    }
+                } finally {
+                    lock.unlock();
                 }
-            } finally {
-                lock.unlock();
-            }
-        }else if (type == 1) {
-            CommentBo commentBo = commentService.findById(targetid);
-            if (commentBo != null) {
-                inforService.updateThumpsub(commentBo.getTargetid(), -1);
+            }else if (type == 1) {
+                CommentBo commentBo = commentService.findById(targetid);
+                if (commentBo != null) {
+                    inforService.updateThumpsub(commentBo.getTargetid(), -1);
+                }
             }
         }
-
         return Constant.COM_RESP;
     }
 
