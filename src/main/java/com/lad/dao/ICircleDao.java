@@ -165,4 +165,14 @@ public interface ICircleDao extends IBaseDao {
 	 */
 	CircleBo findByTagAndName(String name, String tag, String sub_tag);
 
+
+	/**
+	 * 猜你喜欢圈子，在附近圈子之外
+	 * @param userid
+	 * @param position
+	 * @param minDistance
+	 * @return
+	 */
+	List<CircleBo> selectUsersLike(String userid, double[] position, int minDistance);
+
 }

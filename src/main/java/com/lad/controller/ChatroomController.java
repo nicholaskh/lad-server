@@ -1373,6 +1373,11 @@ public class ChatroomController extends BaseContorller {
 
 			addRoomInfo(userBo, chatroomid, imIds, imNames, otherNameAndId);
 			reasonService.updateApply(applyid, 1, "");
+
+			String path = "";
+			String content = String.format("%s已通过您的加群申请", userBo.getUserName());
+			JPushUtil.push(titlePush, content, path,  reasonBo.getCreateuid());
+
 			map.put("chatroomUser", set.size());
 		} else {
 			reasonService.updateApply(applyid, 2, refues);

@@ -236,6 +236,21 @@ public class CircleDaoImpl implements ICircleDao {
 		return mongoTemplate.find(query, CircleBo.class);
 	}
 
+	public List<CircleBo> selectUsersLike(String userid, double[] position, int minDistance) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("deleted").is(0));
+		if (StringUtils.isNotEmpty(userid)){
+			query.addCriteria(new Criteria("users").nin(userid));
+		}
+		Point point = new Point(position[0],position[1]);
+		Criteria criteria1 = Criteria.where("position").nearSphere(point)
+				.minDistance(minDistance/6378137.0);
+		query.addCriteria(criteria1);
+		query.with(new Sort(new Sort.Order(Sort.Direction.DESC,"usernum")));
+		query.limit(10);
+		return mongoTemplate.find(query, CircleBo.class);
+	}
+
 	@Override
 	public WriteResult updateNotice(CircleBo circleBo) {
 		Query query = new Query();

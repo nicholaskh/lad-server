@@ -217,4 +217,14 @@ public interface ICircleService extends IBaseService {
 	 */
 	WriteResult updateJoinStatus(String id, int status);
 
+
+	/**
+	 * 猜你喜欢圈子，在附近圈子之外
+	 * @param userid
+	 * @param position
+	 * @param minDistance
+	 * @return
+	 */
+	List<CircleBo> selectUsersLike(String userid, double[] position, int minDistance);
+
 }

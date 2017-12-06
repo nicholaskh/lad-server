@@ -232,4 +232,9 @@ public class CircleServiceImpl implements ICircleService {
 	public WriteResult updateJoinStatus(String id, int status) {
 		return circleAddDao.updateJoinStatus(id, status);
 	}
+
+	@Override
+	public List<CircleBo> selectUsersLike(String userid, double[] position, int minDistance) {
+		return circleDao.selectUsersLike(userid, position, minDistance);
+	}
 }
