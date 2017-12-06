@@ -72,6 +72,12 @@ public interface IPartyService {
     WriteResult updateUser(String id, List<String> users, int userNum);
 
 
+    /**
+     * 查找圈子里所有聚会数量
+     * @return
+     */
+    long getCirclePartyNum(String circleid);
+
 
     /**
      * 更新访问

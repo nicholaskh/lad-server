@@ -88,10 +88,9 @@ public class PartyDaoImpl implements IPartyDao {
         Query query = new Query();
         query.addCriteria(new Criteria("createuid").is(createid));
         query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+        query.with(new Sort(new Sort.Order(Sort.Direction.ASC, "status")));
         query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
-        if (page < 1) {
-           page = 1;
-        }
+        page = page < 1 ? 1 : page;
         query.skip((page -1)*limit);
         query.limit(limit);
         return mongoTemplate.find(query, PartyBo.class);
@@ -103,10 +102,9 @@ public class PartyDaoImpl implements IPartyDao {
         query.addCriteria(new Criteria("createuid").ne(userid));
         query.addCriteria(new Criteria("users").in(userid));
         query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+        query.with(new Sort(new Sort.Order(Sort.Direction.ASC, "status")));
         query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
-        if (page < 1) {
-            page = 1;
-        }
+        page = page < 1 ? 1 : page;
         query.skip((page -1)*limit);
         query.limit(limit);
         return mongoTemplate.find(query, PartyBo.class);
@@ -175,10 +173,9 @@ public class PartyDaoImpl implements IPartyDao {
         query.addCriteria(new Criteria("createuid").ne(userid));
         query.addCriteria(new Criteria("applyUsers").in(userid));
         query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+        query.with(new Sort(new Sort.Order(Sort.Direction.ASC, "status")));
         query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
-        if (page < 1) {
-            page = 1;
-        }
+        page = page < 1 ? 1 : page;
         query.skip((page -1)*limit);
         query.limit(limit);
         return mongoTemplate.find(query, PartyBo.class);
@@ -199,10 +196,9 @@ public class PartyDaoImpl implements IPartyDao {
         Query query = new Query();
         query.addCriteria(new Criteria("circleid").is(circleid));
         query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+        query.with(new Sort(new Sort.Order(Sort.Direction.ASC, "status")));
         query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
-        if (page < 1) {
-            page = 1;
-        }
+        page = page < 1 ? 1 : page;
         query.skip((page -1)*limit);
         query.limit(limit);
         return  mongoTemplate.find(query, PartyBo.class);
@@ -220,5 +216,13 @@ public class PartyDaoImpl implements IPartyDao {
         Update update = new Update();
         update.set("status", status);
         return mongoTemplate.updateFirst(query, update, PartyBo.class);
+    }
+
+    @Override
+    public long findNumByCircleid(String circleid) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("circleid").is(circleid));
+        query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+        return mongoTemplate.count(query, PartyBo.class);
     }
 }

@@ -56,7 +56,7 @@ public class PartyBo extends BaseBo {
     private boolean isOpen;
     //参加用户温馨提示
     private String reminder;
-    //聚会状态 0 进行中， 1 报名结束 ，2 活动结束  3 已取消
+    //聚会状态 1 进行中， 2 报名结束 ，3 活动结束
     private int status;
     //发起群聊聚会ID
     private String chatroomid;

@@ -53,7 +53,8 @@ public class PartyNoticeDaoImpl implements IPartyNoticeDao {
         Query query = new Query();
         query.addCriteria(new Criteria("partyid").is(partyid));
         query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
-        query.skip(page < 1 ? 1 : page);
+        page = page < 1 ? 1 : page;
+        query.skip((page - 1) * limit);
         query.limit(limit);
         return mongoTemplate.find(query, PartyNoticeBo.class);
     }
@@ -63,7 +64,8 @@ public class PartyNoticeDaoImpl implements IPartyNoticeDao {
         Query query = new Query();
         query.addCriteria(new Criteria("users").in(userid));
         query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
-        query.skip(page < 1 ? 1 : page);
+        page = page < 1 ? 1 : page;
+        query.skip((page - 1) * limit);
         query.limit(limit);
         return mongoTemplate.find(query, PartyNoticeBo.class);
     }

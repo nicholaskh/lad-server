@@ -119,6 +119,12 @@ public interface IPartyDao {
     List<PartyBo> findByCircleid(String circleid, int page, int limit);
 
     /**
+     * 查找圈子里所有聚会数量
+     * @return
+     */
+    long findNumByCircleid(String circleid);
+
+    /**
      * 退出圈子
      * @return
      */

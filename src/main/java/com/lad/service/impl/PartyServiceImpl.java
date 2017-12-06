@@ -197,4 +197,9 @@ public class PartyServiceImpl implements IPartyService {
     public PartyNoticeBo findPartyNotice(String partyid) {
         return partyNoticeDao.findPartyNotice(partyid);
     }
+
+    @Override
+    public long getCirclePartyNum(String circleid) {
+        return partyDao.findNumByCircleid(circleid);
+    }
 }

@@ -59,6 +59,8 @@ public class CircleController extends BaseContorller {
 	@Autowired
 	private IReasonService reasonService;
 
+	@Autowired
+	private IPartyService partyService;
 
 	private String titlePush = "圈子通知";
 
@@ -893,6 +895,7 @@ public class CircleController extends BaseContorller {
 		if (userBo != null) {
 			//更新访问记录
 			updateHistory(userBo.getId(), circleid, locationService, circleService);
+			updateCircieUnReadZero(userBo.getId(), circleid);
 		}
 
 		CircleBo circleBo = circleService.selectById(circleid);
@@ -938,14 +941,17 @@ public class CircleController extends BaseContorller {
 		UserBaseVo userHostVo = new UserBaseVo();
 		BeanUtils.copyProperties(hostBo, userHostVo);
 		userHostVo.setRole(2);
+
+		long partyNum = partyService.getCirclePartyNum(circleid);
+
 		//清零访问
-		updateCircieUnReadZero(userBo.getId(), circleid);
 		Map<String, Object> map = new LinkedHashMap<>();
 		map.put("ret", 0);
 		map.put("creater", userHostVo);
 		map.put("masters", mastersList);
 		map.put("userVos", userList);
 		map.put("circleVo", circleVo);
+		map.put("partyNum", partyNum);
 		return JSONObject.fromObject(map).toString();
 	}
 

@@ -284,7 +284,7 @@ public class PartyController extends BaseContorller {
 
         PartyVo partyVo = new PartyVo();
         BeanUtils.copyProperties(partyBo, partyVo);
-        if (partyBo.getStatus() != -1){
+        if (partyBo.getStatus() != 3){
             int status = getPartyStatus(partyBo.getStartTime(), partyBo.getAppointment());
             if (status != partyBo.getStatus()){
                 updatePartyStatus(partyBo.getId(), status);
@@ -597,7 +597,7 @@ public class PartyController extends BaseContorller {
             PartyListVo listVo = new PartyListVo();
             listVo.setHasNotice(partyNoticeBo != null);
             BeanUtils.copyProperties(partyBo, listVo);
-            if (partyBo.getStatus() != -1) {
+            if (partyBo.getStatus() != 3) {
                 int status = getPartyStatus(startTimes, partyBo.getAppointment());
                 if (status != partyBo.getStatus()){
                    listVo.setStatus(status);
@@ -614,7 +614,7 @@ public class PartyController extends BaseContorller {
      * 获取聚会状态
      * @param startTimes
      * @param appointment
-     * @return  1 进行中， 2报名结束， -1活动结束
+     * @return  1 进行中， 2报名结束， 3活动结束
      */
     private int getPartyStatus(LinkedHashSet<String> startTimes, int appointment){
         if (!CommonUtil.isEmpty(startTimes)) {
@@ -630,8 +630,8 @@ public class PartyController extends BaseContorller {
             Date lastDate = CommonUtil.getDate(lastTime, "yyyy-MM-dd HH:mm");
             if (lastDate != null) {
                 long last = lastDate.getTime();
-                if (last <= currentZeroTime.getTime()) {
-                    return -1;
+                if (last < currentZeroTime.getTime()) {
+                    return 3;
                 }
 
                 //减去提前预约天数
@@ -651,7 +651,7 @@ public class PartyController extends BaseContorller {
     private void updatePartyStatus(String partyid, int status){
         partyService.updatePartyStatus(partyid, status);
         //聚会结束,删除所有临时聊天
-        if (status == -1) {
+        if (status == 3) {
             chatroomService.deleteTempChat(partyid, Constant.ROOM_SINGLE);
         }
     }
@@ -935,7 +935,7 @@ public class PartyController extends BaseContorller {
         if (photos != null) {
             LinkedHashSet<String> photo = new LinkedHashSet<>();
             for (MultipartFile file : photos) {
-                String fileName = userId + "-" + time + "-" + file.getOriginalFilename();
+                String fileName = String.format("%s-%d-%s", userId, time, file.getOriginalFilename());
                 String path = CommonUtil.upload(file, Constant.PARTY_PICTURE_PATH,
                         fileName, 0);
                 photo.add(path);
@@ -946,7 +946,7 @@ public class PartyController extends BaseContorller {
 
         String path = "/party/party-info.do?partyid=" + comment.getPartyid();
         JPushUtil.pushMessage(titlePush, "有人刚刚评论了你的聚会，快去看看吧!", path,  partyBo.getCreateuid());
-        if (!org.springframework.util.StringUtils.isEmpty(comment.getParentid())) {
+        if (!StringUtils.isEmpty(comment.getParentid())) {
             CommentBo commentBo1 = commentService.findById(comment.getParentid());
             if (commentBo1 != null) {
                 JPushUtil.pushMessage(titlePush, "有人刚刚回复了你的评论，快去看看吧!", path,  commentBo1.getCreateuid());
@@ -1455,7 +1455,7 @@ public class PartyController extends BaseContorller {
                             HttpServletRequest request, HttpServletResponse response) {
         PartyBo partyBo = partyService.findById(partyid);
         if (partyBo == null) {
-            return CommonUtil.toErrorResult(ERRORCODE.PARTY_HAS_END.getIndex(), ERRORCODE.PARTY_HAS_END.getReason());
+            return CommonUtil.toErrorResult(ERRORCODE.PARTY_NULL.getIndex(), ERRORCODE.PARTY_NULL.getReason());
         }
         List<PartyNoticeBo> noticeBos = partyService.findNoticeByPartyid(partyid, page, limit);
         Map<String, Object> map = new HashMap<>();
