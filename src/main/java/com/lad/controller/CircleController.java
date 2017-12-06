@@ -881,8 +881,9 @@ public class CircleController extends BaseContorller {
 		} catch (MyException e) {
 			return e.getMessage();
 		}
-		List<CircleBo> circleBos = circleService.selectUsersPre(userBo.getId());
-		return bo2vos(circleBos, null);
+		LocationBo locationBo = locationService.getLocationBoByUserid(userBo.getId());
+		List<CircleBo> circleBos = circleService.selectUsersLike(userBo.getId(), locationBo.getPosition(), 5000);
+		return bo2vos(circleBos, userBo);
 	}
 
 	/**
