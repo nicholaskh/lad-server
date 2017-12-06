@@ -789,7 +789,8 @@ public class FriendsController extends BaseContorller {
 			List<FriendsBo> list = friendsService.getFriendByUserid(userid, times);
 			if (!CommonUtil.isEmpty(list)) {
 				FriendsBo first = list.get(0);
-				timeStr = CommonUtil.getDateStr(first.getUpdateTime(),"yyyy-MM-dd HH:mm:ss");
+				Date time = first.getUpdateTime() == null ? first.getCreateTime() : first.getUpdateTime();
+				timeStr = CommonUtil.getDateStr(time,"yyyy-MM-dd HH:mm:ss");
 			}
 			for (FriendsBo friendsBo : list) {
 				FriendsVo vo = new FriendsVo();
