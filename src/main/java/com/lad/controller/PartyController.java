@@ -916,7 +916,7 @@ public class PartyController extends BaseContorller {
                     break;
                 }
             }
-            if (hasComment && StringUtils.isEmpty(comment.getParentid())) {
+            if (hasComment) {
                 return CommonUtil.toErrorResult(ERRORCODE.PARTY_HAS_COMMENT.getIndex(),
                         ERRORCODE.PARTY_HAS_COMMENT.getReason());
             }
@@ -931,10 +931,10 @@ public class PartyController extends BaseContorller {
         commentBo.setParentid(comment.getParentid());
 
         String userId = userBo.getId();
-        Long time = Calendar.getInstance().getTimeInMillis();
         if (photos != null) {
             LinkedHashSet<String> photo = new LinkedHashSet<>();
             for (MultipartFile file : photos) {
+                Long time = Calendar.getInstance().getTimeInMillis();
                 String fileName = String.format("%s-%d-%s", userId, time, file.getOriginalFilename());
                 String path = CommonUtil.upload(file, Constant.PARTY_PICTURE_PATH,
                         fileName, 0);
@@ -992,13 +992,13 @@ public class PartyController extends BaseContorller {
             //帖子作者没有红人数据信息，则添加
             RedstarBo noteRedstarBo = commentService.findRedstarBo(partyBo.getCreateuid(), circleid);
             if (noteRedstarBo == null) {
-                redstarBo = new RedstarBo();
-                redstarBo.setUserid(userBo.getId());
-                redstarBo.setCommentTotal((long) 1);
-                redstarBo.setCommentWeek((long) 1);
-                redstarBo.setWeekNo(curretWeekNo);
-                redstarBo.setCircleid(partyBo.getCircleid());
-                redstarBo.setYear(year);
+                noteRedstarBo = new RedstarBo();
+                noteRedstarBo.setUserid(userBo.getId());
+                noteRedstarBo.setCommentTotal((long) 1);
+                noteRedstarBo.setCommentWeek((long) 1);
+                noteRedstarBo.setWeekNo(curretWeekNo);
+                noteRedstarBo.setCircleid(partyBo.getCircleid());
+                noteRedstarBo.setYear(year);
                 commentService.insertRedstar(noteRedstarBo);
             } else {
                 //判断帖子作者周榜是不是当前周，是则添加数据，不是则更新周榜数据
