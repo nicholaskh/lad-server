@@ -1,11 +1,9 @@
 package com.lad.controller;
 
-import com.lad.bo.ChatroomBo;
-import com.lad.bo.ChatroomUserBo;
-import com.lad.bo.ReasonBo;
-import com.lad.bo.UserBo;
+import com.lad.bo.*;
 import com.lad.redis.RedisServer;
 import com.lad.service.IChatroomService;
+import com.lad.service.IFriendsService;
 import com.lad.service.IReasonService;
 import com.lad.service.IUserService;
 import com.lad.util.*;
@@ -50,6 +48,9 @@ public class ChatroomController extends BaseContorller {
 
 	@Autowired
 	private IReasonService reasonService;
+
+	@Autowired
+	private IFriendsService friendsService;
 
 
 	private String titlePush = "互动通知";
@@ -143,7 +144,7 @@ public class ChatroomController extends BaseContorller {
 
 		// 为IMUtil通知做数据准备
 		LinkedHashSet<String> set = chatroomBo.getUsers();
-		String[] tt = new String[set.size()];
+		String[] tt = new String[set.size() -1];
 		int i=0;
 		for(String uu: set){
 			if(uu.equals(userBo.getId())) continue;
@@ -177,33 +178,25 @@ public class ChatroomController extends BaseContorller {
 			}
 		}
 		// 如果群聊没有修改过名称，自动修改名称
+		String name = chatroomBo.getName();
 		if(!chatroomBo.isNameSet()){
 			String newChatRoomName = ChatRoomUtil.generateChatRoomName(userService, set, chatroomid, logger);
 			if(newChatRoomName != null){
+				name = newChatRoomName;
 				chatroomService.updateName(chatroomid, newChatRoomName, false);
 			}
 		}
 		chatroomBo.setUsers(set);
 		chatroomService.updateUsers(chatroomBo);
 
-		// 向群中某人被邀请加入群聊通知
-		if(imIds.size() > 0 && otherNameAndId[0] != null){
+		addRoomInfo(userBo, chatroomid, imIds, imNames, otherNameAndId);
 
-			JSONObject json = new JSONObject();
-			json.put("masterId", userBo.getId());
-			json.put("masterName", userBo.getUserName());
-			json.put("hitIds", imIds);
-			json.put("hitNames", imNames);
-			json.put("otherIds", otherNameAndId[1]);
-			json.put("otherNames", otherNameAndId[0]);
-
-			String res = IMUtil.notifyInChatRoom(Constant.SOME_ONE_BE_INVITED_OT_CHAT_ROOM, chatroomid, json.toString());
-			if(!IMUtil.FINISH.equals(res)){
-				logger.error("failed notifyInChatRoom Constant.SOME_ONE_BE_INVITED_OT_CHAT_ROOM, %s",res);
-			}
-		}
-
-		return Constant.COM_RESP;
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("channelId", chatroomBo.getId());
+		map.put("chatroomUser", set.size());
+		map.put("chatroomName", name);
+		return JSONObject.fromObject(map).toString();
 	}
 
 
@@ -281,6 +274,7 @@ public class ChatroomController extends BaseContorller {
 				imNames.append(",");
 			}
 		}
+		String name = chatroomBo.getName();
 
 		//聊天室少于2人则直接删除
 		if (set.size() < 2) {
@@ -303,6 +297,7 @@ public class ChatroomController extends BaseContorller {
 			if(!chatroomBo.isNameSet()){
 				String newChatRoomName = ChatRoomUtil.generateChatRoomName(userService, set, chatroomid, logger);
 				if(newChatRoomName != null){
+					name = newChatRoomName;
 					chatroomService.updateName(chatroomid, newChatRoomName, false);
 				}
 			}
@@ -310,9 +305,12 @@ public class ChatroomController extends BaseContorller {
 			chatroomService.updateUsers(chatroomBo);
 		}
 
-
-
-		return Constant.COM_RESP;
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("channelId", chatroomBo.getId());
+		map.put("chatroomUser", set.size());
+		map.put("chatroomName", name);
+		return JSONObject.fromObject(map).toString();
 	}
 
 	@RequestMapping("/quit")
@@ -378,6 +376,8 @@ public class ChatroomController extends BaseContorller {
 		deleteNickname(userid, chatroomid);
 		set.remove(userid);
 
+		String name = chatroomBo.getName();
+
 		if (set.size() < 2) {
 			String res = IMUtil.disolveRoom(chatroomid);
 			if (!res.equals(IMUtil.FINISH) && !res.contains("not found")) {
@@ -398,13 +398,19 @@ public class ChatroomController extends BaseContorller {
 			if(!chatroomBo.isNameSet()){
 				String newChatRoomName = ChatRoomUtil.generateChatRoomName(userService, set, chatroomid, logger);
 				if(newChatRoomName != null){
+					name = newChatRoomName;
 					chatroomService.updateName(chatroomid, newChatRoomName, false);
 				}
 			}
 			chatroomBo.setUsers(set);
 			chatroomService.updateUsers(chatroomBo);
 		}
-		return Constant.COM_RESP;
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("channelId", chatroomBo.getId());
+		map.put("chatroomUser", set.size());
+		map.put("chatroomName", name);
+		return JSONObject.fromObject(map).toString();
 	}
 
 	/**
@@ -677,6 +683,7 @@ public class ChatroomController extends BaseContorller {
 				chatroomUserBo.setChatroomid(chatroomid);
 				chatroomUserBo.setUserid(userBo.getId());
 				chatroomUserBo.setUsername(userBo.getUserName());
+				chatroomUserBo.setNickname(userBo.getUserName());
 				chatroomUserBo.setShowNick(false);
 				chatroomUserBo.setDisturb(false);
 				chatroomService.insertUser(chatroomUserBo);
@@ -686,6 +693,13 @@ public class ChatroomController extends BaseContorller {
 					bo2vo(chatroomUserBo.isShowNick(), temp, vo);
 					vo.setUserNum(temp.getUsers().size());
 					vo.setShowNick(chatroomUserBo.isShowNick());
+				} else {
+					FriendsBo bo = friendsService.getFriendByIdAndVisitorIdAgree(temp.getUserid(), temp
+							.getFriendid());
+					if (bo != null) {
+						String nickname = StringUtils.isEmpty(bo.getBackname())? bo.getUsername() : bo.getBackname();
+						vo.setName(nickname);
+					}
 				}
 				vo.setDisturb(chatroomUserBo.isDisturb());
 			}
@@ -1186,9 +1200,15 @@ public class ChatroomController extends BaseContorller {
 			}
 			// 为IMUtil通知做数据准备
 			LinkedHashSet<String> set = chatroomBo.getUsers();
-			String[] tt = new String[set.size()];
+			int size = set.size();
+			if (set.contains(userBo.getId())) {
+				size --;
+			}
+			String name = chatroomBo.getName();
+			String[] tt = new String[size];
 			int i=0;
 			for(String uu: set){
+				if (uu.equals(userBo.getId())) continue;
 				tt[i++] = uu;
 			}
 			Object[] otherNameAndId = ChatRoomUtil.getUserNamesAndIds(userService, tt, logger);
@@ -1198,29 +1218,20 @@ public class ChatroomController extends BaseContorller {
 			if(!chatroomBo.isNameSet()){
 				String newChatRoomName = ChatRoomUtil.generateChatRoomName(userService, set, chatroomid, logger);
 				if(newChatRoomName != null){
+					name = newChatRoomName;
 					chatroomService.updateName(chatroomid, newChatRoomName, false);
 				}
 			}
 			chatroomBo.setUsers(set);
 			chatroomService.updateUsers(chatroomBo);
 
-			// 向群中某人被邀请加入群聊通知
-			if(imIds.size() > 0 && otherNameAndId[0] != null){
-
-				JSONObject json = new JSONObject();
-				json.put("masterId", userBo.getId());
-				json.put("masterName", userBo.getUserName());
-				json.put("hitIds", imIds);
-				json.put("hitNames", imNames);
-				json.put("otherIds", otherNameAndId[1]);
-				json.put("otherNames", otherNameAndId[0]);
-
-				String res = IMUtil.notifyInChatRoom(Constant.SOME_ONE_BE_INVITED_OT_CHAT_ROOM, chatroomid, json.toString());
-				if(!IMUtil.FINISH.equals(res)){
-					logger.error("failed notifyInChatRoom Constant.SOME_ONE_BE_INVITED_OT_CHAT_ROOM, %s",res);
-				}
-			}
-			return Constant.COM_RESP;
+			addRoomInfo(userBo, chatroomid, imIds, imNames, otherNameAndId);
+			Map<String, Object> map = new HashMap<String, Object>();
+			map.put("ret", 0);
+			map.put("channelId", chatroomBo.getId());
+			map.put("chatroomUser", set.size());
+			map.put("chatroomName", name);
+			return JSONObject.fromObject(map).toString();
 		}
 	}
 
@@ -1315,6 +1326,10 @@ public class ChatroomController extends BaseContorller {
 			CommonUtil.toErrorResult(ERRORCODE.CHATROOM_APPLY_NULL.getIndex(),
 					ERRORCODE.CHATROOM_APPLY_NULL.getReason());
 		}
+		String name = chatroomBo.getName();
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("channelId", chatroomBo.getId());
 		if (isAgree) {
 			//第一个为返回结果信息，第二位term信息
 			String result = IMUtil.subscribe(1,chatroomid, userBo.getId());
@@ -1331,45 +1346,44 @@ public class ChatroomController extends BaseContorller {
 			}
 			// 为IMUtil通知做数据准备
 			LinkedHashSet<String> set = chatroomBo.getUsers();
-			String[] tt = new String[set.size()];
+			int size = set.size();
+			if (set.contains(userBo.getId())) {
+				size --;
+			}
+			String[] tt = new String[size];
 			int i=0;
 			for(String uu: set){
+				if (uu.equals(userBo.getId())) continue;
 				tt[i++] = uu;
 			}
 			Object[] otherNameAndId = ChatRoomUtil.getUserNamesAndIds(userService, tt, logger);
 			ArrayList<String> imNames = new ArrayList<>();
 			ArrayList<String> imIds = new ArrayList<>();
 			// 如果群聊没有修改过名称，自动修改名称
+
 			if(!chatroomBo.isNameSet()){
 				String newChatRoomName = ChatRoomUtil.generateChatRoomName(userService, set, chatroomid, logger);
 				if(newChatRoomName != null){
+					name = newChatRoomName;
 					chatroomService.updateName(chatroomid, newChatRoomName, false);
 				}
 			}
 			chatroomBo.setUsers(set);
 			chatroomService.updateUsers(chatroomBo);
-			// 向群中某人被邀请加入群聊通知
-			if(imIds.size() > 0 && otherNameAndId[0] != null){
 
-				JSONObject json = new JSONObject();
-				json.put("masterId", userBo.getId());
-				json.put("masterName", userBo.getUserName());
-				json.put("hitIds", imIds);
-				json.put("hitNames", imNames);
-				json.put("otherIds", otherNameAndId[1]);
-				json.put("otherNames", otherNameAndId[0]);
-
-				String res = IMUtil.notifyInChatRoom(Constant.SOME_ONE_BE_INVITED_OT_CHAT_ROOM, chatroomid, json.toString());
-				if(!IMUtil.FINISH.equals(res)){
-					logger.error("failed notifyInChatRoom Constant.SOME_ONE_BE_INVITED_OT_CHAT_ROOM, %s",res);
-				}
-			}
+			addRoomInfo(userBo, chatroomid, imIds, imNames, otherNameAndId);
 			reasonService.updateApply(applyid, 1, "");
+			map.put("chatroomUser", set.size());
 		} else {
 			reasonService.updateApply(applyid, 2, refues);
+			map.put("chatroomUser", chatroomBo.getUsers().size());
 		}
-		return Constant.COM_RESP;
+		map.put("chatroomName", name);
+		return JSONObject.fromObject(map).toString();
 	}
+
+
+
 
 	/**
 	 * 删除群聊中的用户聊天昵称
@@ -1379,5 +1393,25 @@ public class ChatroomController extends BaseContorller {
 	@Async
 	private void deleteNickname(String userid, String chatroomid){
 		chatroomService.deleteChatroomUser(userid, chatroomid);
+	}
+
+
+	// 向群中某人被邀请加入群聊通知
+	private void addRoomInfo(UserBo userBo, String chatroomid, List<String> imIds, List<String> imNames,
+							 Object[] otherNameAndId){
+		if(imIds.size() > 0 && otherNameAndId[0] != null){
+			JSONObject json = new JSONObject();
+			json.put("masterId", userBo.getId());
+			json.put("masterName", userBo.getUserName());
+			json.put("hitIds", imIds);
+			json.put("hitNames", imNames);
+			json.put("otherIds", otherNameAndId[1]);
+			json.put("otherNames", otherNameAndId[0]);
+
+			String res = IMUtil.notifyInChatRoom(Constant.SOME_ONE_BE_INVITED_OT_CHAT_ROOM, chatroomid, json.toString());
+			if(!IMUtil.FINISH.equals(res)){
+				logger.error("failed notifyInChatRoom Constant.SOME_ONE_BE_INVITED_OT_CHAT_ROOM, %s",res);
+			}
+		}
 	}
 }
