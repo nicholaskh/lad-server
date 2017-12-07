@@ -916,7 +916,7 @@ public class PartyController extends BaseContorller {
                     break;
                 }
             }
-            if (hasComment) {
+            if (hasComment && StringUtils.isEmpty(comment.getParentid())) {
                 return CommonUtil.toErrorResult(ERRORCODE.PARTY_HAS_COMMENT.getIndex(),
                         ERRORCODE.PARTY_HAS_COMMENT.getReason());
             }
