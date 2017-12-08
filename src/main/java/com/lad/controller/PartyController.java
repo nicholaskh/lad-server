@@ -128,6 +128,7 @@ public class PartyController extends BaseContorller {
         addChatroomUser(chatroomService, userBo, chatroomBo.getId(), userBo.getUserName());
         partyBo.setChatroomid(chatroomBo.getId());
         partyService.insert(partyBo);
+        chatroomService.addPartyChartroom(chatroomBo.getId(), partyBo.getId());
         HashSet<String> circleUsers = circleBo.getUsers();
 
         if (circleUsers.size() > 0) {
@@ -385,7 +386,7 @@ public class PartyController extends BaseContorller {
                 return CommonUtil.toErrorResult(ERRORCODE.PARTY_NULL.getIndex(),
                         ERRORCODE.PARTY_NULL.getReason());
             }
-            if (partyBo.getStatus() == 2) {
+            if (partyBo.getStatus() != 1) {
                 return CommonUtil.toErrorResult(ERRORCODE.PARTY_HAS_END.getIndex(),
                         ERRORCODE.PARTY_HAS_END.getReason());
             }
@@ -433,23 +434,25 @@ public class PartyController extends BaseContorller {
         }
         if (StringUtils.isNotEmpty(chatroomid)) {
             ChatroomBo chatroomBo = chatroomService.get(chatroomid);
-            LinkedHashSet<String> chatroomUsers = chatroomBo.getUsers();
-            if (!chatroomUsers.contains(userid)){
-                //第一个为返回结果信息，第二位term信息
-                String result = IMUtil.subscribe(1, chatroomid, userid);
-                if (!result.equals(IMUtil.FINISH)) {
-                    return result;
+            if (chatroomBo != null) {
+                LinkedHashSet<String> chatroomUsers = chatroomBo.getUsers();
+                if (!chatroomUsers.contains(userid)){
+                    //第一个为返回结果信息，第二位term信息
+                    String result = IMUtil.subscribe(1, chatroomid, userid);
+                    if (!result.equals(IMUtil.FINISH)) {
+                        return result;
+                    }
+                    HashSet<String> chatroom = userBo.getChatrooms();
+                    //个人聊天室中没有当前聊天室，则添加到个人的聊天室
+                    if (!chatroom.contains(chatroomid)) {
+                        chatroom.add(chatroomid);
+                        userBo.setChatrooms(chatroom);
+                        userService.updateChatrooms(userBo);
+                    }
+                    chatroomUsers.add(userid);
+                    chatroomBo.setUsers(chatroomUsers);
+                    chatroomService.updateUsers(chatroomBo);
                 }
-                HashSet<String> chatroom = userBo.getChatrooms();
-                //个人聊天室中没有当前聊天室，则添加到个人的聊天室
-                if (!chatroom.contains(chatroomid)) {
-                    chatroom.add(chatroomid);
-                    userBo.setChatrooms(chatroom);
-                    userService.updateChatrooms(userBo);
-                }
-                chatroomUsers.add(userid);
-                chatroomBo.setUsers(chatroomUsers);
-                chatroomService.updateUsers(chatroomBo);
             }
         }
         ChatroomUserBo chatroomUserBo = chatroomService.findChatUserByUserAndRoomid(userid, chatroomid);
@@ -873,6 +876,7 @@ public class PartyController extends BaseContorller {
         }
         partyService.delete(partyid);
         partyService.deleteMulitByaPartyid(partyBo.getId());
+        chatroomService.deleteTempChat(partyid, Constant.ROOM_SINGLE);
         return Constant.COM_RESP;
     }
 
@@ -1410,7 +1414,7 @@ public class PartyController extends BaseContorller {
         partyService.addPartyNotice(noticeBo);
 
         if (users.size() > 0) {
-            String path = "/party/notice.do?noticeid=" +noticeBo.getId();
+            String path = "/party/party-notice.do?partyid=" + partyid;
             String[] userids = new String[users.size()];
             users.toArray(userids);
             JPushUtil.push(titlePush, content, path, userids);

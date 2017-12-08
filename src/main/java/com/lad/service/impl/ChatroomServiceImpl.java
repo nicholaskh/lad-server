@@ -175,4 +175,9 @@ public class ChatroomServiceImpl implements IChatroomService {
 	public WriteResult deleteTempChat(String targetid, int roomType) {
 		return chatroomDao.deleteTempChat(targetid, roomType);
 	}
+
+	@Override
+	public WriteResult addPartyChartroom(String chatroomId, String partyid) {
+		return addPartyChartroom(chatroomId, partyid);
+	}
 }

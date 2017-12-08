@@ -284,4 +284,16 @@ public class ChatroomDaoImpl implements IChatroomDao {
 		update.set("deleted", Constant.DELETED);
 		return mongoTemplate.updateMulti(query, update, ChatroomBo.class);
 	}
+
+	@Override
+	public WriteResult addPartyChartroom(String chatroomId, String partyid) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("_id").is(chatroomId));
+		query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+		Update update = new Update();
+		update.set("targetid", partyid);
+		return  mongoTemplate.updateFirst(query, update, ChatroomBo.class);
+	}
+
+
 }
