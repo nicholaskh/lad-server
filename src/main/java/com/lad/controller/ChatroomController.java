@@ -2,10 +2,7 @@ package com.lad.controller;
 
 import com.lad.bo.*;
 import com.lad.redis.RedisServer;
-import com.lad.service.IChatroomService;
-import com.lad.service.IFriendsService;
-import com.lad.service.IReasonService;
-import com.lad.service.IUserService;
+import com.lad.service.*;
 import com.lad.util.*;
 import com.lad.vo.ChatroomUserVo;
 import com.lad.vo.ChatroomVo;
@@ -51,6 +48,9 @@ public class ChatroomController extends BaseContorller {
 
 	@Autowired
 	private IFriendsService friendsService;
+
+	@Autowired
+	private IPartyService partyService;
 
 
 	private String titlePush = "互动通知";
@@ -282,16 +282,7 @@ public class ChatroomController extends BaseContorller {
 			if (!res.equals(IMUtil.FINISH) && !res.contains("not found")) {
 				return res;
 			}
-			//删除最后一人的聊天室
-			if (set.size() == 1) {
-				String friendid = set.iterator().next();
-				UserBo friend = userService.getUser(friendid);
-				if (friend != null){
-					updateFriendChatroom(friend, chatroomid);
-				}
-			}
-			chatroomService.delete(chatroomid);
-
+			deletePartyChatroom(chatroomBo, set);
 		} else {
 			// 如果群聊没有修改过名称，自动修改名称
 			if(!chatroomBo.isNameSet()){
@@ -383,15 +374,7 @@ public class ChatroomController extends BaseContorller {
 			if (!res.equals(IMUtil.FINISH) && !res.contains("not found")) {
 				return res;
 			}
-			//删除最后一人的聊天室
-			if (set.size() == 1) {
-				String friendid = set.iterator().next();
-				UserBo friend = userService.getUser(friendid);
-				if (friend != null){
-					updateFriendChatroom(friend, chatroomid);
-				}
-			}
-			chatroomService.delete(chatroomid);
+			deletePartyChatroom(chatroomBo, set);
 
 		} else {
 			// 如果群聊没有修改过名称，自动修改名称
@@ -1417,6 +1400,31 @@ public class ChatroomController extends BaseContorller {
 			if(!IMUtil.FINISH.equals(res)){
 				logger.error("failed notifyInChatRoom Constant.SOME_ONE_BE_INVITED_OT_CHAT_ROOM, %s",res);
 			}
+		}
+	}
+
+	/**
+	 * 判断退出是不是聚会的群聊
+	 * @param chatroomBo
+	 * @param set
+	 */
+	private void deletePartyChatroom(ChatroomBo chatroomBo, HashSet<String> set){
+
+		boolean isPartyEnd = true;
+		if (StringUtils.isNotEmpty(chatroomBo.getTargetid())){
+			PartyBo partyBo = partyService.findById(chatroomBo.getTargetid());
+			isPartyEnd = (partyBo != null && partyBo.getStatus() != 3);
+		}
+		if (!isPartyEnd) {
+			//删除最后一人的聊天室
+			if (set.size() == 1) {
+				String friendid = set.iterator().next();
+				UserBo friend = userService.getUser(friendid);
+				if (friend != null){
+					updateFriendChatroom(friend, chatroomBo.getId());
+				}
+			}
+			chatroomService.delete(chatroomBo.getId());
 		}
 	}
 }
