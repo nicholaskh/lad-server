@@ -143,7 +143,7 @@ public class ReasonDaoImpl implements IReasonDao {
         query.addCriteria(new Criteria("createuid").is(userid));
         query.addCriteria(new Criteria("circleid").is(circleid));
         query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
-        query.addCriteria(new Criteria("status").is(Constant.ADD_APPLY));
+        query.addCriteria(new Criteria("status").is(Constant.ADD_AGREE));
         Update update = new Update();
         update.inc("unReadNum", num);
         return mongoTemplate.updateFirst(query, update, ReasonBo.class);
@@ -154,7 +154,7 @@ public class ReasonDaoImpl implements IReasonDao {
         Query query = new Query();
         query.addCriteria(new Criteria("_id").is(id));
         query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
-        query.addCriteria(new Criteria("status").is(Constant.ADD_APPLY));
+        query.addCriteria(new Criteria("status").is(Constant.ADD_AGREE));
         Update update = new Update();
         update.set("unReadNum", 0);
         return mongoTemplate.updateFirst(query, update, ReasonBo.class);
@@ -166,7 +166,7 @@ public class ReasonDaoImpl implements IReasonDao {
         query.addCriteria(new Criteria("createuid").is(userid));
         query.addCriteria(new Criteria("circleid").is(circleid));
         query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
-        query.addCriteria(new Criteria("status").is(Constant.ADD_APPLY));
+        query.addCriteria(new Criteria("status").is(Constant.ADD_AGREE));
         Update update = new Update();
         update.set("unReadNum", 0);
         return mongoTemplate.updateFirst(query, update, ReasonBo.class);
@@ -178,7 +178,7 @@ public class ReasonDaoImpl implements IReasonDao {
         query.addCriteria(new Criteria("createuid").in(userids));
         query.addCriteria(new Criteria("circleid").is(circleid));
         query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
-        query.addCriteria(new Criteria("status").is(Constant.ADD_APPLY));
+        query.addCriteria(new Criteria("status").is(Constant.ADD_AGREE));
         Update update = new Update();
         update.inc("unReadNum", 1);
         return mongoTemplate.updateMulti(query, update, ReasonBo.class);

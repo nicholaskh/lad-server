@@ -563,9 +563,9 @@ public class NoteController extends BaseContorller {
 			if (isLogin && !userid.equals(commentBo.getCreateuid())) {
 				FriendsBo bo = friendsService.getFriendByIdAndVisitorIdAgree(userid,commentBo.getCreateuid());
 				if (bo == null || StringUtils.isEmpty(bo.getBackname())) {
-					commentVo.setParentUserName(comUser.getUserName());
+					commentVo.setUserName(comUser.getUserName());
 				} else {
-					commentVo.setParentUserName(bo.getBackname());
+					commentVo.setUserName(bo.getBackname());
 				}
 			}
 			commentVo.setUserHeadPic(comUser.getHeadPictureName());
@@ -1100,10 +1100,21 @@ public class NoteController extends BaseContorller {
 	 */
 	@Async
 	private void updateCircieUnReadNum(String userid, String cirlceid){
+
 		RLock lock = redisServer.getRLock(userid + "UnReadNumLock");
 		try{
 			lock.lock(2, TimeUnit.SECONDS);
-			reasonService.updateUnReadNum(userid, cirlceid, 1);
+			ReasonBo reasonBo = reasonService.findByUserAndCircle(userid, cirlceid);
+			if (reasonBo == null) {
+				reasonBo = new ReasonBo();
+				reasonBo.setCircleid(cirlceid);
+				reasonBo.setCreateuid(userid);
+				reasonBo.setStatus(Constant.ADD_AGREE);
+				reasonBo.setUnReadNum(1);
+				reasonService.insert(reasonBo);
+			} else {
+				reasonService.updateUnReadNum(userid, cirlceid, 1);
+			}
 		} finally {
 			lock.unlock();
 		}
@@ -1125,7 +1136,7 @@ public class NoteController extends BaseContorller {
 		if (users.contains(pushUserid)) {
 			users.remove(pushUserid);
 		}
-		RLock lock = redisServer.getRLock("UnReadNumLock");
+		RLock lock = redisServer.getRLock(circleid + "UnReadNumLock");
 		try{
 			lock.lock(3, TimeUnit.SECONDS);
 			reasonService.updateUnReadNum(users, circleBo.getId());

@@ -91,7 +91,7 @@ public class CircleServiceImpl implements ICircleService {
 
 	@Override
 	public long findCreateCricles(String createuid) {
-		return 0;
+		return circleDao.findCreateCricles(createuid);
 	}
 
 	@Override

@@ -855,6 +855,7 @@ public class CircleController extends BaseContorller {
 				circleService.updateTotal(circleBo.getId(), number);
 			}
 			if (topCircles.contains(circleBo.getId())) {
+
 				voList.add(bo2vo(circleBo, userBo, 1));
 			} else {
 				noTops.add(circleBo);
