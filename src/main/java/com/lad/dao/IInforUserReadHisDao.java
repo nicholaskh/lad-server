@@ -25,7 +25,7 @@ public interface IInforUserReadHisDao {
      * @param halfTime
      * @return
      */
-    InforUserReadHisBo findUserReadHis(String userid, int type, String module, Date halfTime);
+    InforUserReadHisBo findUserReadHis(String userid, int type, String module,String className, Date halfTime);
 
     /**
      * 查找用户半年之前的分类阅读记录
@@ -51,7 +51,7 @@ public interface IInforUserReadHisDao {
      * @param module
      * @return
      */
-    InforUserReadHisBo findByReadHis(String userid, int type, String module);
+    InforUserReadHisBo findByReadHis(String userid, int type, String module, String className);
 
 
 }

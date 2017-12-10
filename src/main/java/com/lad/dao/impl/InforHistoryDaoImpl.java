@@ -74,4 +74,13 @@ public class InforHistoryDaoImpl implements IInforHistoryDao{
         update.inc("dayNum", num);
         return mongoTemplate.updateFirst(query, update, InforHistoryBo.class);
     }
+
+    @Override
+    public WriteResult updateZeroHis(List<String> ids) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("_id").in(ids));
+        Update update = new Update();
+        update.set("deleted", Constant.DELETED);
+        return mongoTemplate.updateMulti(query, update, InforHistoryBo.class);
+    }
 }

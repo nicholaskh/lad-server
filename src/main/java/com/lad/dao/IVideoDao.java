@@ -3,6 +3,7 @@ package com.lad.dao;
 import com.lad.scrapybo.VideoBo;
 import com.mongodb.WriteResult;
 
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -19,7 +20,18 @@ public interface IVideoDao {
 
     List<VideoBo> selectGroups();
 
-    List<VideoBo> selectClassByGroups(String groupName);
+    List<VideoBo> selectClassByGroups(String module);
+
+
+
+    List<VideoBo> findByClassNamePage(String module, String className, int start, int end);
+    /**
+     * 
+     * @param modules
+     * @param classNames
+     * @return
+     */
+    List<VideoBo> selectClassByGroups(HashSet<String> modules, HashSet<String> classNames);
 
     /**
      * 更新缩略图
@@ -51,5 +63,14 @@ public interface IVideoDao {
      * @return
      */
     List<VideoBo> findVideoByIds(List<String> videoIds);
+
+    /**
+     * 排除已查询信息
+     * @param modules
+     * @param classNames
+     * @param limit
+     * @return
+     */
+    List<VideoBo> findByLimit(HashSet<String> modules, HashSet<String> classNames, int limit);
 
 }

@@ -23,6 +23,8 @@ public class InforHistoryBo extends BaseBo{
     //need index
     private String module;
 
+    private String className;
+
     public String getInforid() {
         return inforid;
     }
@@ -61,5 +63,13 @@ public class InforHistoryBo extends BaseBo{
 
     public void setModule(String module) {
         this.module = module;
+    }
+
+    public String getClassName() {
+        return className;
+    }
+
+    public void setClassName(String className) {
+        this.className = className;
     }
 }

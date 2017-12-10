@@ -8,6 +8,7 @@ import com.lad.scrapybo.SecurityBo;
 import com.lad.scrapybo.VideoBo;
 import com.mongodb.WriteResult;
 
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -195,6 +196,10 @@ public interface IInforService {
 
     List<VideoBo> selectVideoClassByGroups(String groupName);
 
+
+
+    List<VideoBo> selectClassNamePage(String module, String className, int start, int end);
+
     /**
      * 更新缩略图
      * @param id
@@ -262,4 +267,28 @@ public interface IInforService {
 
 
     List<VideoBo> findVideoByIds(List<String> videoIds);
+
+
+    /**
+     *
+     * @param modules
+     * @param classNames
+     * @return
+     */
+    List<VideoBo> selectVideoClassByGroups(HashSet<String> modules, HashSet<String> classNames);
+
+
+    List<BroadcastBo> selectRadioClassByGroups(HashSet<String> modules, HashSet<String> classNames);
+
+
+    List<BroadcastBo> findRadioByLimit(HashSet<String> modules, HashSet<String> classNames, int limit);
+
+    /**
+     * 排除已查询信息
+     * @param modules
+     * @param classNames
+     * @param limit
+     * @return
+     */
+    List<VideoBo> findVideoByLimit(HashSet<String> modules, HashSet<String> classNames, int limit);
 }

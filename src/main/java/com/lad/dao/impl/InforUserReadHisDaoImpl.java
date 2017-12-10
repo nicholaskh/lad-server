@@ -3,6 +3,7 @@ package com.lad.dao.impl;
 import com.lad.bo.InforUserReadHisBo;
 import com.lad.dao.IInforUserReadHisDao;
 import com.mongodb.WriteResult;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -32,12 +33,16 @@ public class InforUserReadHisDaoImpl implements IInforUserReadHisDao {
     }
 
     @Override
-    public InforUserReadHisBo findUserReadHis(String userid, int type, String module, Date halfTime) {
+    public InforUserReadHisBo findUserReadHis(String userid, int type, String module,String className, Date
+            halfTime) {
         Query query = new Query();
-        query.addCriteria(new Criteria("userid").is(userid));
-        query.addCriteria(new Criteria("type").is(type));
-        query.addCriteria(new Criteria("module").is(module));
-        query.addCriteria(new Criteria("lastDate").gt(halfTime));
+        Criteria criteria = new Criteria("userid").is(userid);
+        criteria.and("module").is(module).and("type").is(type);
+        if (StringUtils.isNotEmpty(className)) {
+            criteria.and("className").is(className);
+        }
+        criteria.and("lastDate").gt(halfTime);
+        query.addCriteria(criteria);
         return mongoTemplate.findOne(query, InforUserReadHisBo.class);
     }
 
@@ -51,11 +56,13 @@ public class InforUserReadHisDaoImpl implements IInforUserReadHisDao {
     }
 
     @Override
-    public InforUserReadHisBo findByReadHis(String userid, int type, String module) {
+    public InforUserReadHisBo findByReadHis(String userid, int type, String module, String className) {
         Query query = new Query();
-        query.addCriteria(new Criteria("userid").is(userid));
-        query.addCriteria(new Criteria("type").is(type));
-        query.addCriteria(new Criteria("module").is(module));
+        Criteria criteria = new Criteria("userid").is(userid).and("module").is(module).and("type").is(type);
+        if (StringUtils.isNotEmpty(className)) {
+            criteria.and("className").is(className);
+        }
+        query.addCriteria(criteria);
         return mongoTemplate.findOne(query, InforUserReadHisBo.class);
     }
 

@@ -3,6 +3,7 @@ package com.lad.dao;
 import com.lad.scrapybo.BroadcastBo;
 import com.mongodb.WriteResult;
 
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -37,5 +38,10 @@ public interface IBroadcastDao {
 
 
     List<BroadcastBo> findRadioByIds(List<String> radioIds);
+
+    List<BroadcastBo> selectClassByGroups(HashSet<String> modules, HashSet<String> classNames);
+
+
+    List<BroadcastBo> findByLimit(HashSet<String> modules, HashSet<String> classNames, int limit);
 
 }

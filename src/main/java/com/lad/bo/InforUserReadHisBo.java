@@ -17,8 +17,10 @@ public class InforUserReadHisBo implements Serializable {
 
     @Id
     private String id;
-
+    //一级分类
     private String module;
+    //二级分类
+    private String className;
 
     private int type;
 
@@ -65,5 +67,13 @@ public class InforUserReadHisBo implements Serializable {
 
     public void setUserid(String userid) {
         this.userid = userid;
+    }
+
+    public String getClassName() {
+        return className;
+    }
+
+    public void setClassName(String className) {
+        this.className = className;
     }
 }

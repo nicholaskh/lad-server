@@ -47,5 +47,12 @@ public interface IInforHistoryDao {
      */
     WriteResult updateHisDayNum(String id, int num);
 
+    /**
+     * 删除资讯信息
+     * @param ids
+     * @return
+     */
+    WriteResult updateZeroHis(List<String> ids);
+
 
 }

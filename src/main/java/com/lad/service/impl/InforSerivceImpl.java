@@ -12,6 +12,7 @@ import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -280,5 +281,30 @@ public class InforSerivceImpl implements IInforService {
     @Override
     public List<VideoBo> findVideoByIds(List<String> videoIds) {
         return videoDao.findVideoByIds(videoIds);
+    }
+
+    @Override
+    public List<VideoBo> selectClassNamePage(String module, String className, int start, int end) {
+        return videoDao.findByClassNamePage(module, className, start, end);
+    }
+
+    @Override
+    public List<VideoBo> selectVideoClassByGroups(HashSet<String> modules, HashSet<String> classNames) {
+        return videoDao.selectClassByGroups(modules, classNames);
+    }
+
+    @Override
+    public List<BroadcastBo> selectRadioClassByGroups(HashSet<String> modules, HashSet<String> classNames) {
+        return broadcastDao.selectClassByGroups(modules, classNames);
+    }
+
+    @Override
+    public List<BroadcastBo> findRadioByLimit(HashSet<String> modules, HashSet<String> classNames, int limit) {
+        return broadcastDao.findByLimit(modules, classNames, limit);
+    }
+
+    @Override
+    public List<VideoBo> findVideoByLimit(HashSet<String> modules, HashSet<String> classNames, int limit) {
+        return videoDao.findByLimit(modules, classNames, limit);
     }
 }

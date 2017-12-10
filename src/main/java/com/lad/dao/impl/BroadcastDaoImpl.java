@@ -2,6 +2,7 @@ package com.lad.dao.impl;
 
 import com.lad.dao.IBroadcastDao;
 import com.lad.scrapybo.BroadcastBo;
+import com.lad.util.CommonUtil;
 import com.lad.util.Constant;
 import com.mongodb.WriteResult;
 import org.apache.commons.lang3.StringUtils;
@@ -15,6 +16,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -65,10 +67,10 @@ public class BroadcastDaoImpl implements IBroadcastDao {
     public List<BroadcastBo> selectClassByGroups(String groupName) {
         Criteria criteria = new Criteria("module").is(groupName);
         MatchOperation match = Aggregation.match(criteria);
-        ProjectionOperation project = Aggregation.project("_id","className","intro");
-        GroupOperation groupOperation = Aggregation.group("className", "intro");
-        Aggregation aggregation = Aggregation.newAggregation(match, project, groupOperation,
-                Aggregation.sort(Sort.Direction.ASC, "className"));
+        GroupOperation groupOperation = Aggregation.group("className", "intro")
+                .sum("visitNum").as("visitNum");
+        Aggregation aggregation = Aggregation.newAggregation(match, groupOperation,
+                Aggregation.sort(Sort.Direction.ASC, "module"));
         AggregationResults<BroadcastBo> results = mongoTemplateTwo.aggregate(aggregation, "broadcast", BroadcastBo.class);
         return results.getMappedResults();
 }
@@ -142,5 +144,37 @@ public class BroadcastDaoImpl implements IBroadcastDao {
         Query query = new Query();
         query.addCriteria(new Criteria("_id").in(radioIds));
         return mongoTemplateTwo.find(query, BroadcastBo.class);
+    }
+
+    @Override
+    public List<BroadcastBo> selectClassByGroups(HashSet<String> modules, HashSet<String> classNames) {
+        Criteria criteria = new Criteria("module").in(modules).and("className").in(classNames);
+        MatchOperation match = Aggregation.match(criteria);
+        GroupOperation groupOperation = Aggregation.group("module", "className", "intro")
+                .sum("visitNum").as("visitNum");
+        Aggregation aggregation = Aggregation.newAggregation(match, groupOperation,
+                Aggregation.sort(Sort.Direction.ASC, "module", "className"));
+        AggregationResults<BroadcastBo> results = mongoTemplateTwo.aggregate(aggregation, "broadcast", BroadcastBo.class);
+        return results.getMappedResults();
+    }
+
+    @Override
+    public List<BroadcastBo> findByLimit(HashSet<String> modules, HashSet<String> classNames, int limit) {
+
+        GroupOperation groupOperation = Aggregation.group("module", "className", "intro")
+                .sum("visitNum").as("visitNum");
+        Aggregation aggregation;
+        if (CommonUtil.isEmpty(modules)) {
+            aggregation = Aggregation.newAggregation( groupOperation,
+                    Aggregation.sort(Sort.Direction.ASC, "module", "className"),
+                    Aggregation.limit(limit));
+        } else {
+            Criteria criteria = new Criteria("module").nin(modules).and("className").nin(classNames);
+            MatchOperation match = Aggregation.match(criteria);
+            aggregation = Aggregation.newAggregation(match, groupOperation,
+                    Aggregation.sort(Sort.Direction.ASC, "module", "className"), Aggregation.limit(limit));
+        }
+        AggregationResults<BroadcastBo> results = mongoTemplateTwo.aggregate(aggregation, "broadcast", BroadcastBo.class);
+        return results.getMappedResults();
     }
 }

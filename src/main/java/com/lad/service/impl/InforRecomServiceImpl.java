@@ -1,13 +1,7 @@
 package com.lad.service.impl;
 
-import com.lad.bo.InforHistoryBo;
-import com.lad.bo.InforRecomBo;
-import com.lad.bo.InforUserReadBo;
-import com.lad.bo.InforUserReadHisBo;
-import com.lad.dao.IInforHistoryDao;
-import com.lad.dao.IInforRecomDao;
-import com.lad.dao.IInforUserReadDao;
-import com.lad.dao.IInforUserReadHisDao;
+import com.lad.bo.*;
+import com.lad.dao.*;
 import com.lad.service.IInforRecomService;
 import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +31,9 @@ public class InforRecomServiceImpl implements IInforRecomService {
 
     @Autowired
     private IInforUserReadHisDao inforUserReadHisDao;
+    
+    @Autowired
+    private IInforGroupRecomDao inforGroupRecomDao;
 
 
     @Override
@@ -120,8 +117,8 @@ public class InforRecomServiceImpl implements IInforRecomService {
     }
 
     @Override
-    public InforUserReadHisBo findUserReadHis(String userid, int type, String module, Date halfTime) {
-        return inforUserReadHisDao.findUserReadHis(userid, type, module, halfTime);
+    public InforUserReadHisBo findUserReadHis(String userid, int type, String module, String className,Date halfTime) {
+        return inforUserReadHisDao.findUserReadHis(userid, type, module,className, halfTime);
     }
 
     @Override
@@ -130,12 +127,47 @@ public class InforRecomServiceImpl implements IInforRecomService {
     }
 
     @Override
-    public InforUserReadHisBo findByReadHis(String userid, int type, String module) {
-        return inforUserReadHisDao.findByReadHis(userid, type, module);
+    public InforUserReadHisBo findByReadHis(String userid, int type, String module,String className) {
+        return inforUserReadHisDao.findByReadHis(userid, type, module, className);
     }
 
     @Override
     public List<InforUserReadHisBo> findUserReadHisBeforeHalf(String userid, Date halfTime) {
         return inforUserReadHisDao.findUserReadHisBeforeHalf(userid, halfTime);
+    }
+
+    @Override
+    public InforGroupRecomBo addInforGroup(InforGroupRecomBo groupRecomBo) {
+        return inforGroupRecomDao.addInforGroup(groupRecomBo);
+    }
+
+    @Override
+    public InforGroupRecomBo findInforGroup(String module, String className, int type) {
+        return inforGroupRecomDao.findInforGroup(module, className, type);
+    }
+
+    @Override
+    public InforGroupRecomBo findInforGroup(String module, int type) {
+        return inforGroupRecomDao.findInforGroup(module, type);
+    }
+
+    @Override
+    public List<InforGroupRecomBo> findInforGroupByModule(int type, LinkedHashSet<String> modules) {
+        return inforGroupRecomDao.findInforGroupByModule(type, modules);
+    }
+
+    @Override
+    public List<InforGroupRecomBo> findInforGroupWithoutModule(int type, LinkedHashSet<String> modules, int limit) {
+        return inforGroupRecomDao.findInforGroupWithoutModule(type, modules, limit);
+    }
+
+    @Override
+    public WriteResult updateInforGroup(String id, int halfNum, int totalNum) {
+        return inforGroupRecomDao.updateInforGroup(id, halfNum, totalNum);
+    }
+
+    @Override
+    public WriteResult updateZeroHis(List<String> ids) {
+        return inforHistoryDao.updateZeroHis(ids);
     }
 }

@@ -31,6 +31,8 @@ public class VideoBo implements Serializable {
 
     private String className;
 
+    private int num;
+
     private int visitNum;
 
     private int shareNum;
@@ -143,5 +145,13 @@ public class VideoBo implements Serializable {
 
     public void setCollectNum(int collectNum) {
         this.collectNum = collectNum;
+    }
+
+    public int getNum() {
+        return num;
+    }
+
+    public void setNum(int num) {
+        this.num = num;
     }
 }
