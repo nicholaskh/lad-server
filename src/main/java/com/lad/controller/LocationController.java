@@ -8,6 +8,8 @@ import com.lad.util.Constant;
 import com.lad.vo.UserVo;
 import net.sf.json.JSONObject;
 import org.apache.commons.beanutils.BeanUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,6 +27,8 @@ public class LocationController extends BaseContorller {
 	private ILocationService locationService;
 	@Autowired
 	private IUserService userService;
+
+	private final static Logger log = LogManager.getLogger(LocationController.class);
 
 	@RequestMapping("/near")
 	@ResponseBody
@@ -55,15 +59,18 @@ public class LocationController extends BaseContorller {
 		if (null != userBo) {
 			LocationBo locationBo  = locationService.getLocationBoByUserid(userBo.getId());
 			double[] postion = new double[]{px, py};
+
 			if (null == locationBo) {
 				locationBo = new LocationBo();
 				locationBo.setUserid(userBo.getId());
 				locationBo.setPosition(postion);
 				locationBo = locationService.insertUserPoint(locationBo);
+				log.info("user location add  {}, userid {}", postion, userBo.getId());
 			} else {
 				locationBo.setPosition(postion);
 				locationBo.setUpdateTime(new Date());
 				locationService.updateUserPoint(locationBo);
+				log.info("user location update {}, userid {}", postion, userBo.getId());
 			}
 			if (!locationBo.getId().equals(userBo.getLocationid())) {
 				userBo.setLocationid(locationBo.getId());
