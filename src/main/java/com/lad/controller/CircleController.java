@@ -46,7 +46,7 @@ public class CircleController extends BaseContorller {
 
 	@Autowired
 	private IFeedbackService feedbackService;
-	
+
 	@Autowired
 	private ISearchService searchService;
 
@@ -224,6 +224,13 @@ public class CircleController extends BaseContorller {
 	@ResponseBody
 	public String applyIsnert(@RequestParam(required = true) String circleid, String reason, boolean isNotice,
 			HttpServletRequest request, HttpServletResponse response) {
+		return applyIsnert(circleid, reason, isNotice,0, "", request, response);
+	}
+
+	@RequestMapping("/party-apply-insert")
+	@ResponseBody
+	public String applyIsnert(@RequestParam(required = true) String circleid, String reason, boolean isNotice, int
+			addType, String partyid, HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
 		try {
 			userBo = checkSession(request, userService);
@@ -251,6 +258,8 @@ public class CircleController extends BaseContorller {
 			reasonBo.setCircleid(circleid);
 			reasonBo.setReason(reason);
 			reasonBo.setNotice(isNotice);
+			reasonBo.setAddType(addType);
+			reasonBo.setPartyid(partyid);
 			reasonBo.setCreateuid(userBo.getId());
 			reasonBo.setStatus(Constant.ADD_APPLY);
 			reasonService.insert(reasonBo);
@@ -265,11 +274,12 @@ public class CircleController extends BaseContorller {
 		HashSet<String> masters = circleBo.getMasters();
 		if (!CommonUtil.isEmpty(masters)) {
 			String[] pushUser = new String[masters.size()];
-            masters.toArray(pushUser);
+			masters.toArray(pushUser);
 			JPushUtil.push(titlePush, content, path,  pushUser);
 		}
 		return Constant.COM_RESP;
 	}
+
 
 
 	@RequestMapping("/free-insert")
@@ -443,6 +453,8 @@ public class CircleController extends BaseContorller {
 		HashSet<String> usersApply = circleBo.getUsersApply();
 		List<String> accepts = new ArrayList<>();
 		List<String> pushFriends = new ArrayList<>();
+		List<String> addTypeIn = new LinkedList<>();
+		String content = String.format("您加入圈子【%s】的申请已通过，快去看看吧", circleBo.getName());
 		for (String userid : useridArr) {
 			UserBo user = userService.getUser(userid);
 			if (null == user) {
@@ -458,19 +470,32 @@ public class CircleController extends BaseContorller {
 					if (reasonBo.isNotice()) {
 						pushFriends.add(userid);
 					}
+					//是否通过聚会页面加入圈子
+					if (reasonBo.getAddType() == 1) {
+						addTypeIn.add(userid);
+						String party = String.format("/party/party-info.do?partyid=%s", reasonBo.getPartyid());
+						JPushUtil.push(titlePush, content, party,  userid);
+					} else {
+						accepts.add(userid);
+					}
+				} else {
+					accepts.add(userid);
 				}
-				accepts.add(userid);
 			}
 		}
 		circleService.updateApplyAgree(circleBo.getId(), users, usersApply);
 
-		String content = String.format("您加入圈子【%s】的申请已通过，快去看看吧", circleBo.getName());
+
 		String path = "/circle/circle-info.do?circleid=" + circleid;
 		if (!accepts.isEmpty()) {
 			String[] userArr = new String[accepts.size()];
 			accepts.toArray(userArr);
 			JPushUtil.push(titlePush, content, path,  userArr);
-			pushToFriends(circleBo.getName(), path, pushFriends);
+		}
+		pushToFriends(circleBo.getName(), path, pushFriends);
+		if (!addTypeIn.isEmpty()) {
+			path = "/party/party-info.do?circleid=" + circleid;
+
 		}
 		return Constant.COM_RESP;
 	}
@@ -1916,8 +1941,8 @@ public class CircleController extends BaseContorller {
 	 */
 	@RequestMapping("/add-in-circle")
 	@ResponseBody
-	public String applyAddInsert(String circleid,HttpServletRequest request, HttpServletResponse response) {
-
+	public String applyAddInsert(String circleid, String partyid, HttpServletRequest request, HttpServletResponse
+			response) {
 		UserBo userBo = getUserLogin(request);
 		if (userBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
@@ -1961,8 +1986,6 @@ public class CircleController extends BaseContorller {
 		}
 		return JSONObject.fromObject(map).toString();
 	}
-
-
 
 	private UserCircleVo circleUser2Vo(UserBo userBo, String createuid, HashSet<String> masters){
 		UserCircleVo userBaseVo = new UserCircleVo();
