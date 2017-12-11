@@ -246,10 +246,11 @@ public class InforController extends BaseContorller {
         }
         for (BroadcastBo bo : broadcastBos) {
             JSONObject object = new JSONObject();
+            object.put("module", bo.getModule());
             object.put("title", bo.getClassName());
+            object.put("source", bo.getSource());
             object.put("intro", bo.getIntro());
             object.put("totalVisit", bo.getVisitNum());
-            object.put("module", bo.getModule());
             array.add(object);
         }
     }
@@ -1241,6 +1242,7 @@ public class InforController extends BaseContorller {
                 JSONObject object = new JSONObject();
                 object.put("module", bo.getModule());
                 object.put("title", bo.getClassName());
+                object.put("source", bo.getSource());
                 object.put("totalVisit", bo.getVisitNum());
                 array.add(object);
             }

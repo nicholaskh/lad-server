@@ -145,7 +145,7 @@ public class VideoDaoImpl implements IVideoDao {
     public List<VideoBo> selectClassByGroups(HashSet<String> modules, HashSet<String> classNames) {
         Criteria criteria = new Criteria("module").in(modules).and("className").in(classNames);
         MatchOperation match = Aggregation.match(criteria);
-        GroupOperation groupOperation = Aggregation.group("module","className")
+        GroupOperation groupOperation = Aggregation.group("module","className", "source")
                 .sum("visitNum").as("visitNum");
         Aggregation aggregation = Aggregation.newAggregation(match, groupOperation,
                 Aggregation.sort(Sort.Direction.ASC, "module", "className"));
@@ -156,7 +156,7 @@ public class VideoDaoImpl implements IVideoDao {
     @Override
     public List<VideoBo> findByLimit(HashSet<String> modules, HashSet<String> classNames, int limit) {
 
-        GroupOperation groupOperation = Aggregation.group("module","className")
+        GroupOperation groupOperation = Aggregation.group("module","className", "source")
                 .sum("visitNum").as("visitNum");
         Aggregation aggregation;
         if (CommonUtil.isEmpty(modules)) {

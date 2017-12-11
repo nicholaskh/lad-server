@@ -67,7 +67,7 @@ public class BroadcastDaoImpl implements IBroadcastDao {
     public List<BroadcastBo> selectClassByGroups(String groupName) {
         Criteria criteria = new Criteria("module").is(groupName);
         MatchOperation match = Aggregation.match(criteria);
-        GroupOperation groupOperation = Aggregation.group("className", "intro")
+        GroupOperation groupOperation = Aggregation.group("className","source", "intro")
                 .sum("visitNum").as("visitNum");
         Aggregation aggregation = Aggregation.newAggregation(match, groupOperation,
                 Aggregation.sort(Sort.Direction.ASC, "className"));
@@ -150,7 +150,7 @@ public class BroadcastDaoImpl implements IBroadcastDao {
     public List<BroadcastBo> selectClassByGroups(HashSet<String> modules, HashSet<String> classNames) {
         Criteria criteria = new Criteria("module").in(modules).and("className").in(classNames);
         MatchOperation match = Aggregation.match(criteria);
-        GroupOperation groupOperation = Aggregation.group("module", "className", "intro")
+        GroupOperation groupOperation = Aggregation.group("module", "className", "intro", "source")
                 .sum("visitNum").as("visitNum");
         Aggregation aggregation = Aggregation.newAggregation(match, groupOperation,
                 Aggregation.sort(Sort.Direction.ASC, "module", "className"));
@@ -161,7 +161,7 @@ public class BroadcastDaoImpl implements IBroadcastDao {
     @Override
     public List<BroadcastBo> findByLimit(HashSet<String> modules, HashSet<String> classNames, int limit) {
 
-        GroupOperation groupOperation = Aggregation.group("module", "className", "intro")
+        GroupOperation groupOperation = Aggregation.group("module", "className", "intro", "source")
                 .sum("visitNum").as("visitNum");
         Aggregation aggregation;
         if (CommonUtil.isEmpty(modules)) {
