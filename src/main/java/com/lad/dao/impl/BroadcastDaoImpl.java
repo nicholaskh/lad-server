@@ -70,7 +70,7 @@ public class BroadcastDaoImpl implements IBroadcastDao {
         GroupOperation groupOperation = Aggregation.group("className", "intro")
                 .sum("visitNum").as("visitNum");
         Aggregation aggregation = Aggregation.newAggregation(match, groupOperation,
-                Aggregation.sort(Sort.Direction.ASC, "module"));
+                Aggregation.sort(Sort.Direction.ASC, "className"));
         AggregationResults<BroadcastBo> results = mongoTemplateTwo.aggregate(aggregation, "broadcast", BroadcastBo.class);
         return results.getMappedResults();
 }

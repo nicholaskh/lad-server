@@ -178,6 +178,6 @@ public class ChatroomServiceImpl implements IChatroomService {
 
 	@Override
 	public WriteResult addPartyChartroom(String chatroomId, String partyid) {
-		return addPartyChartroom(chatroomId, partyid);
+		return chatroomDao.addPartyChartroom(chatroomId, partyid);
 	}
 }
