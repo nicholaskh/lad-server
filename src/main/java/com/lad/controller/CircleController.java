@@ -224,7 +224,7 @@ public class CircleController extends BaseContorller {
 	@ResponseBody
 	public String applyIsnert(@RequestParam(required = true) String circleid, String reason, boolean isNotice,
 			HttpServletRequest request, HttpServletResponse response) {
-		return applyIsnert(circleid, reason, isNotice,0, "", request, response);
+		return applyIsnert(circleid, reason, isNotice,0, null, request, response);
 	}
 
 	@RequestMapping("/party-apply-insert")
