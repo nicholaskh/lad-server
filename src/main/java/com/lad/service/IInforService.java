@@ -230,6 +230,15 @@ public interface IInforService {
     List<VideoBo> findVideoByLimit(int limit);
 
     /**
+     *
+     * @param inforid
+     * @param type
+     * @param num
+     * @return
+     */
+    WriteResult updateInforNum(String inforid, int type, int num);
+
+    /**
      * 更新视频访问量
      * @param inforid
      * @param type

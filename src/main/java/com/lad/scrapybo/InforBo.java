@@ -38,6 +38,16 @@ public class InforBo implements Serializable {
     private String text;
 
     private int num;
+    //阅读
+    private int visitNum;
+    //分享转发
+    private int shareNum;
+    //评论
+    private int commnetNum;
+    //点赞
+    private int thumpsubNum;
+    //收藏
+    private int collectNum;
 
     public String getId() {
         return id;
@@ -125,5 +135,45 @@ public class InforBo implements Serializable {
 
     public void setNum(int num) {
         this.num = num;
+    }
+
+    public int getVisitNum() {
+        return visitNum;
+    }
+
+    public void setVisitNum(int visitNum) {
+        this.visitNum = visitNum;
+    }
+
+    public int getShareNum() {
+        return shareNum;
+    }
+
+    public void setShareNum(int shareNum) {
+        this.shareNum = shareNum;
+    }
+
+    public int getCommnetNum() {
+        return commnetNum;
+    }
+
+    public void setCommnetNum(int commnetNum) {
+        this.commnetNum = commnetNum;
+    }
+
+    public int getThumpsubNum() {
+        return thumpsubNum;
+    }
+
+    public void setThumpsubNum(int thumpsubNum) {
+        this.thumpsubNum = thumpsubNum;
+    }
+
+    public int getCollectNum() {
+        return collectNum;
+    }
+
+    public void setCollectNum(int collectNum) {
+        this.collectNum = collectNum;
     }
 }

@@ -254,6 +254,11 @@ public class InforSerivceImpl implements IInforService {
     }
 
     @Override
+    public WriteResult updateInforNum(String inforid, int type, int num) {
+        return inforDao.updateInforNum(inforid, type, num);
+    }
+
+    @Override
     public WriteResult updateSecurityNum(String inforid, int type, int num) {
         return securityDao.updateSecurityNum(inforid, type, num);
     }

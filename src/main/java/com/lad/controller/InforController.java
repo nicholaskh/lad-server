@@ -180,14 +180,11 @@ public class InforController extends BaseContorller {
         List<InforBo> inforBos = inforService.findClassInfos(groupName, inforTime, limit);
         LinkedList<InforVo> inforVos = new LinkedList<>();
         for (InforBo inforBo : inforBos) {
-            InforReadNumBo readNumBo = inforService.findReadByid(inforBo.getId());
             InforVo inforVo = new InforVo();
             bo2vo(inforBo, inforVo);
-            if (readNumBo != null) {
-                inforVo.setReadNum((int)readNumBo.getVisitNum());
-                inforVo.setCommentNum(readNumBo.getCommentNum());
-                inforVo.setThumpsubNum(readNumBo.getThumpsubNum());
-            }
+            inforVo.setThumpsubNum(inforBo.getThumpsubNum());
+            inforVo.setCommentNum(inforBo.getCommnetNum());
+            inforVo.setReadNum(inforBo.getVisitNum());
             inforVos.add(inforVo);
         }
         UserBo userBo =  getUserLogin(request);
@@ -290,7 +287,7 @@ public class InforController extends BaseContorller {
         BroadcastBo broadcastBo = inforService.findBroadById(radioid);
         BroadcastVo broadcastVo = null;
         if (broadcastBo != null) {
-            inforService.updateRadioNum(radioid, Constant.VISIT_NUM, 1);
+            updateInforNum(radioid, Constant.INFOR_RADIO, 1, Constant.VISIT_NUM);
             broadcastVo = new BroadcastVo();
             BeanUtils.copyProperties(broadcastBo, broadcastVo);
             broadcastVo.setInforid(broadcastBo.getId());
@@ -385,9 +382,7 @@ public class InforController extends BaseContorller {
                     ERRORCODE.INFOR_IS_NULL.getIndex(),
                     ERRORCODE.INFOR_IS_NULL.getReason());
         }
-
-        inforService.updateVideoNum(videoid, Constant.VISIT_NUM, 1);
-
+        updateInforNum(videoid, Constant.INFOR_VIDEO, 1, Constant.VISIT_NUM);
         VideoVo videoVo = new VideoVo();
 
         UserBo userBo = getUserLogin(request);
@@ -535,17 +530,6 @@ public class InforController extends BaseContorller {
                     ERRORCODE.INFOR_IS_NULL.getReason());
         }
 
-        InforReadNumBo readNumBo = inforService.findReadByid(inforid);
-        if (readNumBo == null) {
-            readNumBo = new InforReadNumBo();
-            readNumBo.setClassName(inforBo.getClassName());
-            readNumBo.setInforid(inforBo.getId());
-            readNumBo.setVisitNum(1);
-            inforService.addReadNum(readNumBo);
-        } else {
-            inforService.updateReadNum(inforid);
-            readNumBo.setVisitNum(readNumBo.getVisitNum() + 1);
-        }
         InforVo inforVo = new InforVo();
         UserBo userBo = getUserLogin(request);
         if (userBo != null) {
@@ -553,13 +537,13 @@ public class InforController extends BaseContorller {
             inforVo.setSelfSub(thumbsupBo != null);
             updateUserReadHis(userBo.getId(),inforBo.getClassName(),"", Constant.INFOR_HEALTH);
         }
+        updateInforNum(inforid, Constant.INFOR_HEALTH, 1, Constant.VISIT_NUM);
         updateInforHistroy(inforid, inforBo.getClassName(), Constant.INFOR_HEALTH);
         inforVo.setInforid(inforBo.getId());
         BeanUtils.copyProperties(inforBo, inforVo);
-        long thuSupNum = thumbsupService.selectByOwnerIdCount(inforBo.getId());
-        inforVo.setThumpsubNum((int)thuSupNum);
-        inforVo.setCommentNum((int)commentService.selectCommentByTypeCount(Constant.INFOR_TYPE, inforid));
-        inforVo.setReadNum((int)readNumBo.getVisitNum());
+        inforVo.setThumpsubNum(inforBo.getThumpsubNum());
+        inforVo.setCommentNum(inforBo.getCommnetNum());
+        inforVo.setReadNum(inforBo.getVisitNum());
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("ret", 0);
         map.put("inforVo", inforVo);
@@ -576,7 +560,7 @@ public class InforController extends BaseContorller {
                     ERRORCODE.INFOR_IS_NULL.getIndex(),
                     ERRORCODE.INFOR_IS_NULL.getReason());
         }
-        inforService.updateSecurityNum(inforid, Constant.VISIT_NUM, 1);
+        updateInforNum(inforid, Constant.INFOR_SECRITY, 1, Constant.VISIT_NUM);
         SecurityVo securityVo = new SecurityVo();
         UserBo userBo = getUserLogin(request);
         if (userBo != null) {
@@ -587,8 +571,7 @@ public class InforController extends BaseContorller {
         updateInforHistroy(inforid, securityBo.getNewsType(), Constant.INFOR_SECRITY);
         securityVo.setInforid(securityBo.getId());
         BeanUtils.copyProperties(securityBo, securityVo);
-        long thuSupNum = thumbsupService.selectByOwnerIdCount(inforid);
-        securityVo.setThumpsubNum((int)thuSupNum);
+        securityVo.setThumpsubNum(securityBo.getThumpsubNum());
         securityVo.setCommentNum(securityBo.getCommnetNum());
         securityVo.setReadNum(securityBo.getVisitNum());
         Map<String, Object> map = new HashMap<String, Object>();
@@ -650,43 +633,51 @@ public class InforController extends BaseContorller {
         commentBo.setCreateuid(userBo.getId());
         commentBo.setCreateTime(currentDate);
         commentBo.setType(Constant.INFOR_TYPE);
+        commentBo.setSubType(inforType);
         commentService.insert(commentBo);
 
         userService.addUserLevel(userBo.getId(),1, Constant.LEVEL_COMMENT);
 
-        String module = "";
-        switch (inforType){
-            case Constant.INFOR_HEALTH:
-                inforService.updateComment(inforid, 1);
-                InforBo inforBo = inforService.findById(inforid);
-                module = inforBo != null ? inforBo.getClassName() : "";
-                break;
-            case Constant.INFOR_SECRITY:
-                inforService.updateSecurityNum(inforid, Constant.COMMENT_NUM, 1);
-                SecurityBo securityBo = inforService.findSecurityById(inforid);
-                module = securityBo != null ? securityBo.getNewsType() : "";
-                break;
-            case Constant.INFOR_RADIO:
-                inforService.updateRadioNum(inforid, Constant.COMMENT_NUM, 1);
-                BroadcastBo broadcastBo = inforService.findBroadById(inforid);
-                module = broadcastBo != null ? broadcastBo.getModule() : "";
-                break;
-            case Constant.INFOR_VIDEO:
-                inforService.updateVideoNum(inforid, Constant.COMMENT_NUM, 1);
-                VideoBo videoBo = inforService.findVideoById(inforid);
-                module = videoBo != null ? videoBo.getModule() : "";
-                break;
-            default:
-                break;
-        }
-        if (!StringUtils.isEmpty(module)){
-           updateInforHistroy(inforid, module, inforType);
-        }
+        updateInforNum(inforid, inforType, 1, Constant.COMMENT_NUM);
+        infotHostAsync(inforid, inforType);
         CommentVo commentVo = comentBo2Vo(commentBo);
         Map<String, Object> map = new HashMap<>();
         map.put("ret", 0);
         map.put("commentVo", commentVo);
         return JSONObject.fromObject(map).toString();
+    }
+
+    /**
+     * 阅读点赞评论等数据更新
+     * @param inforid
+     * @param inforType  资讯类型
+     * @param num
+     * @param numType 更新数据类型， 阅读、点赞等
+     */
+    @Async
+    private void updateInforNum(String inforid, int inforType, int num, int numType){
+        RLock lock = redisServer.getRLock(inforid.concat(String.valueOf(numType)));
+        try {
+            lock.lock(2, TimeUnit.SECONDS);
+            switch (inforType){
+                case Constant.INFOR_HEALTH:
+                    inforService.updateInforNum(inforid, numType, num);
+                    break;
+                case Constant.INFOR_SECRITY:
+                    inforService.updateSecurityNum(inforid, numType, num);
+                    break;
+                case Constant.INFOR_RADIO:
+                    inforService.updateRadioNum(inforid, numType, num);
+                    break;
+                case Constant.INFOR_VIDEO:
+                    inforService.updateVideoNum(inforid, numType, num);
+                    break;
+                default:
+                    break;
+            }
+        } finally {
+            lock.unlock();
+        }
     }
 
     @RequestMapping("/get-comments")
@@ -709,16 +700,15 @@ public class InforController extends BaseContorller {
     @ResponseBody
     public String delelteComment(String commnetId,
                              HttpServletRequest request, HttpServletResponse response){
-        UserBo userBo;
-        try {
-            userBo = checkSession(request, userService);
-        } catch (MyException e) {
-            return e.getMessage();
+        UserBo userBo = getUserLogin(request);
+        if (userBo == null) {
+
         }
         CommentBo commentBo = commentService.findById(commnetId);
         if (commentBo != null) {
             if (commentBo.getCreateuid().equals(userBo.getId())){
                 commentService.delete(commnetId);
+                updateInforNum(commentBo.getTargetid(), commentBo.getSubType(), -1, Constant.COMMENT_NUM);
             } else {
                 return CommonUtil.toErrorResult(ERRORCODE.NOTE_NOT_MASTER.getIndex(),
                         ERRORCODE.NOTE_NOT_MASTER.getReason());
@@ -744,19 +734,19 @@ public class InforController extends BaseContorller {
             thumbsupBo = new ThumbsupBo();
             if (type == 0) {
                 thumbsupBo.setType(Constant.INFOR_TYPE);
+                updateInforNum(inforid, inforType, 1, Constant.THUMPSUB_NUM);
             } else if (type == 1) {
                 thumbsupBo.setType(Constant.INFOR_COM_TYPE);
                 CommentBo commentBo = commentService.findById(targetid);
                 if (commentBo == null) {
-                    return CommonUtil.toErrorResult(
-                            ERRORCODE.COMMENT_IS_NULL.getIndex(),
+                    return CommonUtil.toErrorResult(ERRORCODE.COMMENT_IS_NULL.getIndex(),
                             ERRORCODE.COMMENT_IS_NULL.getReason());
                 }
+                commentService.updateThumpsubNum(commentBo.getId(), 1);
                 inforid = commentBo.getTargetid();
             } else {
                 return CommonUtil.toErrorResult(
-                        ERRORCODE.TYPE_ERROR.getIndex(),
-                        ERRORCODE.TYPE_ERROR.getReason());
+                        ERRORCODE.TYPE_ERROR.getIndex(), ERRORCODE.TYPE_ERROR.getReason());
             }
             thumbsupBo.setOwner_id(targetid);
             thumbsupBo.setImage(userBo.getHeadPictureName());
@@ -766,45 +756,45 @@ public class InforController extends BaseContorller {
         } else {
             if (thumbsupBo.getDeleted() == Constant.DELETED) {
                 thumbsupService.udateDeleteById(thumbsupBo.getId());
+                if (thumbsupBo.getType() == Constant.INFOR_TYPE) {
+                    updateInforNum(inforid, inforType, 1, Constant.THUMPSUB_NUM);
+                } else {
+                    commentService.updateThumpsubNum(thumbsupBo.getOwner_id(), 1);
+                }
             }
         }
-        thumpsubAsync(targetid, inforid, inforType, 1);
-
+        infotHostAsync(inforid, inforType);
         return Constant.COM_RESP;
     }
 
-    private void thumpsubAsync(String targetid, String inforid, int inforType, int num){
+    /**
+     * 热度信息更新
+     * @param inforid
+     * @param inforType
+     */
+    @Async
+    private void infotHostAsync(String inforid, int inforType){
         //根据每条资讯id加锁
-        RLock lock = redisServer.getRLock(targetid);
         String module = "";
-        try {
-            lock.lock(2, TimeUnit.SECONDS);
-            switch (inforType){
-                case Constant.INFOR_HEALTH:
-                    inforService.updateThumpsub(inforid, num);
-                    InforBo inforBo = inforService.findById(inforid);
-                    module = inforBo != null ? inforBo.getClassName() : "";
-                    break;
-                case Constant.INFOR_SECRITY:
-                    inforService.updateSecurityNum(inforid, Constant.THUMPSUB_NUM, num);
-                    SecurityBo securityBo = inforService.findSecurityById(inforid);
-                    module = securityBo != null ? securityBo.getNewsType() : "";
-                    break;
-                case Constant.INFOR_RADIO:
-                    inforService.updateRadioNum(inforid, Constant.THUMPSUB_NUM, num);
-                    BroadcastBo broadcastBo = inforService.findBroadById(inforid);
-                    module = broadcastBo != null ? broadcastBo.getModule() : "";
-                    break;
-                case Constant.INFOR_VIDEO:
-                    inforService.updateVideoNum(inforid, Constant.THUMPSUB_NUM, num);
-                    VideoBo videoBo = inforService.findVideoById(inforid);
-                    module = videoBo != null ? videoBo.getModule() : "";
-                    break;
-                default:
-                    break;
-            }
-        } finally {
-            lock.unlock();
+        switch (inforType){
+            case Constant.INFOR_HEALTH:
+                InforBo inforBo = inforService.findById(inforid);
+                module = inforBo != null ? inforBo.getClassName() : "";
+                break;
+            case Constant.INFOR_SECRITY:
+                SecurityBo securityBo = inforService.findSecurityById(inforid);
+                module = securityBo != null ? securityBo.getNewsType() : "";
+                break;
+            case Constant.INFOR_RADIO:
+                BroadcastBo broadcastBo = inforService.findBroadById(inforid);
+                module = broadcastBo != null ? broadcastBo.getModule() : "";
+                break;
+            case Constant.INFOR_VIDEO:
+                VideoBo videoBo = inforService.findVideoById(inforid);
+                module = videoBo != null ? videoBo.getModule() : "";
+                break;
+            default:
+                break;
         }
         if (!"".equals(module)){
             updateInforHistroy(inforid, module, inforType);
@@ -825,29 +815,7 @@ public class InforController extends BaseContorller {
         if (thumbsupBo != null) {
             thumbsupService.deleteById(thumbsupBo.getId());
             if (type == 0) {
-                //根据每条资讯id加锁
-                RLock lock = redisServer.getRLock(targetid);
-                try {
-                    lock.lock(1, TimeUnit.SECONDS);
-                    switch (inforType){
-                        case Constant.INFOR_HEALTH:
-                            inforService.updateComment(targetid, -1);
-                            break;
-                        case Constant.INFOR_SECRITY:
-                            inforService.updateSecurityNum(targetid, Constant.THUMPSUB_NUM, -1);
-                            break;
-                        case Constant.INFOR_RADIO:
-                            inforService.updateRadioNum(targetid, Constant.THUMPSUB_NUM, -1);
-                            break;
-                        case Constant.INFOR_VIDEO:
-                            inforService.updateVideoNum(targetid, Constant.THUMPSUB_NUM, -1);
-                            break;
-                        default:
-                            break;
-                    }
-                } finally {
-                    lock.unlock();
-                }
+                updateInforNum(targetid, inforType, -1, Constant.THUMPSUB_NUM);
             }else if (type == 1) {
                 CommentBo commentBo = commentService.findById(targetid);
                 if (commentBo != null) {
@@ -974,12 +942,9 @@ public class InforController extends BaseContorller {
 
 
     private void bo2vo(InforBo inforBo, InforVo inforVo){
-        InforReadNumBo readNumBo = inforService.findReadByid(inforBo.getId());
-        if (readNumBo != null) {
-            inforVo.setReadNum((int)readNumBo.getVisitNum());
-            inforVo.setThumpsubNum(readNumBo.getThumpsubNum());
-            inforVo.setCommentNum(readNumBo.getCommentNum());
-        }
+        inforVo.setThumpsubNum(inforBo.getThumpsubNum());
+        inforVo.setCommentNum(inforBo.getCommnetNum());
+        inforVo.setReadNum(inforBo.getVisitNum());
         inforVo.setInforid(inforBo.getId());
         inforVo.setClassName(inforBo.getClassName());
         inforVo.setImageUrls(inforBo.getImageUrls());

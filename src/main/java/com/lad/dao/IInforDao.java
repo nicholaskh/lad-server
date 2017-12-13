@@ -1,6 +1,7 @@
 package com.lad.dao;
 
 import com.lad.scrapybo.InforBo;
+import com.mongodb.WriteResult;
 
 import java.util.List;
 
@@ -35,5 +36,14 @@ public interface IInforDao {
 
 
     List<InforBo> findHealthByIds(List<String> healthIds);
+
+    /**
+     * 
+     * @param inforid
+     * @param type
+     * @param num
+     * @return
+     */
+    WriteResult updateInforNum(String inforid, int type, int num);
 
 }
