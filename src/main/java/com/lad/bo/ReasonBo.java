@@ -30,6 +30,10 @@ public class ReasonBo extends BaseBo {
     //圈子内未读数据，为了减少数据冗余，放到reason表中
     private int unReadNum;
 
+    //是否通过聚会页面加入圈子 0 正常加入圈子，1 通过聚会页面加入圈子
+    private int addType;
+
+    private String partyid;
 
     public String getCircleid() {
         return circleid;
@@ -93,5 +97,21 @@ public class ReasonBo extends BaseBo {
 
     public void setUnReadNum(int unReadNum) {
         this.unReadNum = unReadNum;
+    }
+
+    public int getAddType() {
+        return addType;
+    }
+
+    public void setAddType(int addType) {
+        this.addType = addType;
+    }
+
+    public String getPartyid() {
+        return partyid;
+    }
+
+    public void setPartyid(String partyid) {
+        this.partyid = partyid;
     }
 }

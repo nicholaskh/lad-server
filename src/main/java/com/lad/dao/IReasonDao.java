@@ -28,7 +28,7 @@ public interface IReasonDao extends IBaseDao{
      * @param userid   申请人id
      * @return
      */
-    ReasonBo findByUserAndCircle(String userid, String circleid);
+    ReasonBo findByUserAndCircle(String userid, String circleid, int status);
 
     /**
      * 查找申请添加信息
@@ -116,5 +116,12 @@ public interface IReasonDao extends IBaseDao{
      * @return
      */
     WriteResult updateUnReadNum(HashSet<String> userids, String circleid);
+
+    /**
+     * 查找申请添加信息
+     * @param userid   申请人id
+     * @return
+     */
+    ReasonBo findByUserAdd(String userid, String circleid);
 
 }

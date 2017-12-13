@@ -10,6 +10,8 @@ public class UserCircleVo extends UserBaseVo {
 
     private int maxCircleNum;
 
+    private String backName;
+
     public int getHasCircleNum() {
         return hasCircleNum;
     }
@@ -24,5 +26,13 @@ public class UserCircleVo extends UserBaseVo {
 
     public void setMaxCircleNum(int maxCircleNum) {
         this.maxCircleNum = maxCircleNum;
+    }
+
+    public String getBackName() {
+        return backName;
+    }
+
+    public void setBackName(String backName) {
+        this.backName = backName;
     }
 }

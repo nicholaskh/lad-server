@@ -25,6 +25,8 @@ public class CommentBo extends BaseBo{
 
     //评论的类型 0 帖子评论； 1 资讯评论  2聚会评论
     private int type;
+    //子分类类型，如资讯健康评论，资讯安全评论等
+    private int subType;
 
     //贴子的发帖人
     private String ownerid;
@@ -103,5 +105,13 @@ public class CommentBo extends BaseBo{
 
     public void setThumpsubNum(int thumpsubNum) {
         this.thumpsubNum = thumpsubNum;
+    }
+
+    public int getSubType() {
+        return subType;
+    }
+
+    public void setSubType(int subType) {
+        this.subType = subType;
     }
 }

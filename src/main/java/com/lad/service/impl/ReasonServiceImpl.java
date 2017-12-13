@@ -33,8 +33,8 @@ public class ReasonServiceImpl implements IReasonService {
     }
 
     @Override
-    public ReasonBo findByUserAndCircle(String userid, String circleid) {
-        return reasonDao.findByUserAndCircle(userid, circleid);
+    public ReasonBo findByUserAndCircle(String userid, String circleid, int status) {
+        return reasonDao.findByUserAndCircle(userid, circleid, status);
     }
 
     @Override
@@ -96,5 +96,10 @@ public class ReasonServiceImpl implements IReasonService {
     @Override
     public WriteResult updateUnReadNum(HashSet<String> userids, String circleid) {
         return reasonDao.updateUnReadNum(userids, circleid);
+    }
+
+    @Override
+    public ReasonBo findByUserAdd(String userid, String circleid) {
+        return reasonDao.findByUserAdd(userid, circleid);
     }
 }

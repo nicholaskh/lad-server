@@ -47,12 +47,12 @@ public class ReasonDaoImpl implements IReasonDao {
 
 
     @Override
-    public ReasonBo findByUserAndCircle(String userid, String circleid) {
+    public ReasonBo findByUserAndCircle(String userid, String circleid, int status) {
         Query query = new Query();
         query.addCriteria(new Criteria("createuid").is(userid));
         query.addCriteria(new Criteria("circleid").is(circleid));
         query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
-        query.addCriteria(new Criteria("status").is(Constant.ADD_APPLY));
+        query.addCriteria(new Criteria("status").is(status));
         return mongoTemplate.findOne(query, ReasonBo.class);
     }
 
@@ -89,7 +89,7 @@ public class ReasonDaoImpl implements IReasonDao {
         Query query = new Query();
         query.addCriteria(new Criteria("chatroomid").is(chatroomid));
         query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
-        query.addCriteria(new Criteria("status").is(Constant.ADD_APPLY));
+        query.addCriteria(new Criteria("status").is(Constant.ADD_AGREE));
         query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "createTime")));
         return mongoTemplate.find(query, ReasonBo.class);
     }
@@ -100,7 +100,7 @@ public class ReasonDaoImpl implements IReasonDao {
         query.addCriteria(new Criteria("createuid").is(userid));
         query.addCriteria(new Criteria("chatroomid").is(chatroomid));
         query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
-        query.addCriteria(new Criteria("status").is(Constant.ADD_APPLY));
+        query.addCriteria(new Criteria("status").is(Constant.ADD_AGREE));
         return mongoTemplate.findOne(query, ReasonBo.class);
     }
 
@@ -182,5 +182,14 @@ public class ReasonDaoImpl implements IReasonDao {
         Update update = new Update();
         update.inc("unReadNum", 1);
         return mongoTemplate.updateMulti(query, update, ReasonBo.class);
+    }
+
+    @Override
+    public ReasonBo findByUserAdd(String userid, String circleid) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("createuid").is(userid));
+        query.addCriteria(new Criteria("circleid").is(circleid));
+        query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+        return mongoTemplate.findOne(query, ReasonBo.class);
     }
 }
