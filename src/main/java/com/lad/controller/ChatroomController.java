@@ -173,7 +173,7 @@ public class ChatroomController extends BaseContorller {
 				imNames.add(user.getUserName());
 				imIds.add(user.getId());
 
-				JPushUtil.pushTo(String.format("%s邀请您加入群聊", userBo.getUserName()), userid);
+				JPushUtil.pushTo(String.format("“%s”邀请您加入群聊", userBo.getUserName()), userid);
 
 			}
 		}
@@ -928,7 +928,9 @@ public class ChatroomController extends BaseContorller {
 			return res3;
 		}
 
-        JPushUtil.pushTo(userBo.getUserName()+"将"+chatroomBo.getName()+"转让给了您", userid);
+		String content = String.format("“%s将群聊【%s】转让给了您，快去看看吧", userBo.getUserName(),
+				chatroomBo.getName());
+        JPushUtil.push(titlePush, content, "", userid);
 		return Constant.COM_RESP;
 	}
 

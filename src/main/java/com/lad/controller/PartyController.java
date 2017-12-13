@@ -133,7 +133,7 @@ public class PartyController extends BaseContorller {
 
         if (circleUsers.size() > 0) {
             String path = "/party/party-info.do?partyid=" + partyBo.getId();
-            String content = String.format("%s发起了聚会【%s】，快去看看吧", userBo.getUserName(),
+            String content = String.format("“%s”发起了聚会【%s】，快去看看吧", userBo.getUserName(),
                     partyBo.getTitle());
             String[] userids = new String[circleUsers.size()];
             circleUsers.toArray(userids);
@@ -467,7 +467,7 @@ public class PartyController extends BaseContorller {
             updatePartyStatus(partyid, 2);
         }
         String path = String.format("/party/enroll-detail.do?partyid=%s&userid=%s", partyid, userid);
-        String content = String.format("%s报名了您发起的聚会【%s】，请尽快与他沟通参与事宜", userBo.getUserName(),
+        String content = String.format("“%s”报名了您发起的聚会【%s】，请尽快与他沟通参与事宜", userBo.getUserName(),
                 partyBo.getTitle());
         JPushUtil.push(titlePush, content, path,  partyBo.getCreateuid());
         
