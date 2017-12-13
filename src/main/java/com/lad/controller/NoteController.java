@@ -61,6 +61,9 @@ public class NoteController extends BaseContorller {
 	@Autowired
 	private IFriendsService friendsService;
 
+	@Autowired
+	private ICollectService collectService;
+
 
 	private String pushTitle = "互动通知";
 
@@ -206,13 +209,7 @@ public class NoteController extends BaseContorller {
 		}
 		updateCircleHot(circleService, redisServer, noteBo.getCircleId(), 1, Constant.CIRCLE_THUMP );
 		if (isThumsup) {
-			RLock lock = redisServer.getRLock(thumbsupBo.getId());
-			try {
-				lock.lock(2,TimeUnit.SECONDS);
-				noteService.updateThumpsubCount(noteid, 1);
-			} finally {
-				lock.unlock();
-			}
+			updateCount(noteid, Constant.THUMPSUB_NUM, 1);
 		}
 		updateCircieUnReadNum(noteBo.getCreateuid(), noteBo.getCircleId());
 		updateDynamicNums(noteBo.getCreateuid(), 1, dynamicService, redisServer);
@@ -235,13 +232,7 @@ public class NoteController extends BaseContorller {
 			thumbsupService.deleteById(thumbsupBo.getId());
 			NoteBo noteBo = noteService.selectById(noteid);
 			updateCircleHot(circleService, redisServer, noteBo.getCircleId(), -1, Constant.CIRCLE_THUMP );
-			RLock lock = redisServer.getRLock(Constant.THUMB_LOCK);
-			try {
-				lock.lock(2,TimeUnit.SECONDS);
-				noteService.updateThumpsubCount(noteid, -1);
-			} finally {
-				lock.unlock();
-			}
+			updateCount(noteid, Constant.THUMPSUB_NUM, -1);
 			updateDynamicNums(noteBo.getCreateuid(), -1, dynamicService, redisServer);
 		}
 		return Constant.COM_RESP;
@@ -263,13 +254,7 @@ public class NoteController extends BaseContorller {
 			thumbsupBo = thumbsupService.getByVidAndVisitorid(noteid, userBo.getId());
 		}
 		updateCircleHot(circleService, redisServer, noteBo.getCircleId(), 1, Constant.CIRCLE_NOTE_VISIT);
-		RLock lock = redisServer.getRLock(Constant.VISIT_LOCK);
-		try {
-			lock.lock(1,TimeUnit.SECONDS);
-			noteService.updateVisitCount(noteid);
-		} finally {
-			lock.unlock();
-		}
+		updateCount(noteid, Constant.VISIT_NUM, 1);
 		NoteVo noteVo = new NoteVo();
 		String userid = userBo != null ? userBo.getId() : "";
 		boToVo(noteBo, noteVo, userService.getUser(noteBo.getCreateuid()),userid);
@@ -403,6 +388,7 @@ public class NoteController extends BaseContorller {
 		commentBo.setCreateTime(currentDate);
 		commentService.insert(commentBo);
 
+		updateCount(noteid, Constant.COMMENT_NUM, 1);
 		userService.addUserLevel(userBo.getId(),1, Constant.LEVEL_COMMENT);
 		updateCircleHot(circleService, redisServer, noteBo.getCircleId(), 1, Constant.CIRCLE_COMMENT);
 		updateRedStar(userBo, noteBo, circleid, currentDate);
@@ -500,17 +486,9 @@ public class NoteController extends BaseContorller {
 		if (commentBo != null) {
 			if (userBo.getId().equals(commentBo.getCreateuid())) {
 				commentService.delete(commentid);
-				RLock lock = redisServer.getRLock(Constant.COMOMENT_LOCK);
-				try {
-					lock.lock(2, TimeUnit.SECONDS);
-					//更新帖子评论数
-					noteService.updateCommentCount(commentBo.getNoteid(), -1);
-				} finally {
-					lock.unlock();
-				}
+				updateCount(commentBo.getNoteid(), Constant.VISIT_NUM, 1);
 			} else {
-				return CommonUtil.toErrorResult(
-						ERRORCODE.NOTE_NOT_MASTER.getIndex(),
+				return CommonUtil.toErrorResult(ERRORCODE.NOTE_NOT_MASTER.getIndex(),
 						ERRORCODE.NOTE_NOT_MASTER.getReason());
 			}
 		}
@@ -533,12 +511,11 @@ public class NoteController extends BaseContorller {
 					ERRORCODE.NOTE_IS_NULL.getReason());
 		}
 		String userid = "";
-		if (userBo != null){
+		boolean isLogin = userBo != null;
+		if (isLogin){
 			updateHistory(userBo.getId(), noteBo.getCircleId(), locationService, circleService);
 			userid = userBo.getId();
 		}
-
-		boolean isLogin = userBo != null;
 
 		List<CommentBo> commentBos = commentService.selectByNoteid(noteid, start_id, gt, limit);
 		List<CommentVo> commentVos = new ArrayList<>();
@@ -556,6 +533,8 @@ public class NoteController extends BaseContorller {
 					} else {
 						commentVo.setParentUserName(bo.getBackname());
 					}
+				} else {
+					commentVo.setParentUserName(parent.getUserName());
 				}
 				commentVo.setParentUserid(parent.getCreateuid());
 			}
@@ -567,6 +546,8 @@ public class NoteController extends BaseContorller {
 				} else {
 					commentVo.setUserName(bo.getBackname());
 				}
+			} else {
+				commentVo.setUserName(commentBo.getUserName());
 			}
 			commentVo.setUserHeadPic(comUser.getHeadPictureName());
 			commentVo.setUserid(commentBo.getCreateuid());
@@ -996,10 +977,17 @@ public class NoteController extends BaseContorller {
 		dynamicBo.setContent(noteBo.getContent());
 		dynamicBo.setOwner(noteBo.getCreateuid());
 		dynamicBo.setPhotos(new LinkedHashSet<>(noteBo.getPhotos()));
-		dynamicBo.setSourceType(Constant.NOTE_TYPE);
+		dynamicBo.setSourceType(Constant.CIRCLE_TYPE);
+		dynamicBo.setType(Constant.NOTE_TYPE);
 		dynamicBo.setSourceid(noteid);
+
+		CircleBo circleBo = circleService.selectById(noteBo.getCircleId());
+		if (circleBo != null) {
+			dynamicBo.setSourceName(circleBo.getName());
+		}
 		dynamicBo.setCreateuid(userBo.getId());
 		dynamicService.addDynamic(dynamicBo);
+		updateCount(noteid, Constant.SHARE_NUM, 1);
 		addDynamicMsgs(userBo.getId(), dynamicBo.getId(), Constant.NOTE_TYPE, dynamicService);
 		Map<String, Object> map = new HashMap<>();
 		map.put("ret", 0);
@@ -1007,6 +995,41 @@ public class NoteController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
+	/**
+	 * 收藏帖子
+	 * @param noteid
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@RequestMapping("/col-note")
+	@ResponseBody
+	public String colNotes(String noteid, HttpServletRequest request, HttpServletResponse response){
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		NoteBo noteBo = noteService.selectById(noteid);
+		CollectBo chatBo = new CollectBo();
+		chatBo.setCreateuid(userBo.getId());
+		chatBo.setUserid(userBo.getId());
+		chatBo.setTargetid(noteid);
+		chatBo.setType(Constant.COLLET_URL);
+		chatBo.setSub_type(Constant.NOTE_TYPE);
+		chatBo.setTitle(noteBo.getSubject());
+		CircleBo circleBo = circleService.selectById(noteBo.getCircleId());
+		if (circleBo != null) {
+			chatBo.setSource(circleBo.getName());
+			chatBo.setSourceType(Constant.CIRCLE_TYPE);
+		}
+		collectService.insert(chatBo);
+		updateCount(noteid, Constant.COLLECT_NUM, 1);
+		Map<String, Object> map = new HashMap<>();
+		map.put("ret", 0);
+		map.put("col-time", CommonUtil.time2str(chatBo.getCreateTime()));
+		return JSONObject.fromObject(map).toString();
+	}
 
 
 	private RedstarBo setRedstarBo(String userid, String circleid, int weekNo, int year){
@@ -1104,7 +1127,7 @@ public class NoteController extends BaseContorller {
 		RLock lock = redisServer.getRLock(userid + "UnReadNumLock");
 		try{
 			lock.lock(2, TimeUnit.SECONDS);
-			ReasonBo reasonBo = reasonService.findByUserAndCircle(userid, cirlceid);
+			ReasonBo reasonBo = reasonService.findByUserAndCircle(userid, cirlceid, Constant.ADD_AGREE);
 			if (reasonBo == null) {
 				reasonBo = new ReasonBo();
 				reasonBo.setCircleid(cirlceid);
@@ -1136,10 +1159,40 @@ public class NoteController extends BaseContorller {
 		if (users.contains(pushUserid)) {
 			users.remove(pushUserid);
 		}
+		logger.info(" circle {} note unRead update, users {}", circleid, users);
 		RLock lock = redisServer.getRLock(circleid + "UnReadNumLock");
 		try{
 			lock.lock(3, TimeUnit.SECONDS);
 			reasonService.updateUnReadNum(users, circleBo.getId());
+		} finally {
+			lock.unlock();
+		}
+	}
+
+	@Async
+	private void updateCount(String noteid, int type, int num){
+		RLock lock = redisServer.getRLock(noteid.concat(String.valueOf(type)));
+		try {
+			lock.lock(2,TimeUnit.SECONDS);
+			switch (type) {
+				case Constant.VISIT_NUM:
+					noteService.updateVisitCount(noteid);
+					break;
+				case Constant.COMMENT_NUM:
+					noteService.updateCommentCount(noteid, num);
+					break;
+				case Constant.THUMPSUB_NUM:
+					noteService.updateThumpsubCount(noteid, num);
+					break;
+				case Constant.SHARE_NUM:
+					noteService.updateTransCount(noteid, num);
+					break;
+				case Constant.COLLECT_NUM:
+					noteService.updateCollectCount(noteid, num);
+					break;
+				default:
+					break;
+			}
 		} finally {
 			lock.unlock();
 		}

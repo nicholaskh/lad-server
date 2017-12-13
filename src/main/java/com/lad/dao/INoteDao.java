@@ -159,4 +159,12 @@ public interface INoteDao extends IBaseDao {
 	 */
 	List<NoteBo> findByTopAndEssence(String circleid, String startId, int limit);
 
+	/**
+	 * 更新收藏数量
+	 * @param noteId
+	 * @param num
+	 * @return
+	 */
+	WriteResult updateCollectCount(String noteId, int num);
+
 }

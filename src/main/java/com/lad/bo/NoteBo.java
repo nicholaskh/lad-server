@@ -20,6 +20,8 @@ public class NoteBo extends BaseBo {
 	private long commentcount;
 	//点赞数
 	private long thumpsubcount;
+	//点赞数
+	private long collectcount;
 
 	//精华  管理员操作
 	private int essence;
@@ -164,5 +166,13 @@ public class NoteBo extends BaseBo {
 
 	public void setAsync(boolean async) {
 		isAsync = async;
+	}
+
+	public long getCollectcount() {
+		return collectcount;
+	}
+
+	public void setCollectcount(long collectcount) {
+		this.collectcount = collectcount;
 	}
 }

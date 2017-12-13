@@ -44,8 +44,7 @@ public class NoteDaoImpl implements INoteDao {
 
 	public WriteResult updateVisitCount(String noteId) {
 		Query query = new Query();
-		query.addCriteria(new Criteria("_id").is(noteId));
-		query.addCriteria(new Criteria("deleted").is(0));
+		query.addCriteria(new Criteria("_id").is(noteId).and("deleted").is(0));
 		Update update = new Update();
 		update.inc("visitcount", 1);
 		update.inc("temp",1);
@@ -55,8 +54,7 @@ public class NoteDaoImpl implements INoteDao {
 	public WriteResult updateCommentCount(String noteId, long commentcount) {
 		Query query = new Query();
 		Update update = new Update();
-		query.addCriteria(new Criteria("_id").is(noteId));
-		query.addCriteria(new Criteria("deleted").is(0));
+		query.addCriteria(new Criteria("_id").is(noteId).and("deleted").is(0));
 		update.inc("commentcount", commentcount);
 		update.inc("temp", commentcount);
 		return mongoTemplate.updateFirst(query, update, NoteBo.class);
@@ -65,9 +63,9 @@ public class NoteDaoImpl implements INoteDao {
 	public WriteResult updateTransCount(String noteId, long transcount) {
 		Query query = new Query();
 		Update update = new Update();
-		query.addCriteria(new Criteria("_id").is(noteId));
-		query.addCriteria(new Criteria("deleted").is(0));
-		update.set("transcount", transcount);
+		query.addCriteria(new Criteria("_id").is(noteId).and("deleted").is(0));
+		update.inc("transcount", transcount);
+		update.inc("temp", transcount);
 		return mongoTemplate.updateFirst(query, update, NoteBo.class);
 	}
 
@@ -75,8 +73,7 @@ public class NoteDaoImpl implements INoteDao {
 	public WriteResult updateThumpsubCount(String noteId, long thumpsubcount) {
 		Query query = new Query();
 		Update update = new Update();
-		query.addCriteria(new Criteria("_id").is(noteId));
-		query.addCriteria(new Criteria("deleted").is(0));
+		query.addCriteria(new Criteria("_id").is(noteId).and("deleted").is(0));
 		update.inc("thumpsubcount", thumpsubcount);
 		update.inc("temp",thumpsubcount);
 		return mongoTemplate.updateFirst(query, update, NoteBo.class);
@@ -84,15 +81,13 @@ public class NoteDaoImpl implements INoteDao {
 
 	public NoteBo selectById(String noteId) {
 		Query query = new Query();
-		query.addCriteria(new Criteria("_id").is(noteId));
-		query.addCriteria(new Criteria("deleted").is(0));
+		query.addCriteria(new Criteria("_id").is(noteId).and("deleted").is(0));
 		return mongoTemplate.findOne(query, NoteBo.class);
 	}
 
 	public List<NoteBo> selectByVisit(String circleid) {
 		Query query = new Query();
-		query.addCriteria(new Criteria("circleId").is(circleid));
-		query.addCriteria(new Criteria("deleted").is(0));
+		query.addCriteria(new Criteria("circleId").is(circleid).and("deleted").is(0));
 		query.addCriteria(new Criteria("content").regex("^[\\s\\S]{100,}"));
 		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "visitcount")));
 		query.limit(10);
@@ -276,5 +271,15 @@ public class NoteDaoImpl implements INoteDao {
 		}
 		query.limit(limit);
 		return mongoTemplate.find(query, NoteBo.class);
+	}
+
+	@Override
+	public WriteResult updateCollectCount(String noteId, int num) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("_id").is(noteId).and("deleted").is(0));
+		Update update = new Update();
+		update.inc("collectcount", 1);
+		update.inc("temp",1);
+		return mongoTemplate.updateFirst(query, update, NoteBo.class);
 	}
 }

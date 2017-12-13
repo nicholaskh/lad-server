@@ -128,4 +128,9 @@ public class NoteServiceImpl implements INoteService {
 	public List<NoteBo> findByTopAndEssence(String circleid, String startId, int limit) {
 		return noteDao.findByTopAndEssence(circleid, startId, limit);
 	}
+
+	@Override
+	public WriteResult updateCollectCount(String noteId, int num) {
+		return noteDao.updateCollectCount(noteId, num);
+	}
 }
