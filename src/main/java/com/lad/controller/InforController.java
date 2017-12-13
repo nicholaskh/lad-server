@@ -63,6 +63,9 @@ public class InforController extends BaseContorller {
     @Autowired
     private IInforRecomService inforRecomService;
 
+    @Autowired
+    private ICollectService collectService;
+
 
     @RequestMapping("/init-cache")
     @ResponseBody
@@ -702,7 +705,8 @@ public class InforController extends BaseContorller {
                              HttpServletRequest request, HttpServletResponse response){
         UserBo userBo = getUserLogin(request);
         if (userBo == null) {
-
+            return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+                    ERRORCODE.ACCOUNT_OFF_LINE.getReason());
         }
         CommentBo commentBo = commentService.findById(commnetId);
         if (commentBo != null) {
@@ -1488,4 +1492,61 @@ public class InforController extends BaseContorller {
         }
     }
 
+
+    @RequestMapping("/collect-infor")
+    @ResponseBody
+    public String collectInfor(@RequestParam String inforid,
+                               @RequestParam int inforType,
+                               HttpServletRequest request, HttpServletResponse response){
+        UserBo userBo = getUserLogin(request);
+        if (userBo == null) {
+            return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+                    ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+        }
+
+        CollectBo collectBo = collectService.findByUseridAndTargetid(userBo.getId(), inforid);
+        if (collectBo == null) {
+            collectBo = new CollectBo();
+            collectBo.setUserid(userBo.getId());
+            collectBo.setType(Constant.COLLET_URL);
+            collectBo.setSub_type(Constant.INFOR_TYPE);
+            collectBo.setTargetid(inforid);
+        } else {
+            return CommonUtil.toErrorResult(ERRORCODE.COLLECT_EXIST.getIndex(),
+                    ERRORCODE.COLLECT_EXIST.getReason());
+        }
+        switch (inforType){
+            case Constant.INFOR_HEALTH:
+                InforBo inforBo = inforService.findById(inforid);
+                collectBo.setTitle(inforBo.getTitle());
+                collectBo.setSourceType(Constant.INFOR_HEALTH);
+                collectBo.setSource(inforBo.getModule());
+                break;
+            case Constant.INFOR_SECRITY:
+                SecurityBo securityBo = inforService.findSecurityById(inforid);
+                collectBo.setTitle(securityBo.getTitle());
+                collectBo.setSourceType(Constant.INFOR_SECRITY);
+                collectBo.setSource(securityBo.getNewsType());
+                break;
+            case Constant.INFOR_RADIO:
+                BroadcastBo broadcastBo = inforService.findBroadById(inforid);
+                collectBo.setTitle(broadcastBo.getTitle());
+                collectBo.setSourceType(Constant.INFOR_RADIO);
+                collectBo.setSource(broadcastBo.getModule());
+                break;
+            case Constant.INFOR_VIDEO:
+                VideoBo videoBo = inforService.findVideoById(inforid);
+                collectBo.setTitle(videoBo.getTitle());
+
+                collectBo.setSource(videoBo.getModule());
+                break;
+            default:
+                break;
+        }
+        updateInforNum(inforid, inforType, 1, Constant.COLLECT_NUM);
+        Map<String, Object> map = new HashMap<>();
+        map.put("ret", 0);
+        map.put("col-time", CommonUtil.time2str(collectBo.getCreateTime()));
+        return JSONObject.fromObject(map).toString();
+    }
 }

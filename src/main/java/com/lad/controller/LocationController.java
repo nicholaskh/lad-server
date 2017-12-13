@@ -65,12 +65,10 @@ public class LocationController extends BaseContorller {
 				locationBo.setUserid(userBo.getId());
 				locationBo.setPosition(postion);
 				locationBo = locationService.insertUserPoint(locationBo);
-				log.info("user location add  {}, userid {}", postion, userBo.getId());
 			} else {
 				locationBo.setPosition(postion);
 				locationBo.setUpdateTime(new Date());
 				locationService.updateUserPoint(locationBo);
-				log.info("user location update {}, userid {}", postion, userBo.getId());
 			}
 			if (!locationBo.getId().equals(userBo.getLocationid())) {
 				userBo.setLocationid(locationBo.getId());

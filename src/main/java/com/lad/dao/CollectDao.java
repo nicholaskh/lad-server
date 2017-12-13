@@ -129,9 +129,11 @@ public class CollectDao {
 	 */
 	public List<CollectBo> findByTag(String tag, String userid, int page , int limit){
 		Query query = new Query();
-		query.addCriteria(new Criteria("userid").is(userid));
-		query.addCriteria(new Criteria("userTags").in(tag));
-		query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+		Criteria criteria = new Criteria("userid").is(userid).and("deleted").is(Constant.ACTIVITY);
+		Criteria c1 = new Criteria("userTags").in(tag);
+		Pattern pattern = Pattern.compile("^.*"+tag+".*$", Pattern.CASE_INSENSITIVE);
+		Criteria c2 =  new Criteria("title").regex(pattern);
+		query.addCriteria(criteria.orOperator(c1, c2));
 		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "createTime")));
 		page = page < 1 ? 1 : page;
 		query.skip((page - 1)*limit);

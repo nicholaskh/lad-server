@@ -34,12 +34,16 @@ public class DynamicBo extends BaseBo {
     //视频缩略图
     private String videoPic;
 
+    private int type;
+
     //原作者
     private String owner;
     //来源类型
     private int sourceType;
     //来源id
     private String sourceid;
+    //
+    private String sourceName;
 
     public String getTitle() {
         return title;
@@ -143,5 +147,21 @@ public class DynamicBo extends BaseBo {
 
     public void setSourceid(String sourceid) {
         this.sourceid = sourceid;
+    }
+
+    public String getSourceName() {
+        return sourceName;
+    }
+
+    public void setSourceName(String sourceName) {
+        this.sourceName = sourceName;
+    }
+
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
     }
 }

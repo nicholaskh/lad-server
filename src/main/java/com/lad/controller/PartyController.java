@@ -789,6 +789,11 @@ public class PartyController extends BaseContorller {
             collectBo.setTitle(partyBo.getTitle());
             collectBo.setType(Constant.COLLET_URL);
             collectBo.setSub_type(Constant.PARTY_TYPE);
+            CircleBo circleBo = circleService.selectById(partyBo.getCircleid());
+            if (circleBo != null) {
+                collectBo.setSource(circleBo.getName());
+                collectBo.setSourceType(5);
+            }
             collectBo.setTargetid(partyid);
             collectService.insert(collectBo);
         } else {

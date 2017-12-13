@@ -1010,8 +1010,13 @@ public class NoteController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+        CollectBo chatBo = collectService.findByUseridAndTargetid(userBo.getId(), noteid);
+        if (chatBo != null) {
+            return CommonUtil.toErrorResult(ERRORCODE.COLLECT_EXIST.getIndex(),
+                    ERRORCODE.COLLECT_EXIST.getReason());
+        }
 		NoteBo noteBo = noteService.selectById(noteid);
-		CollectBo chatBo = new CollectBo();
+		chatBo = new CollectBo();
 		chatBo.setCreateuid(userBo.getId());
 		chatBo.setUserid(userBo.getId());
 		chatBo.setTargetid(noteid);
@@ -1021,7 +1026,7 @@ public class NoteController extends BaseContorller {
 		CircleBo circleBo = circleService.selectById(noteBo.getCircleId());
 		if (circleBo != null) {
 			chatBo.setSource(circleBo.getName());
-			chatBo.setSourceType(Constant.CIRCLE_TYPE);
+			chatBo.setSourceType(5);
 		}
 		collectService.insert(chatBo);
 		updateCount(noteid, Constant.COLLECT_NUM, 1);

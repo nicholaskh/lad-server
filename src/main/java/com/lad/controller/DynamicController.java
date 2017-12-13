@@ -50,6 +50,8 @@ public class DynamicController extends BaseContorller {
     @Autowired
     private ICircleService circleService;
 
+    @Autowired
+    private IPartyService partyService;
 
     /**
      * 添加动态
@@ -406,29 +408,37 @@ public class DynamicController extends BaseContorller {
             if (userBo == null) {
                 userBo = userService.getUser(msgBo.getUserid());
             }
+            dynamicVo.setSourceType(type);
+            dynamicVo.setSourceid(msgBo.getTargetid());
             dynamicVo.setUserid(msgBo.getUserid());
             dynamicVo.setUserPic(userBo.getHeadPictureName());
             if (type == Constant.NOTE_TYPE) {
                 NoteBo noteBo = noteService.selectById(id);
-                dynamicVo.setTitle(noteBo.getSubject());
-                dynamicVo.setContent(noteBo.getContent());
-                dynamicVo.setPhotos(noteBo.getPhotos());
-                dynamicVo.setCommentNum(noteBo.getCommentcount());
-                dynamicVo.setThumpNum(noteBo.getThumpsubcount());
-                dynamicVo.setCommentNum(noteBo.getCommentcount());
-                dynamicVo.setLandmark(noteBo.getLandmark());
+                if (noteBo != null) {
+                    dynamicVo.setTitle(noteBo.getSubject());
+                    dynamicVo.setContent(noteBo.getContent());
+                    dynamicVo.setPhotos(noteBo.getPhotos());
+                    dynamicVo.setCommentNum(noteBo.getCommentcount());
+                    dynamicVo.setThumpNum(noteBo.getThumpsubcount());
+                    dynamicVo.setTransNum(noteBo.getTranscount());
+                    dynamicVo.setLandmark(noteBo.getLandmark());
+                }
             } else if (type == Constant.PARTY_TYPE) {
-
-
+                PartyBo partyBo = partyService.findById(id);
+                if (partyBo != null) {
+                    dynamicVo.setTitle(partyBo.getTitle());
+                    dynamicVo.setContent(partyBo.getContent());
+                    List<String> photos = new LinkedList<>();
+                    photos.addAll(partyBo.getPhotos());
+                    dynamicVo.setPhotos(photos);
+                    dynamicVo.setLandmark(partyBo.getLandmark());
+                }
             } else if (type == Constant.DYNAMIC_TYPE) {
                 DynamicBo dynamicBo = dynamicService.findDynamicById(id);
                 BeanUtils.copyProperties(dynamicBo, dynamicVo);
                 dynamicVo.setPhotos(new ArrayList<>(dynamicBo.getPhotos()));
-
             }
             dynamicVos.add(dynamicVo);
         }
-
     }
-    
 }
