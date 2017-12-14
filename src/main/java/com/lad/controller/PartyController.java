@@ -621,7 +621,6 @@ public class PartyController extends BaseContorller {
      */
     private int getPartyStatus(LinkedHashSet<String> startTimes, int appointment){
         if (!CommonUtil.isEmpty(startTimes)) {
-            Date currentZeroTime = CommonUtil.getZeroDate(new Date());
             Iterator<String> iterator = startTimes.iterator();
             String lastTime = "";
             while (iterator.hasNext()){
@@ -632,17 +631,18 @@ public class PartyController extends BaseContorller {
             }
             Date lastDate = CommonUtil.getDate(lastTime, "yyyy-MM-dd HH:mm");
             if (lastDate != null) {
-                long last = lastDate.getTime();
-                if (last < currentZeroTime.getTime()) {
+                Date currentLastTime = CommonUtil.getLastDate(lastDate);
+                //当前时间大于聚会的结束时间 聚会结束
+                if (System.currentTimeMillis() >= currentLastTime.getTime()) {
                     return 3;
                 }
-
+                long last = lastDate.getTime();
                 //减去提前预约天数
                 if (appointment > 0) {
                     last = last - (appointment * dayTimeMins);
                 }
-                //活动已经结束
-                if (last <= System.currentTimeMillis()) {
+                //报名时间已经结束
+                if (System.currentTimeMillis() >= last) {
                     return 2;
                 }
             }
