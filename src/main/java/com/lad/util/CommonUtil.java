@@ -418,6 +418,19 @@ public class CommonUtil {
 		return calendar.getTime();
 	}
 
+	/**
+	 * 获取当前天23：59:59时间戳
+	 * @return
+	 */
+	public static Date getLastDate(Date currenDate){
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(currenDate);
+		calendar.set(Calendar.HOUR_OF_DAY, 23);
+		calendar.set(Calendar.MINUTE, 59);
+		calendar.set(Calendar.SECOND, 59);
+		return calendar.getTime();
+	}
+
 
 	/**
 	 * 判断当前对象是否为空
