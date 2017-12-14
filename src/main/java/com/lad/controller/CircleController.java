@@ -654,6 +654,7 @@ public class CircleController extends BaseContorller {
 		//圈主才能删除管理员
 		LinkedHashSet<String> masters = circleBo.getMasters();
 		HashSet<String> users = circleBo.getUsers();
+		HashSet<String> removes = new LinkedHashSet<>();
 		int removeUser = 0;
 		for (String userid : useridArr) {
 			if (masters.contains(userid)) {
@@ -681,14 +682,21 @@ public class CircleController extends BaseContorller {
 			}
 			if (users.contains(userid)) {
 				users.remove(userid);
+				removes.add(userid);
 				removeUser ++;
 				userAddHis(userid, circleid, 2);
 			}
 		}
 		if (removeUser > 0) {
 			circleAddUsers(circleid, users);
+			this.removeUsers(removes, circleid);
 		}
 		return Constant.COM_RESP;
+	}
+
+	@Async
+	private void removeUsers(HashSet<String> userids, String circleid){
+		reasonService.removeUser(userids, circleid);
 	}
 
 	@RequestMapping("/transfer")
@@ -864,6 +872,7 @@ public class CircleController extends BaseContorller {
 		users.remove(userBo.getId());
 		circleAddUsers(circleBo.getId(), users);
 		userAddHis(userBo.getId(), circleid, 2);
+		reasonService.removeUser(userBo.getId(), circleid);
 		return Constant.COM_RESP;
 	}
 

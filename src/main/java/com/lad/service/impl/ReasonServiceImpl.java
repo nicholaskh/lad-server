@@ -102,4 +102,14 @@ public class ReasonServiceImpl implements IReasonService {
     public ReasonBo findByUserAdd(String userid, String circleid) {
         return reasonDao.findByUserAdd(userid, circleid);
     }
+
+    @Override
+    public WriteResult removeUser(HashSet<String> removeUsers, String circleid) {
+        return reasonDao.removeUser(removeUsers, circleid);
+    }
+
+    @Override
+    public WriteResult removeUser(String userid, String circleid) {
+        return reasonDao.removeUser(userid, circleid);
+    }
 }

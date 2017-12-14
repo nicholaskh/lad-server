@@ -124,4 +124,20 @@ public interface IReasonDao extends IBaseDao{
      */
     ReasonBo findByUserAdd(String userid, String circleid);
 
+
+    /**
+     * 批量删除用户
+     * @param removeUsers
+     * @param circleid
+     * @return
+     */
+    WriteResult removeUser(HashSet<String> removeUsers, String circleid);
+
+    /**
+     * 删除用户
+     * @param userid
+     * @param circleid
+     * @return
+     */
+    WriteResult removeUser(String userid, String circleid);
 }

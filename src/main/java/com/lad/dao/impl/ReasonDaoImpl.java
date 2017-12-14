@@ -187,9 +187,28 @@ public class ReasonDaoImpl implements IReasonDao {
     @Override
     public ReasonBo findByUserAdd(String userid, String circleid) {
         Query query = new Query();
-        query.addCriteria(new Criteria("createuid").is(userid));
-        query.addCriteria(new Criteria("circleid").is(circleid));
-        query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+        query.addCriteria(new Criteria("createuid").is(userid).and("circleid").is(circleid)
+                .and("deleted").is(Constant.ACTIVITY));
         return mongoTemplate.findOne(query, ReasonBo.class);
+    }
+
+    @Override
+    public WriteResult removeUser(HashSet<String> removeUsers, String circleid) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("createuid").in(removeUsers).and("circleid").is(circleid)
+                .and("deleted").is(Constant.ACTIVITY));
+        Update update = new Update();
+        update.set("deleted", Constant.DELETED);
+        return mongoTemplate.updateMulti(query, update, ReasonBo.class);
+    }
+
+    @Override
+    public WriteResult removeUser(String userid, String circleid) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("createuid").is(userid).and("circleid").is(circleid)
+                .and("deleted").is(Constant.ACTIVITY));
+        Update update = new Update();
+        update.set("deleted", Constant.DELETED);
+        return mongoTemplate.updateFirst(query, update, ReasonBo.class);
     }
 }
