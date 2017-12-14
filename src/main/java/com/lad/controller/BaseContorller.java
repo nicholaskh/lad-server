@@ -139,20 +139,6 @@ public abstract class BaseContorller {
 		}
 	}
 
-	/**
-	 * 添加 动态信息推送表
-	 * @param userid
-	 * @param tatgetid
-	 * @param type
-	 */
-	@Async
-	public void addDynamicMsgs(String userid, String tatgetid, int type, IDynamicService dynamicService){
-		DynamicMsgBo msgBo = new DynamicMsgBo();
-		msgBo.setUserid(userid);
-		msgBo.setTargetid(tatgetid);
-		msgBo.setDynamicType(type);
-		dynamicService.addDynamicMsg(msgBo);
-	}
 
 	/**
 	 * 更新动态信息数量表
@@ -167,7 +153,7 @@ public abstract class BaseContorller {
 			numBo.setNumber(1);
 			dynamicService.addNum(numBo);
 		} else {
-			RLock lock = server.getRLock("dynamicSize");
+			RLock lock = server.getRLock(userid+"dynamicSize");
 			try {
 				lock.lock(2,TimeUnit.SECONDS);
 				dynamicService.updateNumbers(numBo.getId(), num);

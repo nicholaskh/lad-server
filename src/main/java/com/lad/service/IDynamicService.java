@@ -2,7 +2,6 @@ package com.lad.service;
 
 import com.lad.bo.DynamicBackBo;
 import com.lad.bo.DynamicBo;
-import com.lad.bo.DynamicMsgBo;
 import com.lad.bo.DynamicNumBo;
 import com.mongodb.WriteResult;
 
@@ -46,36 +45,22 @@ public interface IDynamicService {
     WriteResult updateDynamic(String id, int num, int type);
 
     /**
-     * 信息推送表
-     * @param msgBo
-     * @return
-     */
-    DynamicMsgBo addDynamicMsg(DynamicMsgBo msgBo);
-    WriteResult deleteDynamicMsg(String id);
-    /**
      * 查找
      * @param msgid
      * @return
      */
-    DynamicMsgBo findByMsgid(String msgid);
-    /**
-     * 查找
-     * @param tragetid
-     * @param type
-     * @return
-     */
-    DynamicMsgBo findByTargetid(String tragetid, int type);
+    DynamicBo findByMsgid(String msgid);
     /**
      * 查看所有好友的动态
      * @return
      */
-    List<DynamicMsgBo> findAllFriendsMsg(List<String> friendids, int page, int limit);
+    List<DynamicBo> findAllFriendsMsg(List<String> friendids, int page, int limit);
     /**
      * 指定好友的动态
      * @param friendid  好友id
      * @return
      */
-    List<DynamicMsgBo> findOneFriendMsg(String friendid, int page, int limit);
+    List<DynamicBo> findOneFriendMsg(String friendid, int page, int limit);
     /**
      * 动态黑名单添加
      * @param backBo

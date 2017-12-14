@@ -66,6 +66,9 @@ public class InforController extends BaseContorller {
     @Autowired
     private ICollectService collectService;
 
+    @Autowired
+    private IDynamicService dynamicService;
+
 
     @RequestMapping("/init-cache")
     @ResponseBody
@@ -1549,4 +1552,63 @@ public class InforController extends BaseContorller {
         map.put("col-time", CommonUtil.time2str(collectBo.getCreateTime()));
         return JSONObject.fromObject(map).toString();
     }
+
+    /**
+     * 转发到我的动态
+     */
+    @RequestMapping("/forward-dynamic")
+    @ResponseBody
+    public String forwardDynamic(@RequestParam String inforid, @RequestParam int inforType, String view, HttpServletRequest request,
+                                 HttpServletResponse response) {
+        UserBo userBo = getUserLogin(request);
+        if (userBo == null) {
+            return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+                    ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+        }
+        DynamicBo dynamicBo = new DynamicBo();
+        switch (inforType){
+            case Constant.INFOR_HEALTH:
+                InforBo inforBo = inforService.findById(inforid);
+                dynamicBo.setTitle(inforBo.getTitle());
+                dynamicBo.setSourceName(inforBo.getModule());
+                if (inforBo.getImageUrls() != null) {
+                    dynamicBo.setPhotos(new LinkedHashSet<>(inforBo.getImageUrls()));
+                }
+                break;
+            case Constant.INFOR_SECRITY:
+                SecurityBo securityBo = inforService.findSecurityById(inforid);
+                dynamicBo.setTitle(securityBo.getTitle());
+                dynamicBo.setSourceName(securityBo.getNewsType());
+                break;
+            case Constant.INFOR_RADIO:
+                BroadcastBo broadcastBo = inforService.findBroadById(inforid);
+                dynamicBo.setTitle(broadcastBo.getTitle());
+                dynamicBo.setSourceName(broadcastBo.getModule());
+                break;
+            case Constant.INFOR_VIDEO:
+                VideoBo videoBo = inforService.findVideoById(inforid);
+                dynamicBo.setTitle(videoBo.getTitle());
+                dynamicBo.setSourceName(videoBo.getModule());
+                if (videoBo.getPoster() != null) {
+                    dynamicBo.setVideoPic(videoBo.getPoster());
+                }
+                dynamicBo.setPicType("video");
+                dynamicBo.setVideo(videoBo.getUrl());
+                break;
+            default:
+                break;
+        }
+
+        dynamicBo.setCreateuid(userBo.getId());
+        dynamicBo.setView(view);
+        dynamicBo.setMsgid(inforid);
+        dynamicBo.setType(Constant.INFOR_TYPE);
+        dynamicService.addDynamic(dynamicBo);
+        updateDynamicNums(userBo.getId(), 1,dynamicService, redisServer);
+        Map<String, Object> map = new HashMap<>();
+        map.put("ret", 0);
+        map.put("dynamicid", dynamicBo.getId());
+        return JSONObject.fromObject(map).toString();
+    }
+
 }

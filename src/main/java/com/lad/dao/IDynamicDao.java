@@ -3,6 +3,8 @@ package com.lad.dao;
 import com.lad.bo.DynamicBo;
 import com.mongodb.WriteResult;
 
+import java.util.List;
+
 /**
  * 功能描述：
  * Copyright: Copyright (c) 2017
@@ -41,5 +43,26 @@ public interface IDynamicDao {
      */
     WriteResult update(String id, int num, int type);
 
+
+    /**
+     * 查找
+     * @param msgid
+     * @return
+     */
+    DynamicBo findByMsgid(String msgid);
+
+    /**
+     * 查看所有好友的动态
+     * @return
+     */
+    List<DynamicBo> findAllFriendsMsg(List<String> friendids, int page, int limit);
+
+
+    /**
+     * 指定好友的动态
+     * @param friendid  好友id
+     * @return
+     */
+    List<DynamicBo> findAFriendsMsg(String friendid, int page, int limit);
 
 }

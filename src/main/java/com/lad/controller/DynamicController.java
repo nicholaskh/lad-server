@@ -5,11 +5,10 @@ import com.lad.redis.RedisServer;
 import com.lad.service.*;
 import com.lad.util.CommonUtil;
 import com.lad.util.Constant;
+import com.lad.util.ERRORCODE;
 import com.lad.util.MyException;
 import com.lad.vo.DynamicVo;
-import com.lad.vo.NoteVo;
 import net.sf.json.JSONObject;
-import org.redisson.api.RLock;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -20,7 +19,6 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 功能描述：
@@ -42,16 +40,8 @@ public class DynamicController extends BaseContorller {
     private IDynamicService dynamicService;
 
     @Autowired
-    private INoteService noteService;
-
-    @Autowired
     private IThumbsupService thumbsupService;
 
-    @Autowired
-    private ICircleService circleService;
-
-    @Autowired
-    private IPartyService partyService;
 
     /**
      * 添加动态
@@ -104,7 +94,7 @@ public class DynamicController extends BaseContorller {
             dynamicBo.setPhotos(images);
         }
         dynamicService.addDynamic(dynamicBo);
-        addDynamicMsgs(userId, dynamicBo.getId(), Constant.DYNAMIC_TYPE, dynamicService);
+        updateDynamicNums(userId, 1, dynamicService, redisServer);
         Map<String, Object> map = new HashMap<>();
         map.put("ret", 0);
         map.put("dynamicid", dynamicBo.getId());
@@ -144,9 +134,9 @@ public class DynamicController extends BaseContorller {
                  }
              }
         }
-        List<DynamicMsgBo> msgBos = dynamicService.findAllFriendsMsg(friends, page, limit);
+        List<DynamicBo> msgBos = dynamicService.findAllFriendsMsg(friends, page, limit);
         List<DynamicVo> dynamicVos = new ArrayList<>();
-        bo2vo(msgBos,dynamicVos, null);
+        bo2vo(msgBos, dynamicVos, userBo);
         Map<String, Object> map = new HashMap<>();
         map.put("ret", 0);
         map.put("dynamicVos", dynamicVos);
@@ -213,9 +203,9 @@ public class DynamicController extends BaseContorller {
                 }
             }
         }
-        List<DynamicMsgBo> msgBos = dynamicService.findOneFriendMsg(friendid, page, limit);
+        List<DynamicBo> msgBos = dynamicService.findOneFriendMsg(friendid, page, limit);
         List<DynamicVo> dynamicVos = new ArrayList<>();
-        bo2vo(msgBos,dynamicVos, userService.getUser(friendid));
+        bo2vo(msgBos,dynamicVos, userBo);
         Map<String, Object> map = new HashMap<>();
         map.put("ret", 0);
         map.put("dynamicVos", dynamicVos);
@@ -231,10 +221,10 @@ public class DynamicController extends BaseContorller {
     @RequestMapping("/one-dynamics-num")
     @ResponseBody
     public String friendsNum(String friendid, HttpServletRequest request, HttpServletResponse response){
-        try {
-            checkSession(request, userService);
-        } catch (MyException e) {
-            return e.getMessage();
+        UserBo userBo = getUserLogin(request);
+        if (userBo == null) {
+            return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+                    ERRORCODE.ACCOUNT_OFF_LINE.getReason());
         }
         DynamicNumBo numBo = dynamicService.findNumByUserid(friendid);
         long total = 0L;
@@ -257,13 +247,12 @@ public class DynamicController extends BaseContorller {
     @ResponseBody
     public String myDynamics(int page, int limit,
                               HttpServletRequest request, HttpServletResponse response){
-        UserBo userBo;
-        try {
-            userBo = checkSession(request, userService);
-        } catch (MyException e) {
-            return e.getMessage();
+        UserBo userBo = getUserLogin(request);
+        if (userBo == null) {
+            return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+                    ERRORCODE.ACCOUNT_OFF_LINE.getReason());
         }
-        List<DynamicMsgBo> msgBos = dynamicService.findOneFriendMsg(userBo.getId(), page, limit);
+        List<DynamicBo> msgBos = dynamicService.findOneFriendMsg(userBo.getId(), page, limit);
         List<DynamicVo> dynamicVos = new ArrayList<>();
         bo2vo(msgBos,dynamicVos, userBo);
         Map<String, Object> map = new HashMap<>();
@@ -281,11 +270,10 @@ public class DynamicController extends BaseContorller {
     @RequestMapping("/my-dynamics-num")
     @ResponseBody
     public String myDynamicsNum(HttpServletRequest request, HttpServletResponse response){
-        UserBo userBo;
-        try {
-            userBo = checkSession(request, userService);
-        } catch (MyException e) {
-            return e.getMessage();
+        UserBo userBo = getUserLogin(request);
+        if (userBo == null) {
+            return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+                    ERRORCODE.ACCOUNT_OFF_LINE.getReason());
         }
         DynamicNumBo numBo = dynamicService.findNumByUserid(userBo.getId());
         long total = 0L;
@@ -295,68 +283,6 @@ public class DynamicController extends BaseContorller {
         Map<String, Object> map = new HashMap<>();
         map.put("ret", 0);
         map.put("dynamicNum", total);
-        return JSONObject.fromObject(map).toString();
-    }
-
-    /**
-     * 好友动态列表
-     * @param request
-     * @param response
-     * @return
-     */
-    @RequestMapping("/dynamic-detail")
-    @ResponseBody
-    public String allDynamics(String msgid, HttpServletRequest request, HttpServletResponse response){
-        UserBo userBo;
-        try {
-            userBo = checkSession(request, userService);
-        } catch (MyException e) {
-            return e.getMessage();
-        }
-        Map<String, Object> map = new HashMap<>();
-        map.put("ret", 0);
-        DynamicMsgBo msgBo = dynamicService.findByMsgid(msgid);
-        int type = msgBo.getDynamicType();
-        String id = msgBo.getTargetid();
-        ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(userBo.getId(), id);
-        if (type == Constant.NOTE_TYPE) {
-            NoteBo noteBo = noteService.selectById(id);
-            updateCircleHot(circleService, redisServer, noteBo.getCircleId(), 1, Constant.CIRCLE_NOTE_VISIT);
-            RLock lock = redisServer.getRLock(Constant.VISIT_LOCK);
-            try {
-                lock.lock(3, TimeUnit.SECONDS);
-                noteService.updateVisitCount(id);
-            } finally {
-                lock.unlock();
-            }
-            NoteVo noteVo = new NoteVo();
-            BeanUtils.copyProperties(noteBo, noteVo);
-            if (userBo!= null) {
-                noteVo.setSex(userBo.getSex());
-                noteVo.setBirthDay(userBo.getBirthDay());
-                noteVo.setHeadPictureName(userBo.getHeadPictureName());
-                noteVo.setUsername(userBo.getUserName());
-                noteVo.setUserLevel(userBo.getLevel());
-            }
-            noteVo.setPosition(noteBo.getPosition());
-            noteVo.setCommontCount(noteBo.getCommentcount());
-            noteVo.setVisitCount(noteBo.getVisitcount());
-            noteVo.setNodeid(noteBo.getId());
-            noteVo.setTransCount(noteBo.getTranscount());
-            noteVo.setThumpsubCount(noteBo.getThumpsubcount());
-            //这个帖子自己是否点赞
-            noteVo.setMyThumbsup(null != thumbsupBo);
-            map.put("noteVo", noteVo);
-        } else if (type == Constant.PARTY_TYPE) {
-
-
-        } else if (type == Constant.DYNAMIC_TYPE) {
-            DynamicBo dynamicBo = dynamicService.findDynamicById(id);
-            DynamicVo dynamicVo = new DynamicVo();
-            BeanUtils.copyProperties(dynamicBo, dynamicVo);
-            dynamicVo.setPhotos(new ArrayList<>(dynamicBo.getPhotos()));
-            map.put("dynamicVo", dynamicVo);
-        }
         return JSONObject.fromObject(map).toString();
     }
 
@@ -370,11 +296,10 @@ public class DynamicController extends BaseContorller {
     @RequestMapping("/dynamic-not-see")
     @ResponseBody
     public String notSee(String friendid, HttpServletRequest request, HttpServletResponse response){
-        UserBo userBo;
-        try {
-            userBo = checkSession(request, userService);
-        } catch (MyException e) {
-            return e.getMessage();
+        UserBo userBo = getUserLogin(request);
+        if (userBo == null) {
+            return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+                    ERRORCODE.ACCOUNT_OFF_LINE.getReason());
         }
         DynamicBackBo backBo = dynamicService.findBackByUserid(userBo.getId());
         if (backBo == null) {
@@ -396,48 +321,23 @@ public class DynamicController extends BaseContorller {
 
 
 
-
-
     
-    private void bo2vo(List<DynamicMsgBo> msgBos, List<DynamicVo> dynamicVos, UserBo userBo){
-        for (DynamicMsgBo msgBo : msgBos) {
-            int type = msgBo.getDynamicType();
-            String id = msgBo.getTargetid();
+    private void bo2vo(List<DynamicBo> msgBos, List<DynamicVo> dynamicVos, UserBo userBo){
+        for (DynamicBo msgBo : msgBos) {
             DynamicVo dynamicVo = new DynamicVo();
+            BeanUtils.copyProperties(msgBo, dynamicVo);
             dynamicVo.setMsgid(msgBo.getId());
-            if (userBo == null) {
-                userBo = userService.getUser(msgBo.getUserid());
+            dynamicVo.setSourceid(msgBo.getMsgid());
+            if (!userBo.getId().equals(msgBo.getCreateuid())) {
+                UserBo user = userService.getUser(msgBo.getCreateuid());
+                dynamicVo.setUserPic(user.getHeadPictureName());
+                dynamicVo.setUserid(msgBo.getCreateuid());
+            } else {
+                dynamicVo.setUserPic(userBo.getHeadPictureName());
+                dynamicVo.setUserid(userBo.getCreateuid());
             }
-            dynamicVo.setSourceType(type);
-            dynamicVo.setSourceid(msgBo.getTargetid());
-            dynamicVo.setUserid(msgBo.getUserid());
-            dynamicVo.setUserPic(userBo.getHeadPictureName());
-            if (type == Constant.NOTE_TYPE) {
-                NoteBo noteBo = noteService.selectById(id);
-                if (noteBo != null) {
-                    dynamicVo.setTitle(noteBo.getSubject());
-                    dynamicVo.setContent(noteBo.getContent());
-                    dynamicVo.setPhotos(noteBo.getPhotos());
-                    dynamicVo.setCommentNum(noteBo.getCommentcount());
-                    dynamicVo.setThumpNum(noteBo.getThumpsubcount());
-                    dynamicVo.setTransNum(noteBo.getTranscount());
-                    dynamicVo.setLandmark(noteBo.getLandmark());
-                }
-            } else if (type == Constant.PARTY_TYPE) {
-                PartyBo partyBo = partyService.findById(id);
-                if (partyBo != null) {
-                    dynamicVo.setTitle(partyBo.getTitle());
-                    dynamicVo.setContent(partyBo.getContent());
-                    List<String> photos = new LinkedList<>();
-                    photos.addAll(partyBo.getPhotos());
-                    dynamicVo.setPhotos(photos);
-                    dynamicVo.setLandmark(partyBo.getLandmark());
-                }
-            } else if (type == Constant.DYNAMIC_TYPE) {
-                DynamicBo dynamicBo = dynamicService.findDynamicById(id);
-                BeanUtils.copyProperties(dynamicBo, dynamicVo);
-                dynamicVo.setPhotos(new ArrayList<>(dynamicBo.getPhotos()));
-            }
+            ThumbsupBo thumbsupBo = thumbsupService.findHaveOwenidAndVisitorid(msgBo.getMsgid(), userBo.getId());
+            dynamicVo.setMyThumbsup(thumbsupBo != null);
             dynamicVos.add(dynamicVo);
         }
     }

@@ -2,11 +2,9 @@ package com.lad.service.impl;
 
 import com.lad.bo.DynamicBackBo;
 import com.lad.bo.DynamicBo;
-import com.lad.bo.DynamicMsgBo;
 import com.lad.bo.DynamicNumBo;
 import com.lad.dao.IDynamicBackDao;
 import com.lad.dao.IDynamicDao;
-import com.lad.dao.IDynamicMsgDao;
 import com.lad.dao.IDynamicNumDao;
 import com.lad.service.IDynamicService;
 import com.mongodb.WriteResult;
@@ -27,9 +25,6 @@ public class DynamicServiceImpl implements IDynamicService {
 
     @Autowired
     private IDynamicDao dynamicDao;
-
-    @Autowired
-    private IDynamicMsgDao dynamicMsgDao;
 
     @Autowired
     private IDynamicBackDao dynamicBackDao;
@@ -58,29 +53,15 @@ public class DynamicServiceImpl implements IDynamicService {
         return dynamicDao.update(id, num, type);
     }
 
+
     @Override
-    public DynamicMsgBo addDynamicMsg(DynamicMsgBo msgBo) {
-        return dynamicMsgDao.insert(msgBo);
+    public List<DynamicBo> findAllFriendsMsg(List<String> friendids, int page, int limit) {
+        return dynamicDao.findAllFriendsMsg(friendids, page, limit);
     }
 
     @Override
-    public WriteResult deleteDynamicMsg(String id) {
-        return dynamicMsgDao.delete(id);
-    }
-
-    @Override
-    public DynamicMsgBo findByTargetid(String tragetid, int type) {
-        return dynamicMsgDao.findByTargetid(tragetid, type);
-    }
-
-    @Override
-    public List<DynamicMsgBo> findAllFriendsMsg(List<String> friendids, int page, int limit) {
-        return dynamicMsgDao.findAllFriendsMsg(friendids, page, limit);
-    }
-
-    @Override
-    public List<DynamicMsgBo> findOneFriendMsg(String friendid, int page, int limit) {
-        return dynamicMsgDao.findAFriendsMsg(friendid, page, limit);
+    public List<DynamicBo> findOneFriendMsg(String friendid, int page, int limit) {
+        return dynamicDao.findAFriendsMsg(friendid, page, limit);
     }
 
     @Override
@@ -109,8 +90,8 @@ public class DynamicServiceImpl implements IDynamicService {
     }
 
     @Override
-    public DynamicMsgBo findByMsgid(String msgid) {
-        return dynamicMsgDao.findByMsgid(msgid);
+    public DynamicBo findByMsgid(String msgid) {
+        return dynamicDao.findByMsgid(msgid);
     }
 
     @Override

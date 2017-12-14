@@ -144,8 +144,6 @@ public class PartyController extends BaseContorller {
         userService.addUserLevel(userBo.getId(), 1, Constant.PARTY_TYPE);
         //圈子热度
         updateCircleHot(circleService, redisServer, partyBo.getCircleid(), 1, Constant.CIRCLE_PARTY_VISIT);
-        //动态信息表
-        addDynamicMsgs(userId, partyBo.getId(), Constant.PARTY_TYPE, dynamicService);
         updateDynamicNums(userId, 1, dynamicService, redisServer);
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("ret", 0);
@@ -964,8 +962,23 @@ public class PartyController extends BaseContorller {
         //圈子热度
         updateCircleHot(circleService, redisServer, partyBo.getCircleid(), 1, Constant.CIRCLE_PARTY_VISIT);
         if (comment.isSync()) {
-            //动态信息表
-            addDynamicMsgs(userId, partyBo.getId(), Constant.PARTY_COM_TYPE, dynamicService);
+            DynamicBo dynamicBo = new DynamicBo();
+            dynamicBo.setTitle(partyBo.getTitle());
+            dynamicBo.setMsgid(partyBo.getId());
+            dynamicBo.setCreateuid(userBo.getId());
+            dynamicBo.setOwner(partyBo.getCreateuid());
+            if (partyBo.getPhotos() != null) {
+                dynamicBo.setPhotos(new LinkedHashSet<>(partyBo.getPhotos()));
+            }
+            dynamicBo.setVideo(partyBo.getVideo());
+            dynamicBo.setVideoPic(partyBo.getVideoPic());
+            dynamicBo.setType(Constant.NOTE_TYPE);
+            CircleBo circleBo = circleService.selectById(partyBo.getCircleid());
+            if (circleBo != null) {
+                dynamicBo.setSourceName(circleBo.getName());
+            }
+            dynamicService.addDynamic(dynamicBo);
+            partyService.updateShare(partyBo.getId(), 1);
             updateDynamicNums(userId, 1, dynamicService, redisServer);
         }
         updateRedStar(userBo, partyBo, new Date());
@@ -1495,6 +1508,49 @@ public class PartyController extends BaseContorller {
         Map<String, Object> map = new HashMap<>();
         map.put("ret", 0);
         map.put("noticeVos", noticeBos);
+        return JSONObject.fromObject(map).toString();
+    }
+
+    /**
+     * 转发到我的动态
+     */
+    @RequestMapping("/forward-dynamic")
+    @ResponseBody
+    public String forwardDynamic(String partyid, String view, HttpServletRequest request,
+                                 HttpServletResponse response) {
+        UserBo userBo;
+        try {
+            userBo = checkSession(request, userService);
+        } catch (MyException e) {
+            return e.getMessage();
+        }
+        PartyBo partyBo = partyService.findById(partyid);
+        if (null == partyBo) {
+            return CommonUtil.toErrorResult(ERRORCODE.PARTY_NULL.getIndex(),
+                    ERRORCODE.PARTY_NULL.getReason());
+        }
+        DynamicBo dynamicBo = new DynamicBo();
+        dynamicBo.setTitle(partyBo.getTitle());
+        dynamicBo.setView(view);
+        dynamicBo.setMsgid(partyid);
+        dynamicBo.setCreateuid(userBo.getId());
+        dynamicBo.setOwner(partyBo.getCreateuid());
+        if (partyBo.getPhotos() != null) {
+            dynamicBo.setPhotos(new LinkedHashSet<>(partyBo.getPhotos()));
+        }
+        dynamicBo.setVideo(partyBo.getVideo());
+        dynamicBo.setVideoPic(partyBo.getVideoPic());
+        dynamicBo.setType(Constant.NOTE_TYPE);
+        CircleBo circleBo = circleService.selectById(partyBo.getCircleid());
+        if (circleBo != null) {
+            dynamicBo.setSourceName(circleBo.getName());
+        }
+        dynamicService.addDynamic(dynamicBo);
+        partyService.updateShare(partyid, 1);
+        updateDynamicNums(userBo.getId(), 1,dynamicService, redisServer);
+        Map<String, Object> map = new HashMap<>();
+        map.put("ret", 0);
+        map.put("dynamicid", dynamicBo.getId());
         return JSONObject.fromObject(map).toString();
     }
 

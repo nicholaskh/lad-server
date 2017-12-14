@@ -122,8 +122,20 @@ public class NoteController extends BaseContorller {
 			lock.unlock();
 		}
 		if (noteBo.isAsync()) {
-            //动态信息表
-            addDynamicMsgs(userId, noteBo.getId(), Constant.NOTE_TYPE, dynamicService);
+			DynamicBo dynamicBo = new DynamicBo();
+			dynamicBo.setTitle(noteBo.getSubject());
+			dynamicBo.setView("我发表了帖子");
+			dynamicBo.setCreateuid(userId);
+			dynamicBo.setOwner(noteBo.getCreateuid());
+			dynamicBo.setPhotos(new LinkedHashSet<>(noteBo.getPhotos()));
+			dynamicBo.setType(Constant.NOTE_TYPE);
+
+			CircleBo circleBo = circleService.selectById(noteBo.getCircleId());
+			if (circleBo != null) {
+				dynamicBo.setSourceName(circleBo.getName());
+			}
+			dynamicBo.setCreateuid(userBo.getId());
+			dynamicService.addDynamic(dynamicBo);
 		}
 		userService.addUserLevel(userBo.getId(), 1, Constant.LEVEL_NOTE);
 		updateCircleHot(circleService, redisServer, circleid, 1, Constant.CIRCLE_NOTE);
@@ -959,7 +971,7 @@ public class NoteController extends BaseContorller {
 	 */
 	@RequestMapping("/forward-dynamic")
 	@ResponseBody
-	public String forwardDynamic(String noteid, HttpServletRequest request,
+	public String forwardDynamic(String noteid, String view, HttpServletRequest request,
 								HttpServletResponse response) {
 		UserBo userBo;
 		try {
@@ -974,13 +986,12 @@ public class NoteController extends BaseContorller {
 		}
 		DynamicBo dynamicBo = new DynamicBo();
 		dynamicBo.setTitle(noteBo.getSubject());
-		dynamicBo.setContent(noteBo.getContent());
+		dynamicBo.setView(view);
+		dynamicBo.setMsgid(noteid);
+		dynamicBo.setCreateuid(userBo.getId());
 		dynamicBo.setOwner(noteBo.getCreateuid());
 		dynamicBo.setPhotos(new LinkedHashSet<>(noteBo.getPhotos()));
-		dynamicBo.setSourceType(Constant.CIRCLE_TYPE);
 		dynamicBo.setType(Constant.NOTE_TYPE);
-		dynamicBo.setSourceid(noteid);
-
 		CircleBo circleBo = circleService.selectById(noteBo.getCircleId());
 		if (circleBo != null) {
 			dynamicBo.setSourceName(circleBo.getName());
@@ -988,7 +999,7 @@ public class NoteController extends BaseContorller {
 		dynamicBo.setCreateuid(userBo.getId());
 		dynamicService.addDynamic(dynamicBo);
 		updateCount(noteid, Constant.SHARE_NUM, 1);
-		addDynamicMsgs(userBo.getId(), dynamicBo.getId(), Constant.NOTE_TYPE, dynamicService);
+		updateDynamicNums(userBo.getId(), 1,dynamicService, redisServer);
 		Map<String, Object> map = new HashMap<>();
 		map.put("ret", 0);
 		map.put("dynamicid", dynamicBo.getId());

@@ -12,10 +12,13 @@ import java.util.LinkedHashSet;
  */
 @Document(collection = "dynamic")
 public class DynamicBo extends BaseBo {
-
+    //信息来源id
+    private String msgid;
     //标题
     private String title;
-    //内容
+    //转发或分享时点评内容
+    private String view;
+
     private String content;
     //图片
     private LinkedHashSet<String> photos = new LinkedHashSet<>();
@@ -34,16 +37,22 @@ public class DynamicBo extends BaseBo {
     //视频缩略图
     private String videoPic;
 
+    private String video;
+
     private int type;
 
     //原作者
     private String owner;
-    //来源类型
-    private int sourceType;
-    //来源id
-    private String sourceid;
-    //
+    //来源名称
     private String sourceName;
+
+    public String getMsgid() {
+        return msgid;
+    }
+
+    public void setMsgid(String msgid) {
+        this.msgid = msgid;
+    }
 
     public String getTitle() {
         return title;
@@ -51,6 +60,14 @@ public class DynamicBo extends BaseBo {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String getView() {
+        return view;
+    }
+
+    public void setView(String view) {
+        this.view = view;
     }
 
     public String getContent() {
@@ -125,28 +142,12 @@ public class DynamicBo extends BaseBo {
         this.videoPic = videoPic;
     }
 
-    public int getSourceType() {
-        return sourceType;
-    }
-
-    public void setSourceType(int sourceType) {
-        this.sourceType = sourceType;
-    }
-
     public String getOwner() {
         return owner;
     }
 
     public void setOwner(String owner) {
         this.owner = owner;
-    }
-
-    public String getSourceid() {
-        return sourceid;
-    }
-
-    public void setSourceid(String sourceid) {
-        this.sourceid = sourceid;
     }
 
     public String getSourceName() {
@@ -163,5 +164,13 @@ public class DynamicBo extends BaseBo {
 
     public void setType(int type) {
         this.type = type;
+    }
+
+    public String getVideo() {
+        return video;
+    }
+
+    public void setVideo(String video) {
+        this.video = video;
     }
 }

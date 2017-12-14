@@ -62,6 +62,9 @@ public class CircleController extends BaseContorller {
 	@Autowired
 	private IPartyService partyService;
 
+	@Autowired
+	private IDynamicService dynamicService;
+
 	private String titlePush = "圈子通知";
 
 	/**
@@ -2027,6 +2030,45 @@ public class CircleController extends BaseContorller {
 		}
 		return JSONObject.fromObject(map).toString();
 	}
+
+
+	/**
+	 * 转发到我的动态
+	 */
+	@RequestMapping("/forward-dynamic")
+	@ResponseBody
+	public String forwardDynamic(String circleid, String view, HttpServletRequest request,
+								 HttpServletResponse response) {
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		CircleBo circleBo = circleService.selectById(circleid);
+		if (circleBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_IS_NULL.getIndex(),
+					ERRORCODE.CIRCLE_IS_NULL.getReason());
+		}
+		DynamicBo dynamicBo = new DynamicBo();
+		dynamicBo.setTitle(circleBo.getName());
+		dynamicBo.setMsgid(circleid);
+		dynamicBo.setOwner(circleBo.getCreateuid());
+		LinkedHashSet<String> photos = new LinkedHashSet<>();
+		photos.add(circleBo.getHeadPicture());
+		dynamicBo.setPhotos(photos);
+		dynamicBo.setCreateuid(userBo.getId());
+		dynamicBo.setView(view);
+		dynamicBo.setType(Constant.CIRCLE_TYPE);
+		dynamicBo.setSourceName(circleBo.getName());
+		dynamicService.addDynamic(dynamicBo);
+		circleService.updateCircleHot(circleid, 1, Constant.CIRCLE_TRANS);
+		updateDynamicNums(userBo.getId(), 1,dynamicService, redisServer);
+		Map<String, Object> map = new HashMap<>();
+		map.put("ret", 0);
+		map.put("dynamicid", dynamicBo.getId());
+		return JSONObject.fromObject(map).toString();
+	}
+
 
 	private void addReason (String userid, String circleid){
 		ReasonBo reasonBo = reasonService.findByUserAdd(userid, circleid);

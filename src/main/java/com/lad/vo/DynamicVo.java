@@ -1,6 +1,6 @@
 package com.lad.vo;
 
-import java.util.List;
+import java.util.LinkedHashSet;
 
 /**
  * 功能描述：
@@ -14,15 +14,15 @@ public class DynamicVo extends BaseVo {
 
     private String title;
 
-    private List<String> photos;
+    private LinkedHashSet<String> photos;
 
     private String content;
-
-    private long transNum;
-
-    private long commentNum;
-
-    private long thumpNum;
+    //转发量
+    private int transNum;
+    //评论数量
+    private int commentNum;
+    //点赞数量
+    private int thumpNum;
 
     private String userid;
 
@@ -39,6 +39,19 @@ public class DynamicVo extends BaseVo {
     //来源id
     private String sourceid;
 
+    private int type;
+
+    //转发或分享时点评内容
+    private String view;
+    //经纬度
+    private double[] postion;
+
+    private String picType;
+    //视频缩略图
+    private String videoPic;
+
+    private String video;
+
     public String getMsgid() {
         return msgid;
     }
@@ -53,38 +66,6 @@ public class DynamicVo extends BaseVo {
 
     public void setTitle(String title) {
         this.title = title;
-    }
-
-    public List<String> getPhotos() {
-        return photos;
-    }
-
-    public void setPhotos(List<String> photos) {
-        this.photos = photos;
-    }
-
-    public long getTransNum() {
-        return transNum;
-    }
-
-    public void setTransNum(long transNum) {
-        this.transNum = transNum;
-    }
-
-    public long getCommentNum() {
-        return commentNum;
-    }
-
-    public void setCommentNum(long commentNum) {
-        this.commentNum = commentNum;
-    }
-
-    public long getThumpNum() {
-        return thumpNum;
-    }
-
-    public void setThumpNum(long thumpNum) {
-        this.thumpNum = thumpNum;
     }
 
     public String getLandmark() {
@@ -149,5 +130,85 @@ public class DynamicVo extends BaseVo {
 
     public void setSourceid(String sourceid) {
         this.sourceid = sourceid;
+    }
+
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
+    }
+
+    public LinkedHashSet<String> getPhotos() {
+        return photos;
+    }
+
+    public void setPhotos(LinkedHashSet<String> photos) {
+        this.photos = photos;
+    }
+
+    public String getView() {
+        return view;
+    }
+
+    public void setView(String view) {
+        this.view = view;
+    }
+
+    public double[] getPostion() {
+        return postion;
+    }
+
+    public void setPostion(double[] postion) {
+        this.postion = postion;
+    }
+
+    public String getPicType() {
+        return picType;
+    }
+
+    public void setPicType(String picType) {
+        this.picType = picType;
+    }
+
+    public String getVideoPic() {
+        return videoPic;
+    }
+
+    public void setVideoPic(String videoPic) {
+        this.videoPic = videoPic;
+    }
+
+    public String getVideo() {
+        return video;
+    }
+
+    public void setVideo(String video) {
+        this.video = video;
+    }
+
+    public int getTransNum() {
+        return transNum;
+    }
+
+    public void setTransNum(int transNum) {
+        this.transNum = transNum;
+    }
+
+    public int getCommentNum() {
+        return commentNum;
+    }
+
+    public void setCommentNum(int commentNum) {
+        this.commentNum = commentNum;
+    }
+
+    public int getThumpNum() {
+        return thumpNum;
+    }
+
+    public void setThumpNum(int thumpNum) {
+        this.thumpNum = thumpNum;
     }
 }
