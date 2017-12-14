@@ -2177,7 +2177,7 @@ public class CircleController extends BaseContorller {
 	 * @param cirlceid
 	 */
 	private void circleAddUserApply(String cirlceid, HashSet<String> userApplys){
-		this.circleAddUsers(cirlceid, 1, userApplys, null, null);
+		this.circleAddUsers(cirlceid, 1, null, userApplys, null);
 	}
 
 
