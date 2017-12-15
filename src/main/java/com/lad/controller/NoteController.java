@@ -265,11 +265,17 @@ public class NoteController extends BaseContorller {
 			updateHistory(userBo.getId(), noteBo.getCircleId(), locationService, circleService);
 			thumbsupBo = thumbsupService.getByVidAndVisitorid(noteid, userBo.getId());
 		}
+
 		updateCircleHot(circleService, redisServer, noteBo.getCircleId(), 1, Constant.CIRCLE_NOTE_VISIT);
 		updateCount(noteid, Constant.VISIT_NUM, 1);
 		NoteVo noteVo = new NoteVo();
 		String userid = userBo != null ? userBo.getId() : "";
 		boToVo(noteBo, noteVo, userService.getUser(noteBo.getCreateuid()),userid);
+		CircleBo circleBo = circleService.selectByIdIgnoreDel(noteBo.getCircleId());
+		if (circleBo != null) {
+			noteVo.setCirName(circleBo.getName());
+			noteVo.setCirHeadPic(circleBo.getHeadPicture());
+		}
 		//这个帖子自己是否点赞
 		noteVo.setMyThumbsup(null != thumbsupBo);
 		Map<String, Object> map = new HashMap<String, Object>();

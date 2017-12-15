@@ -404,4 +404,11 @@ public class CircleDaoImpl implements ICircleDao {
 		query.addCriteria(new Criteria("sub_tag").is(sub_tag));
 		return mongoTemplate.findOne(query, CircleBo.class);
 	}
+
+	@Override
+	public CircleBo selectByIdIgnoreDel(String circleid) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("_id").is(circleid));
+		return mongoTemplate.findOne(query, CircleBo.class);
+	}
 }

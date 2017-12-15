@@ -16,6 +16,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.scheduling.annotation.Async;
 
+import java.util.Map;
+
 public class JPushUtil {
 
 	private static Logger logger = LogManager.getLogger(JPushUtil.class);
@@ -112,15 +114,13 @@ public class JPushUtil {
 	}
 
 	@Async
-	public static void pushParams(String title, String content, String path, String paramKey, String params,
+	public static void pushNotify(String title, String content, String path,
 							String... alias) {
 		try {
 			JPushClient jpushClient = new JPushClient(MASTER_SECRET, APP_KEY, null,
 					ClientConfig.getInstance());
-			logger.info("push params alias {},  push title : {},  pushInfo  : {}, params key {}, value{}", alias,
-					title,
-					content, paramKey, params);
-			PushPayload payload = buildPushObject_to_alias_params(title, content, path, paramKey, params, alias);
+			logger.info("push alias {},  push title : {},  pushInfo  : {}", alias,  title,  content);
+			PushPayload payload = buildPushObject_to_alias_notify(title, content, path, alias);
 			PushResult result = jpushClient.sendPush(payload);
 			logger.info("Got result - {}",result);
 			if (result.getResponseCode() != 200) {
@@ -138,16 +138,8 @@ public class JPushUtil {
 		}
 	}
 
-	/**
-	 * 推送通知
-	 * @param title  推送标题
-	 * @param content  推送内容
-	 * @param path  推送落地页路径
-	 * @param alias  推送人
-	 * @return
-	 */
-	public static PushPayload buildPushObject_to_alias_params(String title, String content, String path,  String
-			paramKey, String params,
+
+	public static PushPayload buildPushObject_to_alias_notify(String title, String content, String path,
 															 String... alias) {
 		return PushPayload.newBuilder().setPlatform(Platform.all())
 				.setAudience(Audience.alias(alias))
@@ -156,12 +148,8 @@ public class JPushUtil {
 						.addPlatformNotification(AndroidNotification.newBuilder()
 								.setAlert(content)
 								.setTitle(title)
-								.addExtra("path", path).addExtra(paramKey, params).build())
+								.addExtra("path", path).build())
 						.build())
-				.setMessage(Message.newBuilder()
-						.setMsgContent(content)
-						.setTitle(title)
-						.addExtra("path", path).build())
 				.setOptions(Options.newBuilder()
 						.setTimeToLive(432000).build())
 				.build();
@@ -219,6 +207,28 @@ public class JPushUtil {
 		return false;
 	}
 
+	@Async
+	public static boolean pushParams(String title, String content, String path,
+									 Map<String, String> params, String... alias) {
+		JPushClient jpushClient = new JPushClient(MASTER_SECRET, APP_KEY, null,
+				ClientConfig.getInstance());
+		try {
+			PushPayload payload = buildPushObject_to_alias_params(title, content, path, params, alias);
+			logger.info("pushParams alias {},  push params : {},  pushInfo  : {}", alias,  params,  content);
+			PushResult result = jpushClient.sendPush(payload);
+			logger.info("Got result - {}",result);
+			return result.getResponseCode() == 200;
+		} catch (APIConnectionException e) {
+			logger.error("Connection error, should retry later : {}", e.getMessage());
+		} catch (APIRequestException e) {
+			logger.error("Should review the error, and fix the request : {}", e.getMessage());
+			logger.error("HTTP Status: {}", e.getStatus());
+			logger.error("Error Code: {}" ,e.getErrorCode());
+			logger.error("Error Message: {}", e.getErrorMessage());
+		}
+		return false;
+	}
+
 	/**
 	 * 推送消息
 	 * @param title  推送标题
@@ -235,6 +245,29 @@ public class JPushUtil {
 						.setMsgContent(content)
 						.setTitle(title)
 						.addExtra("path", path).build())
+				.setOptions(Options.newBuilder()
+						.setTimeToLive(432000).build())
+				.build();
+	}
+
+
+	/**
+	 * 推送通知,附带参数信息
+	 * @param title  推送标题
+	 * @param content  推送内容
+	 * @param path  推送落地页路径
+	 * @param params 参数信息
+	 * @param alias  推送人
+	 * @return
+	 */
+	public static PushPayload buildPushObject_to_alias_params(String title, String content, String path,  Map<String, String> params,
+															  String... alias) {
+		return PushPayload.newBuilder().setPlatform(Platform.all())
+				.setAudience(Audience.alias(alias))
+				.setMessage(Message.newBuilder()
+						.setMsgContent(content)
+						.setTitle(title)
+						.addExtra("path", path).addExtras(params).build())
 				.setOptions(Options.newBuilder()
 						.setTimeToLive(432000).build())
 				.build();
