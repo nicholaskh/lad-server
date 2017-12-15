@@ -735,11 +735,6 @@ public class CircleController extends BaseContorller {
 					ERRORCODE.CIRCLE_USER_NULL.getIndex(),
 					ERRORCODE.CIRCLE_USER_NULL.getReason());
 		}
-		UserBo creater = userService.getUser(circleBo.getCreateuid());
-		if (creater == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.USER_NULL.getIndex(),
-					ERRORCODE.USER_NULL.getReason());
-		}
 		//创建者默认为群主
 		circleBo.setCreateuid(userid);
 		circleBo.setUpdateuid(userBo.getId());
@@ -749,9 +744,21 @@ public class CircleController extends BaseContorller {
 			masters.remove(userid);
 			circleService.updateMaster(circleBo);
 		}
-		String content = String.format("“%s”将您设置为圈主",creater.getUserName());
+		FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(userid, userBo.getId());
+		String name = userBo.getUserName();
+		if (friendsBo != null) {
+			 name = StringUtils.isEmpty(friendsBo.getBackname()) ? name : friendsBo.getBackname();
+		}
+		String content = String.format("“%s”将您设置为圈主", name);
 		String path = "/circle/persons.do?circleid=" + circleid;
-		JPushUtil.push("圈主转让通知", content, path,  userid);
+		JPushUtil.pushNotify("圈主转让通知", content, path,  userid);
+		Map<String, String> params = new LinkedHashMap<>();
+		params.put("circleName",circleBo.getName());
+		params.put("circleid",circleid);
+		params.put("operateTime",CommonUtil.getDateStr(new Date(),"yyyy-MM-dd HH:mm:ss"));
+		params.put("operateUser",name);
+		params.put("operateUserid",userBo.getId());
+		JPushUtil.pushParams("圈主转让通知", content, path, params, userid);
 		return Constant.COM_RESP;
 	}
 
@@ -791,6 +798,7 @@ public class CircleController extends BaseContorller {
 		HashSet<String> users = circleBo.getUsers();
 		UserBo creater = userService.getUser(circleBo.getCreateuid());
 		String content = "";
+		String title = "";
 		if (isAdd) {
 			//判断圈子人数与管理员关系
 			if (!hasMasterMax(users.size(), masters.size(), ids.length)) {
@@ -803,6 +811,7 @@ public class CircleController extends BaseContorller {
 					masters.add(id);
 				}
 			}
+			title = "设置管理员通知";
 			content = String.format("“%s”将您设置为管理员",creater.getUserName());
 		} else {
 			for (String id : ids) {
@@ -810,11 +819,18 @@ public class CircleController extends BaseContorller {
 					masters.remove(id);
 				}
 			}
-			content = String.format("“%s”已取消您管理员",creater.getUserName());
+			title = "取消管理员通知";
+			content = String.format("“%s”已取消您的管理员",creater.getUserName());
 		}
-		String path = "/circle/persons.do?circleid=" + circleid;
 		circleService.updateMaster(circleBo);
-		JPushUtil.pushMessage(titlePush, content, path,  ids);
+		String path = "/circle/persons.do?circleid=" + circleid;
+		Map<String, String> params = new LinkedHashMap<>();
+		params.put("circleName",circleBo.getName());
+		params.put("circleid",circleid);
+		params.put("operateTime",CommonUtil.getDateStr(new Date(),"yyyy-MM-dd HH:mm:ss"));
+		params.put("operateUser",userBo.getUserName());
+		params.put("operateUserid",userBo.getId());
+		JPushUtil.pushParams(title, content, path, params, ids);
 		return Constant.COM_RESP;
 	}
 
