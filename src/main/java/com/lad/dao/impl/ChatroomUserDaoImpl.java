@@ -11,6 +11,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -91,11 +92,21 @@ public class ChatroomUserDaoImpl implements IChatroomUserDao {
     @Override
     public WriteResult deleteChatroom(String userid, String chatroomid) {
         Query query = new Query();
-        query.addCriteria(new Criteria("userid").is(userid));
-        query.addCriteria(new Criteria("chatroomid").is(chatroomid));
+        query.addCriteria(new Criteria("userid").is(userid).and("chatroomid").is(chatroomid)
+                .and("deleted").is(Constant.ACTIVITY));
         Update update = new Update();
         update.set("deleted", Constant.DELETED);
         return mongoTemplate.updateFirst(query, update, ChatroomUserBo.class);
+    }
+
+    @Override
+    public WriteResult deleteChatroom(HashSet<String> userids, String chatroomid) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("userid").in(userids).and("chatroomid").is(chatroomid)
+                .and("deleted").is(Constant.ACTIVITY));
+        Update update = new Update();
+        update.set("deleted", Constant.DELETED);
+        return mongoTemplate.updateMulti(query, update, ChatroomUserBo.class);
     }
 
     @Override

@@ -5,6 +5,7 @@ import com.lad.bo.ChatroomUserBo;
 import com.mongodb.WriteResult;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -217,4 +218,11 @@ public interface IChatroomService extends IBaseService {
 	 * @return
 	 */
 	WriteResult addPartyChartroom(String chatroomId, String partyid);
+
+	/**
+	 *
+	 * @param chatroomid
+	 * @return
+	 */
+	WriteResult deleteChatroom(HashSet<String> userids, String chatroomid);
 }

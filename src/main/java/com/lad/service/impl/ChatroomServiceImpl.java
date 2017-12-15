@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -179,5 +180,10 @@ public class ChatroomServiceImpl implements IChatroomService {
 	@Override
 	public WriteResult addPartyChartroom(String chatroomId, String partyid) {
 		return chatroomDao.addPartyChartroom(chatroomId, partyid);
+	}
+
+	@Override
+	public WriteResult deleteChatroom(HashSet<String> userids, String chatroomid) {
+		return chatroomUserDao.deleteChatroom(userids, chatroomid);
 	}
 }

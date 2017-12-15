@@ -256,12 +256,14 @@ public class ChatroomController extends BaseContorller {
 		StringBuilder imNames = new StringBuilder();
 
 		LinkedHashSet<String> set = chatroomBo.getUsers();
+
+		LinkedHashSet<String> deleteUsers = new LinkedHashSet<>();
 		for (String userid : useridArr) {
 			//只能删除非自己以外人员，自己需要退出
 			if (!set.contains(userid) || userid.equals(userBo.getId())) {
 				continue;
 			}
-
+			deleteUsers.add(userid);
 			set.remove(userid);
 			UserBo user = userService.getUser(userid);
 			if (null != user) {
@@ -295,7 +297,7 @@ public class ChatroomController extends BaseContorller {
 			chatroomBo.setUsers(set);
 			chatroomService.updateUsers(chatroomBo);
 		}
-
+		chatroomService.deleteChatroom(deleteUsers, chatroomid);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("channelId", chatroomBo.getId());
@@ -388,6 +390,7 @@ public class ChatroomController extends BaseContorller {
 			chatroomBo.setUsers(set);
 			chatroomService.updateUsers(chatroomBo);
 		}
+		chatroomService.deleteChatroomUser(userid, chatroomid);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("channelId", chatroomBo.getId());
@@ -1207,6 +1210,7 @@ public class ChatroomController extends BaseContorller {
 					chatroomService.updateName(chatroomid, newChatRoomName, false);
 				}
 			}
+			set.add(userBo.getId());
 			chatroomBo.setUsers(set);
 			chatroomService.updateUsers(chatroomBo);
 
@@ -1353,6 +1357,7 @@ public class ChatroomController extends BaseContorller {
 					chatroomService.updateName(chatroomid, newChatRoomName, false);
 				}
 			}
+			set.add(userBo.getId());
 			chatroomBo.setUsers(set);
 			chatroomService.updateUsers(chatroomBo);
 
@@ -1365,7 +1370,7 @@ public class ChatroomController extends BaseContorller {
 
 			map.put("chatroomUser", set.size());
 		} else {
-			reasonService.updateApply(applyid, 2, refues);
+			reasonService.updateApply(applyid, -1, refues);
 			map.put("chatroomUser", chatroomBo.getUsers().size());
 		}
 		map.put("chatroomName", name);

@@ -3,6 +3,7 @@ package com.lad.dao;
 import com.lad.bo.ChatroomUserBo;
 import com.mongodb.WriteResult;
 
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -63,6 +64,13 @@ public interface IChatroomUserDao {
      * @return
      */
     WriteResult deleteChatroom(String userid, String chatroomid);
+
+    /**
+     *
+     * @param chatroomid
+     * @return
+     */
+    WriteResult deleteChatroom(HashSet<String> userids, String chatroomid);
 
     /**
      *
