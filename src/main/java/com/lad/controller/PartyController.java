@@ -285,9 +285,15 @@ public class PartyController extends BaseContorller {
         BeanUtils.copyProperties(partyBo, partyVo);
         if (partyBo.getStatus() != 3){
             int status = getPartyStatus(partyBo.getStartTime(), partyBo.getAppointment());
-            if (status != partyBo.getStatus()){
-                updatePartyStatus(partyBo.getId(), status);
+            //人数以报满
+            if (status == 1 && partyBo.getUserLimit() <= partyBo.getPartyUserNum()) {
+                if (partyBo.getStatus() != 2) {
+                    updatePartyStatus(partyBo.getId(), 2);
+                    partyBo.setStatus(2);
+                }
+            } else if (status != partyBo.getStatus()){
                 partyBo.setStatus(status);
+                updatePartyStatus(partyBo.getId(), status);
             }
         }
         List<PartyUserVo> partyUserVos = new ArrayList<>();
@@ -390,8 +396,8 @@ public class PartyController extends BaseContorller {
             }
             int userTotal = partyBo.getPartyUserNum() + userNum;
             if (partyBo.getUserLimit() != 0 && userTotal > partyBo.getUserLimit()) {
-                return CommonUtil.toErrorResult(ERRORCODE.PARTY_USER_MAX.getIndex(),
-                        ERRORCODE.PARTY_USER_MAX.getReason());
+                return CommonUtil.toErrorResult(ERRORCODE.PARTY_ENROLL_MAX.getIndex(),
+                        ERRORCODE.PARTY_ENROLL_MAX.getReason());
             }
             isMax = userTotal == partyBo.getUserLimit();
             partyBo.setPartyUserNum(userTotal);
@@ -580,6 +586,19 @@ public class PartyController extends BaseContorller {
             PartyNoticeBo partyNoticeBo = partyService.findPartyNotice(partyBo.getId());
             PartyListVo listVo = new PartyListVo();
             BeanUtils.copyProperties(partyBo, listVo);
+            if (partyBo.getStatus() != 3) {
+                int status = getPartyStatus(partyBo.getStartTime(), partyBo.getAppointment());
+                //人数以报满
+                if (status == 1 && partyBo.getUserLimit() <= partyBo.getPartyUserNum()) {
+                    if (partyBo.getStatus() != 2) {
+                        updatePartyStatus(partyBo.getId(), 2);
+                        listVo.setStatus(2);
+                    }
+                } else if (status != partyBo.getStatus()){
+                    listVo.setStatus(status);
+                    updatePartyStatus(partyBo.getId(), status);
+                }
+            }
             listVo.setPartyid(partyBo.getId());
             listVo.setHasNotice(partyNoticeBo != null);
             listVo.setUserNum(partyBo.getPartyUserNum());
@@ -600,9 +619,15 @@ public class PartyController extends BaseContorller {
             BeanUtils.copyProperties(partyBo, listVo);
             if (partyBo.getStatus() != 3) {
                 int status = getPartyStatus(startTimes, partyBo.getAppointment());
-                if (status != partyBo.getStatus()){
-                   listVo.setStatus(status);
-                   updatePartyStatus(partyBo.getId(), status);
+                //人数以报满
+                if (status == 1 && partyBo.getUserLimit() <= partyBo.getPartyUserNum()) {
+                    if (partyBo.getStatus() != 2) {
+                        updatePartyStatus(partyBo.getId(), 2);
+                        listVo.setStatus(2);
+                    }
+                } else if (status != partyBo.getStatus()){
+                    listVo.setStatus(status);
+                    updatePartyStatus(partyBo.getId(), status);
                 }
             }
             listVo.setPartyid(partyBo.getId());
@@ -1142,6 +1167,7 @@ public class PartyController extends BaseContorller {
         }
         RLock lock = redisServer.getRLock(partyid + "partyUserLock");
         PartyBo partyBo = null;
+        int userTotal = 0;
         try {
             lock.lock(3, TimeUnit.SECONDS);
             partyBo = partyService.findById(partyid);
@@ -1153,7 +1179,7 @@ public class PartyController extends BaseContorller {
             if (users.contains(userBo.getId())) {
                 users.remove(userBo.getId());
                 PartyUserBo partyUserBo = partyService.findPartyUser(partyid, userBo.getId());
-                int userTotal = partyBo.getPartyUserNum();
+                userTotal = partyBo.getPartyUserNum();
                 if (partyUserBo != null) {
                     userTotal = userTotal - partyUserBo.getUserNum();
                 } else {
@@ -1164,6 +1190,15 @@ public class PartyController extends BaseContorller {
             }
         } finally {
             lock.unlock();
+        }
+        if (userTotal < partyBo.getUserLimit()) {
+            int status = getPartyStatus(partyBo.getStartTime(), partyBo.getAppointment());
+            if (status != partyBo.getStatus()) {
+                if (!(status == 1 && partyBo.getStatus() == 2 &&
+                        partyBo.getUserLimit() <= partyBo.getPartyUserNum())) {
+                    partyService.updatePartyStatus(partyid, status);
+                }
+            }
         }
         partyService.outParty(partyBo.getId(), userBo.getId());
         return Constant.COM_RESP;
