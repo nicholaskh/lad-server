@@ -155,7 +155,8 @@ public class CollectController extends BaseContorller {
 		chatBo.setCreateuid(userBo.getId());
 		chatBo.setUserid(userBo.getId());
 		if (fileType == Constant.COLLET_VIDEO) {
-		   chatBo.setTargetPic(videoPic);
+			chatBo.setTargetPic(videoPic);
+			chatBo.setVideo(path);
 		}
 		chatBo.setPath(path);
 		chatBo.setType(fileType);
