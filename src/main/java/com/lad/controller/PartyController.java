@@ -286,7 +286,8 @@ public class PartyController extends BaseContorller {
         if (partyBo.getStatus() != 3){
             int status = getPartyStatus(partyBo.getStartTime(), partyBo.getAppointment());
             //人数以报满
-            if (status == 1 && partyBo.getUserLimit() <= partyBo.getPartyUserNum()) {
+            if (status == 1 && partyBo.getUserLimit() <= partyBo.getPartyUserNum() &&
+                    partyBo.getUserLimit() != 0) {
                 if (partyBo.getStatus() != 2) {
                     updatePartyStatus(partyBo.getId(), 2);
                     partyBo.setStatus(2);
@@ -589,7 +590,8 @@ public class PartyController extends BaseContorller {
             if (partyBo.getStatus() != 3) {
                 int status = getPartyStatus(partyBo.getStartTime(), partyBo.getAppointment());
                 //人数以报满
-                if (status == 1 && partyBo.getUserLimit() <= partyBo.getPartyUserNum()) {
+                if (status == 1 && partyBo.getUserLimit() <= partyBo.getPartyUserNum() && partyBo.getUserLimit()
+                        !=0 ) {
                     if (partyBo.getStatus() != 2) {
                         updatePartyStatus(partyBo.getId(), 2);
                         listVo.setStatus(2);
@@ -620,7 +622,8 @@ public class PartyController extends BaseContorller {
             if (partyBo.getStatus() != 3) {
                 int status = getPartyStatus(startTimes, partyBo.getAppointment());
                 //人数以报满
-                if (status == 1 && partyBo.getUserLimit() <= partyBo.getPartyUserNum()) {
+                if (status == 1 && partyBo.getUserLimit() <= partyBo.getPartyUserNum() && partyBo.getUserLimit()
+                        !=0) {
                     if (partyBo.getStatus() != 2) {
                         updatePartyStatus(partyBo.getId(), 2);
                         listVo.setStatus(2);
@@ -1194,6 +1197,7 @@ public class PartyController extends BaseContorller {
         if (userTotal < partyBo.getUserLimit()) {
             int status = getPartyStatus(partyBo.getStartTime(), partyBo.getAppointment());
             if (status != partyBo.getStatus()) {
+                //人员饱和之外不用更新
                 if (!(status == 1 && partyBo.getStatus() == 2 &&
                         partyBo.getUserLimit() <= partyBo.getPartyUserNum())) {
                     partyService.updatePartyStatus(partyid, status);
