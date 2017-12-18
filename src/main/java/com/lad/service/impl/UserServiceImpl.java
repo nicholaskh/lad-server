@@ -36,6 +36,9 @@ public class UserServiceImpl implements IUserService{
 	@Autowired
 	private IUserTasteDao userTasteDao;
 
+	@Autowired
+	private IUserVisitDao userVisitDao;
+
 	public UserBo save(UserBo userBo){
 		userBo = userDao.save(userBo);
 		return userBo;
@@ -277,5 +280,35 @@ public class UserServiceImpl implements IUserService{
 	@Override
 	public List<UserBo> searchCircleUsers(HashSet<String> circleUsers, String keywords) {
 		return userDao.searchCircleUsers(circleUsers, keywords);
+	}
+
+	@Override
+	public UserVisitBo addUserVisit(UserVisitBo userVisitBo) {
+		return userVisitDao.addUserVisit(userVisitBo);
+	}
+
+	@Override
+	public WriteResult updateUserVisit(String id, Date date) {
+		return userVisitDao.updateUserVisit(id, date);
+	}
+
+	@Override
+	public List<UserVisitBo> visitFromMeList(String userid, int page, int limit) {
+		return userVisitDao.visitFromMeList(userid, page, limit);
+	}
+
+	@Override
+	public List<UserVisitBo> visitToMeList(String userid, int page, int limit) {
+		return userVisitDao.visitToMeList(userid, page, limit);
+	}
+
+	@Override
+	public WriteResult deleteUserVisit(String id) {
+		return userVisitDao.deleteUserVisit(id);
+	}
+
+	@Override
+	public UserVisitBo findUserVisit(String ownerid, String visitid) {
+		return userVisitDao.findUserVisit(ownerid, visitid);
 	}
 }
