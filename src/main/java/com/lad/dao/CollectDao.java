@@ -41,7 +41,7 @@ public class CollectDao {
 	public CollectBo findByUseridAndTargetid(String userid, String targetid){
 		Query query = new Query();
 		query.addCriteria(new Criteria("userid").is(userid));
-		query.addCriteria(new Criteria("targetid").is(targetid));
+		query.addCriteria(new Criteria("targetid").is(targetid).and("deleted").is(Constant.ACTIVITY));
 		return mongoTemplate.findOne(query, CollectBo.class);
 	}
 
@@ -168,5 +168,18 @@ public class CollectDao {
 	}
 
 
+
+	/**
+	 * 删除单条记录
+	 * @param collects
+	 * @return
+	 */
+	public WriteResult delete(List<String> collects) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("_id").in(collects));
+		Update update = new Update();
+		update.set("deleted",Constant.DELETED);
+		return mongoTemplate.updateFirst(query, update, CollectBo.class);
+	}
 
 }

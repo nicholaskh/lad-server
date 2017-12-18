@@ -815,18 +815,16 @@ public class PartyController extends BaseContorller {
             collectBo.setTitle(partyBo.getTitle());
             collectBo.setType(Constant.COLLET_URL);
             collectBo.setSub_type(Constant.PARTY_TYPE);
+            collectBo.setTargetPic(partyBo.getBackPic());
             CircleBo circleBo = circleService.selectById(partyBo.getCircleid());
             if (circleBo != null) {
                 collectBo.setSource(circleBo.getName());
                 collectBo.setSourceType(5);
+                collectBo.setSourceid(circleBo.getId());
             }
             collectBo.setTargetid(partyid);
             collectService.insert(collectBo);
-        } else {
-            if(collectBo.getDeleted() == 1) {
-                collectService.updateCollectDelete(collectBo.getId(), Constant.ACTIVITY);
-            }
-        }
+        } 
         PartyUserBo partyUserBo = partyService.findPartyUserIgnoreDel(partyid, userBo.getId());
         if (partyUserBo == null) {
             partyUserBo = new PartyUserBo();

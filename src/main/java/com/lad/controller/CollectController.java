@@ -1,9 +1,9 @@
 package com.lad.controller;
 
-import com.lad.bo.CollectBo;
-import com.lad.bo.UserBo;
-import com.lad.bo.UserTagBo;
+import com.lad.bo.*;
+import com.lad.service.ICircleService;
 import com.lad.service.ICollectService;
+import com.lad.service.IPartyService;
 import com.lad.service.IUserService;
 import com.lad.util.CommonUtil;
 import com.lad.util.Constant;
@@ -30,17 +30,27 @@ public class CollectController extends BaseContorller {
 	private ICollectService collectService;
 	@Autowired
 	private IUserService userService;
+
+	@Autowired
+	private ICircleService circleService;
+
+	@Autowired
+	private IPartyService partyService;
 	
 	@RequestMapping("/chat")
 	@ResponseBody
-	public String chat(@RequestParam String title, @RequestParam String content,
+	public String chat(String title, String content, String userid,
 			HttpServletRequest request, HttpServletResponse response){
 
-		UserBo userBo;
-		try {
-			userBo = checkSession(request, userService);
-		} catch (MyException e) {
-			return e.getMessage();
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		UserBo user = userService.getUser(userid);
+		if (user == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.USER_NULL.getIndex(),
+					ERRORCODE.USER_NULL.getReason());
 		}
 		CollectBo chatBo = new CollectBo();
 		chatBo.setCreateuid(userBo.getId());
@@ -48,6 +58,9 @@ public class CollectController extends BaseContorller {
 		chatBo.setContent(content);
 		chatBo.setTitle(title);
 		chatBo.setType(Constant.CHAT_TYPE);
+		chatBo.setSourceid(userid);
+		chatBo.setTargetPic(user.getHeadPictureName());
+		chatBo.setSource(user.getUserName());
 		chatBo = collectService.insert(chatBo);
 		
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -121,13 +134,7 @@ public class CollectController extends BaseContorller {
 		}
 		List<CollectBo> collectBos = collectService.findAllByUserid(userBo.getId(), page, limit);
 		List<CollectVo> collectVos = new LinkedList<>();
-		for (CollectBo collectBo : collectBos) {
-			CollectVo vo = new CollectVo();
-			BeanUtils.copyProperties(collectBo, vo);
-			vo.setCollectid(collectBo.getId());
-			vo.setCollectTime(collectBo.getCreateTime());
-			collectVos.add(vo);
-		}
+		bo2vos(collectBos, collectVos);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("collectVos", collectVos);
@@ -137,7 +144,8 @@ public class CollectController extends BaseContorller {
 
 	@RequestMapping("/col-files")
 	@ResponseBody
-	public String colFile(String path, int fileType, HttpServletRequest request, HttpServletResponse response){
+	public String colFile(String path, int fileType, String videoPic, HttpServletRequest request, HttpServletResponse
+			response){
 		UserBo userBo = getUserLogin(request);
 		if (userBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
@@ -146,6 +154,9 @@ public class CollectController extends BaseContorller {
 		CollectBo chatBo = new CollectBo();
 		chatBo.setCreateuid(userBo.getId());
 		chatBo.setUserid(userBo.getId());
+		if (fileType == Constant.COLLET_VIDEO) {
+		   chatBo.setTargetPic(videoPic);
+		}
 		chatBo.setPath(path);
 		chatBo.setType(fileType);
 		if (fileType ==  Constant.COLLET_URL) {
@@ -172,13 +183,7 @@ public class CollectController extends BaseContorller {
 
 		List<CollectBo> collectBos = collectService.findByTag(tagName, userBo.getId(), page, limit);
 		List<CollectVo> collectVos = new LinkedList<>();
-		for (CollectBo collectBo : collectBos) {
-			CollectVo vo = new CollectVo();
-			BeanUtils.copyProperties(collectBo, vo);
-			vo.setCollectid(collectBo.getId());
-			vo.setCollectTime(collectBo.getCreateTime());
-			collectVos.add(vo);
-		}
+		bo2vos(collectBos, collectVos);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("collectVos", collectVos);
@@ -196,13 +201,7 @@ public class CollectController extends BaseContorller {
 		}
 		List<CollectBo> collectBos = collectService.findByUseridAndType(userBo.getId(), type, page, limit);
 		List<CollectVo> collectVos = new LinkedList<>();
-		for (CollectBo collectBo : collectBos) {
-			CollectVo vo = new CollectVo();
-			BeanUtils.copyProperties(collectBo, vo);
-			vo.setCollectid(collectBo.getId());
-			vo.setCollectTime(collectBo.getCreateTime());
-			collectVos.add(vo);
-		}
+		bo2vos(collectBos, collectVos);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("collectVos", collectVos);
@@ -234,4 +233,65 @@ public class CollectController extends BaseContorller {
 		collectService.updateTags(collectid, userTags);
 		return  Constant.COM_RESP;
 	}
+
+	/**
+	 * 给收藏添加分类
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@RequestMapping("/del-collect")
+	@ResponseBody
+	public String delCollect(String collectids,
+								HttpServletRequest request, HttpServletResponse response){
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		String[] idArr = CommonUtil.getIds(collectids);
+		if (idArr.length == 1) {
+			collectService.delete(idArr[0]);
+		} else {
+			List<String> ids = new ArrayList<>();
+			Collections.addAll(ids, idArr);
+			collectService.delete(ids);
+		}
+		return Constant.COM_RESP;
+	}
+
+	private void bo2vos(List<CollectBo> collectBos, List<CollectVo> collectVos){
+		for (CollectBo collectBo : collectBos) {
+			CollectVo vo = new CollectVo();
+			BeanUtils.copyProperties(collectBo, vo);
+			vo.setCollectid(collectBo.getId());
+			vo.setCollectTime(collectBo.getCreateTime());
+			vo.setCollectPic(collectBo.getTargetPic());
+			if (collectBo.getType() == Constant.CHAT_TYPE) {
+				UserBo userBo = userService.getUser(collectBo.getSourceid());
+				vo.setCollectUserid(collectBo.getSourceid());
+				if (userBo != null) {
+					vo.setCollectUserName(userBo.getUserName());
+					vo.setCollectUserPic(userBo.getHeadPictureName());
+				}
+			} else if (collectBo.getType() == Constant.COLLET_URL) {
+				String id = collectBo.getTargetid();
+				if (collectBo.getSub_type() == Constant.CIRCLE_TYPE) {
+					CircleBo circleBo = circleService.selectById(id);
+					if (circleBo != null) {
+						vo.setCollectPic(circleBo.getHeadPicture());
+					}
+				} else if (collectBo.getSub_type() == Constant.PARTY_TYPE) {
+					PartyBo partyBo = partyService.findById(id);
+					if (partyBo != null) {
+						vo.setCollectPic(partyBo.getBackPic());
+					}
+				}
+				vo.setVideo(collectBo.getVideo());
+			}
+			collectVos.add(vo);
+		}
+	}
+
+
 }

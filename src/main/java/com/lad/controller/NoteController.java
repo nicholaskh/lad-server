@@ -1040,9 +1040,21 @@ public class NoteController extends BaseContorller {
 		chatBo.setType(Constant.COLLET_URL);
 		chatBo.setSub_type(Constant.NOTE_TYPE);
 		chatBo.setTitle(noteBo.getSubject());
+		LinkedList<String> photos = noteBo.getPhotos();
+		if ("video".equals(noteBo.getType())){
+			chatBo.setTargetPic(noteBo.getVideoPic());
+			if (!CommonUtil.isEmpty(photos)) {
+				chatBo.setVideo(noteBo.getPhotos().get(0));
+			}
+		} else {
+			if (!CommonUtil.isEmpty(photos)) {
+				chatBo.setTargetPic(noteBo.getPhotos().get(0));
+			}
+		}
 		CircleBo circleBo = circleService.selectById(noteBo.getCircleId());
 		if (circleBo != null) {
 			chatBo.setSource(circleBo.getName());
+			chatBo.setSourceid(noteBo.getCircleId());
 			chatBo.setSourceType(5);
 		}
 		collectService.insert(chatBo);

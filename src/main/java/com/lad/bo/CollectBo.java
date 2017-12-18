@@ -27,6 +27,12 @@ public class CollectBo extends BaseBo {
 	private String source;
 	//来源类型 0 圈子， 1 资讯
 	private int sourceType;
+	//来源id，
+	private String sourceid;
+	//来源id，
+	private String targetPic;
+
+	private String video;
 
 	//用户自定义分类
 	private LinkedHashSet<String> userTags = new LinkedHashSet<>();
@@ -110,5 +116,29 @@ public class CollectBo extends BaseBo {
 
 	public void setSourceType(int sourceType) {
 		this.sourceType = sourceType;
+	}
+
+	public String getSourceid() {
+		return sourceid;
+	}
+
+	public void setSourceid(String sourceid) {
+		this.sourceid = sourceid;
+	}
+
+	public String getTargetPic() {
+		return targetPic;
+	}
+
+	public void setTargetPic(String targetPic) {
+		this.targetPic = targetPic;
+	}
+
+	public String getVideo() {
+		return video;
+	}
+
+	public void setVideo(String video) {
+		this.video = video;
 	}
 }

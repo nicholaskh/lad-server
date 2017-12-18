@@ -1,17 +1,15 @@
 package com.lad.controller;
 
-import com.lad.bo.LocationBo;
-import com.lad.bo.UserBo;
-import com.lad.service.IFriendsService;
-import com.lad.service.ILocationService;
-import com.lad.service.IRegistService;
-import com.lad.service.IUserService;
+import com.lad.bo.*;
+import com.lad.service.*;
 import com.lad.util.CommonUtil;
 import com.lad.util.ERRORCODE;
-import com.lad.vo.UserVo;
+import com.lad.vo.CircleBaseVo;
+import com.lad.vo.UserBaseVo;
+import com.lad.vo.UserInfoVo;
 import net.sf.json.JSONObject;
-import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Controller;
@@ -20,11 +18,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Controller
 @RequestMapping("person-set")
@@ -40,26 +34,19 @@ public class PersonSet extends BaseContorller {
 	@Autowired
 	private IFriendsService friendsService;
 
+	@Autowired
+	private ICircleService circleService;
+
 	@RequestMapping("/username")
 	@ResponseBody
 	public String username(String username, HttpServletRequest request, HttpServletResponse response) {
-		HttpSession session = request.getSession();
-		if (session.isNew()) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		if (StringUtils.isEmpty(username)) {
+			return CommonUtil.toErrorResult(ERRORCODE.USER_USERNAME.getIndex(), ERRORCODE.USER_USERNAME.getReason());
 		}
-		if (session.getAttribute("isLogin") == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-		}
-		UserBo userBo = (UserBo) session.getAttribute("userBo");
+		UserBo userBo = getUserLogin(request);
 		if (userBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-		}
-		userBo = userService.getUser(userBo.getId());
-		if (StringUtils.isEmpty(username)) {
-			return CommonUtil.toErrorResult(ERRORCODE.USER_USERNAME.getIndex(), ERRORCODE.USER_USERNAME.getReason());
 		}
 		userBo.setUserName(username);
 		userService.updateUserName(userBo);
@@ -72,23 +59,13 @@ public class PersonSet extends BaseContorller {
 	@RequestMapping("/birthday")
 	@ResponseBody
 	public String birth_day(String birthday, HttpServletRequest request, HttpServletResponse response) {
-		HttpSession session = request.getSession();
-		if (session.isNew()) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		if (StringUtils.isEmpty(birthday)) {
+			return CommonUtil.toErrorResult(ERRORCODE.USER_BIRTHDAY.getIndex(), ERRORCODE.USER_BIRTHDAY.getReason());
 		}
-		if (session.getAttribute("isLogin") == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-		}
-		UserBo userBo = (UserBo) session.getAttribute("userBo");
+		UserBo userBo = getUserLogin(request);
 		if (userBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-		}
-		userBo = userService.getUser(userBo.getId());
-		if (StringUtils.isEmpty(birthday)) {
-			return CommonUtil.toErrorResult(ERRORCODE.USER_BIRTHDAY.getIndex(), ERRORCODE.USER_BIRTHDAY.getReason());
 		}
 		userBo.setBirthDay(birthday);
 		userService.updateBirthDay(userBo);
@@ -100,22 +77,13 @@ public class PersonSet extends BaseContorller {
 	@RequestMapping("/sex")
 	@ResponseBody
 	public String sex(String sex, HttpServletRequest request, HttpServletResponse response) {
-		HttpSession session = request.getSession();
-		if (session.isNew()) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		if (StringUtils.isEmpty(sex)) {
+			return CommonUtil.toErrorResult(ERRORCODE.USER_SEX.getIndex(), ERRORCODE.USER_SEX.getReason());
 		}
-		if (session.getAttribute("isLogin") == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-		}
-		UserBo userBo = (UserBo) session.getAttribute("userBo");
+		UserBo userBo = getUserLogin(request);
 		if (userBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-		}
-		if (StringUtils.isEmpty(sex)) {
-			return CommonUtil.toErrorResult(ERRORCODE.USER_SEX.getIndex(), ERRORCODE.USER_SEX.getReason());
 		}
 		userBo = userService.getUser(userBo.getId());
 		userBo.setSex(sex);
@@ -129,23 +97,13 @@ public class PersonSet extends BaseContorller {
 	@ResponseBody
 	public String personalized_signature(String personalized_signature, HttpServletRequest request,
 			HttpServletResponse response) {
-		HttpSession session = request.getSession();
-		if (session.isNew()) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		if (StringUtils.isEmpty(personalized_signature)) {
+			return CommonUtil.toErrorResult(ERRORCODE.USER_SIGNATURE.getIndex(), ERRORCODE.USER_SIGNATURE.getReason());
 		}
-		if (session.getAttribute("isLogin") == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-		}
-		UserBo userBo = (UserBo) session.getAttribute("userBo");
+		UserBo userBo = getUserLogin(request);
 		if (userBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-		}
-		userBo = userService.getUser(userBo.getId());
-		if (StringUtils.isEmpty(personalized_signature)) {
-			return CommonUtil.toErrorResult(ERRORCODE.USER_SIGNATURE.getIndex(), ERRORCODE.USER_SIGNATURE.getReason());
 		}
 		userBo.setPersonalizedSignature(personalized_signature);
 		userService.updatePersonalizedSignature(userBo);
@@ -156,56 +114,52 @@ public class PersonSet extends BaseContorller {
 
 	@RequestMapping("/user-info")
 	@ResponseBody
-	public String user_info(HttpServletRequest request, HttpServletResponse response) throws Exception {
-		HttpSession session = request.getSession();
-		if (session.isNew()) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-		}
-		if (session.getAttribute("isLogin") == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-		}
-		UserBo userBo = (UserBo) session.getAttribute("userBo");
+	public String user_info(HttpServletRequest request, HttpServletResponse response) throws
+			Exception {
+		UserBo userBo = getUserLogin(request);
 		if (userBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
-		userBo = userService.getUser(userBo.getId());
-		Map<String, Object> map = new HashMap<String, Object>();
+		UserInfoVo infoVo = new UserInfoVo();
+		bo2vo(userBo, infoVo);
+		LocationBo locationBo = locationService.getLocationBoByUserid(userBo.getId());
+		if (locationBo != null) {
+			infoVo.setPostion(locationBo.getPosition());
+		}
+		List<CircleBo> circleBos = circleService.findMyCircles(userBo.getId(), "", true, 4);
+		List<CircleBaseVo> circles = new LinkedList<>();
+		for (CircleBo circleBo : circleBos) {
+			CircleBaseVo circleBaseVo = new CircleBaseVo();
+			BeanUtils.copyProperties(circleBo,circleBaseVo);
+			circleBaseVo.setCircleid(circleBo.getId());
+			circleBaseVo.setNotesSize(circleBo.getNoteSize());
+			circleBaseVo.setUsersSize(circleBo.getTotal());
+			circles.add(circleBaseVo);
+		}
+		Map<String, Object> map = new LinkedHashMap<>();
 		map.put("ret", 0);
-		UserVo vo = new UserVo();
-		BeanUtils.copyProperties(vo, userBo);
-		map.put("user", vo);
+		map.put("user", infoVo);
+		map.put("userCricles", circles);
 		return JSONObject.fromObject(map).toString();
 	}
 
 	@RequestMapping("/search-by-name")
 	@ResponseBody
 	public String searchByName(String name, HttpServletRequest request, HttpServletResponse response) throws Exception {
-		HttpSession session = request.getSession();
-		if (session.isNew()) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		if (StringUtils.isEmpty(name)) {
+			return CommonUtil.toErrorResult(ERRORCODE.USER_USERNAME.getIndex(), ERRORCODE.USER_USERNAME.getReason());
 		}
-		if (session.getAttribute("isLogin") == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-		}
-		UserBo userBo = (UserBo) session.getAttribute("userBo");
+		UserBo userBo = getUserLogin(request);
 		if (userBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
-		userBo = userService.getUser(userBo.getId());
-		if (StringUtils.isEmpty(name)) {
-			return CommonUtil.toErrorResult(ERRORCODE.USER_USERNAME.getIndex(), ERRORCODE.USER_USERNAME.getReason());
-		}
 		List<UserBo> list = userService.getUserByName(name);
-		List<UserVo> userVoList = new LinkedList<UserVo>();
+		List<UserBaseVo> userVoList = new LinkedList<>();
 		for (UserBo item : list) {
-			UserVo vo = new UserVo();
-			BeanUtils.copyProperties(vo, item);
+			UserBaseVo vo = new UserBaseVo();
+			BeanUtils.copyProperties(item, vo);
 			userVoList.add(vo);
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -218,21 +172,6 @@ public class PersonSet extends BaseContorller {
 	@ResponseBody
 	public String searchByPhone(String phone, HttpServletRequest request, HttpServletResponse response)
 			throws Exception {
-		HttpSession session = request.getSession();
-		if (session.isNew()) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-		}
-		if (session.getAttribute("isLogin") == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-		}
-		UserBo userBo = (UserBo) session.getAttribute("userBo");
-		if (userBo == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-		}
-		userBo = userService.getUser(userBo.getId());
 		if (StringUtils.isEmpty(phone)) {
 			return CommonUtil.toErrorResult(ERRORCODE.USER_PHONE.getIndex(), ERRORCODE.USER_PHONE.getReason());
 		}
@@ -240,9 +179,14 @@ public class PersonSet extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PHONE_NULL.getIndex(),
 					ERRORCODE.ACCOUNT_PHONE_NULL.getReason());
 		}
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
 		UserBo temp = userService.getUserByPhone(phone);
-		UserVo vo = new UserVo();
-		BeanUtils.copyProperties(vo, temp);
+		UserBaseVo vo = new UserBaseVo();
+		BeanUtils.copyProperties(temp, vo);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("user", vo);
@@ -253,27 +197,17 @@ public class PersonSet extends BaseContorller {
 	@ResponseBody
 	public String searchByUserid(String userid, HttpServletRequest request, HttpServletResponse response)
 			throws Exception {
-		HttpSession session = request.getSession();
-		if (session.isNew()) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		if (StringUtils.isEmpty(userid)) {
+			return CommonUtil.toErrorResult(ERRORCODE.USER_ID.getIndex(), ERRORCODE.USER_ID.getReason());
 		}
-		if (session.getAttribute("isLogin") == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-		}
-		UserBo userBo = (UserBo) session.getAttribute("userBo");
+		UserBo userBo = getUserLogin(request);
 		if (userBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
-		userBo = userService.getUser(userBo.getId());
-		if (StringUtils.isEmpty(userid)) {
-			return CommonUtil.toErrorResult(ERRORCODE.USER_ID.getIndex(), ERRORCODE.USER_ID.getReason());
-		}
 		UserBo temp = userService.getUser(userid);
-		UserVo vo = new UserVo();
-		BeanUtils.copyProperties(vo, temp);
+		UserBaseVo vo = new UserBaseVo();
+		BeanUtils.copyProperties(temp, vo);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("user", vo);
@@ -284,21 +218,11 @@ public class PersonSet extends BaseContorller {
 	@ResponseBody
 	public String location(double px, double py, HttpServletRequest request, HttpServletResponse response)
 			throws Exception {
-		HttpSession session = request.getSession();
-		if (session.isNew()) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-		}
-		if (session.getAttribute("isLogin") == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-		}
-		UserBo userBo = (UserBo) session.getAttribute("userBo");
+		UserBo userBo = getUserLogin(request);
 		if (userBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
-		userBo = userService.getUser(userBo.getId());
 		String userid = userBo.getId();
 		LocationBo locationBo = locationService.getLocationBoByUserid(userid);
 		if(null != locationBo){
@@ -319,6 +243,22 @@ public class PersonSet extends BaseContorller {
 	@Async
 	private void updateUserName(String userid, String username){
 		friendsService.updateUsernameByFriend(userid, username, "");
+	}
+
+
+	private void bo2vo(UserBo userBo, UserInfoVo infoVo){
+		BeanUtils.copyProperties(userBo, infoVo);
+		UserTasteBo tasteBo = userService.findByUserId(userBo.getId());
+		if (tasteBo == null) {
+			tasteBo = new UserTasteBo();
+			tasteBo.setUserid(userBo.getId());
+			userService.addUserTaste(tasteBo);
+		}
+		infoVo.setSports(tasteBo.getSports());
+		infoVo.setMusics(tasteBo.getMusics());
+		infoVo.setLifes(tasteBo.getLifes());
+		infoVo.setTrips(tasteBo.getTrips());
+		infoVo.setRegistTime(userBo.getCreateTime());
 	}
 
 }

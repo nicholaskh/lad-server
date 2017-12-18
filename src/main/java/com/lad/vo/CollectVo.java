@@ -28,8 +28,20 @@ public class CollectVo extends BaseVo {
     private String targetid;
     //来源
     private String source;
-    //来源类型 0 圈子， 1 资讯
+    //收藏来源类型，资讯类型来源分类，1 健康， 2安防， 3 广播， 4 视频， 5 圈子
     private int sourceType;
+
+    private String collectUserid;
+
+    private String collectUserName;
+
+    private String collectUserPic;
+    //来源的原始图片，如圈子头像，资讯、帖子第一张图片
+    private String collectPic;
+
+    private String video;
+
+    private String videoPic;
 
     //用户自定义分类
     private LinkedHashSet<String> userTags = new LinkedHashSet<>();
@@ -130,5 +142,53 @@ public class CollectVo extends BaseVo {
 
     public void setCollectTime(Date collectTime) {
         this.collectTime = collectTime;
+    }
+
+    public String getCollectUserid() {
+        return collectUserid;
+    }
+
+    public void setCollectUserid(String collectUserid) {
+        this.collectUserid = collectUserid;
+    }
+
+    public String getCollectUserName() {
+        return collectUserName;
+    }
+
+    public void setCollectUserName(String collectUserName) {
+        this.collectUserName = collectUserName;
+    }
+
+    public String getCollectUserPic() {
+        return collectUserPic;
+    }
+
+    public void setCollectUserPic(String collectUserPic) {
+        this.collectUserPic = collectUserPic;
+    }
+
+    public String getCollectPic() {
+        return collectPic;
+    }
+
+    public void setCollectPic(String collectPic) {
+        this.collectPic = collectPic;
+    }
+
+    public String getVideo() {
+        return video;
+    }
+
+    public void setVideo(String video) {
+        this.video = video;
+    }
+
+    public String getVideoPic() {
+        return videoPic;
+    }
+
+    public void setVideoPic(String videoPic) {
+        this.videoPic = videoPic;
     }
 }

@@ -97,6 +97,11 @@ public class CollectServiceImpl implements ICollectService {
 	}
 
 	@Override
+	public WriteResult delete(List<String> collects) {
+		return collectDao.delete(collects);
+	}
+
+	@Override
 	public WriteResult updateCollectDelete(String id, int status) {
 		return collectDao.updateCollectDelete(id, status);
 	}

@@ -1518,30 +1518,32 @@ public class InforController extends BaseContorller {
             return CommonUtil.toErrorResult(ERRORCODE.COLLECT_EXIST.getIndex(),
                     ERRORCODE.COLLECT_EXIST.getReason());
         }
+        collectBo.setSourceType(inforType);
         switch (inforType){
             case Constant.INFOR_HEALTH:
                 InforBo inforBo = inforService.findById(inforid);
                 collectBo.setTitle(inforBo.getTitle());
-                collectBo.setSourceType(Constant.INFOR_HEALTH);
                 collectBo.setSource(inforBo.getModule());
+                if (!CommonUtil.isEmpty(inforBo.getImageUrls())) {
+                    collectBo.setTargetPic(inforBo.getImageUrls().getFirst());
+                }
                 break;
             case Constant.INFOR_SECRITY:
                 SecurityBo securityBo = inforService.findSecurityById(inforid);
                 collectBo.setTitle(securityBo.getTitle());
-                collectBo.setSourceType(Constant.INFOR_SECRITY);
                 collectBo.setSource(securityBo.getNewsType());
                 break;
             case Constant.INFOR_RADIO:
                 BroadcastBo broadcastBo = inforService.findBroadById(inforid);
                 collectBo.setTitle(broadcastBo.getTitle());
-                collectBo.setSourceType(Constant.INFOR_RADIO);
                 collectBo.setSource(broadcastBo.getModule());
                 break;
             case Constant.INFOR_VIDEO:
                 VideoBo videoBo = inforService.findVideoById(inforid);
                 collectBo.setTitle(videoBo.getTitle());
-
                 collectBo.setSource(videoBo.getModule());
+                collectBo.setVideo(videoBo.getSourceUrl());
+                collectBo.setTargetPic(videoBo.getPoster());
                 break;
             default:
                 break;

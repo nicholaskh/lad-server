@@ -65,6 +65,9 @@ public class CircleController extends BaseContorller {
 	@Autowired
 	private IDynamicService dynamicService;
 
+	@Autowired
+	private ICollectService collectService;
+
 	private String titlePush = "圈子通知";
 
 	/**
@@ -2082,6 +2085,46 @@ public class CircleController extends BaseContorller {
 		Map<String, Object> map = new HashMap<>();
 		map.put("ret", 0);
 		map.put("dynamicid", dynamicBo.getId());
+		return JSONObject.fromObject(map).toString();
+	}
+
+	/**
+	 * 收藏帖子
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@RequestMapping("/collect-circle")
+	@ResponseBody
+	public String colNotes(String circleid, HttpServletRequest request, HttpServletResponse response){
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		CircleBo circleBo = circleService.selectById(circleid);
+		if (circleBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_IS_NULL.getIndex(),
+					ERRORCODE.CIRCLE_IS_NULL.getReason());
+		}
+		CollectBo chatBo = collectService.findByUseridAndTargetid(userBo.getId(), circleid);
+		if (chatBo != null) {
+			return CommonUtil.toErrorResult(ERRORCODE.COLLECT_EXIST.getIndex(),
+					ERRORCODE.COLLECT_EXIST.getReason());
+		}
+		chatBo = new CollectBo();
+		chatBo.setCreateuid(userBo.getId());
+		chatBo.setUserid(userBo.getId());
+		chatBo.setTargetid(circleid);
+		chatBo.setType(Constant.COLLET_URL);
+		chatBo.setSub_type(Constant.CIRCLE_TYPE);
+		chatBo.setTitle(circleBo.getName());
+		chatBo.setTargetPic(circleBo.getHeadPicture());
+		collectService.insert(chatBo);
+		circleService.updateCircleHot(circleid,1, Constant.CIRCLE_TRANS);
+		Map<String, Object> map = new HashMap<>();
+		map.put("ret", 0);
+		map.put("col-time", CommonUtil.time2str(chatBo.getCreateTime()));
 		return JSONObject.fromObject(map).toString();
 	}
 

@@ -2,6 +2,7 @@ package com.lad.controller;
 
 import com.lad.bo.*;
 import com.lad.redis.RedisServer;
+import com.lad.service.ICircleService;
 import com.lad.service.IHomepageService;
 import com.lad.service.IThumbsupService;
 import com.lad.service.IUserService;
@@ -9,12 +10,15 @@ import com.lad.util.CommonUtil;
 import com.lad.util.Constant;
 import com.lad.util.ERRORCODE;
 import com.lad.util.MyException;
+import com.lad.vo.CircleBaseVo;
 import com.lad.vo.ThumbsupVo;
+import com.lad.vo.UserInfoVo;
 import net.sf.json.JSONObject;
 import org.apache.commons.beanutils.BeanUtils;
 import org.redisson.api.RMapCache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,6 +40,9 @@ public class HomepageController extends BaseContorller {
 	private IThumbsupService thumbsupService;
 	@Autowired
 	private IUserService userService;
+
+	@Autowired
+	private ICircleService circleService;
 
 	@Autowired
 	private RedisServer redisServer;
@@ -389,6 +396,75 @@ public class HomepageController extends BaseContorller {
 		}
 		userService.updateUserTaste(tasteBo.getId(), taste, type);
 		return Constant.COM_RESP;
+	}
+
+
+
+	@RequestMapping("/user-homepage")
+	@ResponseBody
+	public String visitUserHomepage(String userid, HttpServletRequest request, HttpServletResponse
+			response) {
+		UserBo loginUser = getUserLogin(request);
+		UserBo userBo = userService.getUser(userid);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.USER_NULL.getIndex(),
+					ERRORCODE.USER_NULL.getReason());
+		}
+		if (loginUser != null && !userid.equals(loginUser.getId())) {
+			updateUserVisit(userid, loginUser.getId());
+		}
+		UserInfoVo infoVo = new UserInfoVo();
+		bo2vo(userBo, infoVo);
+		List<CircleBo> circleBos = circleService.findMyCircles(userBo.getId(), "", true, 4);
+		List<CircleBaseVo> circles = new LinkedList<>();
+		for (CircleBo circleBo : circleBos) {
+			CircleBaseVo circleBaseVo = new CircleBaseVo();
+			org.springframework.beans.BeanUtils.copyProperties(circleBo,circleBaseVo);
+			circleBaseVo.setCircleid(circleBo.getId());
+			circleBaseVo.setNotesSize(circleBo.getNoteSize());
+			circleBaseVo.setUsersSize(circleBo.getTotal());
+			circles.add(circleBaseVo);
+		}
+		Map<String, Object> map = new LinkedHashMap<>();
+		map.put("ret", 0);
+		map.put("user", infoVo);
+		map.put("userCricles", circles);
+		return JSONObject.fromObject(map).toString();
+	}
+
+
+	/**
+	 * 用户访问信息
+	 * @param ownerid
+	 * @param visitid
+	 */
+	@Async
+	private void updateUserVisit(String ownerid, String visitid){
+		UserVisitBo visitBo = userService.findUserVisit(ownerid, visitid);
+		if (visitBo == null) {
+			visitBo = new UserVisitBo();
+			visitBo.setOwnerid(ownerid);
+			visitBo.setVisitid(visitid);
+			visitBo.setVisitTime(new Date());
+			userService.addUserVisit(visitBo);
+		} else {
+			userService.updateUserVisit(visitBo.getId(), new Date());
+		}
+	}
+
+	private void bo2vo(UserBo userBo, UserInfoVo infoVo){
+		org.springframework.beans.BeanUtils.copyProperties(userBo, infoVo);
+		UserTasteBo tasteBo = userService.findByUserId(userBo.getId());
+		if (tasteBo == null) {
+			tasteBo = new UserTasteBo();
+			tasteBo.setUserid(userBo.getId());
+			userService.addUserTaste(tasteBo);
+		}
+		infoVo.setSports(tasteBo.getSports());
+		infoVo.setMusics(tasteBo.getMusics());
+		infoVo.setLifes(tasteBo.getLifes());
+		infoVo.setTrips(tasteBo.getTrips());
+		infoVo.setRegistTime(userBo.getCreateTime());
 	}
 
 }

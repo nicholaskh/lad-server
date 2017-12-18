@@ -25,6 +25,9 @@ public interface ICollectService {
 	
 
 	WriteResult delete(String chatId);
+
+	
+	WriteResult delete(List<String> collects);
 	/**
 	 * 
 	 * @param userid
