@@ -260,24 +260,25 @@ public class NoteController extends BaseContorller {
 					ERRORCODE.NOTE_IS_NULL.getReason());
 		}
 		UserBo userBo = getUserLogin(request);
-		ThumbsupBo thumbsupBo = null;
+		NoteVo noteVo = new NoteVo();
+		String userid = "";
 		if (userBo != null) {
+			userid = userBo.getId();
 			updateHistory(userBo.getId(), noteBo.getCircleId(), locationService, circleService);
-			thumbsupBo = thumbsupService.getByVidAndVisitorid(noteid, userBo.getId());
+			ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(noteid, userid);
+			//这个帖子自己是否点赞
+			noteVo.setMyThumbsup(null != thumbsupBo);
+			CollectBo collectBo = collectService.findByUseridAndTargetid(userid, noteid);
+			noteVo.setCollect(collectBo != null);
 		}
-
 		updateCircleHot(circleService, redisServer, noteBo.getCircleId(), 1, Constant.CIRCLE_NOTE_VISIT);
 		updateCount(noteid, Constant.VISIT_NUM, 1);
-		NoteVo noteVo = new NoteVo();
-		String userid = userBo != null ? userBo.getId() : "";
 		boToVo(noteBo, noteVo, userService.getUser(noteBo.getCreateuid()),userid);
 		CircleBo circleBo = circleService.selectByIdIgnoreDel(noteBo.getCircleId());
 		if (circleBo != null) {
 			noteVo.setCirName(circleBo.getName());
 			noteVo.setCirHeadPic(circleBo.getHeadPicture());
 		}
-		//这个帖子自己是否点赞
-		noteVo.setMyThumbsup(null != thumbsupBo);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("noteVo", noteVo);
@@ -1063,6 +1064,27 @@ public class NoteController extends BaseContorller {
 		map.put("ret", 0);
 		map.put("col-time", CommonUtil.time2str(chatBo.getCreateTime()));
 		return JSONObject.fromObject(map).toString();
+	}
+
+	/**
+	 * 收藏帖子
+	 * @param noteid
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@RequestMapping("/cancel-collect")
+	@ResponseBody
+	public String cancelCollect(String noteid, HttpServletRequest request, HttpServletResponse response) {
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(), ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		CollectBo collectBo = collectService.findByUseridAndTargetid(userBo.getId(), noteid);
+		if (collectBo != null) {
+			collectService.delete(collectBo.getId());
+		}
+		return Constant.COM_RESP;
 	}
 
 
