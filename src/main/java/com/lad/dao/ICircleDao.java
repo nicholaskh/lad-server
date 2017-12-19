@@ -182,4 +182,12 @@ public interface ICircleDao extends IBaseDao {
 	 */
 	CircleBo selectByIdIgnoreDel(String circleid);
 
+
+	/**
+	 * 查找圈子指定集合里面的圈子
+	 * @param circleids
+	 * @return
+	 */
+	List<CircleBo> findCirclesInList(List<String> circleids);
+
 }

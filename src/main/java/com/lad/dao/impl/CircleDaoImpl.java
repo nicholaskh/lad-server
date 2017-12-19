@@ -411,4 +411,11 @@ public class CircleDaoImpl implements ICircleDao {
 		query.addCriteria(new Criteria("_id").is(circleid));
 		return mongoTemplate.findOne(query, CircleBo.class);
 	}
+
+	@Override
+	public List<CircleBo> findCirclesInList(List<String> circleids) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("_id").in(circleids).and("deleted").is(Constant.ACTIVITY));
+		return mongoTemplate.find(query, CircleBo.class);
+	}
 }

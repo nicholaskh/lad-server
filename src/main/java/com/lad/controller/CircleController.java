@@ -910,26 +910,40 @@ public class CircleController extends BaseContorller {
 		}
 		//置顶的圈子id
 		List<String> topCircles = userBo.getCircleTops();
-		List<CircleBo> circleBos = circleService.findMyCircles(userBo.getId(), start_id, gt, limit);
+
 		//未置顶的圈子
-		List<CircleBo> noTops = new LinkedList<>();
 		List<CircleVo> voList = new LinkedList<>();
-		String userid = userBo.getId();
+		if (!topCircles.isEmpty()) {
+			List<CircleBo> tops = circleService.findCirclesInList(topCircles);
+
+			for (String top : topCircles) {
+				//由于mongo查询结果不是按照list的顺序，在程序中再次处理顺序
+				for (CircleBo circleBo : tops) {
+					if (top.equals(circleBo.getId())) {
+						if (circleBo.getTotal() == 0) {
+							int number = noteService.selectPeopleNum(circleBo.getId());
+							circleBo.setTotal(number);
+							circleService.updateTotal(circleBo.getId(), number);
+						}
+						voList.add(bo2vo(circleBo, userBo, 1));
+						tops.remove(circleBo);
+						break;
+					}
+				}
+			}
+		}
+		List<CircleBo> circleBos = circleService.findMyCircles(userBo.getId(), start_id, gt, limit);
 		//筛选出置顶的圈子
 		for (CircleBo circleBo : circleBos) {
+			if (topCircles.contains(circleBo.getId())) {
+				continue;
+			}
 			if (circleBo.getTotal() == 0) {
 				int number = noteService.selectPeopleNum(circleBo.getId());
 				circleBo.setTotal(number);
 				circleService.updateTotal(circleBo.getId(), number);
 			}
-			if (topCircles.contains(circleBo.getId())) {
-				voList.add(bo2vo(circleBo, userBo, 1));
-			} else {
-				noTops.add(circleBo);
-			}
-		}
-		for (CircleBo item : noTops) {
-			voList.add(bo2vo(item, userBo, 0));
+			voList.add(bo2vo(circleBo, userBo, 0));
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);

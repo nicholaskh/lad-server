@@ -55,6 +55,8 @@ public class NoteVo extends BaseVo {
     private int cirVisitNum;
     //视频缩略图
     private String videoPic;
+    //是否收藏
+    private boolean isCollect;
 
     public boolean getMyThumbsup() {
         return isMyThumbsup;
@@ -291,5 +293,17 @@ public class NoteVo extends BaseVo {
 
     public void setLandmark(String landmark) {
         this.landmark = landmark;
+    }
+
+    public boolean isMyThumbsup() {
+        return isMyThumbsup;
+    }
+
+    public boolean isCollect() {
+        return isCollect;
+    }
+
+    public void setCollect(boolean collect) {
+        isCollect = collect;
     }
 }

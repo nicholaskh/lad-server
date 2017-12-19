@@ -242,4 +242,9 @@ public class CircleServiceImpl implements ICircleService {
 	public CircleBo selectByIdIgnoreDel(String circleid) {
 		return circleDao.selectByIdIgnoreDel(circleid);
 	}
+
+	@Override
+	public List<CircleBo> findCirclesInList(List<String> circleids) {
+		return circleDao.findCirclesInList(circleids);
+	}
 }
