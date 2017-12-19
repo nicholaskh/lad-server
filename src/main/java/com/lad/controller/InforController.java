@@ -1277,7 +1277,7 @@ public class InforController extends BaseContorller {
      */
     @Async
     private void updateUserReadHis(String userid, String module, String className, int type){
-        Date currenDate = CommonUtil.getZeroDate(new Date());
+        String currenDate = CommonUtil.getCurrentDate(new Date());
         InforUserReadHisBo readHisBo = inforRecomService.findByReadHis(userid, type, module, className);
         if (readHisBo != null) {
             //当前类的最后一次浏览时间
@@ -1333,8 +1333,9 @@ public class InforController extends BaseContorller {
     private void updateUserReadAll(String userid, InforUserReadBo readBo){
         Date currenDate = CommonUtil.getZeroDate(new Date());
         Date halfTime = CommonUtil.getHalfYearTime(currenDate);
+        String halfStr = CommonUtil.getCurrentDate(halfTime);
 
-        List<InforUserReadHisBo> readHisBos = inforRecomService.findUserReadHisBeforeHalf(userid, halfTime);
+        List<InforUserReadHisBo> readHisBos = inforRecomService.findUserReadHisBeforeHalf(userid, halfStr);
         if (readHisBos == null || readHisBos.isEmpty()){
             return;
         }
@@ -1366,20 +1367,24 @@ public class InforController extends BaseContorller {
     @Async
     private void updateInforHistroy(String inforid, String module, int type){
         Date currenDate = CommonUtil.getZeroDate(new Date());
+        String dateStr = CommonUtil.getCurrentDate(new Date());
+
         Date halfTime = CommonUtil.getHalfYearTime(currenDate);
+        String halgStr = CommonUtil.getCurrentDate(halfTime);
+
         RLock lock = redisServer.getRLock(inforid);
         List<InforHistoryBo> historyBos = null;
         List<String> ids = new ArrayList<>();
         try {
             lock.lock(5, TimeUnit.SECONDS);
-            InforHistoryBo historyBo = inforRecomService.findTodayHis(inforid, currenDate);
+            InforHistoryBo historyBo = inforRecomService.findTodayHis(inforid, dateStr);
             if (historyBo == null) {
                 historyBo = new InforHistoryBo();
                 historyBo.setDayNum(1);
                 historyBo.setInforid(inforid);
                 historyBo.setModule(module);
                 historyBo.setType(type);
-                historyBo.setReadDate(currenDate);
+                historyBo.setReadDate(dateStr);
                 inforRecomService.addInfoHis(historyBo);
             } else {
                 inforRecomService.updateHisDayNum(historyBo.getId(),1);
@@ -1395,7 +1400,7 @@ public class InforController extends BaseContorller {
                 inforRecomService.addInforRecom(recomBo);
             } else {
                 inforRecomService.updateRecomByInforid(recomBo.getId(), 1, 1);
-                historyBos = inforRecomService.findHalfYearHis(inforid, halfTime);
+                historyBos = inforRecomService.findHalfYearHis(inforid, halgStr);
                 if (historyBos == null || historyBos.isEmpty()){
                     return;
                 } else {
@@ -1428,12 +1433,14 @@ public class InforController extends BaseContorller {
     private void updateGrouprHistroy(String inforid, String module, String className, int type){
         Date currenDate = CommonUtil.getZeroDate(new Date());
         Date halfTime = CommonUtil.getHalfYearTime(currenDate);
+        String dateStr = CommonUtil.getCurrentDate(new Date());
+        String halfStr = CommonUtil.getCurrentDate(halfTime);
         List<InforHistoryBo> historyBos = null;
         List<String> ids = new ArrayList<>();
         RLock lock = redisServer.getRLock(inforid);
         try {
             lock.lock(5, TimeUnit.SECONDS);
-            InforHistoryBo historyBo = inforRecomService.findTodayHis(inforid, currenDate);
+            InforHistoryBo historyBo = inforRecomService.findTodayHis(inforid, dateStr);
             if (historyBo == null) {
                 historyBo = new InforHistoryBo();
                 historyBo.setDayNum(1);
@@ -1441,7 +1448,7 @@ public class InforController extends BaseContorller {
                 historyBo.setModule(module);
                 historyBo.setClassName(className);
                 historyBo.setType(type);
-                historyBo.setReadDate(currenDate);
+                historyBo.setReadDate(dateStr);
                 inforRecomService.addInfoHis(historyBo);
             } else {
                 inforRecomService.updateHisDayNum(historyBo.getId(),1);
@@ -1457,7 +1464,7 @@ public class InforController extends BaseContorller {
                 inforRecomService.addInforGroup(groupRecomBo);
             } else {
                 inforRecomService.updateInforGroup(groupRecomBo.getId(), 1, 1);
-                historyBos = inforRecomService.findHalfYearHis(inforid, halfTime);
+                historyBos = inforRecomService.findHalfYearHis(inforid, halfStr);
                 if (historyBos == null || historyBos.isEmpty()){
                     return;
                 } else {

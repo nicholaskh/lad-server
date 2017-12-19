@@ -33,7 +33,7 @@ public class InforHistoryDaoImpl implements IInforHistoryDao{
     }
 
     @Override
-    public InforHistoryBo findTodayHis(String inforid, Date zeroTime) {
+    public InforHistoryBo findTodayHis(String inforid, String zeroTime) {
         Query query = new Query();
         query.addCriteria(new Criteria("inforid").is(inforid));
         query.addCriteria(new Criteria("readDate").is(zeroTime));
@@ -42,7 +42,7 @@ public class InforHistoryDaoImpl implements IInforHistoryDao{
     }
 
     @Override
-    public List<InforHistoryBo> findHalfYearHis(String inforid, Date halfYearTime) {
+    public List<InforHistoryBo> findHalfYearHis(String inforid, String halfYearTime) {
         Query query = new Query();
         query.addCriteria(new Criteria("inforid").is(inforid));
         query.addCriteria(new Criteria("readDate").lt(halfYearTime));

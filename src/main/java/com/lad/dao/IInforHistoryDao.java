@@ -3,7 +3,6 @@ package com.lad.dao;
 import com.lad.bo.InforHistoryBo;
 import com.mongodb.WriteResult;
 
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -23,7 +22,7 @@ public interface IInforHistoryDao {
      * @param zeroTime
      * @return
      */
-    InforHistoryBo findTodayHis(String inforid, Date zeroTime);
+    InforHistoryBo findTodayHis(String inforid, String zeroTime);
 
     /**
      * 查找当前资讯180天前的浏览信息变删除
@@ -31,7 +30,7 @@ public interface IInforHistoryDao {
      * @param halfYearTime
      * @return
      */
-    List<InforHistoryBo> findHalfYearHis(String inforid, Date halfYearTime);
+    List<InforHistoryBo> findHalfYearHis(String inforid, String halfYearTime);
 
     /**
      * 删除资讯信息

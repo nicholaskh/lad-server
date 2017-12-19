@@ -2,8 +2,6 @@ package com.lad.bo;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.Date;
-
 /**
  * 功能描述：资讯热度历史记录
  * Copyright: Copyright (c) 2017
@@ -17,7 +15,7 @@ public class InforHistoryBo extends BaseBo{
     //need index
     private long dayNum;
     //阅读时间 当天零点的时间戳  need index
-    private Date readDate;
+    private String readDate;
     //need index
     private int type;
     //need index
@@ -41,11 +39,11 @@ public class InforHistoryBo extends BaseBo{
         this.dayNum = dayNum;
     }
 
-    public Date getReadDate() {
+    public String getReadDate() {
         return readDate;
     }
 
-    public void setReadDate(Date readDate) {
+    public void setReadDate(String readDate) {
         this.readDate = readDate;
     }
 

@@ -25,7 +25,7 @@ public interface IInforRecomService {
      * @param zeroTime
      * @return
      */
-    InforHistoryBo findTodayHis(String inforid, Date zeroTime);
+    InforHistoryBo findTodayHis(String inforid, String zeroTime);
 
     /**
      * 查找当前资讯180天前的浏览信息变删除
@@ -33,7 +33,7 @@ public interface IInforRecomService {
      * @param halfYearTime
      * @return
      */
-    List<InforHistoryBo> findHalfYearHis(String inforid, Date halfYearTime);
+    List<InforHistoryBo> findHalfYearHis(String inforid, String halfYearTime);
 
     /**
      * 删除资讯信息
@@ -119,7 +119,7 @@ public interface IInforRecomService {
      * @param currentDate
      * @return
      */
-    WriteResult updateUserReadHis(String id, Date currentDate);
+    WriteResult updateUserReadHis(String id, String currentDate);
 
     /**
      * 查找用户当天指定类型和分类的阅读记录
@@ -136,7 +136,7 @@ public interface IInforRecomService {
      * @param halfTime
      * @return
      */
-    List<InforUserReadHisBo> findUserReadHisBeforeHalf(String userid, Date halfTime);
+    List<InforUserReadHisBo> findUserReadHisBeforeHalf(String userid, String halfTime);
 
 
     /**

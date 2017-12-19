@@ -47,7 +47,7 @@ public class InforUserReadHisDaoImpl implements IInforUserReadHisDao {
     }
 
     @Override
-    public WriteResult updateUserReadHis(String id, Date currentDate) {
+    public WriteResult updateUserReadHis(String id, String currentDate) {
         Query query = new Query();
         query.addCriteria(new Criteria("_id").is(id));
         Update update = new Update();
@@ -67,7 +67,7 @@ public class InforUserReadHisDaoImpl implements IInforUserReadHisDao {
     }
 
     @Override
-    public List<InforUserReadHisBo> findUserReadHisBeforeHalf(String userid, Date halfTime) {
+    public List<InforUserReadHisBo> findUserReadHisBeforeHalf(String userid, String halfTime) {
         Query query = new Query();
         query.addCriteria(new Criteria("userid").is(userid));
         query.addCriteria(new Criteria("lastDate").lt(halfTime));

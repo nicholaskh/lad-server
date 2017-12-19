@@ -33,7 +33,7 @@ public interface IInforUserReadHisDao {
      * @param halfTime
      * @return
      */
-    List<InforUserReadHisBo> findUserReadHisBeforeHalf(String userid, Date halfTime);
+    List<InforUserReadHisBo> findUserReadHisBeforeHalf(String userid, String halfTime);
 
     /**
      * 更新当前用户阅读记录
@@ -41,7 +41,7 @@ public interface IInforUserReadHisDao {
      * @param currentDate
      * @return
      */
-    WriteResult updateUserReadHis(String id, Date currentDate);
+    WriteResult updateUserReadHis(String id, String currentDate);
 
 
     /**

@@ -4,7 +4,6 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.io.Serializable;
-import java.util.Date;
 
 /**
  * 功能描述：分类用户最后阅读时间
@@ -24,7 +23,7 @@ public class InforUserReadHisBo implements Serializable {
 
     private int type;
 
-    private Date lastDate;
+    private String lastDate;
 
     private String userid;
 
@@ -53,11 +52,11 @@ public class InforUserReadHisBo implements Serializable {
         this.type = type;
     }
 
-    public Date getLastDate() {
+    public String getLastDate() {
         return lastDate;
     }
 
-    public void setLastDate(Date lastDate) {
+    public void setLastDate(String lastDate) {
         this.lastDate = lastDate;
     }
 
