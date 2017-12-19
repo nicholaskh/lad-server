@@ -69,6 +69,9 @@ public class PartyController extends BaseContorller {
     @Autowired
     private IFeedbackService feedbackService;
 
+    @Autowired
+    private IFriendsService friendsService;
+
     private int dayTimeMins = 24 * 60 * 60 * 1000;
 
     private String titlePush = "聚会通知";
@@ -131,15 +134,17 @@ public class PartyController extends BaseContorller {
         chatroomService.addPartyChartroom(chatroomBo.getId(), partyBo.getId());
         HashSet<String> circleUsers = circleBo.getUsers();
 
+        String path = "/party/party-info.do?partyid=" + partyBo.getId();
+        String content = String.format("“%s”发起了聚会【%s】，快去看看吧", userBo.getUserName(),
+                partyBo.getTitle());
         if (circleUsers.size() > 0) {
-            String path = "/party/party-info.do?partyid=" + partyBo.getId();
-            String content = String.format("“%s”发起了聚会【%s】，快去看看吧", userBo.getUserName(),
-                    partyBo.getTitle());
             String[] userids = new String[circleUsers.size()];
             circleUsers.toArray(userids);
             JPushUtil.push(titlePush, content, path, userids);
         }
-
+        if (circleBo.isOpen()) {
+            pushFriends(userId, content, path, circleUsers);
+        }
         //用户等级
         userService.addUserLevel(userBo.getId(), 1, Constant.PARTY_TYPE);
         //圈子热度
@@ -149,6 +154,31 @@ public class PartyController extends BaseContorller {
         map.put("ret", 0);
         map.put("partyid", partyBo.getId());
         return JSONObject.fromObject(map).toString();
+    }
+
+    /**
+     * 推送给好友
+     * @param userid
+     * @param content
+     * @param path
+     */
+    @Async
+    private void pushFriends(String userid, String content, String path, HashSet<String> circleUsers){
+        List<FriendsBo> friendsBos = friendsService.getFriendByUserid(userid);
+        if (!CommonUtil.isEmpty(friendsBos)) {
+            String[] friendids = new String[friendsBos.size()];
+            int i = 0;
+            for (FriendsBo friendsBo : friendsBos) {
+                //如果好友同时是圈友，则不在推送
+                if (circleUsers.contains(friendsBo.getId())) {
+                    continue;
+                }
+                friendids[i++] = friendsBo.getId();
+            }
+            if (i > 0) {
+                JPushUtil.push(titlePush, content, path, friendids);
+            }
+        }
     }
 
 
