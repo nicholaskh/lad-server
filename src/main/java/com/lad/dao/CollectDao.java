@@ -170,7 +170,7 @@ public class CollectDao {
 
 
 	/**
-	 * 删除单条记录
+	 * 删除记录
 	 * @param collects
 	 * @return
 	 */
@@ -179,7 +179,7 @@ public class CollectDao {
 		query.addCriteria(new Criteria("_id").in(collects));
 		Update update = new Update();
 		update.set("deleted",Constant.DELETED);
-		return mongoTemplate.updateFirst(query, update, CollectBo.class);
+		return mongoTemplate.updateMulti(query, update, CollectBo.class);
 	}
 
 }

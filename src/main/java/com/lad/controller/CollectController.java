@@ -289,6 +289,10 @@ public class CollectController extends BaseContorller {
 					}
 				}
 				vo.setVideo(collectBo.getVideo());
+			} else if (collectBo.getType() == Constant.CHAT_TYPE) {
+				vo.setCollectUserPic(collectBo.getTargetPic());
+				vo.setCollectUserName(collectBo.getSource());
+				vo.setCollectUserid(collectBo.getSourceid());
 			}
 			collectVos.add(vo);
 		}
