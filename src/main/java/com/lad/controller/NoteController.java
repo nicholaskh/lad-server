@@ -978,7 +978,7 @@ public class NoteController extends BaseContorller {
 	 */
 	@RequestMapping("/forward-dynamic")
 	@ResponseBody
-	public String forwardDynamic(String noteid, String view, HttpServletRequest request,
+	public String forwardDynamic(String noteid, String view, String landmark,HttpServletRequest request,
 								HttpServletResponse response) {
 		UserBo userBo;
 		try {
@@ -997,6 +997,7 @@ public class NoteController extends BaseContorller {
 		dynamicBo.setMsgid(noteid);
 		dynamicBo.setCreateuid(userBo.getId());
 		dynamicBo.setOwner(noteBo.getCreateuid());
+		dynamicBo.setLandmark(landmark);
 		dynamicBo.setPhotos(new LinkedHashSet<>(noteBo.getPhotos()));
 		dynamicBo.setType(Constant.NOTE_TYPE);
 		CircleBo circleBo = circleService.selectById(noteBo.getCircleId());

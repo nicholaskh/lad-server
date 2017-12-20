@@ -1,5 +1,6 @@
 package com.lad.controller;
 
+import com.alibaba.fastjson.JSON;
 import com.lad.bo.*;
 import com.lad.redis.RedisServer;
 import com.lad.service.*;
@@ -753,15 +754,9 @@ public class CircleController extends BaseContorller {
 			 name = StringUtils.isEmpty(friendsBo.getBackname()) ? name : friendsBo.getBackname();
 		}
 		String content = String.format("“%s”将您设置为圈主", name);
-		String path = "/circle/persons.do?circleid=" + circleid;
-		JPushUtil.pushNotify("圈主转让通知", content, path,  userid);
-		Map<String, String> params = new LinkedHashMap<>();
-		params.put("circleName",circleBo.getName());
-		params.put("circleid",circleid);
-		params.put("operateTime",CommonUtil.getDateStr(new Date(),"yyyy-MM-dd HH:mm:ss"));
-		params.put("operateUser",name);
-		params.put("operateUserid",userBo.getId());
-		JPushUtil.pushParams("圈主转让通知", content, path, params, userid);
+		CircleHistoryBo historyBo = addCircleOperateHis(userid,circleid, userBo.getId(),"圈主转让通知", content);
+		String path = "/circle/get-circle-his.do?circleid=" + historyBo.getId();
+		JPushUtil.push("圈主转让通知", content, path, userid);
 		return Constant.COM_RESP;
 	}
 
@@ -809,31 +804,30 @@ public class CircleController extends BaseContorller {
 						ERRORCODE.CIRCLE_MASTER_MAX.getIndex(),
 						ERRORCODE.CIRCLE_MASTER_MAX.getReason());
 			}
+			title = "设置管理员通知";
+			content = String.format("“%s”将您设置为管理员",creater.getUserName());
 			for (String id : ids) {
 				if (users.contains(id)) {
 					masters.add(id);
+					CircleHistoryBo historyBo = addCircleOperateHis(id,circleid, userBo.getId(),title, content);
+					String path = "/circle/get-circle-his.do?circleid=".concat(historyBo.getId());
+					JPushUtil.push(title, content, path, id);
 				}
 			}
-			title = "设置管理员通知";
-			content = String.format("“%s”将您设置为管理员",creater.getUserName());
+
 		} else {
+			title = "取消管理员通知";
+			content = String.format("“%s”已取消您的管理员",creater.getUserName());
 			for (String id : ids) {
 				if (masters.contains(id)) {
 					masters.remove(id);
+					CircleHistoryBo historyBo = addCircleOperateHis(id,circleid, userBo.getId(),title, content);
+					String path = "/circle/get-circle-his.do?circleid=".concat(historyBo.getId());
+					JPushUtil.push(title, content, path, id);
 				}
 			}
-			title = "取消管理员通知";
-			content = String.format("“%s”已取消您的管理员",creater.getUserName());
 		}
 		circleService.updateMaster(circleBo);
-		String path = "/circle/persons.do?circleid=" + circleid;
-		Map<String, String> params = new LinkedHashMap<>();
-		params.put("circleName",circleBo.getName());
-		params.put("circleid",circleid);
-		params.put("operateTime",CommonUtil.getDateStr(new Date(),"yyyy-MM-dd HH:mm:ss"));
-		params.put("operateUser",userBo.getUserName());
-		params.put("operateUserid",userBo.getId());
-		JPushUtil.pushParams(title, content, path, params, ids);
 		return Constant.COM_RESP;
 	}
 
@@ -2070,7 +2064,7 @@ public class CircleController extends BaseContorller {
 	 */
 	@RequestMapping("/forward-dynamic")
 	@ResponseBody
-	public String forwardDynamic(String circleid, String view, HttpServletRequest request,
+	public String forwardDynamic(String circleid, String view, String landmark,HttpServletRequest request,
 								 HttpServletResponse response) {
 		UserBo userBo = getUserLogin(request);
 		if (userBo == null) {
@@ -2091,6 +2085,7 @@ public class CircleController extends BaseContorller {
 		dynamicBo.setPhotos(photos);
 		dynamicBo.setCreateuid(userBo.getId());
 		dynamicBo.setView(view);
+		dynamicBo.setLandmark(landmark);
 		dynamicBo.setType(Constant.CIRCLE_TYPE);
 		dynamicBo.setSourceName(circleBo.getName());
 		dynamicService.addDynamic(dynamicBo);
@@ -2192,6 +2187,73 @@ public class CircleController extends BaseContorller {
 		}
 		return  userStarVos;
 	}
+
+
+	/**
+	 * 圈子历史
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@RequestMapping("/get-circle-his")
+	@ResponseBody
+	public String getCircleHis(String historyid, HttpServletRequest request, HttpServletResponse response) {
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		CircleHistoryBo hisBo = circleService.findCircleHisById(historyid);
+		Map<String, Object> map = new LinkedHashMap<>();
+		if (hisBo != null) {
+			map.put("historyid", hisBo.getId());
+			map.put("hisType", hisBo.getType());
+			UserBo user = userService.getUser(hisBo.getUserid());
+			UserBaseVo baseVo = new UserBaseVo();
+			if (user != null) {
+				BeanUtils.copyProperties(user, baseVo);
+			}
+			if (hisBo.getType() == 0) {
+				map.put("userVo", baseVo);
+				map.put("visitTime", hisBo.getCreateTime());
+			} else if (hisBo.getType() == 1) {
+				CircleBo circleBo = circleService.selectById(hisBo.getCircleid());
+				CircleHeadVo headVo = new CircleHeadVo();
+				if (circleBo != null) {
+					headVo.setCircleid(circleBo.getId());
+					headVo.setName(circleBo.getName());
+					headVo.setHeadPicture(circleBo.getHeadPicture());
+				}
+				UserBo operate = userService.getUser(hisBo.getOperateid());
+				UserBaseVo opUser = new UserBaseVo();
+				if (operate != null) {
+					BeanUtils.copyProperties(opUser, operate);
+				}
+				map.put("title", hisBo.getTitle());
+				map.put("content", hisBo.getContent());
+				map.put("userVo", baseVo);
+				map.put("operateUserVo", opUser);
+				map.put("circleVo", headVo);
+				map.put("operateTime", hisBo.getCreateTime());
+			}
+		}
+		return JSON.toJSONString(map);
+	}
+
+	private CircleHistoryBo addCircleOperateHis(String userid, String circleid, String opeateid, String title, String
+			content){
+		CircleHistoryBo historyBo = new CircleHistoryBo();
+		historyBo.setCircleid(circleid);
+		historyBo.setUserid(userid);
+		historyBo.setOperateid(opeateid);
+		historyBo.setTitle(title);
+		historyBo.setContent(content);
+		historyBo.setType(1);
+		circleService.insertHistory(historyBo);
+		return historyBo;
+	}
+
+
 	/**
 	 * 实体类转换
 	 * @param circleBos
