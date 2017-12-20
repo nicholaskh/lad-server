@@ -2,7 +2,10 @@ package com.lad.controller;
 
 import com.lad.bo.*;
 import com.lad.redis.RedisServer;
-import com.lad.service.*;
+import com.lad.service.ICircleService;
+import com.lad.service.IDynamicService;
+import com.lad.service.IThumbsupService;
+import com.lad.service.IUserService;
 import com.lad.util.CommonUtil;
 import com.lad.util.Constant;
 import com.lad.util.ERRORCODE;
@@ -43,6 +46,9 @@ public class DynamicController extends BaseContorller {
 
     @Autowired
     private IThumbsupService thumbsupService;
+
+    @Autowired
+    private ICircleService circleService;
 
 
     /**
@@ -417,6 +423,17 @@ public class DynamicController extends BaseContorller {
                 dynamicVo.setUserPic(userBo.getHeadPictureName());
                 dynamicVo.setUserid(userBo.getCreateuid());
             }
+            int type = msgBo.getType();
+            if (type == Constant.NOTE_TYPE) {
+                dynamicVo.setCircleid(msgBo.getSourceid());
+                CircleBo circleBo = circleService.selectById(msgBo.getSourceid());
+                if (circleBo != null) {
+                    dynamicVo.setCircleName(circleBo.getName());
+                } else {
+                    dynamicVo.setCircleName(msgBo.getSourceName());
+                }
+            }
+            dynamicVo.setTime(msgBo.getCreateTime());
             ThumbsupBo thumbsupBo = thumbsupService.findHaveOwenidAndVisitorid(msgBo.getMsgid(), userBo.getId());
             dynamicVo.setMyThumbsup(thumbsupBo != null);
             dynamicVos.add(dynamicVo);
