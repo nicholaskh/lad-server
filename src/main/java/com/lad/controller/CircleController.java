@@ -2205,6 +2205,7 @@ public class CircleController extends BaseContorller {
 		}
 		CircleHistoryBo hisBo = circleService.findCircleHisById(historyid);
 		Map<String, Object> map = new LinkedHashMap<>();
+		map.put("ret", 0);
 		if (hisBo != null) {
 			map.put("historyid", hisBo.getId());
 			map.put("hisType", hisBo.getType());
@@ -2239,6 +2240,39 @@ public class CircleController extends BaseContorller {
 		}
 		return JSON.toJSONString(map);
 	}
+
+
+	/**
+	 * 我所有圈子的操作历史
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@RequestMapping("/get-my-his")
+	@ResponseBody
+	public String getMyCircleHis(int page, int limit, HttpServletRequest request, HttpServletResponse
+			response) {
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		List<CircleHistoryBo> historyBos = circleService.findCircleHisByUserid(userBo.getId(), 1, page,limit);
+		List<CircleHisVo> hisVos = new LinkedList<>();
+		for (CircleHistoryBo historyBo : historyBos) {
+			CircleHisVo hisVo = new CircleHisVo();
+			hisVo.setHistoryid(historyBo.getId());
+			hisVo.setContent(historyBo.getContent());
+			hisVo.setTitle(historyBo.getTitle());
+			hisVo.setOperateTime(historyBo.getCreateTime());
+			hisVos.add(hisVo);
+		}
+		Map<String, Object> map = new LinkedHashMap<>();
+		map.put("ret", 0);
+		map.put("historyVos", hisVos);
+		return JSON.toJSONString(map);
+	}
+
 
 	private CircleHistoryBo addCircleOperateHis(String userid, String circleid, String opeateid, String title, String
 			content){
