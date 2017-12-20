@@ -1,5 +1,6 @@
 package com.lad.vo;
 
+import java.util.Date;
 import java.util.LinkedHashSet;
 
 /**
@@ -51,6 +52,12 @@ public class DynamicVo extends BaseVo {
     private String videoPic;
 
     private String video;
+
+    private String circleid;
+
+    private String circleName;
+
+    private Date time;
 
     public String getMsgid() {
         return msgid;
@@ -210,5 +217,29 @@ public class DynamicVo extends BaseVo {
 
     public void setThumpNum(int thumpNum) {
         this.thumpNum = thumpNum;
+    }
+
+    public String getCircleid() {
+        return circleid;
+    }
+
+    public void setCircleid(String circleid) {
+        this.circleid = circleid;
+    }
+
+    public String getCircleName() {
+        return circleName;
+    }
+
+    public void setCircleName(String circleName) {
+        this.circleName = circleName;
+    }
+
+    public Date getTime() {
+        return time;
+    }
+
+    public void setTime(Date time) {
+        this.time = time;
     }
 }

@@ -64,4 +64,11 @@ public interface IUserVisitDao {
      */
     UserVisitBo findUserVisit(String ownerid, String visitid, int type);
 
+
+    /**
+     * 查找用户访问信息
+     * @param ownerid
+     * @return
+     */
+    UserVisitBo findUserVisitFirst(String ownerid, int type);
 }

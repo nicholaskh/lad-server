@@ -45,6 +45,8 @@ public class DynamicBo extends BaseBo {
     private String owner;
     //来源名称
     private String sourceName;
+    //来源
+    private String sourceid;
 
     public String getMsgid() {
         return msgid;
@@ -172,5 +174,13 @@ public class DynamicBo extends BaseBo {
 
     public void setVideo(String video) {
         this.video = video;
+    }
+
+    public String getSourceid() {
+        return sourceid;
+    }
+
+    public void setSourceid(String sourceid) {
+        this.sourceid = sourceid;
     }
 }

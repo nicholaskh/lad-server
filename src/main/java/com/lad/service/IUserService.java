@@ -204,4 +204,12 @@ public interface IUserService extends IBaseService {
 	 * @return
 	 */
 	WriteResult updateUserDynamicPic(String id, String pic);
+
+
+	/**
+	 * 查找用户访问信息
+	 * @param ownerid
+	 * @return
+	 */
+	UserVisitBo findUserVisitFirst(String ownerid, int type);
 }

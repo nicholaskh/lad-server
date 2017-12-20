@@ -316,4 +316,9 @@ public class UserServiceImpl implements IUserService{
 	public WriteResult updateUserDynamicPic(String id, String pic) {
 		return userDao.updateUserDynamicPic(id, pic);
 	}
+
+	@Override
+	public UserVisitBo findUserVisitFirst(String ownerid, int type) {
+		return userVisitDao.findUserVisitFirst(ownerid, type);
+	}
 }

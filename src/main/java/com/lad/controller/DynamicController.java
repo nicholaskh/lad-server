@@ -223,6 +223,8 @@ public class DynamicController extends BaseContorller {
         map.put("ret", 0);
         map.put("dynamicVos", dynamicVos);
         map.put("backPic", friend.getDynamicPic());
+        map.put("headPic", friend.getHeadPictureName());
+        map.put("signature", friend.getPersonalizedSignature());
         return JSONObject.fromObject(map).toString();
     }
 
@@ -273,6 +275,17 @@ public class DynamicController extends BaseContorller {
         map.put("ret", 0);
         map.put("dynamicVos", dynamicVos);
         map.put("backPic", userBo.getDynamicPic());
+        map.put("headPic", userBo.getHeadPictureName());
+        map.put("signature", userBo.getPersonalizedSignature());
+        UserVisitBo userVisitBo = userService.findUserVisitFirst(userBo.getId(), 1);
+        UserBaseVo show = new UserBaseVo();
+        if (userVisitBo != null) {
+            UserBo user = userService.getUser(userVisitBo.getVisitid());
+            if (user != null) {
+                BeanUtils.copyProperties(user, show);
+            }
+        }
+        map.put("showUser", show);
         return JSONObject.fromObject(map).toString();
     }
 
@@ -334,7 +347,7 @@ public class DynamicController extends BaseContorller {
 
 
     /**
-     * 我的动态
+     * 谁看过我的动态
      * @param request
      * @param response
      * @return
