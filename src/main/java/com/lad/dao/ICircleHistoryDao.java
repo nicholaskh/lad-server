@@ -27,4 +27,41 @@ public interface ICircleHistoryDao {
 
     CircleHistoryBo findByUserIdAndCircleId(String userid, String circleid);
 
+    /**
+     * 根据id查找
+     * @param id
+     * @return
+     */
+    CircleHistoryBo findCircleHisById(String id);
+
+    /**
+     * 根据用户查找
+     * @param userid
+     * @param type
+     * @param page
+     * @param limit
+     * @return
+     */
+    List<CircleHistoryBo> findCircleHisByUserid(String userid, int type, int page, int limit);
+
+
+    /**
+     * 根据圈子查找
+     * @param circleid
+     * @param type
+     * @param page
+     * @param limit
+     * @return
+     */
+    List<CircleHistoryBo> findCircleHisByCricleid(String circleid, int type, int page, int limit);
+
+
+    WriteResult deleteHis(String id);
+
+    /**
+     * 批量删除
+     * @param ids
+     * @return
+     */
+    WriteResult deleteHisBitch(List<String> ids);
 }

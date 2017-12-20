@@ -52,7 +52,7 @@ public class CircleHistoryDaoImpl implements ICircleHistoryDao {
         Query query = new Query();
         Criteria criteria = Criteria.where("position").nearSphere(point).maxDistance(maxDistance/6378137.0);
         query.addCriteria(criteria);
-        query.addCriteria(new Criteria("circleid").is(cirlcid));
+        query.addCriteria(new Criteria("circleid").is(cirlcid).and("type").is(0).and("deleted").is(0));
         if (!StringUtils.isEmpty(userid)){
             query.addCriteria(new Criteria("userid").ne(userid));
         }
@@ -91,7 +91,55 @@ public class CircleHistoryDaoImpl implements ICircleHistoryDao {
     public CircleHistoryBo findByUserIdAndCircleId(String userid, String circleid) {
         Query query = new Query();
         query.addCriteria(new Criteria("userid").is(userid));
-        query.addCriteria(new Criteria("circleid").is(circleid));
+        query.addCriteria(new Criteria("circleid").is(circleid).and("type").is(0).and("deleted").is(0));
         return mongoTemplate.findOne(query, CircleHistoryBo.class);
+    }
+
+    @Override
+    public CircleHistoryBo findCircleHisById(String id) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("_id").is(id).and("deleted").is(0));
+        return mongoTemplate.findOne(query, CircleHistoryBo.class);
+    }
+
+    @Override
+    public List<CircleHistoryBo> findCircleHisByUserid(String userid, int type, int page, int limit) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("userid").is(userid).and("type").is(type).and("deleted").is(0));
+        query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
+        page = page < 1 ? 1 : page;
+        query.skip((page -1 )*limit);
+        query.limit(limit);
+        return mongoTemplate.find(query, CircleHistoryBo.class);
+    }
+
+    @Override
+    public List<CircleHistoryBo> findCircleHisByCricleid(String circleid, int type, int page, int limit) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("circleid").is(circleid).and("type").is(type).and("deleted").is(0));
+        query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
+        page = page < 1 ? 1 : page;
+        query.skip((page -1 )*limit);
+        query.limit(limit);
+        return mongoTemplate.find(query, CircleHistoryBo.class);
+    }
+
+
+    @Override
+    public WriteResult deleteHis(String id) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("_id").is(id));
+        Update update = new Update();
+        update.set("deleted", Constant.DELETED);
+        return mongoTemplate.updateFirst(query, update, CircleHistoryBo.class);
+    }
+
+    @Override
+    public WriteResult deleteHisBitch(List<String> ids) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("_id").in(ids));
+        Update update = new Update();
+        update.set("deleted", Constant.DELETED);
+        return mongoTemplate.updateMulti(query, update, CircleHistoryBo.class);
     }
 }

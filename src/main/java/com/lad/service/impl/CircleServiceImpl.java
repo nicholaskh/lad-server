@@ -247,4 +247,29 @@ public class CircleServiceImpl implements ICircleService {
 	public List<CircleBo> findCirclesInList(List<String> circleids) {
 		return circleDao.findCirclesInList(circleids);
 	}
+
+	@Override
+	public CircleHistoryBo findCircleHisById(String id) {
+		return circleHistoryDao.findCircleHisById(id);
+	}
+
+	@Override
+	public List<CircleHistoryBo> findCircleHisByUserid(String userid, int type, int page, int limit) {
+		return circleHistoryDao.findCircleHisByUserid(userid, type, page, limit);
+	}
+
+	@Override
+	public List<CircleHistoryBo> findCircleHisByCricleid(String circleid, int type, int page, int limit) {
+		return circleHistoryDao.findCircleHisByCricleid(circleid, type, page, limit);
+	}
+
+	@Override
+	public WriteResult deleteHis(String id) {
+		return circleHistoryDao.deleteHis(id);
+	}
+
+	@Override
+	public WriteResult deleteHisBitch(List<String> ids) {
+		return circleHistoryDao.deleteHisBitch(ids);
+	}
 }
