@@ -169,7 +169,7 @@ public interface IUserService extends IBaseService {
 	 * @param limit
 	 * @return
 	 */
-	List<UserVisitBo> visitFromMeList(String userid, int page, int limit);
+	List<UserVisitBo> visitFromMeList(String userid, int type, int page, int limit);
 
 	/**
 	 * 访问我的页面记录
@@ -178,7 +178,7 @@ public interface IUserService extends IBaseService {
 	 * @param limit
 	 * @return
 	 */
-	List<UserVisitBo> visitToMeList(String userid, int page, int limit);
+	List<UserVisitBo> visitToMeList(String userid, int type,int page, int limit);
 
 
 	/**
@@ -195,5 +195,13 @@ public interface IUserService extends IBaseService {
 	 * @param visitid
 	 * @return
 	 */
-	UserVisitBo findUserVisit(String ownerid, String visitid);
+	UserVisitBo findUserVisit(String ownerid, String visitid, int type);
+
+	/**
+	 * 修改动态背景图片
+	 * @param id
+	 * @param pic
+	 * @return
+	 */
+	WriteResult updateUserDynamicPic(String id, String pic);
 }

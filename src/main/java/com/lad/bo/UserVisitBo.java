@@ -23,6 +23,8 @@ public class UserVisitBo implements Serializable {
     private String visitid;
     //访问时间
     private Date visitTime = new Date();
+    //0 个人主页， 1 动态主页
+    private int type;
 
     private int deleted = 0;
 
@@ -64,5 +66,13 @@ public class UserVisitBo implements Serializable {
 
     public void setDeleted(int deleted) {
         this.deleted = deleted;
+    }
+
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
     }
 }

@@ -252,4 +252,13 @@ public class UserDaoImpl implements IUserDao {
         query.addCriteria(new Criteria("userName").regex(pattern));
         return mongoTemplate.find(query, UserBo.class);
     }
+
+    @Override
+    public WriteResult updateUserDynamicPic(String id, String pic) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("_id").is(id));
+        Update update = new Update();
+        update.set("dynamicPic", pic);
+        return mongoTemplate.updateFirst(query, update, UserBo.class);
+    }
 }

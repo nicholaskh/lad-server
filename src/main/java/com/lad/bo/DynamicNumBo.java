@@ -14,7 +14,10 @@ public class DynamicNumBo extends BaseBo {
     private String userid;
 
     //个人动态数量 帖子数+聚会数+评论+点赞+转发
-    private long number;
+    private int number;
+
+    //所有动态
+    private long total;
 
     public String getUserid() {
         return userid;
@@ -24,11 +27,19 @@ public class DynamicNumBo extends BaseBo {
         this.userid = userid;
     }
 
-    public long getNumber() {
+    public int getNumber() {
         return number;
     }
 
-    public void setNumber(long number) {
+    public void setNumber(int number) {
         this.number = number;
+    }
+
+    public long getTotal() {
+        return total;
+    }
+
+    public void setTotal(long total) {
+        this.total = total;
     }
 }

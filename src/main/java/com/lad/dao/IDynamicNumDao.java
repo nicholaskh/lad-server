@@ -3,6 +3,8 @@ package com.lad.dao;
 import com.lad.bo.DynamicNumBo;
 import com.mongodb.WriteResult;
 
+import java.util.List;
+
 /**
  * 功能描述：
  * Copyright: Copyright (c) 2017
@@ -19,5 +21,11 @@ public interface IDynamicNumDao {
     
 
     WriteResult updateNumbers(String id, int addNum);
+
+
+    DynamicNumBo findByUserids(List<String> userids);
+
+
+    WriteResult updateNumbersZero(String userid, int addNum);
 
 }

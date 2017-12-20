@@ -293,13 +293,13 @@ public class UserServiceImpl implements IUserService{
 	}
 
 	@Override
-	public List<UserVisitBo> visitFromMeList(String userid, int page, int limit) {
-		return userVisitDao.visitFromMeList(userid, page, limit);
+	public List<UserVisitBo> visitFromMeList(String userid,int type, int page, int limit) {
+		return userVisitDao.visitFromMeList(userid, type, page, limit);
 	}
 
 	@Override
-	public List<UserVisitBo> visitToMeList(String userid, int page, int limit) {
-		return userVisitDao.visitToMeList(userid, page, limit);
+	public List<UserVisitBo> visitToMeList(String userid, int type,int page, int limit) {
+		return userVisitDao.visitToMeList(userid, type, page, limit);
 	}
 
 	@Override
@@ -308,7 +308,12 @@ public class UserServiceImpl implements IUserService{
 	}
 
 	@Override
-	public UserVisitBo findUserVisit(String ownerid, String visitid) {
-		return userVisitDao.findUserVisit(ownerid, visitid);
+	public UserVisitBo findUserVisit(String ownerid, String visitid, int type) {
+		return userVisitDao.findUserVisit(ownerid, visitid, type);
+	}
+
+	@Override
+	public WriteResult updateUserDynamicPic(String id, String pic) {
+		return userDao.updateUserDynamicPic(id, pic);
 	}
 }

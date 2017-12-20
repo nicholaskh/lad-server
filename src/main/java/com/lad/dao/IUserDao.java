@@ -98,4 +98,13 @@ public interface IUserDao extends IBaseDao {
      */
     List<UserBo> searchCircleUsers(HashSet<String> circleUsers, String keywords);
 
+
+    /**
+     * 修改动态背景图片
+     * @param id
+     * @param pic
+     * @return
+     */
+    WriteResult updateUserDynamicPic(String id, String pic);
+
 }

@@ -264,6 +264,13 @@ public class JPushUtil {
 															  String... alias) {
 		return PushPayload.newBuilder().setPlatform(Platform.all())
 				.setAudience(Audience.alias(alias))
+				.setNotification(Notification.newBuilder().
+						setAlert(content)
+						.addPlatformNotification(AndroidNotification.newBuilder()
+								.setAlert(content)
+								.setTitle(title)
+								.addExtra("path", path).addExtras(params).build())
+						.build())
 				.setMessage(Message.newBuilder()
 						.setMsgContent(content)
 						.setTitle(title)

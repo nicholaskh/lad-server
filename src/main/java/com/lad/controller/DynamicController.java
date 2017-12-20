@@ -8,9 +8,11 @@ import com.lad.util.Constant;
 import com.lad.util.ERRORCODE;
 import com.lad.util.MyException;
 import com.lad.vo.DynamicVo;
+import com.lad.vo.UserBaseVo;
 import net.sf.json.JSONObject;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -77,10 +79,9 @@ public class DynamicController extends BaseContorller {
         dynamicBo.setPicType(type);
         if (pictures != null) {
             LinkedHashSet<String> images = dynamicBo.getPhotos();
-            Long time = Calendar.getInstance().getTimeInMillis();
             for (MultipartFile file : pictures) {
-                String fileName = userId + "-" + time + "-"
-                        + file.getOriginalFilename();
+                Long time = Calendar.getInstance().getTimeInMillis();
+                String fileName = String.format("%s-%d-%s", userBo.getId(), time, file.getOriginalFilename());
                 if ("video".equals(type)) {
                     String[] paths = CommonUtil.uploadVedio(file, Constant.DYNAMIC_PICTURE_PATH, fileName, 0);
                     images.add(paths[0]);
@@ -189,6 +190,11 @@ public class DynamicController extends BaseContorller {
         } catch (MyException e) {
             return e.getMessage();
         }
+        UserBo friend = userService.getUser(friendid);
+        if (friend == null) {
+            return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NULL.getIndex(),
+                    ERRORCODE.FRIEND_NULL.getReason());
+        }
         List<String> friends = userBo.getFriends();
         DynamicBackBo backBo = dynamicService.findBackByUserid(userBo.getId());
         if (null != backBo) {
@@ -203,12 +209,14 @@ public class DynamicController extends BaseContorller {
                 }
             }
         }
+        addVisitHis(userBo.getId(),friendid);
         List<DynamicBo> msgBos = dynamicService.findOneFriendMsg(friendid, page, limit);
         List<DynamicVo> dynamicVos = new ArrayList<>();
         bo2vo(msgBos,dynamicVos, userBo);
         Map<String, Object> map = new HashMap<>();
         map.put("ret", 0);
         map.put("dynamicVos", dynamicVos);
+        map.put("backPic", friend.getDynamicPic());
         return JSONObject.fromObject(map).toString();
     }
 
@@ -258,6 +266,7 @@ public class DynamicController extends BaseContorller {
         Map<String, Object> map = new HashMap<>();
         map.put("ret", 0);
         map.put("dynamicVos", dynamicVos);
+        map.put("backPic", userBo.getDynamicPic());
         return JSONObject.fromObject(map).toString();
     }
 
@@ -318,8 +327,80 @@ public class DynamicController extends BaseContorller {
     }
 
 
+    /**
+     * 我的动态
+     * @param request
+     * @param response
+     * @return
+     */
+    @RequestMapping("/visit-my-dynamic")
+    @ResponseBody
+    public String visitMyDynamics(int page, int limit,
+                             HttpServletRequest request, HttpServletResponse response){
+        UserBo userBo = getUserLogin(request);
+        if (userBo == null) {
+            return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+                    ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+        }
+        List<UserVisitBo> visitBos = userService.visitToMeList(userBo.getId(), 1, page, limit);
+        List<UserBaseVo> visitUsers = new LinkedList<>();
+        for (UserVisitBo visitBo : visitBos) {
+            UserBo user = userService.getUser(visitBo.getVisitid());
+            if (user != null) {
+                UserBaseVo baseVo = new UserBaseVo();
+                BeanUtils.copyProperties(user, baseVo);
+                visitUsers.add(baseVo);
+            }
+        }
+        Map<String, Object> map = new HashMap<>();
+        map.put("ret", 0);
+        map.put("visitUserVos", visitUsers);
+        return JSONObject.fromObject(map).toString();
+    }
 
 
+    /**
+     * 我的动态
+     * @param request
+     * @param response
+     * @return
+     */
+    @RequestMapping("/update-backpic")
+    @ResponseBody
+    public String updateDynamicsPic(MultipartFile backPic,
+                                  HttpServletRequest request, HttpServletResponse response){
+        UserBo userBo = getUserLogin(request);
+        if (userBo == null) {
+            return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+                    ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+        }
+        if (backPic != null) {
+            Long time = Calendar.getInstance().getTimeInMillis();
+            String fileName = String.format("%s-%d-%s", userBo.getId(), time, backPic.getOriginalFilename());
+            String path = CommonUtil.upload(backPic, Constant.DYNAMIC_PICTURE_PATH,
+                    fileName, 0);
+            userService.updateUserDynamicPic(userBo.getId(), path);
+            userBo.setDynamicPic(path);
+            request.getSession().setAttribute("userBo", userBo);
+        }
+        return Constant.COM_RESP;
+    }
+
+
+    /**
+     * 访问记录添加
+     * @param userid
+     * @param friendid
+     */
+    @Async
+    private void addVisitHis(String userid, String friendid){
+        UserVisitBo visitBo = new UserVisitBo();
+        visitBo.setVisitTime(new Date());
+        visitBo.setVisitid(userid);
+        visitBo.setOwnerid(friendid);
+        visitBo.setType(1);
+        userService.addUserVisit(visitBo);
+    }
 
     
     private void bo2vo(List<DynamicBo> msgBos, List<DynamicVo> dynamicVos, UserBo userBo){

@@ -36,7 +36,7 @@ public interface IUserVisitDao {
      * @param limit
      * @return
      */
-    List<UserVisitBo> visitFromMeList(String userid, int page, int limit);
+    List<UserVisitBo> visitFromMeList(String userid, int type, int page, int limit);
 
     /**
      * 访问我的页面记录
@@ -45,7 +45,7 @@ public interface IUserVisitDao {
      * @param limit
      * @return
      */
-    List<UserVisitBo> visitToMeList(String userid, int page, int limit);
+    List<UserVisitBo> visitToMeList(String userid, int type,int page, int limit);
 
 
     /**
@@ -62,6 +62,6 @@ public interface IUserVisitDao {
      * @param visitid
      * @return
      */
-    UserVisitBo findUserVisit(String ownerid, String visitid);
+    UserVisitBo findUserVisit(String ownerid, String visitid, int type);
 
 }

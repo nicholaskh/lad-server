@@ -43,9 +43,10 @@ public class UserVisitDaoImpl implements IUserVisitDao {
     }
 
     @Override
-    public List<UserVisitBo> visitFromMeList(String userid, int page, int limit) {
+    public List<UserVisitBo> visitFromMeList(String userid, int type, int page, int limit) {
         Query query = new Query();
-        query.addCriteria(new Criteria("visitid").is(userid));
+        query.addCriteria(new Criteria("visitid").is(userid).and("type").is(type)
+                .and("deleted").is(Constant.ACTIVITY));
         query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "visitTime")));
         page = page < 1 ? 1 : page;
         query.skip( (page - 1) * limit);
@@ -54,9 +55,10 @@ public class UserVisitDaoImpl implements IUserVisitDao {
     }
 
     @Override
-    public List<UserVisitBo> visitToMeList(String userid, int page, int limit) {
+    public List<UserVisitBo> visitToMeList(String userid, int type,int page, int limit) {
         Query query = new Query();
-        query.addCriteria(new Criteria("ownerid").is(userid));
+        query.addCriteria(new Criteria("ownerid").is(userid).and("type").is(type)
+                .and("deleted").is(Constant.ACTIVITY));
         query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "visitTime")));
         page = page < 1 ? 1 : page;
         query.skip( (page - 1) * limit);
@@ -74,10 +76,10 @@ public class UserVisitDaoImpl implements IUserVisitDao {
     }
 
     @Override
-    public UserVisitBo findUserVisit(String ownerid, String visitid) {
+    public UserVisitBo findUserVisit(String ownerid, String visitid, int type) {
         Query query = new Query();
         query.addCriteria(new Criteria("ownerid").is(ownerid).and("visitid")
-                .is(visitid).and("deleted").is(Constant.ACTIVITY));
+                .is(visitid).and("type").is(type).and("deleted").is(Constant.ACTIVITY));
         return mongoTemplate.findOne(query, UserVisitBo.class);
     }
 }

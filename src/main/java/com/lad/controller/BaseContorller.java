@@ -104,6 +104,7 @@ public abstract class BaseContorller {
 				circleHistoryBo = new CircleHistoryBo();
 				circleHistoryBo.setCircleid(circleid);
 				circleHistoryBo.setUserid(userid);
+				circleHistoryBo.setType(0);
 				if (null != locationBo) {
 					circleHistoryBo.setPosition(locationBo.getPosition());
 				} else {
@@ -151,6 +152,7 @@ public abstract class BaseContorller {
 			numBo = new DynamicNumBo();
 			numBo.setUserid(userid);
 			numBo.setNumber(1);
+			numBo.setTotal(1);
 			dynamicService.addNum(numBo);
 		} else {
 			RLock lock = server.getRLock(userid+"dynamicSize");

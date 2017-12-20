@@ -30,6 +30,8 @@ public class UserBo extends BaseBo {
 	private List<String> circleTops = new LinkedList<>();
 
 	private int level = 1;
+	//个人动态页面背景图
+	private String dynamicPic;
 
 	/**
 	 * 面对面群聊
@@ -150,5 +152,13 @@ public class UserBo extends BaseBo {
 
 	public void setLevel(int level) {
 		this.level = level;
+	}
+
+	public String getDynamicPic() {
+		return dynamicPic;
+	}
+
+	public void setDynamicPic(String dynamicPic) {
+		this.dynamicPic = dynamicPic;
 	}
 }

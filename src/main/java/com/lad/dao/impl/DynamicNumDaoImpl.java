@@ -5,10 +5,14 @@ import com.lad.dao.IDynamicNumDao;
 import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 /**
  * 功能描述：
@@ -42,6 +46,25 @@ public class DynamicNumDaoImpl implements IDynamicNumDao {
         query.addCriteria(new Criteria("_id").is(id));
         Update update = new Update();
         update.inc("number", addNum);
+        update.inc("total", addNum);
         return mongoTemplate.updateFirst(query, update, DynamicNumBo.class);
+    }
+
+    @Override
+    public DynamicNumBo findByUserids(List<String> userids) {
+        Aggregation aggregation = Aggregation.newAggregation(
+                Aggregation.match(new Criteria("userid").in(userids)),
+                Aggregation.group("deleted").sum("number").as("number")
+        );
+        AggregationResults<DynamicNumBo> results = mongoTemplate.aggregate(aggregation,
+                "dynamicNum", DynamicNumBo.class);
+        List<DynamicNumBo> res = results.getMappedResults();
+
+        return null;
+    }
+
+    @Override
+    public WriteResult updateNumbersZero(String userid, int addNum) {
+        return null;
     }
 }
