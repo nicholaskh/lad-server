@@ -313,6 +313,21 @@ public class InforController extends BaseContorller {
         return JSONObject.fromObject(map).toString();
     }
 
+    @RequestMapping("/radio-play")
+    @ResponseBody
+    public String radioPlay(String radioid, HttpServletRequest request, HttpServletResponse response){
+        updateInforNum(radioid, Constant.INFOR_RADIO, 1, Constant.VISIT_NUM);
+        return Constant.COM_RESP;
+    }
+
+
+    @RequestMapping("/video-play")
+    @ResponseBody
+    public String videoPlay(String videoid, HttpServletRequest request, HttpServletResponse response){
+        updateInforNum(videoid, Constant.INFOR_VIDEO, 1, Constant.VISIT_NUM);
+        return Constant.COM_RESP;
+    }
+
 
     @RequestMapping("/video-list")
     @ResponseBody
@@ -641,10 +656,8 @@ public class InforController extends BaseContorller {
         commentBo.setType(Constant.INFOR_TYPE);
         commentBo.setSubType(inforType);
         commentService.insert(commentBo);
-
-        userService.addUserLevel(userBo.getId(),1, Constant.LEVEL_COMMENT);
-
         updateInforNum(inforid, inforType, 1, Constant.COMMENT_NUM);
+        userService.addUserLevel(userBo.getId(),1, Constant.LEVEL_COMMENT);
         infotHostAsync(inforid, inforType);
         CommentVo commentVo = comentBo2Vo(commentBo);
         Map<String, Object> map = new HashMap<>();
@@ -715,7 +728,8 @@ public class InforController extends BaseContorller {
         if (commentBo != null) {
             if (commentBo.getCreateuid().equals(userBo.getId())){
                 commentService.delete(commnetId);
-                updateInforNum(commentBo.getTargetid(), commentBo.getSubType(), -1, Constant.COMMENT_NUM);
+                String inforid = commentBo.getTargetid();
+                updateInforNum(inforid, commentBo.getSubType(), -1, Constant.COMMENT_NUM);
             } else {
                 return CommonUtil.toErrorResult(ERRORCODE.NOTE_NOT_MASTER.getIndex(),
                         ERRORCODE.NOTE_NOT_MASTER.getReason());
