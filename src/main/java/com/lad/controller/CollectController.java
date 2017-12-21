@@ -255,7 +255,9 @@ public class CollectController extends BaseContorller {
 			collectService.delete(idArr[0]);
 		} else {
 			List<String> ids = new ArrayList<>();
-			Collections.addAll(ids, idArr);
+			for (String id : idArr) {
+				ids.add(id);
+			}
 			collectService.delete(ids);
 		}
 		return Constant.COM_RESP;
