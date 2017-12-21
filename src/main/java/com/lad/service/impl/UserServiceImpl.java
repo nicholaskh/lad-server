@@ -321,4 +321,9 @@ public class UserServiceImpl implements IUserService{
 	public UserVisitBo findUserVisitFirst(String ownerid, int type) {
 		return userVisitDao.findUserVisitFirst(ownerid, type);
 	}
+
+	@Override
+	public List<UserBo> findUserByIds(List<String> userids) {
+		return userDao.findUserByIds(userids);
+	}
 }

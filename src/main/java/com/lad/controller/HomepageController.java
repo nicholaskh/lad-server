@@ -10,12 +10,10 @@ import com.lad.util.CommonUtil;
 import com.lad.util.Constant;
 import com.lad.util.ERRORCODE;
 import com.lad.util.MyException;
-import com.lad.vo.CircleBaseVo;
-import com.lad.vo.ThumbsupVo;
-import com.lad.vo.UserInfoVo;
+import com.lad.vo.*;
 import net.sf.json.JSONObject;
-import org.apache.commons.beanutils.BeanUtils;
 import org.redisson.api.RMapCache;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.annotation.Async;
@@ -46,6 +44,8 @@ public class HomepageController extends BaseContorller {
 
 	@Autowired
 	private RedisServer redisServer;
+
+	private int homeType = 0;
 
 	@RequestMapping("/insert")
 	@ResponseBody
@@ -252,7 +252,7 @@ public class HomepageController extends BaseContorller {
 		List<ThumbsupVo> thumbsup_from_me_vo = new ArrayList<ThumbsupVo>();
 		for (ThumbsupBo item : thumbsup_from_me) {
 			ThumbsupVo vo = new ThumbsupVo();
-			BeanUtils.copyProperties(vo, item);
+			BeanUtils.copyProperties(item, vo);
 			thumbsup_from_me_vo.add(vo);
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -291,7 +291,7 @@ public class HomepageController extends BaseContorller {
 		List<ThumbsupVo> thumbsup_to_me_vo = new ArrayList<ThumbsupVo>();
 		for (ThumbsupBo item : thumbsup_to_me) {
 			ThumbsupVo vo = new ThumbsupVo();
-			BeanUtils.copyProperties(vo, item);
+			BeanUtils.copyProperties(item,vo);
 			thumbsup_to_me_vo.add(vo);
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -399,7 +399,13 @@ public class HomepageController extends BaseContorller {
 	}
 
 
-
+	/**
+	 * 用户个人主页信息
+	 * @param userid
+	 * @param request
+	 * @param response
+	 * @return
+	 */
 	@RequestMapping("/user-homepage")
 	@ResponseBody
 	public String visitUserHomepage(String userid, HttpServletRequest request, HttpServletResponse
@@ -419,7 +425,7 @@ public class HomepageController extends BaseContorller {
 		List<CircleBaseVo> circles = new LinkedList<>();
 		for (CircleBo circleBo : circleBos) {
 			CircleBaseVo circleBaseVo = new CircleBaseVo();
-			org.springframework.beans.BeanUtils.copyProperties(circleBo,circleBaseVo);
+			BeanUtils.copyProperties(circleBo,circleBaseVo);
 			circleBaseVo.setCircleid(circleBo.getId());
 			circleBaseVo.setNotesSize(circleBo.getNoteSize());
 			circleBaseVo.setUsersSize(circleBo.getTotal());
@@ -434,22 +440,110 @@ public class HomepageController extends BaseContorller {
 
 
 	/**
+	 * 谁看过我
+	 * @param page
+	 * @param limit
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@RequestMapping("/visit-to-me")
+	@ResponseBody
+	public String visitMyHomepage(int page, int limit, HttpServletRequest request, HttpServletResponse
+			response) {
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.USER_NULL.getIndex(),
+					ERRORCODE.USER_NULL.getReason());
+		}
+		List<UserVisitBo> visitBos =  userService.visitToMeList(userBo.getId(), homeType, page, limit);
+		List<UserVisitVo> baseVos = new LinkedList<>();
+		visitBo2Vo(visitBos, baseVos, limit);
+		Map<String, Object> map = new LinkedHashMap<>();
+		map.put("ret", 0);
+		map.put("userVisitVos", baseVos);
+		return JSONObject.fromObject(map).toString();
+	}
+
+	/**
+	 * 我看过谁
+	 * @param page
+	 * @param limit
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@RequestMapping("/visit-from-me")
+	@ResponseBody
+	public String myVisitHomepage(int page, int limit, HttpServletRequest request, HttpServletResponse
+			response) {
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.USER_NULL.getIndex(),
+					ERRORCODE.USER_NULL.getReason());
+		}
+		List<UserVisitBo> visitBos =  userService.visitFromMeList(userBo.getId(), homeType, page, limit);
+		List<UserVisitVo> baseVos = new LinkedList<>();
+		visitBo2Vo(visitBos, baseVos, limit);
+		Map<String, Object> map = new LinkedHashMap<>();
+		map.put("ret", 0);
+		map.put("userVisitVos", baseVos);
+		return JSONObject.fromObject(map).toString();
+	}
+
+
+	/**
+	 * 对象转换
+	 * @param visitBos
+	 * @param baseVos
+	 * @param limit
+	 */
+	private void visitBo2Vo(List<UserVisitBo> visitBos, List<UserVisitVo> baseVos, int limit){
+		List<String> visitids = new LinkedList<>();
+		if (limit > 50) {
+			//limit过大后，避免多次查询数据库，一次查询
+			for (UserVisitBo visitBo : visitBos) {
+				visitids.add(visitBo.getVisitid());
+			}
+			List<UserBo> userBos = userService.findUserByIds(visitids);
+			for (UserVisitBo visitBo : visitBos) {
+				UserVisitVo visitVo = new UserVisitVo();
+				for (UserBo user : userBos) {
+					if (visitBo.getVisitid().equals(user.getId())) {
+						BeanUtils.copyProperties(user, visitVo);
+						visitVo.setVisitTime(visitBo.getVisitTime());
+						userBos.remove(user);
+						break;
+					}
+				}
+				baseVos.add(visitVo);
+			}
+		} else {
+			for (UserVisitBo visitBo : visitBos) {
+				UserBo visitUser = userService.getUser(visitBo.getVisitid());
+				if (visitUser != null) {
+					UserVisitVo visitVo = new UserVisitVo();
+					BeanUtils.copyProperties(visitUser, visitVo);
+					visitVo.setVisitTime(visitBo.getVisitTime());
+					baseVos.add(visitVo);
+				}
+			}
+		}
+	}
+
+	/**
 	 * 用户访问信息
 	 * @param ownerid
 	 * @param visitid
 	 */
 	@Async
 	private void updateUserVisit(String ownerid, String visitid){
-		UserVisitBo visitBo = userService.findUserVisit(ownerid, visitid);
-		if (visitBo == null) {
-			visitBo = new UserVisitBo();
-			visitBo.setOwnerid(ownerid);
-			visitBo.setVisitid(visitid);
-			visitBo.setVisitTime(new Date());
-			userService.addUserVisit(visitBo);
-		} else {
-			userService.updateUserVisit(visitBo.getId(), new Date());
-		}
+		UserVisitBo visitBo = new UserVisitBo();
+		visitBo.setOwnerid(ownerid);
+		visitBo.setVisitid(visitid);
+		visitBo.setType(homeType);
+		visitBo.setVisitTime(new Date());
+		userService.addUserVisit(visitBo);
 	}
 
 	private void bo2vo(UserBo userBo, UserInfoVo infoVo){

@@ -107,4 +107,11 @@ public interface IUserDao extends IBaseDao {
      */
     WriteResult updateUserDynamicPic(String id, String pic);
 
+    /**
+     * 查找集合中的用户信息
+     * @param userids
+     * @return
+     */
+    List<UserBo> findUserByIds(List<String> userids);
+
 }

@@ -261,4 +261,11 @@ public class UserDaoImpl implements IUserDao {
         update.set("dynamicPic", pic);
         return mongoTemplate.updateFirst(query, update, UserBo.class);
     }
+
+    @Override
+    public List<UserBo> findUserByIds(List<String> userids) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("_id").in(userids));
+        return mongoTemplate.find(query, UserBo.class);
+    }
 }

@@ -212,4 +212,12 @@ public interface IUserService extends IBaseService {
 	 * @return
 	 */
 	UserVisitBo findUserVisitFirst(String ownerid, int type);
+
+	/**
+	 * 查找集合中的用户信息
+	 * @param userids
+	 * @return
+	 */
+	List<UserBo> findUserByIds(List<String> userids);
+
 }
