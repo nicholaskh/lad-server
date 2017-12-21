@@ -433,7 +433,7 @@ public class HomepageController extends BaseContorller {
 		}
 		Map<String, Object> map = new LinkedHashMap<>();
 		map.put("ret", 0);
-		map.put("user", infoVo);
+		map.put("userVo", infoVo);
 		map.put("userCricles", circles);
 		return JSONObject.fromObject(map).toString();
 	}
