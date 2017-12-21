@@ -110,6 +110,11 @@ public class DynamicServiceImpl implements IDynamicService {
     }
 
     @Override
+    public WriteResult updateNumbers(String id, int addNum) {
+        return dynamicNumDao.updateNumbers(id, addNum);
+    }
+
+    @Override
     public WriteResult updateNumbersZero(String userid) {
         return dynamicNumDao.updateNumbersZero(userid);
     }

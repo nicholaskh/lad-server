@@ -123,7 +123,13 @@ public interface IDynamicService {
      */
     WriteResult updateNumbersZero(String userid);
 
-
+    /**
+     * 更新动态数量
+     * @param id
+     * @param addNum
+     * @return
+     */
+    WriteResult updateNumbers(String id, int addNum);
 
 
 }
