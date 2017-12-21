@@ -2,10 +2,7 @@ package com.lad.controller;
 
 import com.lad.bo.*;
 import com.lad.redis.RedisServer;
-import com.lad.service.ICircleService;
-import com.lad.service.IDynamicService;
-import com.lad.service.IThumbsupService;
-import com.lad.service.IUserService;
+import com.lad.service.*;
 import com.lad.util.CommonUtil;
 import com.lad.util.Constant;
 import com.lad.util.ERRORCODE;
@@ -49,6 +46,9 @@ public class DynamicController extends BaseContorller {
 
     @Autowired
     private ICircleService circleService;
+
+    @Autowired
+    private IFriendsService friendsService;
 
 
     /**
@@ -126,8 +126,11 @@ public class DynamicController extends BaseContorller {
             return e.getMessage();
         }
 
-        List<String> friends = userBo.getFriends();
-
+        List<FriendsBo> friendsBos = friendsService.getFriendByUserid(userBo.getId());
+        List<String> friends = new LinkedList<>();
+        for (FriendsBo friendsBo : friendsBos) {
+            friends.add(friendsBo.getFriendid());
+        }
         DynamicBackBo backBo = dynamicService.findBackByUserid(userBo.getId());
         if (null != backBo) {
             HashSet<String> noSees = backBo.getNotSeeBacks();
@@ -166,14 +169,26 @@ public class DynamicController extends BaseContorller {
             return e.getMessage();
         }
 
-        List<String> friends = userBo.getFriends();
-        long total = 0L;
-        for (String friendid : friends) {
-            DynamicNumBo numBo = dynamicService.findNumByUserid(friendid);
-            if (numBo != null) {
-                total += numBo.getNumber();
+        List<FriendsBo> friendsBos = friendsService.getFriendByUserid(userBo.getId());
+        List<String> friends = new LinkedList<>();
+        for (FriendsBo friendsBo : friendsBos) {
+            friends.add(friendsBo.getFriendid());
+        }
+        DynamicBackBo backBo = dynamicService.findBackByUserid(userBo.getId());
+        if (null != backBo) {
+            HashSet<String> noSees = backBo.getNotSeeBacks();
+            friends.removeAll(noSees);
+        }
+        List<DynamicBackBo> backBos = dynamicService.findWhoBackMe(userBo.getId());
+        if(backBos != null && !backBos.isEmpty()) {
+            for (DynamicBackBo bo : backBos) {
+                if (friends.contains(bo.getUserid())) {
+                    friends.remove(bo.getUserid());
+                }
             }
         }
+        DynamicNumBo dynamicNumBo = dynamicService.findByUserids(friends);
+        int total = dynamicNumBo != null ? dynamicNumBo.getNumber() : 0;
         Map<String, Object> map = new HashMap<>();
         map.put("ret", 0);
         map.put("dynamicNum", total);
@@ -200,20 +215,6 @@ public class DynamicController extends BaseContorller {
         if (friend == null) {
             return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NULL.getIndex(),
                     ERRORCODE.FRIEND_NULL.getReason());
-        }
-        List<String> friends = userBo.getFriends();
-        DynamicBackBo backBo = dynamicService.findBackByUserid(userBo.getId());
-        if (null != backBo) {
-            HashSet<String> noSees = backBo.getNotSeeBacks();
-            friends.removeAll(noSees);
-        }
-        List<DynamicBackBo> backBos = dynamicService.findWhoBackMe(userBo.getId());
-        if(backBos != null && !backBos.isEmpty()) {
-            for (DynamicBackBo bo : backBos) {
-                if (friends.contains(bo.getUserid())) {
-                    friends.remove(bo.getUserid());
-                }
-            }
         }
         addVisitHis(userBo.getId(),friendid);
         List<DynamicBo> msgBos = dynamicService.findOneFriendMsg(friendid, page, limit);

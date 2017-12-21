@@ -26,6 +26,6 @@ public interface IDynamicNumDao {
     DynamicNumBo findByUserids(List<String> userids);
 
 
-    WriteResult updateNumbersZero(String userid, int addNum);
+    WriteResult updateNumbersZero(String userid);
 
 }

@@ -59,12 +59,18 @@ public class DynamicNumDaoImpl implements IDynamicNumDao {
         AggregationResults<DynamicNumBo> results = mongoTemplate.aggregate(aggregation,
                 "dynamicNum", DynamicNumBo.class);
         List<DynamicNumBo> res = results.getMappedResults();
-
+        if (res != null || res.isEmpty()) {
+            return res.get(0);
+        }
         return null;
     }
 
     @Override
-    public WriteResult updateNumbersZero(String userid, int addNum) {
-        return null;
+    public WriteResult updateNumbersZero(String userid) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("userid").is(userid));
+        Update update = new Update();
+        update.set("number", 0);
+        return mongoTemplate.updateFirst(query, update, DynamicNumBo.class);
     }
 }

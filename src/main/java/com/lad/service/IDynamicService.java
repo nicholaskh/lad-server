@@ -109,12 +109,20 @@ public interface IDynamicService {
     DynamicNumBo findNumByUserid(String userid);
 
     /**
-     * 更新
-     * @param id
-     * @param addNum
+     * 查找指定好友动态信息
+     * @param userids
      * @return
      */
-    WriteResult updateNumbers(String id, int addNum);
+    DynamicNumBo findByUserids(List<String> userids);
+
+
+    /**
+     * 更新好像信息为0
+     * @param userid
+     * @return
+     */
+    WriteResult updateNumbersZero(String userid);
+
 
 
 
