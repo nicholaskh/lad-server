@@ -315,16 +315,16 @@ public class InforController extends BaseContorller {
 
     @RequestMapping("/radio-play")
     @ResponseBody
-    public String radioPlay(String radioid, HttpServletRequest request, HttpServletResponse response){
-        updateInforNum(radioid, Constant.INFOR_RADIO, 1, Constant.VISIT_NUM);
+    public String radioPlay(String inforid, HttpServletRequest request, HttpServletResponse response){
+        updateInforNum(inforid, Constant.INFOR_RADIO, 1, Constant.VISIT_NUM);
         return Constant.COM_RESP;
     }
 
 
     @RequestMapping("/video-play")
     @ResponseBody
-    public String videoPlay(String videoid, HttpServletRequest request, HttpServletResponse response){
-        updateInforNum(videoid, Constant.INFOR_VIDEO, 1, Constant.VISIT_NUM);
+    public String videoPlay(String inforid, HttpServletRequest request, HttpServletResponse response){
+        updateInforNum(inforid, Constant.INFOR_VIDEO, 1, Constant.VISIT_NUM);
         return Constant.COM_RESP;
     }
 
