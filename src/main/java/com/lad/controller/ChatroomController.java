@@ -556,7 +556,7 @@ public class ChatroomController extends BaseContorller {
 		List<ChatroomVo> chatroomList = new LinkedList<ChatroomVo>();
 		HashSet<String> removes = new LinkedHashSet<>();
 		LinkedList<String> removeTops = new LinkedList<>();
-
+		HashSet<String> showRooms = userBo.getShowChatrooms();
 		Date times;
 		try {
 			times = CommonUtil.getDate(timestamp);
@@ -574,6 +574,10 @@ public class ChatroomController extends BaseContorller {
 			ChatroomBo first = chatroomBos.get(0);
 			timeStr = CommonUtil.getDateStr(first.getCreateTime(),"yyyy-MM-dd HH:mm:ss");
 			for (ChatroomBo chatroomBo : chatroomBos) {
+				//如果在展示的窗口中没有，表示已经删除
+				if (!showRooms.contains(chatroomBo.getId())) {
+					continue;
+				}
 				ChatroomUserBo chatroomUserBo = chatroomService.findChatUserByUserAndRoomid(userid, chatroomBo.getId());
 				boolean has = chatroomUserBo != null;
 				ChatroomVo vo = new ChatroomVo();
@@ -1377,7 +1381,32 @@ public class ChatroomController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-
+	/**
+	 * 加群验证操作
+	 * @param chatroomid
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@RequestMapping("/delete-show")
+	@ResponseBody
+	public String deleteChatroomTable(String chatroomid,
+							  HttpServletRequest request, HttpServletResponse response) {
+		UserBo userBo = getUserLogin(request);
+		HttpSession session = request.getSession();
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		HashSet<String> showChatrooms = userBo.getShowChatrooms();
+		if (showChatrooms.contains(chatroomid)) {
+			showChatrooms.remove(chatroomid);
+			userService.updateShowChatrooms(userBo.getId(), showChatrooms);
+			//刷新session中个人信息
+			session.setAttribute("userBo", userBo);
+		}
+		return Constant.COM_RESP;
+	}
 
 
 	/**

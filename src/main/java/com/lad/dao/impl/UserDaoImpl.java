@@ -268,4 +268,14 @@ public class UserDaoImpl implements IUserDao {
         query.addCriteria(new Criteria("_id").in(userids));
         return mongoTemplate.find(query, UserBo.class);
     }
+
+
+    @Override
+    public WriteResult updateShowChatrooms(String userid, HashSet<String> chatrooms) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("_id").is(userid));
+        Update update = new Update();
+        update.set("showChatrooms", chatrooms);
+        return mongoTemplate.updateFirst(query, update, UserBo.class);
+    }
 }

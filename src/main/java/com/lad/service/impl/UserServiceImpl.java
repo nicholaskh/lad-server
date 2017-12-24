@@ -326,4 +326,9 @@ public class UserServiceImpl implements IUserService{
 	public List<UserBo> findUserByIds(List<String> userids) {
 		return userDao.findUserByIds(userids);
 	}
+
+	@Override
+	public WriteResult updateShowChatrooms(String userid, HashSet<String> chatrooms) {
+		return userDao.updateShowChatrooms(userid, chatrooms);
+	}
 }

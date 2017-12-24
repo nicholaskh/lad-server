@@ -220,4 +220,12 @@ public interface IUserService extends IBaseService {
 	 */
 	List<UserBo> findUserByIds(List<String> userids);
 
+
+	/**
+	 * 修改用户显示的聊天室窗口
+	 * @param chatrooms
+	 * @return
+	 */
+	WriteResult updateShowChatrooms(String userid, HashSet<String> chatrooms);
+
 }
