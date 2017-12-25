@@ -343,6 +343,16 @@
 				<artifactId>maven-war-plugin</artifactId>
 				<configuration>
 					<failOnMissingWebXml>false</failOnMissingWebXml>
+					<webResources>
+						<resource>
+							<directory>${project.basedir}/lib</directory>
+							<targetPath>WEB-INF/lib</targetPath>
+							<filtering>false</filtering>
+							<includes>
+								<include>**/*.jar</include>
+							</includes>
+						</resource>
+					</webResources>
 				</configuration>
 			</plugin>
 			<plugin>
