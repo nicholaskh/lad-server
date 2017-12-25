@@ -150,6 +150,9 @@ public class DynamicController extends BaseContorller {
         Map<String, Object> map = new HashMap<>();
         map.put("ret", 0);
         map.put("dynamicVos", dynamicVos);
+        map.put("backPic", userBo.getDynamicPic());
+        map.put("headPic", userBo.getHeadPictureName());
+        map.put("signature", userBo.getPersonalizedSignature());
         return JSONObject.fromObject(map).toString();
     }
 
@@ -427,7 +430,9 @@ public class DynamicController extends BaseContorller {
         for (DynamicBo msgBo : msgBos) {
             DynamicVo dynamicVo = new DynamicVo();
             BeanUtils.copyProperties(msgBo, dynamicVo);
+            //vo中msgid是东西信息id；
             dynamicVo.setMsgid(msgBo.getId());
+            //bo中的msgid是转发来源的id
             dynamicVo.setSourceid(msgBo.getMsgid());
             if (!userBo.getId().equals(msgBo.getCreateuid())) {
                 UserBo user = userService.getUser(msgBo.getCreateuid());
@@ -442,7 +447,18 @@ public class DynamicController extends BaseContorller {
                 dynamicVo.setCircleid(msgBo.getSourceid());
                 CircleBo circleBo = circleService.selectById(msgBo.getSourceid());
                 if (circleBo != null) {
+                    dynamicVo.setCircleUserNum(circleBo.getTotal());
+                    dynamicVo.setCircleNoteNum(circleBo.getNoteSize());
                     dynamicVo.setCircleName(circleBo.getName());
+                } else {
+                    dynamicVo.setCircleName(msgBo.getSourceName());
+                }
+            } else if (type == Constant.CIRCLE_TYPE) {
+                CircleBo circleBo = circleService.selectById(msgBo.getMsgid());
+                if (circleBo != null) {
+                    dynamicVo.setCircleName(circleBo.getName());
+                    dynamicVo.setCircleUserNum(circleBo.getTotal());
+                    dynamicVo.setCircleNoteNum(circleBo.getNoteSize());
                 } else {
                     dynamicVo.setCircleName(msgBo.getSourceName());
                 }

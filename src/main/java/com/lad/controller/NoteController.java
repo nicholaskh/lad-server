@@ -114,25 +114,27 @@ public class NoteController extends BaseContorller {
 		}
 		noteBo.setPhotos(photos);
 		noteService.insert(noteBo);
-		RLock lock = redisServer.getRLock(circleid + "noteSize");
-		try {
-			lock.lock(2,TimeUnit.SECONDS);
-			circleService.updateNotes(circleid, 1);
-		} finally {
-			lock.unlock();
-		}
+		updateCircieNoteSize(circleid, 1);
 		if (noteBo.isAsync()) {
 			DynamicBo dynamicBo = new DynamicBo();
 			dynamicBo.setTitle(noteBo.getSubject());
 			dynamicBo.setView("我发表了帖子");
 			dynamicBo.setCreateuid(userId);
+			dynamicBo.setMsgid(noteBo.getId());
 			dynamicBo.setOwner(noteBo.getCreateuid());
-			dynamicBo.setPhotos(new LinkedHashSet<>(noteBo.getPhotos()));
+			dynamicBo.setLandmark(noteBo.getLandmark());
 			dynamicBo.setType(Constant.NOTE_TYPE);
-
-			CircleBo circleBo = circleService.selectById(noteBo.getCircleId());
+			CircleBo circleBo = circleService.selectById(circleid);
 			if (circleBo != null) {
 				dynamicBo.setSourceName(circleBo.getName());
+				dynamicBo.setSourceid(circleBo.getId());
+			}
+			dynamicBo.setPicType(noteBo.getType());
+			if (noteBo.getType().equals("video")) {
+				dynamicBo.setVideoPic(noteBo.getVideoPic());
+				dynamicBo.setVideo(noteBo.getPhotos().getFirst());
+			} else {
+				dynamicBo.setPhotos(new LinkedHashSet<>(noteBo.getPhotos()));
 			}
 			dynamicBo.setCreateuid(userBo.getId());
 			dynamicService.addDynamic(dynamicBo);
@@ -150,8 +152,16 @@ public class NoteController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-
-
+	@Async
+	private void updateCircieNoteSize(String circleid, int num){
+		RLock lock = redisServer.getRLock(circleid + "noteSize");
+		try {
+			lock.lock(2,TimeUnit.SECONDS);
+			circleService.updateNotes(circleid, num);
+		} finally {
+			lock.unlock();
+		}
+	}
 
 	@RequestMapping("/photo")
 	@ResponseBody
@@ -814,13 +824,7 @@ public class NoteController extends BaseContorller {
 				}
 			}
 			if (notes != 0) {
-				RLock lock = redisServer.getRLock(circleBo.getId()+"noteSize");
-				try {
-					lock.lock(2,TimeUnit.SECONDS);
-					circleService.updateNotes(circleid, -notes);
-				} finally {
-					lock.unlock();
-				}
+				updateCircieNoteSize(circleid, -notes);
 			}
 		}  else {
 			return CommonUtil.toErrorResult(
@@ -846,29 +850,15 @@ public class NoteController extends BaseContorller {
 			return e.getMessage();
 		}
 		String[] ids = CommonUtil.getIds(noteids);
-		int notes = 0;
-		CircleBo circleBo = null;
 		for (String id : ids) {
 			NoteBo noteBo = noteService.selectById(id);
 			if (null != noteBo) {
-				if (circleBo == null) {
-					circleBo = circleService.selectById(noteBo.getCircleId());
-				}
 				//删除帖子
 				if (noteBo.getCreateuid().equals(userBo.getId())) {
 					noteService.deleteNote(id,userBo.getId());
 					commentService.deleteByNote(id);
-					notes ++;
+					updateCircieNoteSize(noteBo.getCircleId(), -1);
 				}
-			}
-		}
-		if (circleBo != null && notes != 0) {
-			RLock lock = redisServer.getRLock(circleBo.getId()+"noteSize");
-			try {
-				lock.lock(2,TimeUnit.SECONDS);
-				circleService.updateNotes(circleBo.getId(), -notes);
-			} finally {
-				lock.unlock();
 			}
 		}
 		return Constant.COM_RESP;
