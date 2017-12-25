@@ -1583,7 +1583,7 @@ public class PartyController extends BaseContorller {
      */
     @RequestMapping("/forward-dynamic")
     @ResponseBody
-    public String forwardDynamic(String partyid, String view, HttpServletRequest request,
+    public String forwardDynamic(String partyid, String view, String landmark, HttpServletRequest request,
                                  HttpServletResponse response) {
         UserBo userBo;
         try {
@@ -1608,6 +1608,7 @@ public class PartyController extends BaseContorller {
         dynamicBo.setVideo(partyBo.getVideo());
         dynamicBo.setVideoPic(partyBo.getVideoPic());
         dynamicBo.setType(Constant.NOTE_TYPE);
+        dynamicBo.setLandmark(landmark);
         CircleBo circleBo = circleService.selectById(partyBo.getCircleid());
         if (circleBo != null) {
             dynamicBo.setSourceName(circleBo.getName());
