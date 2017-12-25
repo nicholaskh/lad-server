@@ -202,6 +202,18 @@ public class ChatroomDaoImpl implements IChatroomDao {
 	}
 
 	@Override
+	public WriteResult updateNameAndUsers(String chatRoomId, String name, boolean isNameSet, LinkedHashSet<String> users) {
+		//主键筛选条件
+		Query query = new Query();
+		query.addCriteria(new Criteria("_id").is(chatRoomId).and("deleted").is(Constant.ACTIVITY));
+		Update update = new Update();
+		update.set("name", name);
+		update.set("isNameSet", isNameSet);
+		update.set("users", users);
+		return mongoTemplate.updateFirst(query, update, ChatroomBo.class);
+	}
+
+	@Override
 	public WriteResult updateUsers(String chatroomId, LinkedHashSet<String> users) {
 		//主键筛选条件
 		Query query = new Query();

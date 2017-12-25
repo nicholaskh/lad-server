@@ -148,7 +148,7 @@ public class VideoDaoImpl implements IVideoDao {
         GroupOperation groupOperation = Aggregation.group("module","className", "source")
                 .sum("visitNum").as("visitNum");
         Aggregation aggregation = Aggregation.newAggregation(match, groupOperation,
-                Aggregation.sort(Sort.Direction.ASC, "module", "className"));
+                Aggregation.sort(Sort.Direction.DESC, "visitNum"));
         AggregationResults<VideoBo> results = mongoTemplateTwo.aggregate(aggregation, "video", VideoBo.class);
         return results.getMappedResults();
     }

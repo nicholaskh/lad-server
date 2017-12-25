@@ -123,6 +123,15 @@ public interface IChatroomDao extends IBaseDao {
 	WriteResult updateName(String chatRoomId, String name, boolean isNameSet);
 
 	/**
+	 * 更新群名称和群用户
+	 * @param chatRoomId
+	 * @param name
+	 * @param isNameSet
+	 * @return
+	 */
+	WriteResult updateNameAndUsers(String chatRoomId, String name, boolean isNameSet, LinkedHashSet<String> users);
+
+	/**
 	 * 删除临时聊天
 	 * @param targetid
 	 * @param roomType

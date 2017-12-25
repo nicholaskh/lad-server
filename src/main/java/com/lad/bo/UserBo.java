@@ -3,6 +3,7 @@ package com.lad.bo;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -39,6 +40,10 @@ public class UserBo extends BaseBo {
 	private HashSet<String> faceChatrooms = new HashSet<String>();
 
 	private LinkedList<String> chatroomsTop = new LinkedList<String>();
+	/**
+	 * 个人在前端显示的聊天室窗口
+	 */
+	private HashSet<String> showChatrooms = new LinkedHashSet<>();
 
 	private String locationid;
 
@@ -160,5 +165,13 @@ public class UserBo extends BaseBo {
 
 	public void setDynamicPic(String dynamicPic) {
 		this.dynamicPic = dynamicPic;
+	}
+
+	public HashSet<String> getShowChatrooms() {
+		return showChatrooms;
+	}
+
+	public void setShowChatrooms(HashSet<String> showChatrooms) {
+		this.showChatrooms = showChatrooms;
 	}
 }

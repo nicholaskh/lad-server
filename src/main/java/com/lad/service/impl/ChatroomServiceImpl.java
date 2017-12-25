@@ -186,4 +186,9 @@ public class ChatroomServiceImpl implements IChatroomService {
 	public WriteResult deleteChatroom(HashSet<String> userids, String chatroomid) {
 		return chatroomUserDao.deleteChatroom(userids, chatroomid);
 	}
+
+	@Override
+	public WriteResult updateNameAndUsers(String chatRoomId, String name, boolean isNameSet, LinkedHashSet<String> users) {
+		return chatroomDao.updateNameAndUsers(chatRoomId, name, isNameSet, users);
+	}
 }

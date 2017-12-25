@@ -56,6 +56,10 @@ public class DynamicVo extends BaseVo {
     private String circleid;
 
     private String circleName;
+    //圈子内人数
+    private int circleUserNum;
+    //圈子内帖子数
+    private int circleNoteNum;
 
     private Date time;
 
@@ -241,5 +245,21 @@ public class DynamicVo extends BaseVo {
 
     public void setTime(Date time) {
         this.time = time;
+    }
+
+    public int getCircleUserNum() {
+        return circleUserNum;
+    }
+
+    public void setCircleUserNum(int circleUserNum) {
+        this.circleUserNum = circleUserNum;
+    }
+
+    public int getCircleNoteNum() {
+        return circleNoteNum;
+    }
+
+    public void setCircleNoteNum(int circleNoteNum) {
+        this.circleNoteNum = circleNoteNum;
     }
 }

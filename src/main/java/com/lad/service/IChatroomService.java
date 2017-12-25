@@ -225,4 +225,13 @@ public interface IChatroomService extends IBaseService {
 	 * @return
 	 */
 	WriteResult deleteChatroom(HashSet<String> userids, String chatroomid);
+
+	/**
+	 * 更新群名称和群用户
+	 * @param chatRoomId
+	 * @param name
+	 * @param isNameSet
+	 * @return
+	 */
+	WriteResult updateNameAndUsers(String chatRoomId, String name, boolean isNameSet, LinkedHashSet<String> users);
 }
