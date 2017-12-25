@@ -173,6 +173,7 @@
 			<artifactId>pushdTool</artifactId>
 			<version>1.0.7</version>
 			<systemPath>${basedir}/lib/pushdTool-1.0.7.jar</systemPath>
+			<scope>system</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -220,6 +221,19 @@
 			<groupId>org.springframework.data</groupId>
 			<artifactId>spring-data-redis</artifactId>
 			<version>1.7.1.RELEASE</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.session</groupId>
+			<artifactId>spring-session-data-redis</artifactId>
+			<version>1.2.2.RELEASE</version>
+		</dependency>
+
+
+		<dependency>
+			<groupId>redis.clients</groupId>
+			<artifactId>jedis</artifactId>
+			<version>2.8.1</version>
 		</dependency>
 
 		<dependency>
