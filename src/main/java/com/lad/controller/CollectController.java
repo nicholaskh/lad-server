@@ -14,6 +14,7 @@ import net.sf.json.JSONObject;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -144,7 +145,8 @@ public class CollectController extends BaseContorller {
 
 	@RequestMapping("/col-files")
 	@ResponseBody
-	public String colFile(String path, int fileType, String videoPic, HttpServletRequest request, HttpServletResponse
+	public String colFile(String path, int fileType, String videoPic, String userid, HttpServletRequest request,
+						  HttpServletResponse
 			response){
 		UserBo userBo = getUserLogin(request);
 		if (userBo == null) {
@@ -157,6 +159,9 @@ public class CollectController extends BaseContorller {
 		if (fileType == Constant.COLLET_VIDEO) {
 			chatBo.setTargetPic(videoPic);
 			chatBo.setVideo(path);
+		}
+		if (!StringUtils.isEmpty(userid)) {
+			chatBo.setSourceid(userid);
 		}
 		chatBo.setPath(path);
 		chatBo.setType(fileType);
@@ -288,6 +293,15 @@ public class CollectController extends BaseContorller {
 					PartyBo partyBo = partyService.findById(id);
 					if (partyBo != null) {
 						vo.setCollectPic(partyBo.getBackPic());
+					}
+				}
+				//有对象存储时
+				if (!StringUtils.isEmpty(collectBo.getSourceid())) {
+					UserBo userBo = userService.getUser(collectBo.getSourceid());
+					vo.setCollectUserid(collectBo.getSourceid());
+					if (userBo != null) {
+						vo.setCollectUserName(userBo.getUserName());
+						vo.setCollectUserPic(userBo.getHeadPictureName());
 					}
 				}
 				vo.setVideo(collectBo.getVideo());
