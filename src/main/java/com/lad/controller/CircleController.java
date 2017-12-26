@@ -1870,6 +1870,7 @@ public class CircleController extends BaseContorller {
 				friendsService.delete(userBo.getId(), friendid);
 				continue;
 			}
+			vo.setSex(friend.getSex());
 			vo.setUsername(friend.getUserName());
 			vo.setPicture(friend.getHeadPictureName());
 			vo.setBackname(friendsBo.getBackname());

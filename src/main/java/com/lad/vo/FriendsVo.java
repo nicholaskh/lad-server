@@ -15,6 +15,7 @@ public class FriendsVo extends BaseVo {
 	private Integer black;
 	private String username;
 	private String picture;
+	private String sex;
 
 	private String channelId;
 
@@ -113,5 +114,13 @@ public class FriendsVo extends BaseVo {
 
 	public void setChannelId(String channelId) {
 		this.channelId = channelId;
+	}
+
+	public String getSex() {
+		return sex;
+	}
+
+	public void setSex(String sex) {
+		this.sex = sex;
 	}
 }
