@@ -62,7 +62,7 @@ public class InforGroupRecomDaoImpl implements IInforGroupRecomDao {
     public List<InforGroupRecomBo> findInforGroupWithoutModule(int type, LinkedHashSet<String> modules, int limit) {
         Query query = new Query();
         if (!CommonUtil.isEmpty(modules)) {
-            query.addCriteria(new Criteria("module").is(type));
+            query.addCriteria(new Criteria("module").in(modules));
         }
         query.addCriteria(new Criteria("type").is(type));
         query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "halfyearNum")));

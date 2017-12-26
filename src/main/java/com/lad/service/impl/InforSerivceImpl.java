@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -309,7 +310,12 @@ public class InforSerivceImpl implements IInforService {
     }
 
     @Override
-    public List<VideoBo> findVideoByLimit(HashSet<String> modules, HashSet<String> classNames, int limit) {
+    public List<VideoBo> findVideoByLimit(LinkedList<String> modules, LinkedList<String> classNames, int limit) {
         return videoDao.findByLimit(modules, classNames, limit);
+    }
+
+    @Override
+    public VideoBo findVideoByFirst(String module, String className) {
+        return videoDao.findVideoByFirst(module, className);
     }
 }

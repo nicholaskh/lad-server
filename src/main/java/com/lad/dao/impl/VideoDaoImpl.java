@@ -8,6 +8,7 @@ import com.mongodb.WriteResult;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.*;
@@ -17,6 +18,7 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -43,12 +45,8 @@ public class VideoDaoImpl implements IVideoDao {
     public List<VideoBo> findByPage(String groupName, int page, int limit) {
         Query query = new Query();
         query.addCriteria(new Criteria("module").is(groupName));
-        query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
-        if (page < 1) {
-            page = 1;
-        }
-        query.skip((page -1) * limit);
-        query.limit(limit);
+        page = page < 1 ? 1 : page;
+        query.with(new PageRequest(page, limit, new Sort(new Sort.Order(Sort.Direction.DESC, "_id"))));
         return mongoTemplateTwo.find(query, VideoBo.class);
     }
 
@@ -67,10 +65,11 @@ public class VideoDaoImpl implements IVideoDao {
 
         Criteria criteria = new Criteria("module").is(groupName);
         MatchOperation match = Aggregation.match(criteria);
-        GroupOperation groupOperation = Aggregation.group("className")
-                .sum("visitNum").as("visitNum");
-        Aggregation aggregation = Aggregation.newAggregation(match, groupOperation,
-                Aggregation.sort(Sort.Direction.ASC, "className"));
+        GroupOperation groupOperation = Aggregation.group("module","className", "source")
+                .sum("visitNum").as("visitNum").first("url").as("firstUrl")
+                .first("_id").as("firstId");
+        Aggregation aggregation = Aggregation.newAggregation(match,
+                Aggregation.sort(Sort.Direction.ASC, "className"), groupOperation);
         AggregationResults<VideoBo> results = mongoTemplateTwo.aggregate(aggregation, "video", VideoBo.class);
         return results.getMappedResults();
     }
@@ -82,10 +81,8 @@ public class VideoDaoImpl implements IVideoDao {
         if (StringUtils.isNotEmpty(className)) {
             query.addCriteria(new Criteria("className").is(className));
         }
-        query.with(new Sort(new Sort.Order(Sort.Direction.ASC,"num")));
         page = page < 1 ? 1 : page;
-        query.skip(page - 1);
-        query.limit(limit);
+        query.with(new PageRequest(page, limit, new Sort(new Sort.Order(Sort.Direction.ASC, "title"))));
         return mongoTemplateTwo.find(query, VideoBo.class);
     }
 
@@ -146,31 +143,57 @@ public class VideoDaoImpl implements IVideoDao {
         Criteria criteria = new Criteria("module").in(modules).and("className").in(classNames);
         MatchOperation match = Aggregation.match(criteria);
         GroupOperation groupOperation = Aggregation.group("module","className", "source")
-                .sum("visitNum").as("visitNum");
-        Aggregation aggregation = Aggregation.newAggregation(match, groupOperation,
-                Aggregation.sort(Sort.Direction.DESC, "visitNum"));
+                .sum("visitNum").as("visitNum").first("url").as("firstUrl")
+                .first("_id").as("firstId");
+        Aggregation aggregation = Aggregation.newAggregation(match,
+                Aggregation.sort(Sort.Direction.ASC, "module","className"),
+                groupOperation);
         AggregationResults<VideoBo> results = mongoTemplateTwo.aggregate(aggregation, "video", VideoBo.class);
         return results.getMappedResults();
     }
 
     @Override
-    public List<VideoBo> findByLimit(HashSet<String> modules, HashSet<String> classNames, int limit) {
+    public List<VideoBo> findByLimit(LinkedList<String> modules, LinkedList<String> classNames, int limit) {
 
         GroupOperation groupOperation = Aggregation.group("module","className", "source")
-                .sum("visitNum").as("visitNum");
+                .sum("visitNum").as("visitNum").first("url").as("firstUrl")
+                .first("_id").as("firstId");
         Aggregation aggregation;
         if (CommonUtil.isEmpty(modules)) {
-            aggregation = Aggregation.newAggregation( groupOperation,
-                    Aggregation.sort(Sort.Direction.ASC, "module", "className"),
+            aggregation = Aggregation.newAggregation(
+                    Aggregation.sort(Sort.Direction.ASC, "module", "className"), groupOperation,
                     Aggregation.limit(limit));
         } else {
-            Criteria criteria = new Criteria("module").nin(modules).and("className").nin(classNames);
-            MatchOperation match = Aggregation.match(criteria);
-            aggregation = Aggregation.newAggregation(match, groupOperation,
-                    Aggregation.sort(Sort.Direction.ASC, "module", "className"), Aggregation.limit(limit));
+            Criteria cr = new Criteria();
+            int i = 0;
+            Criteria[] crArrs = new Criteria[modules.size()];
+            for (String module : modules) {
+                Criteria criteria = new Criteria("module").is(module).and("className").is(classNames.get(i));
+                crArrs[i++] = criteria;
+            }
+            //非条件满足
+            cr.norOperator(crArrs);
+            MatchOperation match = Aggregation.match(cr);
+            aggregation = Aggregation.newAggregation(match,
+                    Aggregation.sort(Sort.Direction.ASC, "module", "className"),  groupOperation,Aggregation.limit(limit));
         }
         AggregationResults<VideoBo> results = mongoTemplateTwo.aggregate(aggregation, "video", VideoBo.class);
         return results.getMappedResults();
+    }
+
+    @Override
+    public VideoBo findVideoByFirst(String modules, String classNames) {
+        Criteria criteria = new Criteria("module").is(modules).and("className").is(classNames);
+        MatchOperation match = Aggregation.match(criteria);
+        GroupOperation groupOperation = Aggregation.group("module","className")
+                .sum("visitNum").as("visitNum").first("url").as("firstUrl")
+                .first("_id").as("firstId");
+        Aggregation aggregation = Aggregation.newAggregation(match,
+                Aggregation.sort(Sort.Direction.ASC, "module","className"),
+                groupOperation);
+        AggregationResults<VideoBo> results = mongoTemplateTwo.aggregate(aggregation, "video", VideoBo.class);
+        return results != null && !CommonUtil.isEmpty(results.getMappedResults()) ? results.getMappedResults().get
+                (0) : null;
     }
 }
 

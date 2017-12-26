@@ -10,6 +10,7 @@ import com.mongodb.WriteResult;
 
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -299,5 +300,14 @@ public interface IInforService {
      * @param limit
      * @return
      */
-    List<VideoBo> findVideoByLimit(HashSet<String> modules, HashSet<String> classNames, int limit);
+    List<VideoBo> findVideoByLimit(LinkedList<String> modules, LinkedList<String> classNames, int limit);
+
+
+    /**
+     * 查找当前视频合集第一条信息
+     * @param module
+     * @param className
+     * @return
+     */
+    VideoBo findVideoByFirst(String module, String className);
 }

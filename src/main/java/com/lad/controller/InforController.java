@@ -28,7 +28,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -89,47 +88,44 @@ public class InforController extends BaseContorller {
     @RequestMapping("/group-types")
     @ResponseBody
     public String inforGroups(HttpServletRequest request, HttpServletResponse response){
-        HttpSession session = request.getSession();
         Map<String, Object> map = new LinkedHashMap<>();
         map.put("ret", 0);
         boolean isGetType = false;
         RMapCache<String, Object> cache = redisServer.getCacheMap(Constant.TEST_CACHE);
-        if (!session.isNew() && session.getAttribute("isLogin") != null) {
-            UserBo userBo = (UserBo) session.getAttribute("userBo");
-            if (userBo != null) {
-                InforSubscriptionBo mySub = inforService.findMySubs(userBo.getId());
-                if (mySub != null) {
-                    if (mySub.getSubscriptions().isEmpty()) {
-                        map.put(Constant.HEALTH_NAME, cache.get(Constant.HEALTH_NAME));
-                    } else {
-                        map.put(Constant.HEALTH_NAME, mySub.getSubscriptions());
-                    }
-                    if (mySub.getSecuritys().isEmpty()) {
-                        map.put(Constant.SECRITY_NAME, cache.get(Constant.SECRITY_NAME));
-                    } else {
-                        map.put(Constant.SECRITY_NAME, mySub.getSecuritys());
-                    }
-                    if (mySub.getRadios().isEmpty()) {
-                        map.put(Constant.RADIO_NAME, cache.get(Constant.RADIO_NAME));
-                    } else {
-                        map.put(Constant.RADIO_NAME, mySub.getRadios());
-                    }
-                    if (mySub.getVideos().isEmpty()) {
-                        map.put(Constant.VIDEO_NAME, cache.get(Constant.VIDEO_NAME));
-                    } else {
-                        map.put(Constant.VIDEO_NAME, mySub.getVideos());
-                    }
-                    isGetType  = true;
-                    logger.info("============== userid {}, inforSub {}", userBo.getId(),
-                            JSON.toJSONString(map));
+        UserBo userBo = getUserLogin(request);
+        if (userBo != null) {
+            InforSubscriptionBo mySub = inforService.findMySubs(userBo.getId());
+            if (mySub != null) {
+                if (mySub.getSubscriptions().isEmpty()) {
+                    map.put(Constant.HEALTH_NAME, cache.get(Constant.HEALTH_NAME));
                 } else {
-                    mySub = new InforSubscriptionBo();
-                    mySub.setUserid(userBo.getId());
-                    addCacheToSub(mySub, cache);
-                    inforService.insertSub(mySub);
-                    logger.info("============== userid {}, inforSub {}", userBo.getId(),
-                            JSON.toJSONString(mySub));
+                    map.put(Constant.HEALTH_NAME, mySub.getSubscriptions());
                 }
+                if (mySub.getSecuritys().isEmpty()) {
+                    map.put(Constant.SECRITY_NAME, cache.get(Constant.SECRITY_NAME));
+                } else {
+                    map.put(Constant.SECRITY_NAME, mySub.getSecuritys());
+                }
+                if (mySub.getRadios().isEmpty()) {
+                    map.put(Constant.RADIO_NAME, cache.get(Constant.RADIO_NAME));
+                } else {
+                    map.put(Constant.RADIO_NAME, mySub.getRadios());
+                }
+                if (mySub.getVideos().isEmpty()) {
+                    map.put(Constant.VIDEO_NAME, cache.get(Constant.VIDEO_NAME));
+                } else {
+                    map.put(Constant.VIDEO_NAME, mySub.getVideos());
+                }
+                isGetType  = true;
+                logger.info("============== userid {}, inforSub {}", userBo.getId(),
+                        JSON.toJSONString(map));
+            } else {
+                mySub = new InforSubscriptionBo();
+                mySub.setUserid(userBo.getId());
+                addCacheToSub(mySub, cache);
+                inforService.insertSub(mySub);
+                logger.info("============== userid {}, inforSub {}", userBo.getId(),
+                        JSON.toJSONString(mySub));
             }
         }
         if (!isGetType) {
@@ -1200,17 +1196,31 @@ public class InforController extends BaseContorller {
                     50 - myRecomBos.size());
             myRecomBos.addAll(recomBos);
         }
-        LinkedHashSet<String> modules = new LinkedHashSet<>();
-        LinkedHashSet<String> classNames = new LinkedHashSet<>();
+        LinkedList<String> modules = new LinkedList<>();
+        LinkedList<String> classNames = new LinkedList<>();
         JSONArray array = new JSONArray();
         if (myRecomBos != null) {
             for (InforGroupRecomBo recomBo : myRecomBos) {
-                modules.add(recomBo.getModule());
-                classNames.add(recomBo.getClassName());
-                num ++;
+                String module = recomBo.getModule();
+                String className = recomBo.getClassName();
+                if (StringUtils.isEmpty(module) || StringUtils.isEmpty(className)) {
+                    continue;
+                }
+                VideoBo videoBo = inforService.findVideoByFirst(module, className);
+                if (videoBo != null) {
+                    JSONObject object = new JSONObject();
+                    object.put("module", videoBo.getModule());
+                    object.put("title", videoBo.getClassName());
+                    object.put("source", videoBo.getSource());
+                    object.put("totalVisit", videoBo.getVisitNum());
+                    object.put("inforid", videoBo.getFirstId());
+                    object.put("url", videoBo.getFirstUrl());
+                    array.add(object);
+                    num ++;
+                }
+                modules.add(module);
+                classNames.add(className);
             }
-            List<VideoBo> videoBos = inforService.selectVideoClassByGroups(modules, classNames);
-            addVideo(videoBos, array);
         }
         if  (num < 50) {
             List<VideoBo> videoBos = inforService.findVideoByLimit(modules, classNames, 50-num);
@@ -1230,6 +1240,8 @@ public class InforController extends BaseContorller {
                 object.put("title", bo.getClassName());
                 object.put("source", bo.getSource());
                 object.put("totalVisit", bo.getVisitNum());
+                object.put("inforid", bo.getFirstId());
+                object.put("url", bo.getFirstUrl());
                 array.add(object);
             }
         }
@@ -1581,14 +1593,15 @@ public class InforController extends BaseContorller {
      */
     @RequestMapping("/forward-dynamic")
     @ResponseBody
-    public String forwardDynamic(@RequestParam String inforid, @RequestParam int inforType, String view, HttpServletRequest request,
-                                 HttpServletResponse response) {
+    public String forwardDynamic(@RequestParam String inforid, @RequestParam int inforType, String view,
+                                 String landmark, HttpServletRequest request, HttpServletResponse response) {
         UserBo userBo = getUserLogin(request);
         if (userBo == null) {
             return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
                     ERRORCODE.ACCOUNT_OFF_LINE.getReason());
         }
         DynamicBo dynamicBo = new DynamicBo();
+        dynamicBo.setLandmark(landmark);
         switch (inforType){
             case Constant.INFOR_HEALTH:
                 InforBo inforBo = inforService.findById(inforid);

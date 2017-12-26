@@ -43,6 +43,11 @@ public class VideoBo implements Serializable {
 
     private int collectNum;
 
+
+    private String firstUrl;
+
+    private String firstId;
+
     public String getId() {
         return id;
     }
@@ -153,5 +158,21 @@ public class VideoBo implements Serializable {
 
     public void setNum(int num) {
         this.num = num;
+    }
+
+    public String getFirstUrl() {
+        return firstUrl;
+    }
+
+    public void setFirstUrl(String firstUrl) {
+        this.firstUrl = firstUrl;
+    }
+
+    public String getFirstId() {
+        return firstId;
+    }
+
+    public void setFirstId(String firstId) {
+        this.firstId = firstId;
     }
 }

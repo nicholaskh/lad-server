@@ -4,6 +4,7 @@ import com.lad.scrapybo.VideoBo;
 import com.mongodb.WriteResult;
 
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -71,6 +72,15 @@ public interface IVideoDao {
      * @param limit
      * @return
      */
-    List<VideoBo> findByLimit(HashSet<String> modules, HashSet<String> classNames, int limit);
+    List<VideoBo> findByLimit(LinkedList<String> modules, LinkedList<String> classNames, int limit);
+
+
+    /**
+     * 查找当前合集下第一条信息
+     * @param modules
+     * @param classNames
+     * @return
+     */
+    VideoBo findVideoByFirst(String modules, String classNames);
 
 }

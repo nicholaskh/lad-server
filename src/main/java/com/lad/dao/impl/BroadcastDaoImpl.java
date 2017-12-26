@@ -82,7 +82,7 @@ public class BroadcastDaoImpl implements IBroadcastDao {
             query.addCriteria(new Criteria("className").is(className));
         }
         query.with(new Sort(new Sort.Order(Sort.Direction.ASC,"edition")));
-        query.with(new Sort(new Sort.Order(Sort.Direction.ASC,"random_num")));
+        query.with(new Sort(new Sort.Order(Sort.Direction.ASC,"title")));
         return mongoTemplateTwo.find(query, BroadcastBo.class);
     }
 
@@ -93,7 +93,7 @@ public class BroadcastDaoImpl implements IBroadcastDao {
             query.addCriteria(new Criteria("className").is(className));
         }
         query.with(new Sort(new Sort.Order(Sort.Direction.ASC,"edition")));
-        query.with(new Sort(new Sort.Order(Sort.Direction.ASC,"random_num")));
+        query.with(new Sort(new Sort.Order(Sort.Direction.ASC,"title")));
         if (start != 0 && end > 0) {
             start = start < 1 ? 1 : start;
             query.skip(start - 1);
@@ -150,7 +150,7 @@ public class BroadcastDaoImpl implements IBroadcastDao {
     public List<BroadcastBo> selectClassByGroups(HashSet<String> modules, HashSet<String> classNames) {
         Criteria criteria = new Criteria("module").in(modules).and("className").in(classNames);
         MatchOperation match = Aggregation.match(criteria);
-        GroupOperation groupOperation = Aggregation.group("module", "className", "intro", "source")
+        GroupOperation groupOperation = Aggregation.group("module", "className", "source")
                 .sum("visitNum").as("visitNum");
         Aggregation aggregation = Aggregation.newAggregation(match, groupOperation,
                 Aggregation.sort(Sort.Direction.ASC, "module", "className"));
@@ -161,7 +161,7 @@ public class BroadcastDaoImpl implements IBroadcastDao {
     @Override
     public List<BroadcastBo> findByLimit(HashSet<String> modules, HashSet<String> classNames, int limit) {
 
-        GroupOperation groupOperation = Aggregation.group("module", "className", "intro", "source")
+        GroupOperation groupOperation = Aggregation.group("module", "className", "source")
                 .sum("visitNum").as("visitNum");
         Aggregation aggregation;
         if (CommonUtil.isEmpty(modules)) {
