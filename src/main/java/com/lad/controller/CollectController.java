@@ -14,7 +14,6 @@ import net.sf.json.JSONObject;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -160,9 +159,7 @@ public class CollectController extends BaseContorller {
 			chatBo.setTargetPic(videoPic);
 			chatBo.setVideo(path);
 		}
-		if (!StringUtils.isEmpty(userid)) {
-			chatBo.setSourceid(userid);
-		}
+		chatBo.setSourceid(userid);
 		chatBo.setPath(path);
 		chatBo.setType(fileType);
 		if (fileType ==  Constant.COLLET_URL) {
@@ -275,7 +272,8 @@ public class CollectController extends BaseContorller {
 			vo.setCollectid(collectBo.getId());
 			vo.setCollectTime(collectBo.getCreateTime());
 			vo.setCollectPic(collectBo.getTargetPic());
-			if (collectBo.getType() == Constant.CHAT_TYPE) {
+			int type =  collectBo.getType();
+			if (type == Constant.CHAT_TYPE || (Constant.COLLET_PIC <= type && type <= Constant.COLLET_VOICE)) {
 				UserBo userBo = userService.getUser(collectBo.getSourceid());
 				vo.setCollectUserid(collectBo.getSourceid());
 				if (userBo != null) {
@@ -295,20 +293,7 @@ public class CollectController extends BaseContorller {
 						vo.setCollectPic(partyBo.getBackPic());
 					}
 				}
-				//有对象存储时
-				if (!StringUtils.isEmpty(collectBo.getSourceid())) {
-					UserBo userBo = userService.getUser(collectBo.getSourceid());
-					vo.setCollectUserid(collectBo.getSourceid());
-					if (userBo != null) {
-						vo.setCollectUserName(userBo.getUserName());
-						vo.setCollectUserPic(userBo.getHeadPictureName());
-					}
-				}
 				vo.setVideo(collectBo.getVideo());
-			} else if (collectBo.getType() == Constant.CHAT_TYPE) {
-				vo.setCollectUserPic(collectBo.getTargetPic());
-				vo.setCollectUserName(collectBo.getSource());
-				vo.setCollectUserid(collectBo.getSourceid());
 			}
 			collectVos.add(vo);
 		}
