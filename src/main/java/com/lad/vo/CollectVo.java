@@ -48,6 +48,13 @@ public class CollectVo extends BaseVo {
 
     private Date collectTime;
 
+    //广播和视频合集收藏专用
+    private String module;
+
+    private String className;
+    //合集第一条信息id
+    private String firstid;
+
     public String getCollectid() {
         return collectid;
     }
@@ -190,5 +197,29 @@ public class CollectVo extends BaseVo {
 
     public void setVideoPic(String videoPic) {
         this.videoPic = videoPic;
+    }
+
+    public String getModule() {
+        return module;
+    }
+
+    public void setModule(String module) {
+        this.module = module;
+    }
+
+    public String getClassName() {
+        return className;
+    }
+
+    public void setClassName(String className) {
+        this.className = className;
+    }
+
+    public String getFirstid() {
+        return firstid;
+    }
+
+    public void setFirstid(String firstid) {
+        this.firstid = firstid;
     }
 }

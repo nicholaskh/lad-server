@@ -43,10 +43,16 @@ public class VideoBo implements Serializable {
 
     private int collectNum;
 
-
+    //合集第一条信息展示
     private String firstUrl;
 
     private String firstId;
+
+    private int firstShare;
+
+    private int firstComment;
+
+    private int firstThump;
 
     public String getId() {
         return id;
@@ -174,5 +180,29 @@ public class VideoBo implements Serializable {
 
     public void setFirstId(String firstId) {
         this.firstId = firstId;
+    }
+
+    public int getFirstShare() {
+        return firstShare;
+    }
+
+    public void setFirstShare(int firstShare) {
+        this.firstShare = firstShare;
+    }
+
+    public int getFirstComment() {
+        return firstComment;
+    }
+
+    public void setFirstComment(int firstComment) {
+        this.firstComment = firstComment;
+    }
+
+    public int getFirstThump() {
+        return firstThump;
+    }
+
+    public void setFirstThump(int firstThump) {
+        this.firstThump = firstThump;
     }
 }

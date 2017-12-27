@@ -10,6 +10,10 @@ import com.lad.scrapybo.VideoBo;
 import com.lad.service.*;
 import com.lad.util.*;
 import com.lad.vo.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.logging.log4j.LogManager;
@@ -19,12 +23,8 @@ import org.redisson.api.RMapCache;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -38,7 +38,8 @@ import java.util.concurrent.TimeUnit;
  * Version: 1.0
  * Time:2017/7/29
  */
-@Controller
+@Api(value = "InforController", description = "资讯信息相关接口")
+@RestController
 @RequestMapping("infor")
 @CrossOrigin
 public class InforController extends BaseContorller {
@@ -69,8 +70,8 @@ public class InforController extends BaseContorller {
     private IDynamicService dynamicService;
 
 
-    @RequestMapping("/init-cache")
-    @ResponseBody
+    @ApiOperation("刷新资讯分类缓存信息")
+    @GetMapping("/init-cache")
     public String initCache(HttpServletRequest request, HttpServletResponse response) {
         Map<String, Object> map = new HashMap<>();
 
@@ -85,8 +86,8 @@ public class InforController extends BaseContorller {
     }
 
 
-    @RequestMapping("/group-types")
-    @ResponseBody
+    @ApiOperation("获取资讯分类信息，用户若登录则返回已收藏的分类信息")
+    @GetMapping("/group-types")
     public String inforGroups(HttpServletRequest request, HttpServletResponse response){
         Map<String, Object> map = new LinkedHashMap<>();
         map.put("ret", 0);
@@ -173,8 +174,15 @@ public class InforController extends BaseContorller {
         return JSONObject.fromObject(map).toString();
     }
 
-    @RequestMapping("/group-infors")
-    @ResponseBody
+    @ApiOperation("获取健康养生指定分类下资讯信息列表")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "groupName", value = "健康资讯分类", required = true, paramType = "query", dataType =
+                    "string"),
+            @ApiImplicitParam(name = "inforTime", value = "资讯分分页时最后一条时间，若为空表示第一页开始",paramType = "query", required =
+                    true, dataType = "string"),
+            @ApiImplicitParam(name = "limit", value = "资讯分页每页条数", required = true,paramType = "query", dataType =
+                    "int")})
+    @RequestMapping(value = "/group-infors",method = {RequestMethod.GET, RequestMethod.POST})
     public String groupInfors(@RequestParam String groupName,
                               @RequestParam(required = false)String inforTime,
                               @RequestParam int limit,
@@ -199,8 +207,14 @@ public class InforController extends BaseContorller {
         return JSONObject.fromObject(map).toString();
     }
 
-    @RequestMapping("/radio-list")
-    @ResponseBody
+    @ApiOperation("获取广播指定分类下列表信息，已弃用，新方法见radio-classes")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "module", value = "广播资讯分类", required = true, dataType =
+            "string", paramType = "query"),
+            @ApiImplicitParam(name = "page", value = "分页页码", required = true, dataType = "int", paramType = "query"),
+            @ApiImplicitParam(name = "limit", value = "分页条数", required = true, dataType = "int", paramType = "query")})
+    @RequestMapping(value = "/radio-list", method = {RequestMethod.GET, RequestMethod.POST})
+    @Deprecated
     public String radioList(String module, int page,  int limit,
                               HttpServletRequest request, HttpServletResponse response){
         List<BroadcastBo> broadcastBos = inforService.findBroadByPage(module, page, limit);
@@ -225,9 +239,9 @@ public class InforController extends BaseContorller {
     }
 
 
-
-    @RequestMapping("/radio-classes")
-    @ResponseBody
+    @ApiOperation("获取广播指定分类下合集信息")
+    @ApiImplicitParam(name = "module", value = "广播资讯分类", required = true, dataType = "string", paramType = "query")
+    @RequestMapping(value = "/radio-classes", method = {RequestMethod.GET, RequestMethod.POST})
     public String radioGroups(String module,
                             HttpServletRequest request, HttpServletResponse response){
         List<BroadcastBo> broadcastBos = inforService.selectBroadClassByGroups(module);
@@ -254,9 +268,15 @@ public class InforController extends BaseContorller {
         }
     }
 
-  
-    @RequestMapping("/radio-groups")
-    @ResponseBody
+
+    @ApiOperation("获取广播指定分类下列表信息，已弃用，新方法见radio-classes")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "module", value = "广播资讯分类", required = true, paramType = "query", dataType =
+                    "string"),
+            @ApiImplicitParam(name = "className", value = "广播二级分类",paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "start", value = "开始集数",paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "end", value = "结束集数",paramType = "query", dataType = "int")})
+    @RequestMapping(value = "/radio-groups", method = {RequestMethod.GET, RequestMethod.POST})
     public String radioGroups(String module, String className,int start, int end,
                               HttpServletRequest request, HttpServletResponse response){
         List<BroadcastBo> broadcastBos = inforService.findByClassNamePage(module, className,start, end);
@@ -282,9 +302,9 @@ public class InforController extends BaseContorller {
     }
 
 
-
-    @RequestMapping("/radio-infor")
-    @ResponseBody
+    @ApiOperation("获取指定广播资讯信息")
+    @ApiImplicitParam(name = "radioid", value = "广播资讯id", required = true,paramType = "query", dataType = "string")
+    @RequestMapping(value = "/radio-infor", method = {RequestMethod.GET, RequestMethod.POST})
     public String radioInfors(String radioid, HttpServletRequest request, HttpServletResponse response){
         BroadcastBo broadcastBo = inforService.findBroadById(radioid);
         BroadcastVo broadcastVo = null;
@@ -297,11 +317,7 @@ public class InforController extends BaseContorller {
             broadcastVo.setCommentNum(broadcastBo.getCommnetNum());
             broadcastVo.setThumpsubNum(broadcastBo.getThumpsubNum());
             updateGrouprHistroy(radioid, broadcastBo.getModule(), broadcastBo.getClassName(),Constant.INFOR_RADIO);
-            UserBo userBo = getUserLogin(request);
-            if (userBo != null) {
-                updateUserReadHis(userBo.getId(),broadcastBo.getModule(),
-                        broadcastBo.getClassName(),Constant.INFOR_RADIO);
-            }
+            updateRadioHis(radioid, broadcastBo, request);
         }
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("ret", 0);
@@ -309,24 +325,61 @@ public class InforController extends BaseContorller {
         return JSONObject.fromObject(map).toString();
     }
 
-    @RequestMapping("/radio-play")
-    @ResponseBody
+    @ApiOperation("列表播放广播接口")
+    @ApiImplicitParam(name = "radioid", value = "广播资讯id", required = true,paramType = "query", dataType = "string")
+    @RequestMapping(value = "/radio-play", method = {RequestMethod.GET, RequestMethod.POST})
     public String radioPlay(String inforid, HttpServletRequest request, HttpServletResponse response){
         updateInforNum(inforid, Constant.INFOR_RADIO, 1, Constant.VISIT_NUM);
+        updateRadioHis(inforid, null, request);
         return Constant.COM_RESP;
+    }
+    //异步执行
+    @Async
+    private void updateRadioHis(String radioid, BroadcastBo broadcastBo, HttpServletRequest request){
+        if (broadcastBo == null) {
+            broadcastBo = inforService.findBroadById(radioid);
+            updateGrouprHistroy(radioid, broadcastBo.getModule(), broadcastBo.getClassName(),Constant.INFOR_RADIO);
+            UserBo userBo = getUserLogin(request);
+            if (userBo != null) {
+                updateUserReadHis(userBo.getId(),broadcastBo.getModule(),
+                        broadcastBo.getClassName(),Constant.INFOR_RADIO);
+            }
+        }
     }
 
 
-    @RequestMapping("/video-play")
-    @ResponseBody
+    @ApiOperation("列表播视频播接口")
+    @ApiImplicitParam(name = "inforid", value = "视频资讯id", required = true,paramType = "query", dataType = "string")
+    @RequestMapping(value = "/video-play", method = {RequestMethod.GET, RequestMethod.POST})
     public String videoPlay(String inforid, HttpServletRequest request, HttpServletResponse response){
         updateInforNum(inforid, Constant.INFOR_VIDEO, 1, Constant.VISIT_NUM);
+        updateVideoHis(inforid, request);
         return Constant.COM_RESP;
     }
 
+    //异步执行
+    @Async
+    private void updateVideoHis(String inforid, HttpServletRequest request){
+        VideoBo videoBo = inforService.findVideoById(inforid);
+        if (videoBo != null) {
+            updateGrouprHistroy(inforid, videoBo.getModule(), videoBo.getClassName(),Constant.INFOR_VIDEO);
+            UserBo userBo = getUserLogin(request);
+            if (userBo != null) {
+                updateUserReadHis(userBo.getId(), videoBo.getModule(), videoBo.getClassName(), Constant.INFOR_VIDEO);
+            }
+        }
+    }
 
-    @RequestMapping("/video-list")
-    @ResponseBody
+
+
+    @ApiOperation("获取视频资讯指定分类下列表")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "module", value = "视频资讯分类", required = true, paramType = "query", dataType =
+                    "string"),
+            @ApiImplicitParam(name = "className", value = "视频二级分类",paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "page", value = "页码",paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "limit", value = "每页条数",paramType = "query", dataType = "int")})
+    @RequestMapping(value = "/video-list",method = {RequestMethod.GET, RequestMethod.POST})
     public String videoInfors(String module, String className, int page,  int limit,
                               HttpServletRequest request, HttpServletResponse response){
         List<VideoBo> videoBos = inforService.selectClassNamePage(module,className, page, limit);
@@ -369,7 +422,7 @@ public class InforController extends BaseContorller {
         updateGrouopRecom(module, className,Constant.INFOR_VIDEO);
         UserBo userBo = getUserLogin(request);
         if (userBo != null) {
-            updateUserReadHis(userBo.getId(), module, "", Constant.INFOR_VIDEO);
+            updateUserReadHis(userBo.getId(), module, className, Constant.INFOR_VIDEO);
         }
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("ret", 0);
@@ -377,8 +430,10 @@ public class InforController extends BaseContorller {
         return JSONObject.fromObject(map).toString();
     }
 
-    @RequestMapping("/video-classes")
-    @ResponseBody
+
+    @ApiOperation("获取视频指定分类下合集信息")
+    @ApiImplicitParam(name = "module", value = "视频资讯分类", required = true, paramType = "query",dataType = "string")
+    @RequestMapping(value = "/video-classes", method = {RequestMethod.GET, RequestMethod.POST})
     public String videoClasses(String module, HttpServletRequest request, HttpServletResponse response){
         List<VideoBo> videoBos = inforService.selectVideoClassByGroups(module);
         JSONObject jsonObject = new JSONObject();
@@ -389,19 +444,18 @@ public class InforController extends BaseContorller {
         return jsonObject.toString();
     }
 
-    @RequestMapping("/video-infor")
-    @ResponseBody
+    @ApiOperation("获取视频详细信息")
+    @ApiImplicitParam(name = "videoid", value = "视频id", required = true, paramType = "query",dataType = "string")
+    @RequestMapping(value = "/video-infor", method = {RequestMethod.GET, RequestMethod.POST})
     public String videoInfors(@RequestParam String videoid,
                               HttpServletRequest request, HttpServletResponse response){
         VideoBo videoBo = inforService.findVideoById(videoid);
         if (videoBo == null) {
-            return CommonUtil.toErrorResult(
-                    ERRORCODE.INFOR_IS_NULL.getIndex(),
+            return CommonUtil.toErrorResult(ERRORCODE.INFOR_IS_NULL.getIndex(),
                     ERRORCODE.INFOR_IS_NULL.getReason());
         }
         updateInforNum(videoid, Constant.INFOR_VIDEO, 1, Constant.VISIT_NUM);
         VideoVo videoVo = new VideoVo();
-
         UserBo userBo = getUserLogin(request);
         if (userBo != null) {
             ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(videoid, userBo.getId());
@@ -421,10 +475,11 @@ public class InforController extends BaseContorller {
     }
 
 
-    @RequestMapping("/recommend-groups")
-    @ResponseBody
+    @ApiOperation("获取资讯订阅和未订阅分类信息，需要登录")
+    @ApiImplicitParam(name = "type", value = "资讯分类，1健康，2 安防，3广播，4视频", required = true, paramType = "query",dataType =
+            "int")
+    @RequestMapping(value = "/recommend-groups",method = {RequestMethod.GET, RequestMethod.POST})
     public String recommendGroups(int type, HttpServletRequest request, HttpServletResponse response){
-
         UserBo userBo;
         try {
             userBo = checkSession(request, userService);
@@ -471,9 +526,14 @@ public class InforController extends BaseContorller {
         return JSONObject.fromObject(map).toString();
     }
 
-    
-    @RequestMapping("/update-groups")
-    @ResponseBody
+
+    @ApiOperation("更新订阅的资讯分类信息")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "groupNames", value = "资讯分类，多个以逗号隔开", required = true, paramType = "query",
+                    dataType = "string"),
+            @ApiImplicitParam(name = "type", value = "资讯分类，1健康，2 安防，3广播，4视频", required = true, paramType = "query",
+                    dataType = "int")})
+    @RequestMapping(value = "/update-groups", method = {RequestMethod.GET, RequestMethod.POST})
     public String updateGroups(@RequestParam String groupNames,
                                @RequestParam int type,
                                HttpServletRequest request, HttpServletResponse response){
@@ -536,8 +596,9 @@ public class InforController extends BaseContorller {
         return Constant.COM_RESP;
     }
 
-    @RequestMapping("/news-infor")
-    @ResponseBody
+    @ApiOperation("健康资讯信息详情")
+    @ApiImplicitParam(name = "inforid", value = "资讯id", required = true, paramType = "query",dataType = "string")
+    @RequestMapping(value = "/news-infor", method = {RequestMethod.GET, RequestMethod.POST})
     public String infor(String inforid, HttpServletRequest request, HttpServletResponse response){
 
         InforBo inforBo = inforService.findById(inforid);
@@ -567,10 +628,10 @@ public class InforController extends BaseContorller {
         return JSONObject.fromObject(map).toString();
     }
 
-    @RequestMapping("/security-infor")
-    @ResponseBody
+    @ApiOperation("安防资讯信息详情")
+    @ApiImplicitParam(name = "inforid", value = "资讯id", required = true, paramType = "query",dataType = "string")
+    @RequestMapping(value = "/security-infor", method = {RequestMethod.GET, RequestMethod.POST})
     public String securitys(String inforid, HttpServletRequest request, HttpServletResponse response){
-
         SecurityBo securityBo = inforService.findSecurityById(inforid);
         if (securityBo == null) {
             return CommonUtil.toErrorResult(
@@ -597,8 +658,15 @@ public class InforController extends BaseContorller {
         return JSONObject.fromObject(map).toString();
     }
 
-    @RequestMapping("/security-list")
-    @ResponseBody
+
+    @ApiOperation("获取安全防范指定分类下资讯信息列表")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "newsType", value = "安防分类", required = true, paramType = "query", dataType =
+                    "string"),
+            @ApiImplicitParam(name = "inforTime", value = "分页时最后一条时间，若为空表示第一页开始",paramType = "query",dataType = "string"),
+            @ApiImplicitParam(name = "limit", value = "每页条数", required = true,paramType = "query", dataType =
+                    "int")})
+    @RequestMapping(value = "/security-list", method = {RequestMethod.GET, RequestMethod.POST})
     public String securityList(@RequestParam String newsType,
                               @RequestParam(required = false)String inforTime,
                               @RequestParam int limit,
@@ -628,12 +696,18 @@ public class InforController extends BaseContorller {
     }
 
 
-    @RequestMapping("/add-comment")
-    @ResponseBody
+    @ApiOperation("资讯评论或回复评论，需要登录")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "inforid", value = "资讯id", required = true, paramType = "query", dataType =
+                    "string"),
+            @ApiImplicitParam(name = "countent", value = "评论内容",paramType = "query",dataType = "string"),
+            @ApiImplicitParam(name = "parentid", value = "父评论id,为空表示评资讯", paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "inforType", value = "1健康，2 安防，3广播，4视频", required = true,paramType = "query", dataType =
+                    "int")})
+    @RequestMapping(value = "/add-comment", method = {RequestMethod.GET, RequestMethod.POST})
     public String addComment(@RequestParam String inforid, @RequestParam String countent,
                              String parentid, int inforType,
                              HttpServletRequest request, HttpServletResponse response){
-
         UserBo userBo;
         try {
             userBo = checkSession(request, userService);
@@ -695,8 +769,16 @@ public class InforController extends BaseContorller {
         }
     }
 
-    @RequestMapping("/get-comments")
-    @ResponseBody
+    @ApiOperation("获取评论")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "inforid", value = "资讯id", required = true, paramType = "query", dataType =
+                    "string"),
+            @ApiImplicitParam(name = "start_id", value = "分页时最后一条咨询id",paramType = "query",dataType = "string"),
+            @ApiImplicitParam(name = "gt", value = "true,start_id之后的评论，false相反", paramType = "query", dataType =
+                    "boolean"),
+            @ApiImplicitParam(name = "limit", value = "每页条数", required = true,paramType = "query", dataType =
+                    "int")})
+    @RequestMapping(value = "/get-comments", method = {RequestMethod.GET, RequestMethod.POST})
     public String getComment(@RequestParam String inforid, String start_id, boolean gt, int limit,
                              HttpServletRequest request, HttpServletResponse response){
         List<CommentBo> commentBos = commentService.selectCommentByType(Constant.INFOR_TYPE, inforid,
@@ -711,8 +793,9 @@ public class InforController extends BaseContorller {
         return JSONObject.fromObject(map).toString();
     }
 
-    @RequestMapping("/delete-comment")
-    @ResponseBody
+    @ApiOperation("删除评论，需要登录，只能删除自己的")
+    @ApiImplicitParam(name = "commnetId", value = "评论id", required = true, paramType = "query",dataType = "string")
+    @RequestMapping(value = "/delete-comment", method = {RequestMethod.GET, RequestMethod.POST})
     public String delelteComment(String commnetId,
                              HttpServletRequest request, HttpServletResponse response){
         UserBo userBo = getUserLogin(request);
@@ -733,10 +816,16 @@ public class InforController extends BaseContorller {
         }
         return Constant.COM_RESP;
     }
-   
 
-    @RequestMapping("/thumbsup")
-    @ResponseBody
+
+    @ApiOperation("资讯或评论点赞，需要登录")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "targetid", value = "资讯或评论id", required = true, paramType = "query", dataType =
+                    "string"),
+            @ApiImplicitParam(name = "type", value = "0 资讯点赞，1评论点赞", paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "inforType", value = "1健康，2 安防，3广播，4视频", required = true,paramType = "query", dataType =
+                    "int")})
+    @RequestMapping(value = "/thumbsup",  method = {RequestMethod.GET, RequestMethod.POST})
     public String inforThumbsup(@RequestParam String targetid, @RequestParam int type, int inforType,
             HttpServletRequest request, HttpServletResponse response){
         UserBo userBo;
@@ -818,8 +907,14 @@ public class InforController extends BaseContorller {
         }
     }
 
-    @RequestMapping("/cancal-thumbsup")
-    @ResponseBody
+    @ApiOperation("资讯或评论取消点赞，需要登录")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "targetid", value = "资讯或评论id", required = true, paramType = "query", dataType =
+                    "string"),
+            @ApiImplicitParam(name = "type", value = "0 资讯，1评论", paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "inforType", value = "1健康，2 安防，3广播，4视频", required = true,paramType = "query", dataType =
+                    "int")})
+    @RequestMapping(value = "/cancal-thumbsup", method = {RequestMethod.GET, RequestMethod.POST})
     public String cancelThumbsup(@RequestParam String targetid, @RequestParam int type, int inforType,
                                  HttpServletRequest request, HttpServletResponse response){
         UserBo userBo;
@@ -870,10 +965,9 @@ public class InforController extends BaseContorller {
      * @param response
      * @return
      */
-    @RequestMapping("/home-health")
-    @ResponseBody
+    @ApiOperation("资讯主页推荐top50")
+    @GetMapping("/home-health")
     public String homeHealth(HttpServletRequest request, HttpServletResponse response){
-
         List<InforRecomBo> recomBos = inforRecomService.findRecomByType(Constant.INFOR_HEALTH, 50);
         List<InforVo> inforVos = new ArrayList<>();
         int num = 0;
@@ -926,8 +1020,8 @@ public class InforController extends BaseContorller {
      * @param response
      * @return
      */
-    @RequestMapping("/home-top4")
-    @ResponseBody
+    @ApiOperation("资讯主页推荐top4,带图片")
+    @GetMapping("/home-top4")
     public String homeHealthTop(HttpServletRequest request, HttpServletResponse response){
         RMapCache<String, Object> cache = redisServer.getCacheMap(Constant.TEST_CACHE);
         List<InforVo> top4 = null;
@@ -979,8 +1073,8 @@ public class InforController extends BaseContorller {
      * @param response
      * @return
      */
-    @RequestMapping("/user-health")
-    @ResponseBody
+    @ApiOperation("健康资讯个性推荐")
+    @GetMapping("/user-health")
     public String userHealth(HttpServletRequest request, HttpServletResponse response){
 
         UserBo userBo = getUserLogin(request);
@@ -1041,8 +1135,8 @@ public class InforController extends BaseContorller {
      * @param response
      * @return
      */
-    @RequestMapping("/user-securitys")
-    @ResponseBody
+    @ApiOperation("安防资讯个性推荐")
+    @GetMapping("/user-securitys")
     public String userSecritys(HttpServletRequest request, HttpServletResponse response){
         UserBo userBo = getUserLogin(request);
         List<SecurityVo> inforVos = new ArrayList<>();
@@ -1112,8 +1206,8 @@ public class InforController extends BaseContorller {
      * @param response
      * @return
      */
-    @RequestMapping("/user-radios")
-    @ResponseBody
+    @ApiOperation("广播资讯个性推荐")
+    @GetMapping("/user-radios")
     public String userRadios(HttpServletRequest request, HttpServletResponse response){
         UserBo userBo = getUserLogin(request);
         int num = 0;
@@ -1169,8 +1263,8 @@ public class InforController extends BaseContorller {
      * @param response
      * @return
      */
-    @RequestMapping("/user-videos")
-    @ResponseBody
+    @ApiOperation("视频资讯个性推荐")
+    @GetMapping("/user-videos")
     public String userVideos(HttpServletRequest request, HttpServletResponse response){
         UserBo userBo = getUserLogin(request);
         int num = 0;
@@ -1215,6 +1309,9 @@ public class InforController extends BaseContorller {
                     object.put("totalVisit", videoBo.getVisitNum());
                     object.put("inforid", videoBo.getFirstId());
                     object.put("url", videoBo.getFirstUrl());
+                    object.put("shareNum", videoBo.getFirstShare());
+                    object.put("thumpsubNum", videoBo.getFirstThump());
+                    object.put("commentNum", videoBo.getFirstComment());
                     array.add(object);
                     num ++;
                 }
@@ -1242,6 +1339,9 @@ public class InforController extends BaseContorller {
                 object.put("totalVisit", bo.getVisitNum());
                 object.put("inforid", bo.getFirstId());
                 object.put("url", bo.getFirstUrl());
+                object.put("shareNum", bo.getFirstShare());
+                object.put("thumpsubNum", bo.getFirstThump());
+                object.put("commentNum", bo.getFirstComment());
                 array.add(object);
             }
         }
@@ -1529,17 +1629,20 @@ public class InforController extends BaseContorller {
     }
 
 
-    @RequestMapping("/collect-infor")
-    @ResponseBody
-    public String collectInfor(@RequestParam String inforid,
-                               @RequestParam int inforType,
+    @ApiOperation("收藏单条咨询信息")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "inforid", value = "资讯id", required = true, paramType = "query", dataType =
+                    "string"),
+            @ApiImplicitParam(name = "inforType", value = "1健康，2 安防，3广播，4视频", required = true,paramType = "query", dataType =
+                    "int")})
+    @RequestMapping(value = "/collect-infor", method = {RequestMethod.GET, RequestMethod.POST})
+    public String collectInfor(@RequestParam String inforid, @RequestParam int inforType,
                                HttpServletRequest request, HttpServletResponse response){
         UserBo userBo = getUserLogin(request);
         if (userBo == null) {
             return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
                     ERRORCODE.ACCOUNT_OFF_LINE.getReason());
         }
-
         CollectBo collectBo = collectService.findByUseridAndTargetid(userBo.getId(), inforid);
         if (collectBo == null) {
             collectBo = new CollectBo();
@@ -1570,18 +1673,67 @@ public class InforController extends BaseContorller {
                 BroadcastBo broadcastBo = inforService.findBroadById(inforid);
                 collectBo.setTitle(broadcastBo.getTitle());
                 collectBo.setSource(broadcastBo.getModule());
+                collectBo.setPath(broadcastBo.getBroadcast_url());
                 break;
             case Constant.INFOR_VIDEO:
                 VideoBo videoBo = inforService.findVideoById(inforid);
                 collectBo.setTitle(videoBo.getTitle());
                 collectBo.setSource(videoBo.getModule());
-                collectBo.setVideo(videoBo.getSourceUrl());
+                collectBo.setVideo(videoBo.getUrl());
                 collectBo.setTargetPic(videoBo.getPoster());
                 break;
             default:
                 break;
         }
+        collectService.insert(collectBo);
         updateInforNum(inforid, inforType, 1, Constant.COLLECT_NUM);
+        Map<String, Object> map = new HashMap<>();
+        map.put("ret", 0);
+        map.put("col-time", CommonUtil.time2str(collectBo.getCreateTime()));
+        return JSONObject.fromObject(map).toString();
+    }
+
+
+    @ApiOperation("收藏广播或视频资讯合集")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "module", value = "广播或视频大分类", required = true, paramType = "query", dataType =
+                    "string"),
+            @ApiImplicitParam(name = "className", value = "广播或视频二级分类", required = true, paramType = "query",
+                    dataType = "string"),
+            @ApiImplicitParam(name = "inforid", value = "合集首条资讯id", required = true, paramType = "query", dataType =
+                    "string"),
+            @ApiImplicitParam(name = "inforType", value = "1健康，2 安防，3广播，4视频", required = true,paramType = "query", dataType =
+                    "int")})
+    @RequestMapping(value = "/collect-classes", method = {RequestMethod.GET, RequestMethod.POST})
+    public String collectClasses(String module, String className, String inforid, int inforType,
+                               HttpServletRequest request, HttpServletResponse response){
+
+        UserBo userBo = getUserLogin(request);
+        if (userBo == null) {
+            return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+                    ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+        }
+        String userid = userBo.getId();
+        CollectBo collectBo = collectService.findInforClasses(userid, module, className, inforType);
+        if (collectBo == null) {
+            collectBo = new CollectBo();
+            collectBo.setUserid(userid);
+            collectBo.setType(Constant.COLLET_URL);
+            collectBo.setSub_type(Constant.INFOR_TYPE);
+            collectBo.setFirstid(inforid);
+            collectBo.setSourceType(inforType);
+            collectBo.setModule(module);
+            collectBo.setClassName(className);
+            if (inforType == Constant.INFOR_VIDEO) {
+                VideoBo videoBo = inforService.findVideoById(inforid);
+                collectBo.setVideo(videoBo.getUrl());
+                collectBo.setTargetPic(videoBo.getPoster());
+            }
+        } else {
+            return CommonUtil.toErrorResult(ERRORCODE.COLLECT_EXIST.getIndex(),
+                    ERRORCODE.COLLECT_EXIST.getReason());
+        }
+        collectService.insert(collectBo);
         Map<String, Object> map = new HashMap<>();
         map.put("ret", 0);
         map.put("col-time", CommonUtil.time2str(collectBo.getCreateTime()));
@@ -1591,6 +1743,16 @@ public class InforController extends BaseContorller {
     /**
      * 转发到我的动态
      */
+    @ApiOperation("转发到我的动态")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "inforid", value = "资讯id", required = true, paramType = "query", dataType =
+                    "string"),
+            @ApiImplicitParam(name = "inforType", value = "1健康，2 安防，3广播，4视频", required = true,paramType = "query", dataType =
+                    "int"),
+            @ApiImplicitParam(name = "view", value = "转发评论", required = true, paramType = "query", dataType =
+                    "string"),
+            @ApiImplicitParam(name = "landmark", value = "转发时地标描述", required = true, paramType = "query", dataType =
+                    "string")})
     @RequestMapping("/forward-dynamic")
     @ResponseBody
     public String forwardDynamic(@RequestParam String inforid, @RequestParam int inforType, String view,

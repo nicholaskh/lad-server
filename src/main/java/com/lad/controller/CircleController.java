@@ -6,6 +6,10 @@ import com.lad.redis.RedisServer;
 import com.lad.service.*;
 import com.lad.util.*;
 import com.lad.vo.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -14,10 +18,7 @@ import org.redisson.api.RLock;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
@@ -26,7 +27,8 @@ import javax.servlet.http.HttpSession;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-@Controller
+@Api(value = "CircleController", description = "圈子相关接口")
+@RestController
 @RequestMapping("circle")
 public class CircleController extends BaseContorller {
 
@@ -76,8 +78,7 @@ public class CircleController extends BaseContorller {
 	 */
 	private String circleAddUserLock = "circleAdd";
 
-	@RequestMapping("/insert")
-	@ResponseBody
+	@PostMapping("/insert")
 	public String isnert(@RequestParam(required = true) double px,
 						 @RequestParam(required = true) double py,
 						 @RequestParam(required = true) String name,
@@ -227,6 +228,11 @@ public class CircleController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
+
+	@ApiOperation("申请加入圈子")
+	@ApiImplicitParams({ @ApiImplicitParam(name = "circleid", value = "圈子id", required = true, dataType =
+			"string"), @ApiImplicitParam(name = "reason", value = "加入理由", dataType = "string"),
+			@ApiImplicitParam(name = "isNotice", value = "是否通知好友", dataType = "boolean")})
 	@RequestMapping("/apply-insert")
 	@ResponseBody
 	public String applyIsnert(@RequestParam(required = true) String circleid, String reason, boolean isNotice,
@@ -234,6 +240,13 @@ public class CircleController extends BaseContorller {
 		return applyIsnert(circleid, reason, isNotice,0, null, request, response);
 	}
 
+
+	@ApiOperation("通过聚会前端申请加入圈子")
+	@ApiImplicitParams({ @ApiImplicitParam(name = "circleid", value = "圈子id", required = true, dataType =
+			"string"), @ApiImplicitParam(name = "reason", value = "加入理由", dataType = "string"),
+			@ApiImplicitParam(name = "isNotice", value = "是否通知好友", dataType = "boolean"),
+			@ApiImplicitParam(name = "addType", required = true, value = "聚会申请加入圈子为 1", dataType = "int"),
+			@ApiImplicitParam(name = "partyid", value = "聚会id",required = true, dataType = "string")})
 	@RequestMapping("/party-apply-insert")
 	@ResponseBody
 	public String applyIsnert(@RequestParam(required = true) String circleid, String reason, boolean isNotice, int

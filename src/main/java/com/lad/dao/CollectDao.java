@@ -45,6 +45,13 @@ public class CollectDao {
 		return mongoTemplate.findOne(query, CollectBo.class);
 	}
 
+	public CollectBo findInforClasses(String userid, String module, String className, int type){
+		Query query = new Query();
+		query.addCriteria(new Criteria("userid").is(userid).and("type").is(type).and("deleted").is(0));
+		query.addCriteria(new Criteria("module").is(module).and("className").is(className));
+		return mongoTemplate.findOne(query, CollectBo.class);
+	}
+
 	/**
 	 * 如果
 	 * @return

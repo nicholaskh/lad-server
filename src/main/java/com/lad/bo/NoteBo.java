@@ -40,6 +40,11 @@ public class NoteBo extends BaseBo {
 	//是否同步个人动态
 	private boolean isAsync;
 
+	//0 原创 ， 1转发
+	private int forward;
+	//转发的原帖子id
+	private String sourceid;
+
 	public String getSubject() {
 		return subject;
 	}
@@ -174,5 +179,21 @@ public class NoteBo extends BaseBo {
 
 	public void setCollectcount(long collectcount) {
 		this.collectcount = collectcount;
+	}
+
+	public int getForward() {
+		return forward;
+	}
+
+	public void setForward(int forward) {
+		this.forward = forward;
+	}
+
+	public String getSourceid() {
+		return sourceid;
+	}
+
+	public void setSourceid(String sourceid) {
+		this.sourceid = sourceid;
 	}
 }

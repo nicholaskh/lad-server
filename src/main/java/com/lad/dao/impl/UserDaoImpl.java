@@ -119,6 +119,7 @@ public class UserDaoImpl implements IUserDao {
         Update update = new Update();
         update.set("chatrooms", userBo.getChatrooms());
         update.set("chatroomsTop", userBo.getChatroomsTop());
+        update.set("showChatrooms", userBo.getShowChatrooms());
         return mongoTemplate.updateFirst(query, update, UserBo.class);
     }
 

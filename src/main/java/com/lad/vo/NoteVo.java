@@ -58,6 +58,16 @@ public class NoteVo extends BaseVo {
     //是否收藏
     private boolean isCollect;
 
+    private String fromUserid;
+
+    private String fromUserName;
+
+    private String fromUserPic;
+
+    private String fromUserSign;
+
+    private String fromUserSex;
+
     public boolean getMyThumbsup() {
         return isMyThumbsup;
     }
@@ -305,5 +315,45 @@ public class NoteVo extends BaseVo {
 
     public void setCollect(boolean collect) {
         isCollect = collect;
+    }
+
+    public String getFromUserid() {
+        return fromUserid;
+    }
+
+    public void setFromUserid(String fromUserid) {
+        this.fromUserid = fromUserid;
+    }
+
+    public String getFromUserName() {
+        return fromUserName;
+    }
+
+    public void setFromUserName(String fromUserName) {
+        this.fromUserName = fromUserName;
+    }
+
+    public String getFromUserPic() {
+        return fromUserPic;
+    }
+
+    public void setFromUserPic(String fromUserPic) {
+        this.fromUserPic = fromUserPic;
+    }
+
+    public String getFromUserSign() {
+        return fromUserSign;
+    }
+
+    public void setFromUserSign(String fromUserSign) {
+        this.fromUserSign = fromUserSign;
+    }
+
+    public String getFromUserSex() {
+        return fromUserSex;
+    }
+
+    public void setFromUserSex(String fromUserSex) {
+        this.fromUserSex = fromUserSex;
     }
 }

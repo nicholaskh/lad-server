@@ -1,5 +1,7 @@
 package com.lad.vo;
 
+import io.swagger.annotations.ApiParam;
+
 /**
  * 功能描述：
  * Copyright: Copyright (c) 2017
@@ -8,6 +10,7 @@ package com.lad.vo;
  */
 public class BroadcastVo extends BaseVo {
 
+    @ApiParam
     private String inforid;
 
     private String sourceUrl;

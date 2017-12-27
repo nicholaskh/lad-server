@@ -292,7 +292,7 @@ public class CollectController extends BaseContorller {
 					if (partyBo != null) {
 						vo.setCollectPic(partyBo.getBackPic());
 					}
-				}
+				} 
 				vo.setVideo(collectBo.getVideo());
 			}
 			collectVos.add(vo);

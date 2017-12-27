@@ -101,4 +101,14 @@ public interface ICollectService {
 	 */
 	WriteResult updateCollectDelete(String id, int status);
 
+	/**
+	 * 查找合集
+	 * @param userid
+	 * @param module
+	 * @param className
+	 * @param type
+	 * @return
+	 */
+	CollectBo findInforClasses(String userid, String module, String className, int type);
+
 }

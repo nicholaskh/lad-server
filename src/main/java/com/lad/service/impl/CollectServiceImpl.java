@@ -105,4 +105,9 @@ public class CollectServiceImpl implements ICollectService {
 	public WriteResult updateCollectDelete(String id, int status) {
 		return collectDao.updateCollectDelete(id, status);
 	}
+
+	@Override
+	public CollectBo findInforClasses(String userid, String module, String className, int type) {
+		return collectDao.findInforClasses(userid, module, className, type);
+	}
 }

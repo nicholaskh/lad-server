@@ -67,7 +67,8 @@ public class VideoDaoImpl implements IVideoDao {
         MatchOperation match = Aggregation.match(criteria);
         GroupOperation groupOperation = Aggregation.group("module","className", "source")
                 .sum("visitNum").as("visitNum").first("url").as("firstUrl")
-                .first("_id").as("firstId");
+                .first("_id").as("firstId").first("shareNum").as("firstShare")
+                .first("commnetNum").as("firstComment").first("thumpsubNum").as("firstThump");
         Aggregation aggregation = Aggregation.newAggregation(match,
                 Aggregation.sort(Sort.Direction.ASC, "className"), groupOperation);
         AggregationResults<VideoBo> results = mongoTemplateTwo.aggregate(aggregation, "video", VideoBo.class);
@@ -144,7 +145,8 @@ public class VideoDaoImpl implements IVideoDao {
         MatchOperation match = Aggregation.match(criteria);
         GroupOperation groupOperation = Aggregation.group("module","className", "source")
                 .sum("visitNum").as("visitNum").first("url").as("firstUrl")
-                .first("_id").as("firstId");
+                .first("_id").as("firstId").first("shareNum").as("firstShare")
+                .first("commnetNum").as("firstComment").first("thumpsubNum").as("firstThump");
         Aggregation aggregation = Aggregation.newAggregation(match,
                 Aggregation.sort(Sort.Direction.ASC, "module","className"),
                 groupOperation);
@@ -157,7 +159,8 @@ public class VideoDaoImpl implements IVideoDao {
 
         GroupOperation groupOperation = Aggregation.group("module","className", "source")
                 .sum("visitNum").as("visitNum").first("url").as("firstUrl")
-                .first("_id").as("firstId");
+                .first("_id").as("firstId").first("shareNum").as("firstShare")
+                .first("commnetNum").as("firstComment").first("thumpsubNum").as("firstThump");
         Aggregation aggregation;
         if (CommonUtil.isEmpty(modules)) {
             aggregation = Aggregation.newAggregation(
@@ -187,7 +190,8 @@ public class VideoDaoImpl implements IVideoDao {
         MatchOperation match = Aggregation.match(criteria);
         GroupOperation groupOperation = Aggregation.group("module","className")
                 .sum("visitNum").as("visitNum").first("url").as("firstUrl")
-                .first("_id").as("firstId");
+                .first("_id").as("firstId").first("shareNum").as("firstShare")
+                .first("commnetNum").as("firstComment").first("thumpsubNum").as("firstThump");
         Aggregation aggregation = Aggregation.newAggregation(match,
                 Aggregation.sort(Sort.Direction.ASC, "module","className"),
                 groupOperation);
