@@ -46,7 +46,7 @@ public class BroadcastDaoImpl implements IBroadcastDao {
         Aggregation aggregation = Aggregation.newAggregation(project, groupOperation,
                 Aggregation.sort(Sort.Direction.DESC, "_id"));
         AggregationResults<BroadcastBo> results = mongoTemplateTwo.aggregate(aggregation, "broadcast", BroadcastBo.class);
-        return results.getMappedResults();
+        return results != null ? results.getMappedResults() : null;
     }
 
     @Override
@@ -72,7 +72,7 @@ public class BroadcastDaoImpl implements IBroadcastDao {
         Aggregation aggregation = Aggregation.newAggregation(match, groupOperation,
                 Aggregation.sort(Sort.Direction.ASC, "className"));
         AggregationResults<BroadcastBo> results = mongoTemplateTwo.aggregate(aggregation, "broadcast", BroadcastBo.class);
-        return results.getMappedResults();
+        return results != null ? results.getMappedResults() : null;
 }
 
     public List<BroadcastBo> findByClassName(String groupName, String className) {
@@ -155,7 +155,7 @@ public class BroadcastDaoImpl implements IBroadcastDao {
         Aggregation aggregation = Aggregation.newAggregation(match, groupOperation,
                 Aggregation.sort(Sort.Direction.ASC, "module", "className"));
         AggregationResults<BroadcastBo> results = mongoTemplateTwo.aggregate(aggregation, "broadcast", BroadcastBo.class);
-        return results.getMappedResults();
+        return results != null ? results.getMappedResults() : null;
     }
 
     @Override
@@ -175,6 +175,6 @@ public class BroadcastDaoImpl implements IBroadcastDao {
                     Aggregation.sort(Sort.Direction.ASC, "module", "className"), Aggregation.limit(limit));
         }
         AggregationResults<BroadcastBo> results = mongoTemplateTwo.aggregate(aggregation, "broadcast", BroadcastBo.class);
-        return results.getMappedResults();
+        return results != null ? results.getMappedResults() : null;
     }
 }

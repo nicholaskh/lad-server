@@ -72,7 +72,7 @@ public class VideoDaoImpl implements IVideoDao {
         Aggregation aggregation = Aggregation.newAggregation(match,
                 Aggregation.sort(Sort.Direction.ASC, "className"), groupOperation);
         AggregationResults<VideoBo> results = mongoTemplateTwo.aggregate(aggregation, "video", VideoBo.class);
-        return results.getMappedResults();
+        return results != null ? results.getMappedResults() : null;
     }
 
     @Override
@@ -82,8 +82,10 @@ public class VideoDaoImpl implements IVideoDao {
         if (StringUtils.isNotEmpty(className)) {
             query.addCriteria(new Criteria("className").is(className));
         }
+        query.with(new Sort(new Sort.Order(Sort.Direction.ASC, "title")));
         page = page < 1 ? 1 : page;
-        query.with(new PageRequest(page, limit, new Sort(new Sort.Order(Sort.Direction.ASC, "title"))));
+        query.skip((page -1) * limit);
+        query.limit(limit);
         return mongoTemplateTwo.find(query, VideoBo.class);
     }
 
@@ -151,7 +153,7 @@ public class VideoDaoImpl implements IVideoDao {
                 Aggregation.sort(Sort.Direction.ASC, "module","className"),
                 groupOperation);
         AggregationResults<VideoBo> results = mongoTemplateTwo.aggregate(aggregation, "video", VideoBo.class);
-        return results.getMappedResults();
+        return results != null ? results.getMappedResults() : null;
     }
 
     @Override
@@ -181,7 +183,7 @@ public class VideoDaoImpl implements IVideoDao {
                     Aggregation.sort(Sort.Direction.ASC, "module", "className"),  groupOperation,Aggregation.limit(limit));
         }
         AggregationResults<VideoBo> results = mongoTemplateTwo.aggregate(aggregation, "video", VideoBo.class);
-        return results.getMappedResults();
+        return results != null ? results.getMappedResults() : null;
     }
 
     @Override

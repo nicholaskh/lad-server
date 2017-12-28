@@ -80,8 +80,8 @@ public class CircleServiceImpl implements ICircleService {
 	}
 
 	@Override
-	public List<CircleBo> findMyCircles(String userid, String startId, boolean gt, int limit) {
-		return circleDao.findMyCircles(userid,startId,gt, limit);
+	public List<CircleBo> findMyCircles(String userid, int page, int limit) {
+		return circleDao.findMyCircles(userid, page, limit);
 	}
 
 	@Override

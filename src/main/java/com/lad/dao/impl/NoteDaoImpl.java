@@ -6,7 +6,6 @@ import com.lad.util.CommonUtil;
 import com.lad.util.Constant;
 import com.mongodb.BasicDBObject;
 import com.mongodb.WriteResult;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -104,17 +103,16 @@ public class NoteDaoImpl implements INoteDao {
 	}
 
 
-	public List<NoteBo> finyMyNoteByComment(String userid, String startId, boolean gt, int limit){
+	public List<NoteBo> finyMyNoteByComment(String userid, int page, int limit){
 		Query query = new Query();
-		query.addCriteria(new Criteria("createuid").is(userid));
-		query.addCriteria(new Criteria("commentcount").gt(0));
-		return findNotesByPage(query, startId, gt, limit);
+		query.addCriteria(new Criteria("createuid").is(userid).and("commentcount").gt(0));
+		return findNotesByPage(query, page, limit);
 	}
 	
-	public List<NoteBo> finyByCreateTime(String circleid, String startId, boolean gt, int limit){
+	public List<NoteBo> finyByCreateTime(String circleid, int page, int limit){
 		Query query = new Query();
 		query.addCriteria(new Criteria("circleId").is(circleid));
-		return findNotesByPage(query, startId, gt, limit);
+		return findNotesByPage(query, page, limit);
 	}
 
 	public long finyNotesNum(String circleid){
@@ -156,10 +154,10 @@ public class NoteDaoImpl implements INoteDao {
 		return mongoTemplate.updateFirst(query, update, NoteBo.class);
 	}
 
-	public List<NoteBo> selectMyNotes(String userid, String startId, boolean gt, int limit){
+	public List<NoteBo> selectMyNotes(String userid, int page, int limit){
 		Query query = new Query();
 		query.addCriteria(new Criteria("createuid").is(userid));
-		return findNotesByPage(query, startId, gt, limit);
+		return findNotesByPage(query, page, limit);
 	}
 
 
@@ -183,21 +181,14 @@ public class NoteDaoImpl implements INoteDao {
 	/**
 	 * 按照主键分页查询
 	 * @param query
-	 * @param startId
-	 * @param gt
 	 * @param limit
 	 * @return
 	 */
-	private List<NoteBo> findNotesByPage(Query query, String startId, boolean gt, int limit){
+	private List<NoteBo> findNotesByPage(Query query, int page, int limit){
 		query.addCriteria(new Criteria("deleted").is(0));
-		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
-		if (!StringUtils.isEmpty(startId)) {
-			if (gt) {
-				query.addCriteria(new Criteria("_id").gt(startId));
-			} else {
-				query.addCriteria(new Criteria("_id").lt(startId));
-			}
-		}
+		query.with(new Sort(Sort.Direction.DESC, "_id"));
+		page = page < 1 ? 1 : page;
+		query.skip((page -1) * limit);
 		query.limit(limit);
 		return mongoTemplate.find(query, NoteBo.class);
 	}
@@ -212,16 +203,13 @@ public class NoteDaoImpl implements INoteDao {
 	}
 
 	@Override
-	public List<NoteBo> selectCircleNotes(String circleId, String startId, int limit) {
+	public List<NoteBo> selectCircleNotes(String circleId, int page, int limit) {
 		Query query = new Query();
 		query.addCriteria(new Criteria("circleId").is(circleId));
 		query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
-		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "top")));
-		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "essence")));
-		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
-		if (!StringUtils.isEmpty(startId)) {
-			query.addCriteria(new Criteria("_id").gt(startId));
-		}
+		query.with(new Sort(Sort.Direction.DESC, "_id"));
+		page = page < 1 ? 1 : page;
+		query.skip((page -1) * limit);
 		query.limit(limit);
 		return mongoTemplate.find(query, NoteBo.class);
 	}
@@ -241,34 +229,31 @@ public class NoteDaoImpl implements INoteDao {
 	}
 
 	@Override
-	public List<NoteBo> findByTopEssence(String circleid, int type, String startId, int limit) {
+	public List<NoteBo> findByTopEssence(String circleid, int type, int page, int limit) {
 		Query query = new Query();
 		query.addCriteria(new Criteria("circleId").is(circleid));
 		query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
-		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
 		if (type == Constant.NOTE_TOP) {
 			query.addCriteria(new Criteria("top").is(1));
 		} else if (type == Constant.NOTE_JIAJING) {
 			query.addCriteria(new Criteria("essence").is(1));
 		}
-		if (!StringUtils.isEmpty(startId)) {
-			query.addCriteria(new Criteria("_id").gt(startId));
-		}
+		query.with(new Sort(Sort.Direction.DESC, "_id"));
+		page = page < 1 ? 1 : page;
+		query.skip((page -1) * limit);
 		query.limit(limit);
 		return mongoTemplate.find(query, NoteBo.class);
 	}
 
 	@Override
-	public List<NoteBo> findByTopAndEssence(String circleid, String startId, int limit) {
+	public List<NoteBo> findByTopAndEssence(String circleid, int page, int limit) {
 		Query query = new Query();
 		Criteria criteria = new Criteria("circleId").is(circleid).and("deleted").is(Constant.ACTIVITY);
 		Criteria top = new Criteria("top").is(1);
 		Criteria essence  = new Criteria("essence").is(1);
 		query.addCriteria(criteria.orOperator(top, essence));
 		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
-		if (!StringUtils.isEmpty(startId)) {
-			query.addCriteria(new Criteria("_id").gt(startId));
-		}
+		query.skip(((page < 1 ? 1 : page) -1) * limit);
 		query.limit(limit);
 		return mongoTemplate.find(query, NoteBo.class);
 	}

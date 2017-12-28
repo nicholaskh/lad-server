@@ -48,12 +48,11 @@ public interface INoteService extends IBaseService {
 	/**
 	 * 获取圈子内最新的帖子
 	 * @param circleid
-	 * @param startId
-	 * @param gt
+	 * @param page
 	 * @param limit
 	 * @return
 	 */
-	List<NoteBo> finyByCreateTime(String circleid, String startId, boolean gt, int limit);
+	List<NoteBo> finyByCreateTime(String circleid, int page, int limit);
 
 
 	/**
@@ -109,22 +108,18 @@ public interface INoteService extends IBaseService {
 	/**
 	 * 我的帖子
 	 * @param userid
-	 * @param startId
-	 * @param gt
 	 * @param limit
 	 * @return
 	 */
-	List<NoteBo> selectMyNotes(String userid, String startId, boolean gt, int limit);
+	List<NoteBo> selectMyNotes(String userid, int page, int limit);
 
 	/**
 	 * 获取我被评论的帖子列表
 	 * @param userid
-	 * @param startId
-	 * @param gt
 	 * @param limit
 	 * @return
 	 */
-	List<NoteBo> finyMyNoteByComment(String userid, String startId, boolean gt, int limit);
+	List<NoteBo> finyMyNoteByComment(String userid, int page, int limit);
 
 	/**
 	 * 查找圈子类所有帖子
@@ -139,11 +134,10 @@ public interface INoteService extends IBaseService {
 	/**
 	 * 获取圈子内所有帖子
 	 * @param circleId
-	 * @param startId
 	 * @param limit
 	 * @return
 	 */
-	List<NoteBo> selectCircleNotes(String circleId, String startId, int limit);
+	List<NoteBo> selectCircleNotes(String circleId, int page, int limit);
 
 	/**
 	 * 给帖子加精或置顶
@@ -159,14 +153,14 @@ public interface INoteService extends IBaseService {
 	 * @param type
 	 * @return
 	 */
-	List<NoteBo> findByTopEssence(String circleid, int type, String startId, int limit);
+	List<NoteBo> findByTopEssence(String circleid, int type, int page, int limit);
 
 	/**
 	 * 查找加精和置顶帖子
 	 * @param circleid
 	 * @return
 	 */
-	List<NoteBo> findByTopAndEssence(String circleid, String startId, int limit);
+	List<NoteBo> findByTopAndEssence(String circleid, int page, int limit);
 
 	/**
 	 * 更新收藏数量

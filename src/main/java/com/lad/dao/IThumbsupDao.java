@@ -14,9 +14,9 @@ public interface IThumbsupDao extends IBaseDao {
 	
 	public ThumbsupBo getByVidAndVisitorid(String vid, String visitorid);
 	
-	public List<ThumbsupBo> selectByVisitorIdPaged(String startId, boolean gt, int limit, String visitorId, int type);
+	public List<ThumbsupBo> selectByVisitorIdPaged(int page, int limit, String visitorId, int type);
 	
-	public List<ThumbsupBo> selectByOwnerIdPaged(String startId, boolean gt, int limit, String ownerId, int type);
+	public List<ThumbsupBo> selectByOwnerIdPaged(int page, int limit, String ownerId, int type);
 
 	WriteResult delete(String thumbsupId);
 

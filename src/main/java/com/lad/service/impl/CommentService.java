@@ -36,8 +36,8 @@ public class CommentService implements ICommentService {
     }
 
     @Override
-    public List<CommentBo> selectByNoteid(String noteid, String startId, boolean gt, int limit) {
-        return commentDao.selectByNoteid(noteid, startId, gt,limit);
+    public List<CommentBo> selectByNoteid(String noteid, int page, int limit) {
+        return commentDao.selectByNoteid(noteid, page,limit);
     }
 
     @Override
@@ -56,8 +56,8 @@ public class CommentService implements ICommentService {
     }
 
     @Override
-    public List<CommentBo> selectByUser(String userid,  String startId, boolean gt, int limit) {
-        return commentDao.selectByUser(userid, startId, gt, limit);
+    public List<CommentBo> selectByUser(String userid,  int page, int limit) {
+        return commentDao.selectByUser(userid, page, limit);
     }
 
     @Async
@@ -79,8 +79,8 @@ public class CommentService implements ICommentService {
     }
 
     @Override
-    public List<CommentBo> selectCommentByType(int type, String id, String startId, boolean gt, int limit) {
-        return commentDao.selectCommentByType(type, id, startId, gt, limit);
+    public List<CommentBo> selectCommentByType(int type, String id, int page, int limit) {
+        return commentDao.selectCommentByType(type, id, page, limit);
     }
 
     @Override
@@ -89,8 +89,8 @@ public class CommentService implements ICommentService {
     }
 
     @Override
-    public List<BasicDBObject> selectMyNoteReply(String userid, String startId, int limit) {
-        return commentDao.selectMyNoteReply(userid, startId, limit);
+    public List<BasicDBObject> selectMyNoteReply(String userid, int page, int limit) {
+        return commentDao.selectMyNoteReply(userid, page, limit);
     }
 
     @Override

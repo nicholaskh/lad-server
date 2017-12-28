@@ -62,12 +62,10 @@ public interface ICircleDao extends IBaseDao {
 	/**
 	 * 我的圈子
 	 * @param userid
-	 * @param startId
-	 * @param gt
 	 * @param limit
 	 * @return
 	 */
-	List<CircleBo> findMyCircles(String userid, String startId, boolean gt, int limit);
+	List<CircleBo> findMyCircles(String userid, int page, int limit);
 
 	/**
 	 * 关键字搜索

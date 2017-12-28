@@ -140,7 +140,7 @@ public class CircleDaoImpl implements ICircleDao {
 		query.with(new Sort(new Sort.Order(Sort.Direction.DESC,"hotNum")));
 		page = page < 1 ? 1 : page;
 		query.skip((page-1)*limit);
-		query.limit(10);
+		query.limit(limit);
 		return mongoTemplate.find(query, CircleBo.class);
 	}
 
@@ -178,19 +178,13 @@ public class CircleDaoImpl implements ICircleDao {
 		return mongoTemplate.find(query, CircleBo.class);
 	}
 
-	public List<CircleBo> findMyCircles(String userid, String startId, boolean gt, int limit) {
+	public List<CircleBo> findMyCircles(String userid, int page, int limit) {
 		Query query = new Query();
-		query.limit(limit);
+		query.addCriteria(new Criteria("users").in(userid).and("deleted").is(0));
 		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
-		query.addCriteria(new Criteria("users").in(userid));
-		query.addCriteria(new Criteria("deleted").is(0));
-		if (!StringUtils.isEmpty(startId)) {
-			if (gt) {
-				query.addCriteria(new Criteria("_id").gt(startId));
-			} else {
-				query.addCriteria(new Criteria("_id").lt(startId));
-			}
-		}
+		page = page < 1 ? 1 : page;
+		query.skip((page -1) * limit);
+		query.limit(limit);
 		return mongoTemplate.find(query, CircleBo.class);
 	}
 
@@ -384,12 +378,7 @@ public class CircleDaoImpl implements ICircleDao {
 			query.addCriteria(new Criteria("sub_tag").is(sub_tag));
 		}
 		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "hotNum")));
-		if (page <= 0){
-			page = 1;
-		}
-		if (limit < 1) {
-			limit = 2;
-		}
+		page = page < 1 ? 1 : page;
 		query.skip((page - 1)*limit);
 		query.limit(limit);
 		return mongoTemplate.find(query, CircleBo.class);

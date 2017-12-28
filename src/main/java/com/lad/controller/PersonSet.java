@@ -127,7 +127,7 @@ public class PersonSet extends BaseContorller {
 		if (locationBo != null) {
 			infoVo.setPostion(locationBo.getPosition());
 		}
-		List<CircleBo> circleBos = circleService.findMyCircles(userBo.getId(), "", true, 4);
+		List<CircleBo> circleBos = circleService.findMyCircles(userBo.getId(), 1, 4);
 		List<CircleBaseVo> circles = new LinkedList<>();
 		for (CircleBo circleBo : circleBos) {
 			CircleBaseVo circleBaseVo = new CircleBaseVo();

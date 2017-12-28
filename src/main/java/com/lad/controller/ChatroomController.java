@@ -8,6 +8,10 @@ import com.lad.vo.ChatroomUserVo;
 import com.lad.vo.ChatroomVo;
 import com.lad.vo.ReasonVo;
 import com.lad.vo.UserVo;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -16,10 +20,7 @@ import org.redisson.api.RLock;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -29,7 +30,8 @@ import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-@Controller
+@Api(value = "ChatroomController", description = "聊天信息相关接口")
+@RestController
 @RequestMapping("chatroom")
 public class ChatroomController extends BaseContorller {
 
@@ -55,8 +57,9 @@ public class ChatroomController extends BaseContorller {
 
 	private String titlePush = "互动通知";
 
-	@RequestMapping("/create")
-	@ResponseBody
+	@ApiOperation("创建群聊")
+	@ApiImplicitParam(name = "name", value = "群聊名称", dataType = "string", paramType = "query")
+	@PostMapping("/create")
 	public String create(String name, HttpServletRequest request,
 			HttpServletResponse response) {
 		HttpSession session = request.getSession();
@@ -645,8 +648,11 @@ public class ChatroomController extends BaseContorller {
 			if (userid.equals(chatroomBo.getMaster())) {
 				userVo.setRole(2);
 			}
-			String nickname = isShowNick ? chatroomUser.getNickname() : chatroomUser.getUsername();
-			userVo.setNickname(nickname);
+			if (isShowNick && StringUtils.isNotEmpty(chatroomUser.getNickname())) {
+				userVo.setNickname(chatroomUser.getNickname());
+			} else {
+				userVo.setNickname(chatUser.getUserName());
+			}
 			userVos.add(userVo);
 		}
 	}
@@ -684,9 +690,15 @@ public class ChatroomController extends BaseContorller {
 				} else {
 					FriendsBo bo = friendsService.getFriendByIdAndVisitorIdAgree(temp.getUserid(), temp
 							.getFriendid());
-					if (bo != null) {
-						String nickname = StringUtils.isEmpty(bo.getBackname())? bo.getUsername() : bo.getBackname();
-						vo.setName(nickname);
+					if (bo != null && StringUtils.isNotEmpty(bo.getBackname())) {
+						vo.setName(bo.getBackname());
+					} else {
+						UserBo friend = userService.getUser(temp.getFriendid());
+						if (friend != null){
+							vo.setName(friend.getUserName());
+						} else {
+							vo.setName(chatroomUserBo.getUsername());
+						}
 					}
 				}
 				vo.setDisturb(chatroomUserBo.isDisturb());
@@ -1045,8 +1057,14 @@ public class ChatroomController extends BaseContorller {
 		return Constant.COM_RESP;
 	}
 
-	@RequestMapping("/update-nickname")
-	@ResponseBody
+
+	@ApiOperation("修改群聊里面的个人昵称")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "chatroomid", value = "群聊id", required = true, dataType =
+					"string", paramType = "query"),
+			@ApiImplicitParam(name = "nickname", value = "昵称", required = true, dataType = "string", paramType =
+					"query")})
+	@PostMapping("/update-nickname")
 	public String updateNickname(String chatroomid, String nickname,
 							   HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
@@ -1073,15 +1091,17 @@ public class ChatroomController extends BaseContorller {
 		return Constant.COM_RESP;
 	}
 
-	@RequestMapping("/get-nicknames")
+	@ApiOperation("获取群聊用户的昵称信息")
+	@ApiImplicitParam(name = "chatroomid", value = "群聊id", required = true, dataType =
+					"string", paramType = "query")
+	@PostMapping("/get-nicknames")
 	@ResponseBody
 	public String getNickname(String chatroomid,
 								 HttpServletRequest request, HttpServletResponse response) {
-		UserBo userBo;
-		try {
-			userBo = checkSession(request, userService);
-		} catch (MyException e) {
-			return e.getMessage();
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		ChatroomBo chatroomBo = chatroomService.get(chatroomid);
 		if (chatroomBo == null) {

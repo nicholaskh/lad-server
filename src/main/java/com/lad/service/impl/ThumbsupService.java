@@ -27,13 +27,13 @@ public class ThumbsupService implements IThumbsupService {
 		return thumbsupDao.selectByVisitorId(visitorId);
 	}
 
-	public List<ThumbsupBo> selectByOwnerIdPaged(String startId, boolean gt, int limit, String ownerId, int type) {
-		return thumbsupDao.selectByOwnerIdPaged(startId, gt, limit, ownerId, type);
+	public List<ThumbsupBo> selectByOwnerIdPaged(int page, int limit, String ownerId, int type) {
+		return thumbsupDao.selectByOwnerIdPaged(page, limit, ownerId, type);
 	}
 
-	public List<ThumbsupBo> selectByVisitorIdPaged(String startId, boolean gt, int limit, String visitorId, int
+	public List<ThumbsupBo> selectByVisitorIdPaged(int page, int limit, String visitorId, int
 			type) {
-		return thumbsupDao.selectByVisitorIdPaged(startId, gt, limit, visitorId, type);
+		return thumbsupDao.selectByVisitorIdPaged(page, limit, visitorId, type);
 	}
 
 	public ThumbsupBo getByVidAndVisitorid(String vid, String visitorid) {

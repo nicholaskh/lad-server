@@ -70,7 +70,7 @@ public class NoteController extends BaseContorller {
 	@ApiOperation("发表帖子")
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "noteJson", value = "帖子信息json数据", required = true, dataType = "string"),
-			@ApiImplicitParam(name = "pictures", value = "图片或视频文件流", dataType = "multipartFile")})
+			@ApiImplicitParam(name = "pictures", value = "图片或视频文件流", dataType = "file")})
 	@PostMapping("/insert")
 	public String insert(String noteJson, MultipartFile[] pictures,
 			HttpServletRequest request, HttpServletResponse response) {
@@ -168,7 +168,7 @@ public class NoteController extends BaseContorller {
 	@ApiOperation("更新帖子图片")
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "noteid", value = "帖子id", required = true, dataType = "string"),
-			@ApiImplicitParam(name = "photos", value = "图片或视频文件流数组", required =true,dataType = "multipartFile")})
+			@ApiImplicitParam(name = "photos", value = "图片或视频文件流数组", required =true, dataType = "file")})
 	@PostMapping("/photo")
 	public String note_picture(@RequestParam("photos") MultipartFile[] files,
 			@RequestParam(required = true) String noteid,
@@ -206,7 +206,7 @@ public class NoteController extends BaseContorller {
 
 	@ApiOperation("帖子点赞")
 	@ApiImplicitParam(name = "noteid", value = "帖子id", required = true, dataType = "string", paramType = "query")
-	@RequestMapping("/thumbsup")
+	@PostMapping("/thumbsup")
 	public String thumbsup(String noteid, HttpServletRequest request, HttpServletResponse response){
 		UserBo userBo;
 		try {
@@ -312,15 +312,13 @@ public class NoteController extends BaseContorller {
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "circleid", value = "圈子id", required = true,
 					dataType = "string", paramType = "query"),
-			@ApiImplicitParam(name = "start_id", value = "分页时最后一条数据id", required = true,
-					dataType = "string", paramType = "query"),
-			@ApiImplicitParam(name = "gt", value = "true，获取之后的数据，false 之前数据", required = true,
-					dataType = "boolean", paramType = "query"),
+			@ApiImplicitParam(name = "page", value = "分页页码",
+					dataType = "int", paramType = "query"),
 			@ApiImplicitParam(name = "limit", value = "每页数量", dataType = "int", paramType = "query")})
 	@PostMapping("/new-situation")
-	public String newSituation(String circleid, String start_id, boolean gt, int limit,
+	public String newSituation(String circleid, int page, int limit,
 							   HttpServletRequest request, HttpServletResponse response) {
-		List<NoteBo> noteBos = noteService.finyByCreateTime(circleid,start_id,gt,limit);
+		List<NoteBo> noteBos = noteService.finyByCreateTime(circleid,page,limit);
 		List<NoteVo> noteVos = new LinkedList<>();
 		UserBo loginUser = getUserLogin(request);
 		String userid = loginUser != null ? loginUser.getId() : "";
@@ -341,13 +339,13 @@ public class NoteController extends BaseContorller {
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "circleid", value = "圈子id", required = true,
 					dataType = "string", paramType = "query"),
-			@ApiImplicitParam(name = "start_id", value = "分页时最后一条数据id", required = true,
+			@ApiImplicitParam(name = "page", value = "页码",
 					dataType = "string", paramType = "query"),
 			@ApiImplicitParam(name = "limit", value = "每页数量", dataType = "int", paramType = "query")})
     @PostMapping("/essential-note")
-    public String bestNote(String circleid, String start_id, int limit, HttpServletRequest request,
+    public String bestNote(String circleid, int page,int limit, HttpServletRequest request,
                            HttpServletResponse response) {
-		List<NoteBo> noteBos = noteService.findByTopEssence(circleid, Constant.NOTE_JIAJING, start_id, limit);
+		List<NoteBo> noteBos = noteService.findByTopEssence(circleid, Constant.NOTE_JIAJING, page, limit);
 		List<NoteVo> noteVoList = new LinkedList<>();
 		UserBo loginUser = getUserLogin(request);
 		String userid = loginUser != null ? loginUser.getId() : "";
@@ -366,18 +364,18 @@ public class NoteController extends BaseContorller {
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "circleid", value = "圈子id", required = true,
 					dataType = "string", paramType = "query"),
-			@ApiImplicitParam(name = "start_id", value = "分页时最后一条数据id", required = true,
-					dataType = "string", paramType = "query"),
+			@ApiImplicitParam(name = "page", value = "分页时最后一条数据id",
+					dataType = "int", paramType = "query"),
 			@ApiImplicitParam(name = "limit", value = "每页数量", dataType = "int", paramType = "query")})
 	@PostMapping("/top-notes")
-	public String topNotes(String circleid, String start_id, int limit, HttpServletRequest request,
+	public String topNotes(String circleid, int page, int limit, HttpServletRequest request,
 						   HttpServletResponse response) {
 		if (limit < 1) {
 			limit = 2;
 		}
 		UserBo loginUser = getUserLogin(request);
 		String userid = loginUser != null ? loginUser.getId() : "";
-		List<NoteBo> noteBos = noteService.findByTopEssence(circleid, Constant.NOTE_TOP, start_id, limit);
+		List<NoteBo> noteBos = noteService.findByTopEssence(circleid, Constant.NOTE_TOP, page, limit);
 		List<NoteVo> noteVoList = new LinkedList<>();
 		if (noteBos != null) {
 			vosToList(noteBos, noteVoList, userid);
@@ -421,8 +419,8 @@ public class NoteController extends BaseContorller {
 					dataType = "string", paramType = "query"),
 			@ApiImplicitParam(name = "noteid", value = "帖子id", required = true,
 					dataType = "string", paramType = "query"),
-			@ApiImplicitParam(name = "countent", value = "t评论内容", required = true,
-					dataType = "boolean", paramType = "query"),
+			@ApiImplicitParam(name = "countent", value = "评论内容", required = true,
+					dataType = "string", paramType = "query"),
 			@ApiImplicitParam(name = "parentid", value = "父评论id", dataType = "string", paramType = "query")})
 	@PostMapping("/add-comment")
 	public String addComment(@RequestParam(required = true)String circleid,
@@ -568,15 +566,13 @@ public class NoteController extends BaseContorller {
 	 */
 	@ApiOperation("获取帖子的评论")
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "noteid", value = "帖子id", required = true,
-					dataType = "string", paramType = "query"),
-			@ApiImplicitParam(name = "start_id", value = "分页时最后一条数据id", required = true,
-					dataType = "string", paramType = "query"),
+			@ApiImplicitParam(name = "noteid", value = "帖子id", required = true, dataType = "string", paramType = "query"),
+			@ApiImplicitParam(name = "page", value = "分页页码", dataType = "int", paramType = "query"),
 			@ApiImplicitParam(name = "gt", value = "true，获取之后的数据，false 之前数据", required = true,
 					dataType = "boolean", paramType = "query"),
 			@ApiImplicitParam(name = "limit", value = "每页数量", dataType = "int", paramType = "query")})
 	@PostMapping("/get-comments")
-	public String getComments(String noteid, String start_id, boolean gt, int limit,
+	public String getComments(String noteid, int page, int limit,
 							  HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo = getUserLogin(request);
 		NoteBo noteBo = noteService.selectById(noteid);
@@ -592,7 +588,7 @@ public class NoteController extends BaseContorller {
 			userid = userBo.getId();
 		}
 
-		List<CommentBo> commentBos = commentService.selectByNoteid(noteid, start_id, gt, limit);
+		List<CommentBo> commentBos = commentService.selectByNoteid(noteid, page, limit);
 		List<CommentVo> commentVos = new ArrayList<>();
 		for (CommentBo commentBo : commentBos) {
 			CommentVo commentVo = comentBo2Vo(commentBo);
@@ -643,13 +639,10 @@ public class NoteController extends BaseContorller {
 	 */
 	@ApiOperation("获取自己的所有评论列表")
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "start_id", value = "分页时最后一条数据id", required = true,
-					dataType = "string", paramType = "query"),
-			@ApiImplicitParam(name = "gt", value = "true，获取之后的数据，false 之前数据",
-					dataType = "boolean", paramType = "query"),
+			@ApiImplicitParam(name = "page", value = "分页时最后一条数据id", dataType = "int", paramType = "query"),
 			@ApiImplicitParam(name = "limit", value = "每页数量", dataType = "int", paramType = "query")})
 	@PostMapping("/get-self-comments")
-	public String getSelfComments(String start_id, boolean gt, int limit,
+	public String getSelfComments(int page, int limit,
 								  HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
 		try {
@@ -657,7 +650,7 @@ public class NoteController extends BaseContorller {
 		} catch (MyException e) {
 			return e.getMessage();
 		}
-		List<CommentBo> commentBos = commentService.selectByUser(userBo.getId(), start_id, gt, limit);
+		List<CommentBo> commentBos = commentService.selectByUser(userBo.getId(),page, limit);
 		List<CommentVo> commentVos = new ArrayList<>();
 		for (CommentBo commentBo : commentBos) {
 			commentVos.add(comentBo2Vo(commentBo));
@@ -674,13 +667,10 @@ public class NoteController extends BaseContorller {
 	 */
 	@ApiOperation("获取自己评论过别人的帖子")
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "start_id", value = "分页时最后一条数据id", required = true,
-					dataType = "string", paramType = "query"),
-			@ApiImplicitParam(name = "gt", value = "true，获取之后的数据，false 之前数据",
-					dataType = "boolean", paramType = "query"),
+			@ApiImplicitParam(name = "page", value = "分页页码", dataType = "int", paramType = "query"),
 			@ApiImplicitParam(name = "limit", value = "每页数量", dataType = "int", paramType = "query")})
 	@PostMapping("/my-comment-notes")
-	public String getMyCommentNotes(String start_id, boolean gt, int limit,
+	public String getMyCommentNotes(int page, int limit,
 								  HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
 		try {
@@ -689,7 +679,7 @@ public class NoteController extends BaseContorller {
 			return e.getMessage();
 		}
 		String userid = userBo.getId();
-		List<BasicDBObject> objects = commentService.selectMyNoteReply(userBo.getId(),start_id,limit );
+		List<BasicDBObject> objects = commentService.selectMyNoteReply(userBo.getId(),page,limit );
 		List<NoteVo> noteVoList = new LinkedList<>();
 		for (BasicDBObject object : objects) {
 			String id = object.get("noteid").toString();
@@ -796,16 +786,13 @@ public class NoteController extends BaseContorller {
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "noteid", value = "帖子id", required = true,
 					dataType = "string", paramType = "query"),
-			@ApiImplicitParam(name = "start_id", value = "分页时最后一条数据id", required = true,
-					dataType = "string", paramType = "query"),
-			@ApiImplicitParam(name = "gt", value = "true，获取之后的数据，false 之前数据", required = true,
-					dataType = "boolean", paramType = "query"),
+			@ApiImplicitParam(name = "page", value = "分页页码", dataType = "int", paramType = "query"),
 			@ApiImplicitParam(name = "limit", value = "每页数量", dataType = "int", paramType = "query")})
 	@PostMapping("/get-note-thumbsups")
-	public String getNoteThumbsups(String noteid, String start_id, boolean gt, int limit,
+	public String getNoteThumbsups(String noteid, int page, int limit,
 									HttpServletRequest request, HttpServletResponse response) {
 		List<ThumbsupBo> thumbsupBos = thumbsupService.selectByOwnerIdPaged(
-				start_id, gt, limit, noteid, Constant.NOTE_TYPE);
+				page, limit, noteid, Constant.NOTE_TYPE);
 		List<UserBaseVo> userBaseVos = new ArrayList<>();
 		for (ThumbsupBo thumbsupBo : thumbsupBos) {
 			UserBo user = userService.getUser(thumbsupBo.getVisitor_id());
@@ -829,13 +816,10 @@ public class NoteController extends BaseContorller {
 	 */
 	@ApiOperation("我的帖子")
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "start_id", value = "分页时最后一条数据id", required = true,
-					dataType = "string", paramType = "query"),
-			@ApiImplicitParam(name = "gt", value = "true，获取之后的数据，false 之前数据", required = true,
-					dataType = "boolean", paramType = "query"),
+			@ApiImplicitParam(name = "page", value = "分页页码", dataType = "int", paramType = "query"),
 			@ApiImplicitParam(name = "limit", value = "每页数量", dataType = "int", paramType = "query")})
 	@PostMapping("/my-notes")
-	public String myNotes(String start_id, boolean gt, int limit, HttpServletRequest request,
+	public String myNotes(int page, int limit, HttpServletRequest request,
 						   HttpServletResponse response) {
 		UserBo userBo;
 		try {
@@ -843,7 +827,7 @@ public class NoteController extends BaseContorller {
 		} catch (MyException e) {
 			return e.getMessage();
 		}
-		List<NoteBo> noteBos = noteService.selectMyNotes(userBo.getId(), start_id, gt, limit);
+		List<NoteBo> noteBos = noteService.selectMyNotes(userBo.getId(), page, limit);
 		if (noteBos != null && !noteBos.isEmpty()){
 			updateHistory(userBo.getId(), noteBos.get(0).getCircleId(), locationService, circleService);
 		}
@@ -955,12 +939,10 @@ public class NoteController extends BaseContorller {
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "circleid", value = "圈子id", required = true,
 					dataType = "string", paramType = "query"),
-			@ApiImplicitParam(name = "start_id", value = "分页帖子id", required = true,
-					dataType = "string", paramType = "query"),
+			@ApiImplicitParam(name = "page", value = "分页页码", dataType = "int", paramType = "query"),
 			@ApiImplicitParam(name = "limit", value = "每页数量", dataType = "int", paramType = "query")})
 	@PostMapping("/circle-notes")
-	public String ciecleNotes(@RequestParam String circleid,
-							  String start_id, int limit,
+	public String ciecleNotes(@RequestParam String circleid, int page, int limit,
 							  HttpServletRequest request, HttpServletResponse response) {
 		CircleBo circleBo = circleService.selectById(circleid);
 		if (circleBo == null) {
@@ -970,7 +952,7 @@ public class NoteController extends BaseContorller {
 		}
 		UserBo loginUser = getUserLogin(request);
 		String userid = loginUser == null ? "" : loginUser.getId();
-		List<NoteBo> noteBos = noteService.selectCircleNotes(circleid, start_id, limit);
+		List<NoteBo> noteBos = noteService.selectCircleNotes(circleid, page, limit);
 		List<NoteVo> noteVoList = new LinkedList<>();
 		if (noteBos != null) {
 			vosToList(noteBos, noteVoList, userid);
@@ -1051,15 +1033,14 @@ public class NoteController extends BaseContorller {
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "circleid", value = "圈子id", required = true,
 					dataType = "string", paramType = "query"),
-			@ApiImplicitParam(name = "start_id", value = "分页帖子id", required = true,
-					dataType = "string", paramType = "query"),
+			@ApiImplicitParam(name = "page", value = "分页页码", dataType = "int", paramType = "query"),
 			@ApiImplicitParam(name = "limit", value = "每页数量", dataType = "int", paramType = "query")})
 	@PostMapping("/top-essence")
-	public String topAndessence(String circleid, String start_id, int limit, HttpServletRequest request,
+	public String topAndessence(String circleid, int page, int limit, HttpServletRequest request,
 						   HttpServletResponse response) {
 		UserBo loginUser = getUserLogin(request);
 		String userid = loginUser == null ? "" : loginUser.getId();
-		List<NoteBo> noteBos = noteService.findByTopAndEssence(circleid, start_id, limit);
+		List<NoteBo> noteBos = noteService.findByTopAndEssence(circleid, page, limit);
 		List<NoteVo> noteVoList = new LinkedList<>();
 		if (noteBos != null) {
 			vosToList(noteBos, noteVoList, userid);
@@ -1284,7 +1265,16 @@ public class NoteController extends BaseContorller {
 				UserBo from = userService.getUser(sourceNote.getCreateuid());
 				if (from != null) {
 					noteVo.setFromUserid(from.getId());
-					noteVo.setFromUserName(from.getUserName());
+					if (!StringUtils.isEmpty(userid)) {
+						FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(userid, from.getId());
+						if (friendsBo != null) {
+							noteVo.setFromUserName(friendsBo.getBackname());
+						} else {
+							noteVo.setFromUserName(from.getUserName());
+						}
+					} else {
+						noteVo.setFromUserName(from.getUserName());
+					}
 					noteVo.setFromUserPic(from.getHeadPictureName());
 					noteVo.setFromUserSex(from.getSex());
 					noteVo.setFromUserSign(from.getPersonalizedSignature());

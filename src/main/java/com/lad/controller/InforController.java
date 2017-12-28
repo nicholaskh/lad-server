@@ -262,7 +262,6 @@ public class InforController extends BaseContorller {
             object.put("module", bo.getModule());
             object.put("title", bo.getClassName());
             object.put("source", bo.getSource());
-            object.put("intro", bo.getIntro());
             object.put("totalVisit", bo.getVisitNum());
             array.add(object);
         }
@@ -436,10 +435,12 @@ public class InforController extends BaseContorller {
     @RequestMapping(value = "/video-classes", method = {RequestMethod.GET, RequestMethod.POST})
     public String videoClasses(String module, HttpServletRequest request, HttpServletResponse response){
         List<VideoBo> videoBos = inforService.selectVideoClassByGroups(module);
+        UserBo userBo =getUserLogin(request);
+        String userid = userBo != null ? userBo.getId() : "";
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("ret", 0);
         JSONArray array = new JSONArray();
-        addVideo(videoBos, array);
+        addVideo(videoBos, array, userid);
         jsonObject.put("videoClasses", array);
         return jsonObject.toString();
     }
@@ -773,16 +774,14 @@ public class InforController extends BaseContorller {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "inforid", value = "资讯id", required = true, paramType = "query", dataType =
                     "string"),
-            @ApiImplicitParam(name = "start_id", value = "分页时最后一条咨询id",paramType = "query",dataType = "string"),
-            @ApiImplicitParam(name = "gt", value = "true,start_id之后的评论，false相反", paramType = "query", dataType =
-                    "boolean"),
+            @ApiImplicitParam(name = "page", value = "分页页码",paramType = "query",dataType = "int"),
             @ApiImplicitParam(name = "limit", value = "每页条数", required = true,paramType = "query", dataType =
                     "int")})
     @RequestMapping(value = "/get-comments", method = {RequestMethod.GET, RequestMethod.POST})
-    public String getComment(@RequestParam String inforid, String start_id, boolean gt, int limit,
+    public String getComment(@RequestParam String inforid, int page, int limit,
                              HttpServletRequest request, HttpServletResponse response){
         List<CommentBo> commentBos = commentService.selectCommentByType(Constant.INFOR_TYPE, inforid,
-                start_id, gt, limit);
+                page,limit);
         List<CommentVo> commentVos = new ArrayList<>();
         for (CommentBo commentBo : commentBos) {
             commentVos.add(comentBo2Vo(commentBo));
@@ -1270,6 +1269,7 @@ public class InforController extends BaseContorller {
         int num = 0;
         List<InforGroupRecomBo> myRecomBos = null;
         LinkedHashSet<String> set = null;
+        String userid = "";
         if (userBo != null) {
             InforUserReadBo readBo = inforRecomService.findUserReadByUserid(userBo.getId());
             if (readBo == null) {
@@ -1282,6 +1282,7 @@ public class InforController extends BaseContorller {
                     myRecomBos = inforRecomService.findInforGroupByModule(Constant.INFOR_VIDEO, set);
                 }
             }
+            userid = userBo.getId();
         }
         if (myRecomBos == null) {
             myRecomBos = inforRecomService.findInforGroupWithoutModule(Constant.INFOR_VIDEO, null, 50);
@@ -1312,6 +1313,10 @@ public class InforController extends BaseContorller {
                     object.put("shareNum", videoBo.getFirstShare());
                     object.put("thumpsubNum", videoBo.getFirstThump());
                     object.put("commentNum", videoBo.getFirstComment());
+                    if (!"".equals(userid)) {
+                        ThumbsupBo thumbsupBo = thumbsupService.findHaveOwenidAndVisitorid(videoBo.getFirstId(),userid);
+                        object.put("selfSub", thumbsupBo != null);
+                    }
                     array.add(object);
                     num ++;
                 }
@@ -1321,7 +1326,7 @@ public class InforController extends BaseContorller {
         }
         if  (num < 50) {
             List<VideoBo> videoBos = inforService.findVideoByLimit(modules, classNames, 50-num);
-            addVideo(videoBos, array);
+            addVideo(videoBos, array, userid);
         }
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("ret", 0);
@@ -1329,7 +1334,7 @@ public class InforController extends BaseContorller {
         return jsonObject.toString();
     }
 
-    private void addVideo(List<VideoBo> videoBos, JSONArray array){
+    private void addVideo(List<VideoBo> videoBos, JSONArray array, String userid){
         if (videoBos != null) {
             for (VideoBo bo : videoBos) {
                 JSONObject object = new JSONObject();
@@ -1342,6 +1347,10 @@ public class InforController extends BaseContorller {
                 object.put("shareNum", bo.getFirstShare());
                 object.put("thumpsubNum", bo.getFirstThump());
                 object.put("commentNum", bo.getFirstComment());
+                if (!"".equals(userid)) {
+                    ThumbsupBo thumbsupBo = thumbsupService.findHaveOwenidAndVisitorid(bo.getFirstId(),userid);
+                    object.put("selfSub", thumbsupBo != null);
+                }
                 array.add(object);
             }
         }
@@ -1753,7 +1762,7 @@ public class InforController extends BaseContorller {
                     "string"),
             @ApiImplicitParam(name = "landmark", value = "转发时地标描述", required = true, paramType = "query", dataType =
                     "string")})
-    @RequestMapping("/forward-dynamic")
+    @RequestMapping(value = "/forward-dynamic", method = {RequestMethod.GET, RequestMethod.POST})
     @ResponseBody
     public String forwardDynamic(@RequestParam String inforid, @RequestParam int inforType, String view,
                                  String landmark, HttpServletRequest request, HttpServletResponse response) {

@@ -2,7 +2,6 @@ package com.lad.dao.impl;
 
 import com.lad.bo.CommentBo;
 import com.lad.dao.ICommentDao;
-import com.lad.util.CommonUtil;
 import com.lad.util.Constant;
 import com.mongodb.BasicDBObject;
 import com.mongodb.WriteResult;
@@ -41,11 +40,14 @@ public class CommentDaoImpl implements ICommentDao {
         return mongoTemplate.findOne(query, CommentBo.class);
     }
 
-    public List<CommentBo> selectByNoteid(String noteid, String startId, boolean gt, int limit){
+    public List<CommentBo> selectByNoteid(String noteid, int page, int limit){
         Query query = new Query();
         query.addCriteria(new Criteria("noteid").is(noteid));
         query.addCriteria(new Criteria("deleted").is(0));
-        CommonUtil.queryByIdPage(query,startId,gt,limit);
+        query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
+        page = page < 1 ? 1 : page;
+        query.skip((page -1) * limit);
+        query.limit(limit);
         return mongoTemplate.find(query, CommentBo.class);
     }
 
@@ -70,24 +72,24 @@ public class CommentDaoImpl implements ICommentDao {
         return mongoTemplate.updateMulti(query, update, CommentBo.class);
     }
 
-    public List<CommentBo> selectByUser(String userid,  String startId, boolean gt, int limit){
+    public List<CommentBo> selectByUser(String userid,  int page, int limit){
         Query query = new Query();
         query.addCriteria(new Criteria("createuid").is(userid));
         query.addCriteria(new Criteria("deleted").is(0));
         query.addCriteria(new Criteria("type").is(Constant.NOTE_TYPE));
-        CommonUtil.queryByIdPage(query,startId,gt,limit);
+        query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
+        page = page < 1 ? 1 : page;
+        query.skip((page -1) * limit);
+        query.limit(limit);
         return mongoTemplate.find(query, CommentBo.class);
     }
 
-    public List<BasicDBObject> selectMyNoteReply(String userid, String startId, int limit){
+    public List<BasicDBObject> selectMyNoteReply(String userid, int page, int limit){
         Criteria criteria = new Criteria("createuid").is(userid);
-        criteria.and("deleted").is(Constant.ACTIVITY);
-        criteria.and("type").is(Constant.NOTE_TYPE);
+        criteria.and("deleted").is(Constant.ACTIVITY).and("type").is(Constant.NOTE_TYPE);
         criteria.and("ownerid").ne(userid);
-        if (StringUtils.isNotEmpty(startId)) {
-            criteria.and("noteid").lt(startId);
-        }
 
+        page = page < 1 ? 1 : page;
         AggregationOperation match = Aggregation.match(criteria);
 
         ProjectionOperation project = Aggregation.project("noteid");
@@ -95,14 +97,14 @@ public class CommentDaoImpl implements ICommentDao {
         GroupOperation group = Aggregation.group("noteid").first("noteid").as("noteid");
         Aggregation aggregation = Aggregation.newAggregation(match, project,  group,
                 Aggregation.sort(new Sort(new Sort.Order(Sort.Direction.DESC, "noteid"))),
-                Aggregation.limit(limit));
+                Aggregation.skip((page - 1)*limit),Aggregation.limit(limit));
         AggregationResults<BasicDBObject> results = mongoTemplate.aggregate(aggregation, "comment",
                 BasicDBObject.class);
         return results.getMappedResults();
     }
 
     @Override
-    public List<CommentBo> selectCommentByType(int type, String id, String startId, boolean gt, int limit) {
+    public List<CommentBo> selectCommentByType(int type, String id, int page, int limit) {
 
         Query query = new Query();
         if (type == Constant.NOTE_TYPE) {
@@ -112,7 +114,10 @@ public class CommentDaoImpl implements ICommentDao {
         }
         query.addCriteria(new Criteria("deleted").is(0));
         query.addCriteria(new Criteria("type").is(type));
-        CommonUtil.queryByIdPage(query,startId,gt,limit);
+        query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
+        page = page < 1 ? 1 : page;
+        query.skip((page -1) * limit);
+        query.limit(limit);
         return mongoTemplate.find(query, CommentBo.class);
     }
 

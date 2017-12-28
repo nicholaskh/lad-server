@@ -907,7 +907,7 @@ public class CircleController extends BaseContorller {
 
 	@RequestMapping("/my-circles")
 	@ResponseBody
-	public String myCircles(String start_id, boolean gt, int limit, HttpServletRequest request,
+	public String myCircles(int page, int limit, HttpServletRequest request,
 						 HttpServletResponse response) {
 		UserBo userBo;
 		try {
@@ -939,7 +939,7 @@ public class CircleController extends BaseContorller {
 				}
 			}
 		}
-		List<CircleBo> circleBos = circleService.findMyCircles(userBo.getId(), start_id, gt, limit);
+		List<CircleBo> circleBos = circleService.findMyCircles(userBo.getId(), page, limit);
 		//筛选出置顶的圈子
 		for (CircleBo circleBo : circleBos) {
 			if (topCircles.contains(circleBo.getId())) {

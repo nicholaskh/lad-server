@@ -225,7 +225,7 @@ public class HomepageController extends BaseContorller {
 
 	@RequestMapping("/thumbsup-from-me")
 	@ResponseBody
-	public String thumbsup_from_me(String start_id, boolean gt, int limit,
+	public String thumbsup_from_me(int page, int limit,
 			HttpServletRequest request, HttpServletResponse response)
 			throws Exception {
 		HttpSession session = request.getSession();
@@ -248,7 +248,7 @@ public class HomepageController extends BaseContorller {
 		userBo = userService.getUser(userBo.getId());
 		String ownerId = userBo.getId();
 		List<ThumbsupBo> thumbsup_from_me = thumbsupService
-				.selectByOwnerIdPaged(start_id, gt, limit, ownerId, Constant.PAGE_TYPE);
+				.selectByOwnerIdPaged(page, limit, ownerId, Constant.PAGE_TYPE);
 		List<ThumbsupVo> thumbsup_from_me_vo = new ArrayList<ThumbsupVo>();
 		for (ThumbsupBo item : thumbsup_from_me) {
 			ThumbsupVo vo = new ThumbsupVo();
@@ -264,7 +264,7 @@ public class HomepageController extends BaseContorller {
 
 	@RequestMapping("/thumbsup-to-me")
 	@ResponseBody
-	public String thumbsup_to_me(String start_id, boolean gt, int limit,
+	public String thumbsup_to_me(int page, int limit,
 			HttpServletRequest request, HttpServletResponse response)
 			throws Exception {
 		HttpSession session = request.getSession();
@@ -287,7 +287,7 @@ public class HomepageController extends BaseContorller {
 		userBo = userService.getUser(userBo.getId());
 		String ownerId = userBo.getId();
 		List<ThumbsupBo> thumbsup_to_me = thumbsupService
-				.selectByVisitorIdPaged(start_id, gt, limit, ownerId, Constant.PAGE_TYPE);
+				.selectByVisitorIdPaged(page, limit, ownerId, Constant.PAGE_TYPE);
 		List<ThumbsupVo> thumbsup_to_me_vo = new ArrayList<ThumbsupVo>();
 		for (ThumbsupBo item : thumbsup_to_me) {
 			ThumbsupVo vo = new ThumbsupVo();
@@ -421,7 +421,7 @@ public class HomepageController extends BaseContorller {
 		}
 		UserInfoVo infoVo = new UserInfoVo();
 		bo2vo(userBo, infoVo);
-		List<CircleBo> circleBos = circleService.findMyCircles(userBo.getId(), "", true, 4);
+		List<CircleBo> circleBos = circleService.findMyCircles(userBo.getId(), 1, 4);
 		List<CircleBaseVo> circles = new LinkedList<>();
 		for (CircleBo circleBo : circleBos) {
 			CircleBaseVo circleBaseVo = new CircleBaseVo();

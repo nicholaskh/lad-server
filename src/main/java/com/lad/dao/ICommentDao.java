@@ -24,7 +24,7 @@ public interface ICommentDao {
      * @param noteid
      * @return
      */
-    List<CommentBo> selectByNoteid(String noteid, String startId, boolean gt, int limit);
+    List<CommentBo> selectByNoteid(String noteid, int page, int limit);
 
     /**
      * 查询当前回复的评论
@@ -59,18 +59,16 @@ public interface ICommentDao {
      * @param userid
      * @return
      */
-    List<CommentBo> selectByUser(String userid, String startId, boolean gt, int limit);
+    List<CommentBo> selectByUser(String userid, int page, int limit);
 
     /**
      * 查询置顶类型下 置顶 id 下的评论
      * @param type
      * @param id
-     * @param startId
-     * @param gt
      * @param limit
      * @return
      */
-    List<CommentBo> selectCommentByType(int type, String id, String startId, boolean gt, int limit);
+    List<CommentBo> selectCommentByType(int type, String id, int page, int limit);
 
     /**
      * 查询置顶类型下 置顶 id 下的评论
@@ -83,11 +81,10 @@ public interface ICommentDao {
     /**
      * 获取用户评论别人的帖子
      * @param userid
-     * @param startId
      * @param limit
      * @return
      */
-    List<BasicDBObject> selectMyNoteReply(String userid, String startId, int limit);
+    List<BasicDBObject> selectMyNoteReply(String userid, int page, int limit);
 
     /**
      * 根据类型查找

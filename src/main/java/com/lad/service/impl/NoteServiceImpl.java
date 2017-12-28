@@ -29,8 +29,8 @@ public class NoteServiceImpl implements INoteService {
 	}
 
 	@Override
-	public List<NoteBo> finyByCreateTime(String circleid, String startId, boolean gt, int limit) {
-		return noteDao.finyByCreateTime(circleid,startId, gt, limit);
+	public List<NoteBo> finyByCreateTime(String circleid, int page, int limit) {
+		return noteDao.finyByCreateTime(circleid,page, limit);
 	}
 
 	@Override
@@ -90,13 +90,13 @@ public class NoteServiceImpl implements INoteService {
 	}
 
 	@Override
-	public List<NoteBo> selectMyNotes(String userid, String startId, boolean gt, int limit) {
-		return noteDao.selectMyNotes(userid, startId, gt, limit);
+	public List<NoteBo> selectMyNotes(String userid, int page, int limit) {
+		return noteDao.selectMyNotes(userid, page, limit);
 	}
 
 	@Override
-	public List<NoteBo> finyMyNoteByComment(String userid, String startId, boolean gt, int limit) {
-		return noteDao.finyMyNoteByComment(userid, startId, gt, limit);
+	public List<NoteBo> finyMyNoteByComment(String userid, int page, int limit) {
+		return noteDao.finyMyNoteByComment(userid, page, limit);
 	}
 
 	@Override
@@ -110,8 +110,8 @@ public class NoteServiceImpl implements INoteService {
 	}
 
 	@Override
-	public List<NoteBo> selectCircleNotes(String circleId, String startId, int limit) {
-		return noteDao.selectCircleNotes(circleId, startId, limit);
+	public List<NoteBo> selectCircleNotes(String circleId, int page, int limit) {
+		return noteDao.selectCircleNotes(circleId, page, limit);
 	}
 
 	@Override
@@ -120,13 +120,13 @@ public class NoteServiceImpl implements INoteService {
 	}
 
 	@Override
-	public List<NoteBo> findByTopEssence(String circleid, int type, String startId, int limit) {
-		return noteDao.findByTopEssence(circleid, type, startId, limit);
+	public List<NoteBo> findByTopEssence(String circleid, int type, int page, int limit) {
+		return noteDao.findByTopEssence(circleid, type, page, limit);
 	}
 
 	@Override
-	public List<NoteBo> findByTopAndEssence(String circleid, String startId, int limit) {
-		return noteDao.findByTopAndEssence(circleid, startId, limit);
+	public List<NoteBo> findByTopAndEssence(String circleid, int page, int limit) {
+		return noteDao.findByTopAndEssence(circleid, page, limit);
 	}
 
 	@Override

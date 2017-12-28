@@ -14,9 +14,9 @@ public interface IThumbsupService extends IBaseService {
 
 	public List<ThumbsupBo> selectByVisitorId(String visitorId);
 
-	public List<ThumbsupBo> selectByVisitorIdPaged(String startId, boolean gt, int limit, String visitorId, int type);
+	public List<ThumbsupBo> selectByVisitorIdPaged(int page, int limit, String visitorId, int type);
 
-	public List<ThumbsupBo> selectByOwnerIdPaged(String startId, boolean gt, int limit, String ownerId, int type);
+	public List<ThumbsupBo> selectByOwnerIdPaged(int page, int limit, String ownerId, int type);
 
 	WriteResult deleteById(String thumbsupId);
 
