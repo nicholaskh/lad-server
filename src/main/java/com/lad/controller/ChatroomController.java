@@ -103,8 +103,12 @@ public class ChatroomController extends BaseContorller {
 	}
 
 
-	@RequestMapping("/insert-user")
-	@ResponseBody
+	@ApiOperation("添加好友")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "userids", value = "好友userid,多个以逗号隔开", required = true, paramType = "query",
+					dataType = "string"),
+			@ApiImplicitParam(name = "chatroomid", value = "群聊id",paramType = "query",dataType = "string")})
+	@PostMapping("/insert-user")
 	public String insertUser(String userids, String chatroomid,
 							 HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
@@ -195,8 +199,8 @@ public class ChatroomController extends BaseContorller {
 	}
 
 
-	@RequestMapping("/delete-user")
-	@ResponseBody
+	@ApiOperation("群聊删除用户")
+	@PostMapping("/delete-user")
 	public String deltetUser(String userids, String chatroomid,
 							 HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
@@ -302,8 +306,8 @@ public class ChatroomController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	@RequestMapping("/quit")
-	@ResponseBody
+	@ApiOperation("退出群聊")
+	@PostMapping("/quit")
 	public String quit(String chatroomid, HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
 		try {
@@ -441,8 +445,8 @@ public class ChatroomController extends BaseContorller {
 	}
 
 
-	@RequestMapping("/get-friends")
-	@ResponseBody
+	@ApiOperation("获取好友列表")
+	@PostMapping("/get-friends")
 	public String getFriends(HttpServletRequest request,
 			HttpServletResponse response) throws IllegalAccessException,
 			InvocationTargetException {
@@ -480,8 +484,8 @@ public class ChatroomController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	@RequestMapping("/get-my-chatrooms")
-	@ResponseBody
+	@ApiOperation("获取所有聊天室信息")
+	@PostMapping("/get-my-chatrooms")
 	public String getChatrooms(HttpServletRequest request,
 			HttpServletResponse response) {
 		UserBo userBo;
@@ -542,8 +546,8 @@ public class ChatroomController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	@RequestMapping("/my-chatrooms")
-	@ResponseBody
+	@ApiOperation("更具时间戳，获取好友列表")
+	@PostMapping("/my-chatrooms")
 	public String getChatrooms(String timestamp, HttpServletRequest request,
 							   HttpServletResponse response) {
 		UserBo userBo;
@@ -657,8 +661,8 @@ public class ChatroomController extends BaseContorller {
 		}
 	}
 
-	@RequestMapping("/get-chatroom-info")
-	@ResponseBody
+	@ApiOperation("获取聊天室详情")
+	@PostMapping("/get-chatroom-info")
 	public String getChatroomInfo(@RequestParam String chatroomid,
 			HttpServletRequest request, HttpServletResponse response){
 		UserBo userBo;
@@ -714,8 +718,8 @@ public class ChatroomController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	@RequestMapping("/set-top")
-	@ResponseBody
+	@ApiOperation("置顶聊天室")
+	@PostMapping("/set-top")
 	public String setTop(String chatroomid, HttpServletRequest request,
 			HttpServletResponse response) {
 		UserBo userBo;
@@ -742,8 +746,8 @@ public class ChatroomController extends BaseContorller {
 		return Constant.COM_RESP;
 	}
 
-	@RequestMapping("/cancel-top")
-	@ResponseBody
+	@ApiOperation("取消聊天室置顶")
+	@PostMapping("/cancel-top")
 	public String cancelTop(String chatroomid, HttpServletRequest request,
 			HttpServletResponse response) {
 		UserBo userBo;
@@ -769,8 +773,8 @@ public class ChatroomController extends BaseContorller {
 		return Constant.COM_RESP;
 	}
 
-	@RequestMapping("/facetoface-create")
-	@ResponseBody
+	@ApiOperation("创建面对面群聊")
+	@PostMapping("/facetoface-create")
 	public String faceToFaceCreate(@RequestParam int seq, @RequestParam double px, @RequestParam double py,
 			HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
@@ -822,7 +826,7 @@ public class ChatroomController extends BaseContorller {
 				LinkedHashSet<String> userSet = chatroom.getUsers();
 				userSet.remove(userBo.getId());
 				chatroom.setUsers(userSet);
-				chatroomService.updateUsers(chatroom);
+				updateChatroomUser(chatroom.getId(), userSet);
 			}
 			return res;
 		}
@@ -898,8 +902,8 @@ public class ChatroomController extends BaseContorller {
 	}
 
 
-	@RequestMapping("/factoface-add")
-	@ResponseBody
+	@ApiOperation("面对面群聊添加好友")
+	@PostMapping("/factoface-add")
 	public String faceToFaceAdd(int seq, double px, double py,
 								HttpServletRequest request, HttpServletResponse response) {
 		return faceToFaceCreate(seq, px, py, request, response);
@@ -907,8 +911,8 @@ public class ChatroomController extends BaseContorller {
 
 
 
-	@RequestMapping("/trans-chatroom")
-	@ResponseBody
+	@ApiOperation("转让群聊")
+	@PostMapping("/trans-chatroom")
 	public String tansRoom(String chatroomid, String userid,
 								HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
@@ -950,8 +954,8 @@ public class ChatroomController extends BaseContorller {
 		return Constant.COM_RESP;
 	}
 
-	@RequestMapping("/update-name")
-	@ResponseBody
+	@ApiOperation("更新群聊名称")
+	@PostMapping("/update-name")
 	public String updateName(String chatroomid, String name,
 								HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
@@ -985,8 +989,8 @@ public class ChatroomController extends BaseContorller {
 		return Constant.COM_RESP;
 	}
 
-	@RequestMapping("/update-description")
-	@ResponseBody
+	@ApiOperation("更新群聊描述")
+	@PostMapping("/update-description")
 	public String updateDescription(String chatroomid, String description,
 							 HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
@@ -1009,8 +1013,8 @@ public class ChatroomController extends BaseContorller {
 		return Constant.COM_RESP;
 	}
 
-	@RequestMapping("/update-open")
-	@ResponseBody
+	@ApiOperation("更新群聊加入开发状态")
+	@PostMapping("/update-open")
 	public String updateOpen(String chatroomid, boolean isOpen,
 									HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
@@ -1033,8 +1037,8 @@ public class ChatroomController extends BaseContorller {
 		return Constant.COM_RESP;
 	}
 
-	@RequestMapping("/update-verify")
-	@ResponseBody
+	@ApiOperation("更新群聊加入验证状态")
+	@PostMapping("/update-verify")
 	public String updateVerify(String chatroomid, boolean isVerify,
 									HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
@@ -1050,11 +1054,61 @@ public class ChatroomController extends BaseContorller {
 		}
 		if (userBo.getId().equals(chatroomBo.getMaster())) {
 			chatroomService.updateVerify(chatroomid, isVerify);
+			LinkedHashSet<String> set = chatroomBo.getUsers();
+			set.remove(userBo.getId());
+			ArrayList<String> ids = new ArrayList<>(set.size());
+			ArrayList<String> names = new ArrayList<>(set.size());
+			LinkedHashSet<String> removes = new LinkedHashSet<>();
+			for (String userid : set) {
+				UserBo user = userService.getUser(userid);
+				if (user == null) {
+					logger.error(" userid {} is not exists ", userid);
+					removes.add(userid);
+					continue;
+				}
+				ids.add(userid);
+				names.add(user.getUserName());
+			}
+			if(ids.size() > 0){
+				JSONObject json = new JSONObject();
+				json.put("masterId", userBo.getId());
+				json.put("masterName", userBo.getUserName());
+				json.put("otherIds", ids);
+				json.put("otherNames", names);
+				// 向群中发某人加入群聊通知
+				String res = IMUtil.notifyInChatRoom(
+						Constant.MASTER_CHANGE_CHAT_VERIFY, chatroomBo.getId(), json.toString());
+				if(!IMUtil.FINISH.equals(res)){
+					logger.error("failed notifyInChatRoom Constant.MASTER_CHANGE_CHAT_VERIFY , %s",res);
+				}
+			}
+			//删除不存在的用户
+			if (!removes.isEmpty()) {
+				set.add(userBo.getId());
+				set.remove(removes);
+				updateChatroomUser(chatroomid, set);
+			}
 		} else {
 			return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_NOT_MASTER.getIndex(),
 					ERRORCODE.CIRCLE_NOT_MASTER.getReason());
 		}
 		return Constant.COM_RESP;
+	}
+
+	/**
+	 * 删除用户
+	 * @param chatroomid
+	 * @param users
+	 */
+	@Async
+	private void updateChatroomUser(String chatroomid, LinkedHashSet<String> users){
+			RLock lock = redisServer.getRLock(chatroomid.concat("users"));
+			try {
+				lock.lock(2, TimeUnit.SECONDS);
+				chatroomService.updateUsers(chatroomid, users);
+			} finally {
+				lock.unlock();
+			}
 	}
 
 
@@ -1132,8 +1186,8 @@ public class ChatroomController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	@RequestMapping("/update-shownick")
-	@ResponseBody
+	@ApiOperation("更新昵称显示状态")
+	@PostMapping("/update-shownick")
 	public String updateShowNickname(String chatroomid, boolean isShowNick,
 								 HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
@@ -1162,8 +1216,8 @@ public class ChatroomController extends BaseContorller {
 		return Constant.COM_RESP;
 	}
 
-	@RequestMapping("/update-disturb")
-	@ResponseBody
+	@ApiOperation("更新群聊免打扰状态")
+	@PostMapping("/update-disturb")
 	public String updateDisturb(String chatroomid, boolean isDisturb,
 								 HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
@@ -1195,8 +1249,8 @@ public class ChatroomController extends BaseContorller {
 	}
 
 
-	@RequestMapping("/apply-insert")
-	@ResponseBody
+	@ApiOperation("申请加入群聊，包括通过二维码扫描")
+	@PostMapping("/apply-insert")
 	public String applyInsert(String chatroomid,
 							 HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
@@ -1272,8 +1326,8 @@ public class ChatroomController extends BaseContorller {
 	 * @param response
 	 * @return
 	 */
-	@RequestMapping("/add-verify")
-	@ResponseBody
+	@ApiOperation("申请加群聊验证信息提交")
+	@PostMapping("/add-verify")
 	public String addVerify(String chatroomid, String reason,
 								HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo = getUserLogin(request);
@@ -1297,8 +1351,8 @@ public class ChatroomController extends BaseContorller {
 	 * @param response
 	 * @return
 	 */
-	@RequestMapping("/apply-list")
-	@ResponseBody
+	@ApiOperation("群聊申请加入列表")
+	@PostMapping("/apply-list")
 	public String roomVerifyList(String chatroomid, int page, int limit,
 							HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo = getUserLogin(request);
@@ -1336,8 +1390,8 @@ public class ChatroomController extends BaseContorller {
 	 * @param response
 	 * @return
 	 */
-	@RequestMapping("/apply-operate")
-	@ResponseBody
+	@ApiOperation("操作加入群聊信息的申请")
+	@PostMapping("/apply-operate")
 	public String applyVerify(String chatroomid, String applyid, boolean isAgree, String refues,
 							HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo = getUserLogin(request);
@@ -1423,8 +1477,8 @@ public class ChatroomController extends BaseContorller {
 	 * @param response
 	 * @return
 	 */
-	@RequestMapping("/delete-show")
-	@ResponseBody
+	@ApiOperation("客户端删除群聊窗口")
+	@PostMapping("/delete-show")
 	public String deleteChatroomTable(String chatroomid,
 							  HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo = getUserLogin(request);
