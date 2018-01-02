@@ -385,6 +385,23 @@ public class CircleDaoImpl implements ICircleDao {
 	}
 
 	@Override
+	public List<CircleBo> findByCityName(String cityName, int page, int limit) {
+		Query query = new Query();
+		String regex = "^.*".concat(cityName).concat(".*$");
+		Criteria criteria = new Criteria();
+		Criteria province = new Criteria("province").regex(regex);
+		Criteria city = new Criteria("city").regex(regex);
+		Criteria district = new Criteria("district").regex(regex);
+		criteria.orOperator(province, city, district);
+		query.addCriteria(criteria);
+		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "hotNum")));
+		page = page < 1 ? 1 : page;
+		query.skip((page - 1)*limit);
+		query.limit(limit);
+		return mongoTemplate.find(query, CircleBo.class);
+	}
+
+	@Override
 	public CircleBo findByTagAndName(String name, String tag, String sub_tag) {
 		Query query = new Query();
 		query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));

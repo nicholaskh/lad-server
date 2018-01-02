@@ -188,4 +188,14 @@ public interface ICircleDao extends IBaseDao {
 	 */
 	List<CircleBo> findCirclesInList(List<String> circleids);
 
+
+	/**
+	 * 根据省市区搜索相关圈子
+	 * @param cityName
+	 * @param page
+	 * @param limit
+	 * @return
+	 */
+	List<CircleBo> findByCityName(String cityName, int page, int limit);
+
 }

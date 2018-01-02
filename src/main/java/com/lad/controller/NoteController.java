@@ -4,7 +4,10 @@ import com.lad.bo.*;
 import com.lad.redis.RedisServer;
 import com.lad.service.*;
 import com.lad.util.*;
-import com.lad.vo.*;
+import com.lad.vo.CommentVo;
+import com.lad.vo.NoteVo;
+import com.lad.vo.UserBaseVo;
+import com.lad.vo.UserThumbsupVo;
 import com.mongodb.BasicDBObject;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -18,11 +21,15 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -321,9 +328,8 @@ public class NoteController extends BaseContorller {
 		List<NoteBo> noteBos = noteService.finyByCreateTime(circleid,page,limit);
 		List<NoteVo> noteVos = new LinkedList<>();
 		UserBo loginUser = getUserLogin(request);
-		String userid = loginUser != null ? loginUser.getId() : "";
 		if (noteBos != null) {
-			vosToList(noteBos, noteVos, userid);
+			vosToList(noteBos, noteVos, loginUser);
 		}
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("ret", 0);
@@ -348,8 +354,7 @@ public class NoteController extends BaseContorller {
 		List<NoteBo> noteBos = noteService.findByTopEssence(circleid, Constant.NOTE_JIAJING, page, limit);
 		List<NoteVo> noteVoList = new LinkedList<>();
 		UserBo loginUser = getUserLogin(request);
-		String userid = loginUser != null ? loginUser.getId() : "";
-		vosToList(noteBos, noteVoList, userid);
+		vosToList(noteBos, noteVoList, loginUser);
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("ret", 0);
         map.put("noteVoList", noteVoList);
@@ -374,11 +379,10 @@ public class NoteController extends BaseContorller {
 			limit = 2;
 		}
 		UserBo loginUser = getUserLogin(request);
-		String userid = loginUser != null ? loginUser.getId() : "";
 		List<NoteBo> noteBos = noteService.findByTopEssence(circleid, Constant.NOTE_TOP, page, limit);
 		List<NoteVo> noteVoList = new LinkedList<>();
 		if (noteBos != null) {
-			vosToList(noteBos, noteVoList, userid);
+			vosToList(noteBos, noteVoList, loginUser);
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
@@ -401,8 +405,7 @@ public class NoteController extends BaseContorller {
         List<NoteBo> noteBos = noteService.selectHotNotes(circleid);
 		List<NoteVo> noteVoList = new LinkedList<>();
 		UserBo loginUser = getUserLogin(request);
-		String userid = loginUser != null ? loginUser.getId() : "";
-		vosToList(noteBos, noteVoList, userid);
+		vosToList(noteBos, noteVoList, loginUser);
         Map<String, Object> map = new HashMap<>();
         map.put("ret", 0);
         map.put("noteVoList", noteVoList);
@@ -510,8 +513,6 @@ public class NoteController extends BaseContorller {
 		RLock lock = redisServer.getRLock(Constant.COMOMENT_LOCK);
 		try {
 			lock.lock(5, TimeUnit.SECONDS);
-			//更新帖子评论数
-			noteService.updateCommentCount(noteBo.getId(),1);
 			//更新自己的红人信息
 			if (isCurrentWeek) {
 				commentService.addRadstarCount(userBo.getId(), circleid);
@@ -536,7 +537,7 @@ public class NoteController extends BaseContorller {
 	 * 删除自己的帖子评论
 	 * @return
 	 */
-	@ApiOperation("获取帖子的点赞用户列表")
+	@ApiOperation("删除自己的帖子评论")
 	@ApiImplicitParam(name = "commentid", value = "评论id", required = true, dataType = "string", paramType = "query")
 	@PostMapping("/delete-self-comment")
 	public String deleteComments(String commentid,HttpServletRequest request,  HttpServletResponse response) {
@@ -551,7 +552,7 @@ public class NoteController extends BaseContorller {
 		if (commentBo != null) {
 			if (userBo.getId().equals(commentBo.getCreateuid())) {
 				commentService.delete(commentid);
-				updateCount(commentBo.getNoteid(), Constant.VISIT_NUM, 1);
+				updateCount(commentBo.getNoteid(), Constant.COMMENT_NUM, -1);
 			} else {
 				return CommonUtil.toErrorResult(ERRORCODE.NOTE_NOT_MASTER.getIndex(),
 						ERRORCODE.NOTE_NOT_MASTER.getReason());
@@ -951,11 +952,10 @@ public class NoteController extends BaseContorller {
 					ERRORCODE.CIRCLE_IS_NULL.getReason());
 		}
 		UserBo loginUser = getUserLogin(request);
-		String userid = loginUser == null ? "" : loginUser.getId();
 		List<NoteBo> noteBos = noteService.selectCircleNotes(circleid, page, limit);
 		List<NoteVo> noteVoList = new LinkedList<>();
 		if (noteBos != null) {
-			vosToList(noteBos, noteVoList, userid);
+			vosToList(noteBos, noteVoList, loginUser);
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
@@ -1039,11 +1039,10 @@ public class NoteController extends BaseContorller {
 	public String topAndessence(String circleid, int page, int limit, HttpServletRequest request,
 						   HttpServletResponse response) {
 		UserBo loginUser = getUserLogin(request);
-		String userid = loginUser == null ? "" : loginUser.getId();
-		List<NoteBo> noteBos = noteService.findByTopAndEssence(circleid, page, limit);
+		List<NoteBo> noteBos = noteService.findByTopAndEssence(circleid,1, page, limit);
 		List<NoteVo> noteVoList = new LinkedList<>();
 		if (noteBos != null) {
-			vosToList(noteBos, noteVoList, userid);
+			vosToList(noteBos, noteVoList, loginUser);
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
@@ -1217,6 +1216,66 @@ public class NoteController extends BaseContorller {
 	}
 
 
+
+	@ApiOperation("查找圈子中既没有加精也没有置顶的帖子")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "circleid", value = "圈子id", required = true,
+					dataType = "string", paramType = "query"),
+			@ApiImplicitParam(name = "page", value = "分页页码", dataType = "int", paramType = "query"),
+			@ApiImplicitParam(name = "limit", value = "每页数量", dataType = "int", paramType = "query")})
+	@PostMapping("/not-top-essence")
+	public String notTopAndessence(String circleid, int page, int limit, HttpServletRequest request,
+								HttpServletResponse response) {
+		UserBo loginUser = getUserLogin(request);
+		List<NoteBo> noteBos = noteService.findNotTopAndEssence(circleid, page, limit);
+		List<NoteVo> noteVoList = new LinkedList<>();
+		if (noteBos != null) {
+			vosToList(noteBos, noteVoList, loginUser);
+		}
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("noteVoList", noteVoList);
+		return JSONObject.fromObject(map).toString();
+	}
+
+
+	@ApiOperation("根据指定日常查找指定类型的帖子")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "circleid", value = "圈子id", required = true,
+					dataType = "string", paramType = "query"),
+			@ApiImplicitParam(name = "date", value = "指定日期字符串，格式yyyy-MM-dd", required = true,
+					dataType = "string", paramType = "query"),
+			@ApiImplicitParam(name = "type", value = "类型，0 普通帖子，1置顶帖子，2加精帖子，3置顶且加精", required = true,
+					dataType = "int", paramType = "query"),
+			@ApiImplicitParam(name = "page", value = "分页页码", dataType = "int", paramType = "query"),
+			@ApiImplicitParam(name = "limit", value = "每页数量", dataType = "int", paramType = "query")})
+	@PostMapping("/by-assign-date")
+	public String findByDateAndType(String circleid, String date, int type, int page, int limit, HttpServletRequest
+			request,
+								   HttpServletResponse response) {
+		UserBo loginUser = getUserLogin(request);
+		Date dateTime;
+		SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd");
+		try {
+			dateTime = sf.parse(date);
+		} catch (Exception e) {
+			logger.error("Date Format Error {} ", e);
+			return CommonUtil.toErrorResult(ERRORCODE.FORMAT_ERROR.getIndex(),
+					ERRORCODE.FORMAT_ERROR.getReason());
+		}
+		List<NoteBo> noteBos = noteService.findByDate(circleid, dateTime,type, page, limit);
+		List<NoteVo> noteVoList = new LinkedList<>();
+		if (noteBos != null) {
+			vosToList(noteBos, noteVoList, loginUser);
+		}
+		Map<String, Object> map = new LinkedHashMap<>();
+		map.put("ret", 0);
+		map.put("noteVoList", noteVoList);
+		return JSONObject.fromObject(map).toString();
+	}
+
+
+
 	private RedstarBo setRedstarBo(String userid, String circleid, int weekNo, int year){
 		RedstarBo redstarBo = new RedstarBo();
 		redstarBo.setUserid(userid);
@@ -1233,13 +1292,18 @@ public class NoteController extends BaseContorller {
 	 * 
 	 * @param noteBos
 	 * @param noteVoList
-	 * @param loginUserid
+	 * @param loginUser
 	 */
-	private void vosToList(List<NoteBo> noteBos, List<NoteVo> noteVoList, String loginUserid){
+	private void vosToList(List<NoteBo> noteBos, List<NoteVo> noteVoList, UserBo loginUser){
+		String loginUserid = loginUser == null ? "" : loginUser.getId();
 		for (NoteBo noteBo : noteBos) {
 			NoteVo noteVo = new NoteVo();
-			UserBo userBo = userService.getUser(noteBo.getCreateuid());
-			boToVo(noteBo, noteVo, userBo, loginUserid);
+			if (noteBo.getCreateuid().equals(loginUserid)) {
+				boToVo(noteBo, noteVo, loginUser, loginUserid);
+			} else {
+				UserBo userBo = userService.getUser(noteBo.getCreateuid());
+				boToVo(noteBo, noteVo, userBo, loginUserid);
+			}
 			noteVo.setMyThumbsup(hasThumbsup(loginUserid, noteBo.getId()));
 			noteVoList.add(noteVo);
 		}

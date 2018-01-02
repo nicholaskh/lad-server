@@ -97,8 +97,8 @@ public class NoteDaoImpl implements INoteDao {
 		Query query = new Query();
 		query.limit(4);
 		query.addCriteria(new Criteria("circleId").is(noteId));
-		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "commentcount")));
 		query.addCriteria(new Criteria("deleted").is(0));
+		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "commentcount")));
 		return mongoTemplate.find(query, NoteBo.class);
 	}
 
@@ -124,8 +124,8 @@ public class NoteDaoImpl implements INoteDao {
 
 	public List<NoteBo> selectHotNotes(String circleid){
 		Query query = new Query();
-		query.addCriteria(new Criteria("createTime").gte(CommonUtil.getBeforeWeekDate()));
 		query.addCriteria(new Criteria("circleId").is(circleid));
+		query.addCriteria(new Criteria("createTime").gte(CommonUtil.getBeforeWeekDate()));
 		query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
 		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "temp")));
 		query.limit(10);
@@ -246,14 +246,51 @@ public class NoteDaoImpl implements INoteDao {
 	}
 
 	@Override
-	public List<NoteBo> findByTopAndEssence(String circleid, int page, int limit) {
+	public List<NoteBo> findByTopAndEssence(String circleid,int status, int page, int limit) {
 		Query query = new Query();
 		Criteria criteria = new Criteria("circleId").is(circleid).and("deleted").is(Constant.ACTIVITY);
-		Criteria top = new Criteria("top").is(1);
-		Criteria essence  = new Criteria("essence").is(1);
+		Criteria top = new Criteria("top").is(status);
+		Criteria essence  = new Criteria("essence").is(status);
 		query.addCriteria(criteria.orOperator(top, essence));
 		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
 		query.skip(((page < 1 ? 1 : page) -1) * limit);
+		query.limit(limit);
+		return mongoTemplate.find(query, NoteBo.class);
+	}
+
+	public List<NoteBo> findNotTopAndEssence(String circleid, int page, int limit) {
+		Query query = new Query();
+		Criteria criteria = new Criteria("circleId").is(circleid).and("top").is(0).and("essence").is(0)
+				.and("deleted").is(Constant.ACTIVITY);
+		query.addCriteria(criteria);
+		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
+		query.skip(((page < 1 ? 1 : page) -1) * limit);
+		query.limit(limit);
+		return mongoTemplate.find(query, NoteBo.class);
+	}
+
+	@Override
+	public List<NoteBo> findByDate(String circleid, Date date, int type, int page, int limit) {
+		Query query = new Query();
+		Criteria criteria = new Criteria("circleId").is(circleid).and("deleted").is(Constant.ACTIVITY);
+		query.addCriteria(criteria);
+		Criteria cri;
+		if (type == 1) {
+			cri = new Criteria("top").is(1);
+		} else if (type == 2) {
+			cri = new Criteria("essence").is(1);
+		} else if (type == 3) {
+			cri = new Criteria("top").is(1).and("essence").is(1);
+		} else {
+			cri = new Criteria("top").is(0).and("essence").is(0);
+		}
+		query.addCriteria(cri);
+		Date startTime = CommonUtil.getZeroDate(date);
+		Date endTime = CommonUtil.getLastDate(date);
+		query.addCriteria(new Criteria("createTime").gte(startTime).lte(endTime));
+		query.with(new Sort(Sort.Direction.DESC, "_id"));
+		page = page < 1 ? 1 : page;
+		query.skip((page -1) * limit);
 		query.limit(limit);
 		return mongoTemplate.find(query, NoteBo.class);
 	}

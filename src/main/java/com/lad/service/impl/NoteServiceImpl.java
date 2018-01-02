@@ -8,6 +8,7 @@ import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -125,8 +126,18 @@ public class NoteServiceImpl implements INoteService {
 	}
 
 	@Override
-	public List<NoteBo> findByTopAndEssence(String circleid, int page, int limit) {
-		return noteDao.findByTopAndEssence(circleid, page, limit);
+	public List<NoteBo> findByTopAndEssence(String circleid, int status, int page, int limit) {
+		return noteDao.findByTopAndEssence(circleid, status, page, limit);
+	}
+
+	@Override
+	public List<NoteBo> findNotTopAndEssence(String circleid, int page, int limit) {
+		return noteDao.findNotTopAndEssence(circleid, page, limit);
+	}
+
+	@Override
+	public List<NoteBo> findByDate(String circleid, Date date, int type, int page, int limit) {
+		return noteDao.findByDate(circleid, date, type, page, limit);
 	}
 
 	@Override

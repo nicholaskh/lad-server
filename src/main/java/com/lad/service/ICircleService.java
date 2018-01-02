@@ -173,6 +173,16 @@ public interface ICircleService extends IBaseService {
 	 */
 	List<CircleBo> findByCitys(String province, String city, String district, int page, int limit);
 
+
+	/**
+	 * 根据城市，搜索城市下相关圈子
+	 * @param cityName
+	 * @param page
+	 * @param limit
+	 * @return
+	 */
+	List<CircleBo> findByCityName(String cityName, int page, int limit);
+
 	/**
 	 * 根据圈子类型查找相关圈子
 	 * @param tag

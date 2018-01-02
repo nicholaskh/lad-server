@@ -78,6 +78,7 @@ public class CircleController extends BaseContorller {
 	 */
 	private String circleAddUserLock = "circleAdd";
 
+	@ApiOperation("圈子创建")
 	@PostMapping("/insert")
 	public String isnert(@RequestParam(required = true) double px,
 						 @RequestParam(required = true) double py,
@@ -156,8 +157,8 @@ public class CircleController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	@RequestMapping("/pre-create")
-	@ResponseBody
+	@ApiOperation("圈子预创建时个人已拥有圈子信息返回")
+	@PostMapping("/pre-create")
 	public String preCreateCircle(HttpServletRequest request, HttpServletResponse response){
 		UserBo userBo;
 		try {
@@ -180,8 +181,8 @@ public class CircleController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	@RequestMapping("/check-name")
-	@ResponseBody
+	@ApiOperation("圈子重名校验")
+	@PostMapping("/check-name")
 	public String preCreateCircle(String name, String tag, String sub_tag, HttpServletRequest request,
 								  HttpServletResponse response){
 		CircleBo circleBo = circleService.findByTagAndName(name, tag, sub_tag);
@@ -193,8 +194,8 @@ public class CircleController extends BaseContorller {
 	}
 
 
-	@RequestMapping("/head-picture")
-	@ResponseBody
+	@ApiOperation("圈子头像修改")
+	@PostMapping("/head-picture")
 	public String head_picture(
 			@RequestParam("head_picture") MultipartFile file,
 			@RequestParam(required = true) String circleid,
@@ -309,8 +310,8 @@ public class CircleController extends BaseContorller {
 
 
 
-	@RequestMapping("/free-insert")
-	@ResponseBody
+	@ApiOperation("自由加入圈子")
+	@PostMapping("/free-insert")
 	public String applyIsnert(@RequestParam(required = true) String circleid,
 							  HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
@@ -356,8 +357,8 @@ public class CircleController extends BaseContorller {
 		return Constant.COM_RESP;
 	}
 
-	@RequestMapping("/my-info")
-	@ResponseBody
+	@ApiOperation("我的圈子信息")
+	@PostMapping("/my-info")
 	public String myInfo(HttpServletRequest request,
 			HttpServletResponse response) {
 		UserBo userBo;
@@ -382,8 +383,8 @@ public class CircleController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	@RequestMapping("/user-apply")
-	@ResponseBody
+	@ApiOperation("申请加入圈子用户列表")
+	@PostMapping("/user-apply")
 	public String userApply(@RequestParam(required = true) String circleid,
 			HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
@@ -449,8 +450,8 @@ public class CircleController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	@RequestMapping("/user-apply-agree")
-	@ResponseBody
+	@ApiOperation("同意申请人加入圈子")
+	@PostMapping("/user-apply-agree")
 	public String userApplyAgree(
 			@RequestParam(required = true) String circleid,
 			@RequestParam(required = true) String userids,
@@ -582,8 +583,8 @@ public class CircleController extends BaseContorller {
 		}
 	}
 
-	@RequestMapping("/user-apply-refuse")
-	@ResponseBody
+	@ApiOperation("拒绝申请人加入圈子")
+	@PostMapping("/user-apply-refuse")
 	public String userApplyRefuse(
 			@RequestParam(required = true) String circleid,
 			@RequestParam(required = true) String userids,
@@ -634,8 +635,8 @@ public class CircleController extends BaseContorller {
 		return Constant.COM_RESP;
 	}
 
-	@RequestMapping("/list")
-	@ResponseBody
+	@ApiOperation("根据标签查找圈子列表")
+	@PostMapping("/list")
 	public String list(@RequestParam(required = true) String tag,
 			@RequestParam(required = true) String sub_tag,
 			@RequestParam(required = true) String category,
@@ -652,8 +653,8 @@ public class CircleController extends BaseContorller {
 	}
 
 
-	@RequestMapping("/delete-user")
-	@ResponseBody
+	@ApiOperation("圈子删除用户")
+	@PostMapping("/delete-user")
 	public String delete(@RequestParam(required = true) String circleid,
 						 @RequestParam(required = true) String userids,
 						 HttpServletRequest request, HttpServletResponse response) {
@@ -719,8 +720,8 @@ public class CircleController extends BaseContorller {
 		reasonService.removeUser(userids, circleid);
 	}
 
-	@RequestMapping("/transfer")
-	@ResponseBody
+	@ApiOperation("圈子转让")
+	@PostMapping("/transfer")
 	public String transfer(@RequestParam(required = true) String circleid,
 						   @RequestParam(required = true) String userid,
 						   HttpServletRequest request, HttpServletResponse response) {
@@ -780,8 +781,8 @@ public class CircleController extends BaseContorller {
 	 * @param isAdd  true是添加， false 是删除
 	 * @return
 	 */
-	@RequestMapping("/master")
-	@ResponseBody
+	@ApiOperation("圈子管理员操作")
+	@PostMapping("/master")
 	public String master(@RequestParam String circleid,
 						 @RequestParam String userids,
 						 @RequestParam boolean isAdd,
@@ -864,8 +865,8 @@ public class CircleController extends BaseContorller {
 		return true;
 	}
 
-	@RequestMapping("/quit")
-	@ResponseBody
+	@ApiOperation("退出圈子")
+	@PostMapping("/quit")
 	public String delete(@RequestParam(required = true) String circleid,
 						 HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
@@ -905,8 +906,8 @@ public class CircleController extends BaseContorller {
 		return Constant.COM_RESP;
 	}
 
-	@RequestMapping("/my-circles")
-	@ResponseBody
+	@ApiOperation("我的圈子列表")
+	@PostMapping("/my-circles")
 	public String myCircles(int page, int limit, HttpServletRequest request,
 						 HttpServletResponse response) {
 		UserBo userBo;
@@ -918,11 +919,19 @@ public class CircleController extends BaseContorller {
 		//置顶的圈子id
 		List<String> topCircles = userBo.getCircleTops();
 
-		//未置顶的圈子
+		if (page < 1 || limit < 0) {
+			return Constant.COM_FAIL_RESP;
+		}
+		int total = (page-1)*limit;
+		//放入合集的置顶全职
+		int current = 0;
 		List<CircleVo> voList = new LinkedList<>();
-		if (!topCircles.isEmpty()) {
+		if (!topCircles.isEmpty() && topCircles.size() > total) {
 			List<CircleBo> tops = circleService.findCirclesInList(topCircles);
-
+			//因置顶圈子不能再数据库实现分页，
+			int start = total + 1;
+			int end = page * limit;
+			int num = 0;
 			for (String top : topCircles) {
 				//由于mongo查询结果不是按照list的顺序，在程序中再次处理顺序
 				for (CircleBo circleBo : tops) {
@@ -932,25 +941,31 @@ public class CircleController extends BaseContorller {
 							circleBo.setTotal(number);
 							circleService.updateTotal(circleBo.getId(), number);
 						}
-						voList.add(bo2vo(circleBo, userBo, 1));
+						num ++;
+						if (num >= start && num <= end) {
+							current ++;
+							voList.add(bo2vo(circleBo, userBo, 1));
+						}
 						tops.remove(circleBo);
 						break;
 					}
 				}
 			}
 		}
-		List<CircleBo> circleBos = circleService.findMyCircles(userBo.getId(), page, limit);
-		//筛选出置顶的圈子
-		for (CircleBo circleBo : circleBos) {
-			if (topCircles.contains(circleBo.getId())) {
-				continue;
+		if (current < limit) {
+			List<CircleBo> circleBos = circleService.findMyCircles(userBo.getId(), page, limit-current);
+			//筛选出置顶的圈子
+			for (CircleBo circleBo : circleBos) {
+				if (topCircles.contains(circleBo.getId())) {
+					continue;
+				}
+				if (circleBo.getTotal() == 0) {
+					int number = noteService.selectPeopleNum(circleBo.getId());
+					circleBo.setTotal(number);
+					circleService.updateTotal(circleBo.getId(), number);
+				}
+				voList.add(bo2vo(circleBo, userBo, 0));
 			}
-			if (circleBo.getTotal() == 0) {
-				int number = noteService.selectPeopleNum(circleBo.getId());
-				circleBo.setTotal(number);
-				circleService.updateTotal(circleBo.getId(), number);
-			}
-			voList.add(bo2vo(circleBo, userBo, 0));
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
@@ -961,8 +976,8 @@ public class CircleController extends BaseContorller {
 	/**
 	 * 返回10个热门圈子（以圈子内人数排序，人数最多的10个圈子）
 	 */
-	@RequestMapping("/guess-you-like")
-	@ResponseBody
+	@ApiOperation("猜你喜欢圈子列表")
+	@PostMapping("/guess-you-like")
 	public String youLike(HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
 		try {
@@ -978,8 +993,8 @@ public class CircleController extends BaseContorller {
 	/**
 	 * 圈子详情
 	 */
-	@RequestMapping("/circle-info")
-	@ResponseBody
+	@ApiOperation("圈子详情信息")
+	@PostMapping("/circle-info")
 	public String info(String circleid, HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo = getUserLogin(request);
 		int userAdd = 0;
@@ -1050,8 +1065,8 @@ public class CircleController extends BaseContorller {
 	/**
 	 * 红人列表，总榜及周榜
 	 */
-	@RequestMapping("/red-star-list")
-	@ResponseBody
+	@ApiOperation("圈子红人列表")
+	@PostMapping("/red-star-list")
 	public String redTopTotal(String circleid, HttpServletRequest request, HttpServletResponse response) {
 		//如果登录就显示浏览记录
 
@@ -1082,8 +1097,8 @@ public class CircleController extends BaseContorller {
 	/**
 	 * 置顶圈子
 	 */
-	@RequestMapping("/set-top")
-	@ResponseBody
+	@ApiOperation("置顶圈子")
+	@PostMapping("/set-top")
 	public String setTopCircle(String circleid, HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo = null;
 		try {
@@ -1109,8 +1124,8 @@ public class CircleController extends BaseContorller {
 	/**
 	 * 取消置顶圈子
 	 */
-	@RequestMapping("/cancel-top")
-	@ResponseBody
+	@ApiOperation("取消圈子置顶")
+	@PostMapping("/cancel-top")
 	public String cancelTopCircle(String circleid, HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
 		try {
@@ -1137,8 +1152,8 @@ public class CircleController extends BaseContorller {
 	/**
 	 * 搜索圈子
 	 */
-	@RequestMapping("/search")
-	@ResponseBody
+	@ApiOperation("根据关键字搜索圈子,默认10条返回")
+	@PostMapping("/search")
 	public String search(String keyword, HttpServletRequest request, HttpServletResponse response) {
 		return  searchKeyword(keyword, 1, 10, request, response);
 	}
@@ -1146,8 +1161,8 @@ public class CircleController extends BaseContorller {
 	/**
 	 * 搜索圈子
 	 */
-	@RequestMapping("/search-keyword")
-	@ResponseBody
+	@ApiOperation("根据关键字搜索圈子,具有分页")
+	@PostMapping("/search-keyword")
 	public String searchKeyword(String keyword,int page, int limit,
 								HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo = getUserLogin(request);
@@ -1185,8 +1200,8 @@ public class CircleController extends BaseContorller {
 	/**
 	 * 根据类型获取圈子
 	 */
-	@RequestMapping("/get-by-type")
-	@ResponseBody
+	@ApiOperation("根据类型获取圈子")
+	@PostMapping("/get-by-type")
 	public String getByType(String tag, String sub_tag , int page, int limit,
 							HttpServletRequest request, HttpServletResponse response) {
 		List<CircleBo> circleBos = circleService.findByType(tag, sub_tag, page, limit);
@@ -1230,8 +1245,8 @@ public class CircleController extends BaseContorller {
 	/**
 	 *
 	 */
-	@RequestMapping("/get-creater")
-	@ResponseBody
+	@ApiOperation("获取圈子创建人")
+	@PostMapping("/get-creater")
 	public String getCreater(String circleid, HttpServletRequest request, HttpServletResponse response) {
 
 		CircleBo circleBo = circleService.selectById(circleid);
@@ -1252,8 +1267,8 @@ public class CircleController extends BaseContorller {
 	/**
 	 *
 	 */
-	@RequestMapping("/get-master")
-	@ResponseBody
+	@ApiOperation("获取圈子管理员列表")
+	@PostMapping("/get-master")
 	public String getMaster(String circleid, HttpServletRequest request, HttpServletResponse response) {
 		CircleBo circleBo = circleService.selectById(circleid);
 		if (null == circleBo) {
@@ -1280,8 +1295,8 @@ public class CircleController extends BaseContorller {
 	/**
 	 * 获取圈子分类
 	 */
-	@RequestMapping("/circle-type")
-	@ResponseBody
+	@ApiOperation("获取圈子分类列表")
+	@PostMapping("/circle-type")
 	public String circleType(HttpServletRequest request, HttpServletResponse response) {
 
 		List<CircleTypeBo> typeBos = circleService.selectByLevel(1);
@@ -1303,8 +1318,13 @@ public class CircleController extends BaseContorller {
 	/**
 	 *添加圈子分类
 	 */
-	@RequestMapping("/add-circle-type")
-	@ResponseBody
+	@ApiOperation("添加圈子分类")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "name", value = "圈子分类名称", required = true, paramType = "query",dataType =
+					"string"),
+			@ApiImplicitParam(name = "parent", value = "父分类，没有则为空", paramType = "query", dataType = "string"),
+			@ApiImplicitParam(name = "level", value = "分类等级", paramType = "query", dataType = "int")})
+	@PostMapping("/add-circle-type")
 	public String addCircleType(String name, String parent, int level, HttpServletRequest request,
 								HttpServletResponse response) {
 		UserBo userBo;
@@ -1334,8 +1354,8 @@ public class CircleController extends BaseContorller {
 	/**
 	 * 更多圈子时，获取所有分类
 	 */
-	@RequestMapping("/circle-type-search")
-	@ResponseBody
+	@ApiOperation("获取所有圈子分类列表")
+	@PostMapping("/circle-type-search")
 	public String circleTypeSearch(HttpServletRequest request, HttpServletResponse response) {
 		List<CircleTypeBo> typeBos = circleService.findAllCircleTypes();
 		List<String> types = new ArrayList<>();
@@ -1351,8 +1371,8 @@ public class CircleController extends BaseContorller {
 	/**
 	 * 附近活跃人员
 	 */
-	@RequestMapping("/near-people")
-	@ResponseBody
+	@ApiOperation("附近活跃人员")
+	@PostMapping("/near-people")
 	public String nearPeopel(String circleid, double px, double py, HttpServletRequest request, HttpServletResponse
 			response) {
 		String userid = "";
@@ -1381,8 +1401,8 @@ public class CircleController extends BaseContorller {
 	/**
 	 * 附近圈子
 	 */
-	@RequestMapping("/near-circle")
-	@ResponseBody
+	@ApiOperation("附近圈子列表")
+	@PostMapping("/near-circle")
 	public String nearPeopel(double px, double py, HttpServletRequest request, HttpServletResponse
 			response) {
 		HttpSession session = request.getSession();
@@ -1404,8 +1424,8 @@ public class CircleController extends BaseContorller {
 	/**
 	 * 判断当前用户在圈子中的身份
 	 */
-	@RequestMapping("/circle-role")
-	@ResponseBody
+	@ApiOperation("当前用户在圈子中的身份")
+	@PostMapping("/circle-role")
 	public String ciecleRle(String circleid, HttpServletRequest request, HttpServletResponse
 			response) {
 		CircleBo circleBo = circleService.selectById(circleid);
@@ -1437,8 +1457,8 @@ public class CircleController extends BaseContorller {
 	/**
 	 * 圈子中的用户
 	 */
-	@RequestMapping("/persons")
-	@ResponseBody
+	@ApiOperation("圈子中的用户列表")
+	@PostMapping("/persons")
 	public String cieclePerson(String circleid, HttpServletRequest request, HttpServletResponse
 			response) {
 		CircleBo circleBo = circleService.selectById(circleid);
@@ -1486,8 +1506,8 @@ public class CircleController extends BaseContorller {
 	/**
 	 * 修改圈子名称
 	 */
-	@RequestMapping("/update-name")
-	@ResponseBody
+	@ApiOperation("修改圈子名称")
+	@PostMapping("/update-name")
 	public String updateName(@RequestParam String circleid, @RequestParam String name,
 							   HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
@@ -1526,8 +1546,8 @@ public class CircleController extends BaseContorller {
     /**
      * 是否允许加入
      */
-    @RequestMapping("/open")
-    @ResponseBody
+	@ApiOperation("修改圈子开放状态")
+    @PostMapping("/open")
     public String updateOpen(@RequestParam String circleid, boolean open,
                              HttpServletRequest request, HttpServletResponse response) {
         UserBo userBo;
@@ -1556,8 +1576,8 @@ public class CircleController extends BaseContorller {
     /**
      * 是否允许加入
      */
-    @RequestMapping("/verify")
-    @ResponseBody
+	@ApiOperation("修改圈子验证状态")
+    @PostMapping("/verify")
     public String updateVerify(@RequestParam String circleid, boolean verify,
                              HttpServletRequest request, HttpServletResponse response) {
         UserBo userBo;
@@ -1586,8 +1606,8 @@ public class CircleController extends BaseContorller {
 	/**
 	 * 添加或修改公告
 	 */
-	@RequestMapping("/notice")
-	@ResponseBody
+	@ApiOperation("修改圈子公告")
+	@PostMapping("/notice")
 	public String ciecleNotice(@RequestParam String circleid,
 							   String title, String content,
 							   HttpServletRequest request, HttpServletResponse response) {
@@ -1622,8 +1642,8 @@ public class CircleController extends BaseContorller {
 	/**
 	 * 添加或修改公告
 	 */
-	@RequestMapping("/get-notice")
-	@ResponseBody
+	@ApiOperation("获取圈子公告详情")
+	@PostMapping("/get-notice")
 	public String getNotice(@RequestParam String circleid,
 							HttpServletRequest request, HttpServletResponse response) {
 		CircleBo circleBo = circleService.selectById(circleid);
@@ -1650,8 +1670,8 @@ public class CircleController extends BaseContorller {
 	/**
 	 * 举报圈子
 	 */
-	@RequestMapping("/feed-tips")
-	@ResponseBody
+	@ApiOperation("举报圈子")
+	@PostMapping("/feed-tips")
 	public String feedTips(@RequestParam String circleid, @RequestParam String title,
 						   @RequestParam String content ,@RequestParam(required = false) String contact,
 						   @RequestParam(required = false) MultipartFile[] images,
@@ -1698,8 +1718,8 @@ public class CircleController extends BaseContorller {
 	/**
 	 * 获取热门搜索关键词
 	 */
-	@RequestMapping("/hot-searchs")
-	@ResponseBody
+	@ApiOperation("获取热门搜索关键词")
+	@PostMapping("/hot-searchs")
 	public String hotSearchs(HttpServletRequest request, HttpServletResponse response) {
 
 		List<SearchBo> searchBos = searchService.findByTimes(0, 12);
@@ -1717,8 +1737,8 @@ public class CircleController extends BaseContorller {
 	/**
 	 * 根据城市位置搜索圈子
 	 */
-	@RequestMapping("/search-city")
-	@ResponseBody
+	@ApiOperation("根据具体的省市区获取圈子")
+	@PostMapping("/search-city")
 	public String searchCitys(String province, String city, String district , int page, int limit,
 							  HttpServletRequest request, HttpServletResponse response) {
 
@@ -1729,6 +1749,23 @@ public class CircleController extends BaseContorller {
 			seveKeys(district);
 		}
 		List<CircleBo> circleBos = circleService.findByCitys(province, city, district, page, limit);
+		UserBo userBo = getUserLogin(request);
+		return bo2vos(circleBos, userBo);
+	}
+
+	/**
+	 * 根据省市区搜索相关圈子
+	 */
+	@ApiOperation("根据省或者市或者区搜索相关圈子")
+	@ApiImplicitParam(name = "city", value = "省市区名称", required = true, paramType = "query",
+			dataType = "string")
+	@PostMapping("/search-by-city")
+	public String searchByCitys(String city, int page, int limit,
+							  HttpServletRequest request, HttpServletResponse response) {
+		if (StringUtils.isNotEmpty(city)){
+			seveKeys(city);
+		}
+		List<CircleBo> circleBos = circleService.findByCityName(city, page, limit);
 		UserBo userBo = getUserLogin(request);
 		return bo2vos(circleBos, userBo);
 	}
@@ -1750,8 +1787,8 @@ public class CircleController extends BaseContorller {
 	/**
 	 * 热门城市
 	 */
-	@RequestMapping("/hot-citys")
-	@ResponseBody
+	@ApiOperation("热门城市搜索")
+	@PostMapping("/hot-citys")
 	public String hotCitys(HttpServletRequest request, HttpServletResponse response) {
 
 		List<SearchBo> searchBos = searchService.findByTimes(4, 9);
@@ -1769,8 +1806,8 @@ public class CircleController extends BaseContorller {
 	/**
 	 * 相关圈子
 	 */
-	@RequestMapping("/related")
-	@ResponseBody
+	@ApiOperation("相关圈子列表")
+	@PostMapping("/related")
 	public String relatedCircle(String circleid, int page, int limit, HttpServletRequest request, HttpServletResponse
 			response) {
 
@@ -1797,8 +1834,8 @@ public class CircleController extends BaseContorller {
 	 * @param response
 	 * @return
 	 */
-	@RequestMapping("/invite-user")
-	@ResponseBody
+	@ApiOperation("要求好友加入圈子")
+	@PostMapping("/invite-user")
 	public String inviteUsers(@RequestParam String circleid, @RequestParam String userids,
 						   HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
@@ -1852,8 +1889,8 @@ public class CircleController extends BaseContorller {
 	 * @param response
 	 * @return
 	 */
-	@RequestMapping("/invite-friend-list")
-	@ResponseBody
+	@ApiOperation("邀请好友列表")
+	@PostMapping("/invite-friend-list")
 	public String inviteList(@RequestParam String circleid,
 							  HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
@@ -1905,8 +1942,8 @@ public class CircleController extends BaseContorller {
 	 * @param response
 	 * @return
 	 */
-	@RequestMapping("/user-search")
-	@ResponseBody
+	@ApiOperation("圈子内好友搜索")
+	@PostMapping("/user-search")
 	public String userSearch(String circleid, String keyword,
 							 HttpServletRequest request, HttpServletResponse response) {
 
@@ -1968,8 +2005,8 @@ public class CircleController extends BaseContorller {
 	 * @param response
 	 * @return
 	 */
-	@RequestMapping("/invite-user-search")
-	@ResponseBody
+	@ApiOperation("邀请好友搜索")
+	@PostMapping("/invite-user-search")
 	public String inviteUserSearch(String circleid, String keyword,
 							 HttpServletRequest request, HttpServletResponse response) {
 
@@ -2013,8 +2050,8 @@ public class CircleController extends BaseContorller {
 	 * @param response
 	 * @return
 	 */
-	@RequestMapping("/add-in-circle")
-	@ResponseBody
+	@ApiOperation("加入圈子")
+	@PostMapping("/add-in-circle")
 	public String applyAddInsert(String circleid, HttpServletRequest request, HttpServletResponse
 			response) {
 		UserBo userBo = getUserLogin(request);
@@ -2076,8 +2113,8 @@ public class CircleController extends BaseContorller {
 	/**
 	 * 转发到我的动态
 	 */
-	@RequestMapping("/forward-dynamic")
-	@ResponseBody
+	@ApiOperation("转发圈子到我的动态")
+	@PostMapping("/forward-dynamic")
 	public String forwardDynamic(String circleid, String view, String landmark,HttpServletRequest request,
 								 HttpServletResponse response) {
 		UserBo userBo = getUserLogin(request);
@@ -2117,8 +2154,8 @@ public class CircleController extends BaseContorller {
 	 * @param response
 	 * @return
 	 */
-	@RequestMapping("/collect-circle")
-	@ResponseBody
+	@ApiOperation("收藏圈子")
+	@PostMapping("/collect-circle")
 	public String colNotes(String circleid, HttpServletRequest request, HttpServletResponse response){
 		UserBo userBo = getUserLogin(request);
 		if (userBo == null) {
@@ -2209,8 +2246,8 @@ public class CircleController extends BaseContorller {
 	 * @param response
 	 * @return
 	 */
-	@RequestMapping("/get-circle-his")
-	@ResponseBody
+	@ApiOperation("圈子操作历史详情")
+	@PostMapping("/get-circle-his")
 	public String getCircleHis(String historyid, HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo = getUserLogin(request);
 		if (userBo == null) {
@@ -2242,7 +2279,7 @@ public class CircleController extends BaseContorller {
 				UserBo operate = userService.getUser(hisBo.getOperateid());
 				UserBaseVo opUser = new UserBaseVo();
 				if (operate != null) {
-					BeanUtils.copyProperties(opUser, operate);
+					BeanUtils.copyProperties(operate, opUser);
 				}
 				map.put("title", hisBo.getTitle());
 				map.put("content", hisBo.getContent());
@@ -2262,8 +2299,8 @@ public class CircleController extends BaseContorller {
 	 * @param response
 	 * @return
 	 */
-	@RequestMapping("/get-my-his")
-	@ResponseBody
+	@ApiOperation("我所有圈子的操作历史")
+	@PostMapping("/get-my-his")
 	public String getMyCircleHis(int page, int limit, HttpServletRequest request, HttpServletResponse
 			response) {
 		UserBo userBo = getUserLogin(request);

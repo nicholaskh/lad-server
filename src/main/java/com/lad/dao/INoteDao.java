@@ -3,6 +3,7 @@ package com.lad.dao;
 import com.lad.bo.NoteBo;
 import com.mongodb.WriteResult;
 
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -123,7 +124,6 @@ public interface INoteDao extends IBaseDao {
 	/**
 	 * 获取圈子内所有帖子
 	 * @param circleId
-	 * @param startId
 	 * @param limit
 	 * @return
 	 */
@@ -151,7 +151,26 @@ public interface INoteDao extends IBaseDao {
 	 * @param circleid
 	 * @return
 	 */
-	List<NoteBo> findByTopAndEssence(String circleid, int page, int limit);
+	List<NoteBo> findByTopAndEssence(String circleid, int status, int page, int limit);
+
+	/**
+	 * 查找既没有加精也没有置顶的帖子
+	 * @param circleid
+	 * @param page
+	 * @param limit
+	 * @return
+	 */
+	List<NoteBo> findNotTopAndEssence(String circleid, int page, int limit);
+
+
+	/**
+	 * 根据帖子类型查找指定日期当天的创建的帖子
+	 * @param circleid
+	 * @param page
+	 * @param limit
+	 * @return
+	 */
+	List<NoteBo> findByDate(String circleid, Date date, int type, int page, int limit);
 
 	/**
 	 * 更新收藏数量
