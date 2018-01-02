@@ -8,7 +8,6 @@ import com.mongodb.WriteResult;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.*;
@@ -45,8 +44,10 @@ public class VideoDaoImpl implements IVideoDao {
     public List<VideoBo> findByPage(String groupName, int page, int limit) {
         Query query = new Query();
         query.addCriteria(new Criteria("module").is(groupName));
+        query.with(new Sort(new Sort.Order(Sort.Direction.ASC, "_id")));
         page = page < 1 ? 1 : page;
-        query.with(new PageRequest(page, limit, new Sort(new Sort.Order(Sort.Direction.DESC, "_id"))));
+        query.skip((page -1) * limit);
+        query.limit(limit);
         return mongoTemplateTwo.find(query, VideoBo.class);
     }
 
