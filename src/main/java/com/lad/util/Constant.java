@@ -360,4 +360,7 @@ public class Constant {
 	// 群主变更
 	public static final int MASTER_CHANGE_CHAT_ROOM = 11;
 
+	// 群主修改权限通知
+	public static final int MASTER_CHANGE_CHAT_VERIFY = 12;
+
 }
