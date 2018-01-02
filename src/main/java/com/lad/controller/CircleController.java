@@ -234,8 +234,7 @@ public class CircleController extends BaseContorller {
 	@ApiImplicitParams({ @ApiImplicitParam(name = "circleid", value = "圈子id", required = true, dataType =
 			"string"), @ApiImplicitParam(name = "reason", value = "加入理由", dataType = "string"),
 			@ApiImplicitParam(name = "isNotice", value = "是否通知好友", dataType = "boolean")})
-	@RequestMapping("/apply-insert")
-	@ResponseBody
+	@PostMapping("/apply-insert")
 	public String applyIsnert(@RequestParam(required = true) String circleid, String reason, boolean isNotice,
 			HttpServletRequest request, HttpServletResponse response) {
 		return applyIsnert(circleid, reason, isNotice,0, null, request, response);
@@ -248,8 +247,7 @@ public class CircleController extends BaseContorller {
 			@ApiImplicitParam(name = "isNotice", value = "是否通知好友", dataType = "boolean"),
 			@ApiImplicitParam(name = "addType", required = true, value = "聚会申请加入圈子为 1", dataType = "int"),
 			@ApiImplicitParam(name = "partyid", value = "聚会id",required = true, dataType = "string")})
-	@RequestMapping("/party-apply-insert")
-	@ResponseBody
+	@PostMapping("/party-apply-insert")
 	public String applyIsnert(@RequestParam(required = true) String circleid, String reason, boolean isNotice, int
 			addType, String partyid, HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;

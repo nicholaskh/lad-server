@@ -36,6 +36,14 @@ public class CircleVo extends BaseVo {
 
 	private int unReadNum;
 
+
+	//省市区 ，直辖市 省市一样
+	private String province;
+	private String city;
+	private String district;
+
+
+
 	public String getId() {
 		return id;
 	}
@@ -211,5 +219,29 @@ public class CircleVo extends BaseVo {
 
 	public void setUnReadNum(int unReadNum) {
 		this.unReadNum = unReadNum;
+	}
+
+	public String getProvince() {
+		return province;
+	}
+
+	public void setProvince(String province) {
+		this.province = province;
+	}
+
+	public String getCity() {
+		return city;
+	}
+
+	public void setCity(String city) {
+		this.city = city;
+	}
+
+	public String getDistrict() {
+		return district;
+	}
+
+	public void setDistrict(String district) {
+		this.district = district;
 	}
 }
