@@ -920,16 +920,12 @@ public class CircleController extends BaseContorller {
 		if (page < 1 || limit < 0) {
 			return Constant.COM_FAIL_RESP;
 		}
-		int total = (page-1)*limit;
 		//放入合集的置顶全职
 		int current = 0;
 		List<CircleVo> voList = new LinkedList<>();
-		if (!topCircles.isEmpty() && topCircles.size() > total) {
+		if (!topCircles.isEmpty() && page <= 1) {
 			List<CircleBo> tops = circleService.findCirclesInList(topCircles);
 			//因置顶圈子不能再数据库实现分页，
-			int start = total + 1;
-			int end = page * limit;
-			int num = 0;
 			for (String top : topCircles) {
 				//由于mongo查询结果不是按照list的顺序，在程序中再次处理顺序
 				for (CircleBo circleBo : tops) {
@@ -939,19 +935,16 @@ public class CircleController extends BaseContorller {
 							circleBo.setTotal(number);
 							circleService.updateTotal(circleBo.getId(), number);
 						}
-						num ++;
-						if (num >= start && num <= end) {
-							current ++;
-							voList.add(bo2vo(circleBo, userBo, 1));
-						}
+						current ++;
+						voList.add(bo2vo(circleBo, userBo, 1));
 						tops.remove(circleBo);
 						break;
 					}
 				}
 			}
 		}
-		if (current < limit) {
-			List<CircleBo> circleBos = circleService.findMyCircles(userBo.getId(), page, limit-current);
+		if (current < limit || page > 1) {
+			List<CircleBo> circleBos = circleService.findMyCircles(userBo.getId(), page, limit);
 			//筛选出置顶的圈子
 			for (CircleBo circleBo : circleBos) {
 				if (topCircles.contains(circleBo.getId())) {
@@ -2278,6 +2271,7 @@ public class CircleController extends BaseContorller {
 				UserBaseVo opUser = new UserBaseVo();
 				if (operate != null) {
 					BeanUtils.copyProperties(operate, opUser);
+					opUser.setSex(operate.getSex());
 				}
 				map.put("title", hisBo.getTitle());
 				map.put("content", hisBo.getContent());
