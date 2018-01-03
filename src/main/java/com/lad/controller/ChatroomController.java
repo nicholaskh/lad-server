@@ -111,11 +111,10 @@ public class ChatroomController extends BaseContorller {
 	@PostMapping("/insert-user")
 	public String insertUser(String userids, String chatroomid,
 							 HttpServletRequest request, HttpServletResponse response) {
-		UserBo userBo;
-		try {
-			userBo = checkSession(request, userService);
-		} catch (MyException e) {
-			return e.getMessage();
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (StringUtils.isEmpty(userids)) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_ID.getIndex(),
@@ -138,8 +137,21 @@ public class ChatroomController extends BaseContorller {
 			useridArr = new String[]{userids};
 		}
 		if (chatroomBo.isVerify() && !chatroomBo.getMaster().equals(userBo.getId())) {
+			for (String userid : useridArr) {
+				ReasonBo reasonBo = reasonService.findByUserAndChatroom(userid, chatroomid);
+				if (reasonBo == null) {
+					reasonBo = new ReasonBo();
+					reasonBo.setStatus(0);
+					reasonBo.setCreateuid(userid);
+					reasonBo.setReasonType(1);
+					reasonBo.setChatroomid(chatroomid);
+					reasonBo.setOperUserid(userBo.getId());
+					reasonBo.setReason(userBo.getUserName().concat("邀请加入群聊"));
+					reasonService.insert(reasonBo);
+				} 
+			}
 			String path = "";
-			String content = String.format("%s邀请您加入群聊", userBo.getUserName());
+			String content = String.format("“%s”邀请您加入群聊", userBo.getUserName());
 			JPushUtil.push(titlePush, content, path,  useridArr);
 			return Constant.COM_RESP;
 		}
@@ -1259,13 +1271,33 @@ public class ChatroomController extends BaseContorller {
 		} catch (MyException e) {
 			return e.getMessage();
 		}
+		String userid = userBo.getId();
 		ChatroomBo chatroomBo = chatroomService.get(chatroomid);
 		if (chatroomBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(),
 					ERRORCODE.CHATROOM_NULL.getReason());
 		}
 		if (chatroomBo.isVerify()) {
-			return Constant.COM_FAIL_RESP;
+			String reason = String.format("“%s”通过二维码申请加入群聊",userBo.getUserName());
+			ReasonBo reasonBo = reasonService.findByUserAndChatroom(userid, chatroomid);
+			if (reasonBo == null) {
+				reasonBo = new ReasonBo();
+				reasonBo.setStatus(0);
+				reasonBo.setCreateuid(userid);
+				reasonBo.setReasonType(1);
+				reasonBo.setChatroomid(chatroomid);
+				reasonBo.setReason(reason);
+				reasonService.insert(reasonBo);
+			} else if (reasonBo.getStatus() == Constant.ADD_APPLY){
+				return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_APPLY_EXIST.getIndex(),
+						ERRORCODE.CHATROOM_APPLY_EXIST.getReason());
+			} else if (reasonBo.getStatus() == Constant.ADD_AGREE) {
+				return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_HAS_ADD.getIndex(),
+						ERRORCODE.CHATROOM_HAS_ADD.getReason());
+			} else {
+				reasonService.updateApply(reasonBo.getId(), Constant.ADD_APPLY, reason);
+			}
+			return Constant.COM_RESP;
 		} else {
 			//第一个为返回结果信息，第二位term信息
 			String result = IMUtil.subscribe(1,chatroomid, userBo.getId());
@@ -1338,6 +1370,7 @@ public class ChatroomController extends BaseContorller {
 		ReasonBo reasonBo = new ReasonBo();
 		reasonBo.setStatus(0);
 		reasonBo.setCreateuid(userBo.getId());
+		reasonBo.setReasonType(1);
 		reasonBo.setChatroomid(chatroomid);
 		reasonBo.setReason(reason);
 		reasonService.insert(reasonBo);
@@ -1455,7 +1488,7 @@ public class ChatroomController extends BaseContorller {
 				lock.unlock();
 			}
 			addRoomInfo(userBo, chatroomid, imIds, imNames, otherNameAndId);
-			reasonService.updateApply(applyid, 1, "");
+			reasonService.updateApply(applyid, Constant.ADD_AGREE, "");
 
 			String path = "";
 			String content = String.format("%s已通过您的加群申请", userBo.getUserName());
@@ -1463,7 +1496,7 @@ public class ChatroomController extends BaseContorller {
 
 			map.put("chatroomUser", set.size());
 		} else {
-			reasonService.updateApply(applyid, -1, refues);
+			reasonService.updateApply(applyid, Constant.ADD_REFUSE, refues);
 			map.put("chatroomUser", chatroomBo.getUsers().size());
 		}
 		map.put("chatroomName", name);

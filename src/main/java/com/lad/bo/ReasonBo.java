@@ -24,6 +24,9 @@ public class ReasonBo extends BaseBo {
 
     private String chatroomid;
 
+    //0 圈子申请， 1 群聊申请
+    private int reasonType;
+
     //是否是群主邀请，群主邀请
     private boolean isMasterApply;
 
@@ -32,6 +35,8 @@ public class ReasonBo extends BaseBo {
 
     //是否通过聚会页面加入圈子 0 正常加入圈子，1 通过聚会页面加入圈子
     private int addType;
+    //id
+    private String operUserid;
 
     private String partyid;
 
@@ -113,5 +118,21 @@ public class ReasonBo extends BaseBo {
 
     public void setPartyid(String partyid) {
         this.partyid = partyid;
+    }
+
+    public int getReasonType() {
+        return reasonType;
+    }
+
+    public void setReasonType(int reasonType) {
+        this.reasonType = reasonType;
+    }
+
+    public String getOperUserid() {
+        return operUserid;
+    }
+
+    public void setOperUserid(String operUserid) {
+        this.operUserid = operUserid;
     }
 }

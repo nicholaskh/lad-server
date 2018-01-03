@@ -76,6 +76,21 @@ public interface IReasonDao extends IBaseDao{
      */
     ReasonBo findByUserAndChatroom(String userid, String chatroomid);
 
+    /**
+     * 查找所有聊天室申请
+     * @param chatroomid
+     * @return
+     */
+    List<ReasonBo> findByChatroom(String chatroomid, int status);
+
+    /**
+     * 查找单个申请
+     * @param userid
+     * @param chatroomid
+     * @return
+     */
+    ReasonBo findByUserAndChatroom(String userid, String chatroomid, int status);
+
 
     /**
      * 是否管理员邀请修改

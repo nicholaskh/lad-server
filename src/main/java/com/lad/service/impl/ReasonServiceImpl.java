@@ -112,4 +112,14 @@ public class ReasonServiceImpl implements IReasonService {
     public WriteResult removeUser(String userid, String circleid) {
         return reasonDao.removeUser(userid, circleid);
     }
+
+    @Override
+    public List<ReasonBo> findByChatroom(String chatroomid, int status) {
+        return reasonDao.findByChatroom(chatroomid, status);
+    }
+
+    @Override
+    public ReasonBo findByUserAndChatroom(String userid, String chatroomid, int status) {
+        return reasonDao.findByUserAndChatroom(userid, chatroomid, status);
+    }
 }

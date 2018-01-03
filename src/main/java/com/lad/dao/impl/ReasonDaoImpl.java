@@ -89,7 +89,6 @@ public class ReasonDaoImpl implements IReasonDao {
         Query query = new Query();
         query.addCriteria(new Criteria("chatroomid").is(chatroomid));
         query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
-        query.addCriteria(new Criteria("status").is(Constant.ADD_AGREE));
         query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "createTime")));
         return mongoTemplate.find(query, ReasonBo.class);
     }
@@ -100,7 +99,6 @@ public class ReasonDaoImpl implements IReasonDao {
         query.addCriteria(new Criteria("createuid").is(userid));
         query.addCriteria(new Criteria("chatroomid").is(chatroomid));
         query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
-        query.addCriteria(new Criteria("status").is(Constant.ADD_AGREE));
         return mongoTemplate.findOne(query, ReasonBo.class);
     }
 
@@ -210,5 +208,26 @@ public class ReasonDaoImpl implements IReasonDao {
         Update update = new Update();
         update.set("deleted", Constant.DELETED);
         return mongoTemplate.updateFirst(query, update, ReasonBo.class);
+    }
+
+
+    @Override
+    public List<ReasonBo> findByChatroom(String chatroomid, int status) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("chatroomid").is(chatroomid));
+        query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+        query.addCriteria(new Criteria("status").is(status));
+        query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
+        return mongoTemplate.find(query, ReasonBo.class);
+    }
+
+    @Override
+    public ReasonBo findByUserAndChatroom(String userid, String chatroomid, int status) {
+
+        Query query = new Query();
+        Criteria criteria = new Criteria("reasonType").is(1).and("createuid").is(userid)
+                .and("chatroomid").is(chatroomid).and("status").is(status).and("deleted").is(Constant.ACTIVITY);
+        query.addCriteria(criteria);
+        return mongoTemplate.findOne(query, ReasonBo.class);
     }
 }
