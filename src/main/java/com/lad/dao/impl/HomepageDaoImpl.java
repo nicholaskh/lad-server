@@ -1,5 +1,6 @@
 package com.lad.dao.impl;
 
+import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -55,4 +56,17 @@ public class HomepageDaoImpl implements IHomepageDao {
 		return homepageBo;
 	}
 
+	@Override
+	public WriteResult updateNewCount(String id, int num) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("_id").is(id));
+		Update update = new Update();
+		if (num == 0) {
+			update.set("new_visitors_count", num);
+		} else {
+			update.inc("new_visitors_count", num);
+			update.inc("total_visitors_count", num);
+		}
+		return mongoTemplate.updateFirst(query, update, HomepageBo.class);
+	}
 }

@@ -1,16 +1,16 @@
 package com.lad.bo;
 
-import java.util.LinkedList;
-
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.util.LinkedList;
 
 @Document(collection = "homepage")
 public class HomepageBo extends BaseBo {
 
 	private static final long serialVersionUID = 1L;
 	private String owner_id;
-	private Integer new_visitors_count;
-	private Integer total_visitors_count;
+	private int new_visitors_count;
+	private int total_visitors_count;
 	private LinkedList<String> visitor_ids = new LinkedList<String>();
 
 	public String getOwner_id() {

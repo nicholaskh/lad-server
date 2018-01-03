@@ -1,5 +1,6 @@
 package com.lad.service.impl;
 
+import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -33,4 +34,8 @@ public class HomepageServiceImpl implements IHomepageService {
 		return homepageDao.update_visitor_ids(homepageBo);
 	}
 
+	@Override
+	public WriteResult updateNewCount(String id, int num) {
+		return homepageDao.updateNewCount(id, num);
+	}
 }
