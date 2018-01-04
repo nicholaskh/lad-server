@@ -2,18 +2,12 @@ package com.lad.controller;
 
 import com.lad.bo.*;
 import com.lad.redis.RedisServer;
-import com.lad.service.ICircleService;
-import com.lad.service.IHomepageService;
-import com.lad.service.IThumbsupService;
-import com.lad.service.IUserService;
+import com.lad.service.*;
 import com.lad.util.CommonUtil;
 import com.lad.util.Constant;
 import com.lad.util.ERRORCODE;
 import com.lad.util.MyException;
-import com.lad.vo.CircleBaseVo;
-import com.lad.vo.ThumbsupVo;
-import com.lad.vo.UserInfoVo;
-import com.lad.vo.UserVisitVo;
+import com.lad.vo.*;
 import net.sf.json.JSONObject;
 import org.redisson.api.RLock;
 import org.redisson.api.RMapCache;
@@ -49,6 +43,9 @@ public class HomepageController extends BaseContorller {
 
 	@Autowired
 	private RedisServer redisServer;
+
+	@Autowired
+	private IChatroomService chatroomService;
 
 	private int homeType = 0;
 
@@ -376,12 +373,19 @@ public class HomepageController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.USER_NULL.getIndex(),
 					ERRORCODE.USER_NULL.getReason());
 		}
+		List<ChatroomVo> voList = new LinkedList<>();;
 		if (loginUser != null && !userid.equals(loginUser.getId())) {
 			updateUserVisit(userid, loginUser.getId());
+			List<ChatroomBo> chatroomBos = chatroomService.haveSameChatroom(loginUser.getId(), userid);
+			for (ChatroomBo chatroomBo : chatroomBos) {
+				ChatroomVo vo = new ChatroomVo();
+				BeanUtils.copyProperties(chatroomBo,vo);
+				voList.add(vo);
+			}
 		}
 		UserInfoVo infoVo = new UserInfoVo();
 		bo2vo(userBo, infoVo);
-		List<CircleBo> circleBos = circleService.findMyCircles(userBo.getId(), 1, 4);
+		List<CircleBo> circleBos = circleService.findMyCircles(userid, 1, 4);
 		List<CircleBaseVo> circles = new LinkedList<>();
 		for (CircleBo circleBo : circleBos) {
 			CircleBaseVo circleBaseVo = new CircleBaseVo();
@@ -395,6 +399,7 @@ public class HomepageController extends BaseContorller {
 		map.put("ret", 0);
 		map.put("userVo", infoVo);
 		map.put("userCricles", circles);
+		map.put("chatroomVos", voList);
 		return JSONObject.fromObject(map).toString();
 	}
 

@@ -27,13 +27,18 @@ public class ReasonBo extends BaseBo {
     //0 圈子申请， 1 群聊申请
     private int reasonType;
 
-    //是否是群主邀请，群主邀请
+    //是否是圈主或圈子管理员邀请，邀请标识
     private boolean isMasterApply;
 
     //圈子内未读数据，为了减少数据冗余，放到reason表中
     private int unReadNum;
 
-    //是否通过聚会页面加入圈子 0 正常加入圈子，1 通过聚会页面加入圈子
+    /**
+     * 是否通过聚会页面加入圈子
+     * 0 正常加入圈子，
+     * 1 通过聚会页面加入圈子 ,
+     * 2 通过二维码扫描进入群聊,当 reasonType为1时有效
+     */
     private int addType;
     //id
     private String operUserid;

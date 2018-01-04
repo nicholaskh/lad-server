@@ -12,6 +12,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 
@@ -42,6 +43,7 @@ public class ReasonDaoImpl implements IReasonDao {
         if (status == Constant.ADD_REFUSE) {
             update.set("refuse", refuse);
         }
+        update.set("updateTime", new Date());
         return mongoTemplate.updateFirst(query, update, ReasonBo.class);
     }
 
@@ -132,6 +134,7 @@ public class ReasonDaoImpl implements IReasonDao {
         Update update = new Update();
         update.set("status", status);
         update.set("isMasterApply", isMasterApply);
+        update.set("updateTime", new Date());
         return mongoTemplate.updateFirst(query,update, ReasonBo.class);
     }
 

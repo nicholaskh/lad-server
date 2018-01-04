@@ -23,6 +23,7 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -300,12 +301,21 @@ public class ChatroomDaoImpl implements IChatroomDao {
 	@Override
 	public WriteResult addPartyChartroom(String chatroomId, String partyid) {
 		Query query = new Query();
-		query.addCriteria(new Criteria("_id").is(chatroomId));
-		query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+		query.addCriteria(new Criteria("_id").is(chatroomId).and("deleted").is(Constant.ACTIVITY));
 		Update update = new Update();
 		update.set("targetid", partyid);
 		return  mongoTemplate.updateFirst(query, update, ChatroomBo.class);
 	}
 
+	@Override
+	public List<ChatroomBo> haveSameChatroom(String userid, String friendid) {
 
+		HashSet<String> users = new LinkedHashSet<>();
+		users.add(userid);
+		users.add(friendid);
+		Query query = new Query();
+		query.addCriteria(new Criteria("users").all(users).and("type").ne(Constant.ROOM_SINGLE).and("deleted").is
+				(Constant.ACTIVITY));
+		return mongoTemplate.find(query, ChatroomBo.class);
+	}
 }

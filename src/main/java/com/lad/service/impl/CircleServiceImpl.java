@@ -26,6 +26,9 @@ public class CircleServiceImpl implements ICircleService {
 	@Autowired
 	private ICircleAddDao circleAddDao;
 
+	@Autowired
+	private ICircleNoticeDao circleNoticeDao;
+
 	public CircleBo insert(CircleBo circleBo) {
 		return circleDao.insert(circleBo);
 	}
@@ -276,5 +279,21 @@ public class CircleServiceImpl implements ICircleService {
 	@Override
 	public WriteResult deleteHisBitch(List<String> ids) {
 		return circleHistoryDao.deleteHisBitch(ids);
+	}
+
+
+	@Override
+	public CircleNoticeBo addNotice(CircleNoticeBo noticeBo) {
+		return circleNoticeDao.addNotice(noticeBo);
+	}
+
+	@Override
+	public List<CircleNoticeBo> findCircleNotice(String circleid, int page, int limit) {
+		return circleNoticeDao.findCircleNotice(circleid, page, limit);
+	}
+
+	@Override
+	public CircleNoticeBo findLastNotice(String circleid) {
+		return circleNoticeDao.findLastNotice(circleid);
 	}
 }

@@ -191,4 +191,12 @@ public class ChatroomServiceImpl implements IChatroomService {
 	public WriteResult updateNameAndUsers(String chatRoomId, String name, boolean isNameSet, LinkedHashSet<String> users) {
 		return chatroomDao.updateNameAndUsers(chatRoomId, name, isNameSet, users);
 	}
+
+	@Override
+	public List<ChatroomBo> haveSameChatroom(String userid, String friendid) {
+		return chatroomDao.haveSameChatroom(userid, friendid);
+	}
+
+
+
 }

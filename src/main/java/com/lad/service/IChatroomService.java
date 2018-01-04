@@ -234,4 +234,15 @@ public interface IChatroomService extends IBaseService {
 	 * @return
 	 */
 	WriteResult updateNameAndUsers(String chatRoomId, String name, boolean isNameSet, LinkedHashSet<String> users);
+
+
+	/**
+	 * 查询与好友具有相同的群聊
+	 * @param userid
+	 * @param friendid
+	 * @return
+	 */
+	List<ChatroomBo> haveSameChatroom(String userid, String friendid);
+
+	
 }

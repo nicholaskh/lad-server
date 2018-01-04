@@ -296,14 +296,15 @@ public class ChatroomController extends BaseContorller {
 			}
 			deletePartyChatroom(chatroomBo, set);
 		} else {
+			if(!chatroomBo.isNameSet()){
+				String newChatRoomName = ChatRoomUtil.generateChatRoomName(userService, set, chatroomid, logger);
+				name = newChatRoomName != null ? newChatRoomName : name;
+			}
 			// 如果群聊没有修改过名称，自动修改名称
 			RLock lock = redisServer.getRLock(chatroomid.concat("users"));
 			try {
 				lock.lock(3, TimeUnit.SECONDS);
-				if(!chatroomBo.isNameSet()){
-					String newChatRoomName = ChatRoomUtil.generateChatRoomName(userService, set, chatroomid, logger);
-					name = newChatRoomName != null ? newChatRoomName : name;
-				}
+
 				chatroomService.updateNameAndUsers(chatroomid, name, chatroomBo.isNameSet(), set);
 			} finally {
 				lock.unlock();
@@ -520,7 +521,7 @@ public class ChatroomController extends BaseContorller {
 				ChatroomVo vo = new ChatroomVo();
 				BeanUtils.copyProperties(temp, vo);
 				if (temp.getType() != 1) {
-					bo2vo(has && chatroomUserBo.isShowNick(),temp, vo);
+					bo2vo(temp, vo);
 					vo.setUserNum(temp.getUsers().size());
 					vo.setShowNick(has && chatroomUserBo.isShowNick());
 				}
@@ -540,7 +541,7 @@ public class ChatroomController extends BaseContorller {
 				ChatroomVo vo = new ChatroomVo();
 				BeanUtils.copyProperties(temp, vo);
 				if (temp.getType() != 1) {
-					bo2vo(has && chatroomUserBo.isShowNick(), temp, vo);
+					bo2vo(temp, vo);
 					vo.setUserNum(temp.getUsers().size());
 					vo.setShowNick(has && chatroomUserBo.isShowNick());
 				}
@@ -600,7 +601,7 @@ public class ChatroomController extends BaseContorller {
 				ChatroomVo vo = new ChatroomVo();
 				BeanUtils.copyProperties(chatroomBo, vo);
 				if (chatroomBo.getType() != 1) {
-					bo2vo(has && chatroomUserBo.isShowNick(),chatroomBo, vo);
+					bo2vo(chatroomBo, vo);
 					vo.setUserNum(chatroomBo.getUsers().size());
 					vo.setShowNick(has && chatroomUserBo.isShowNick());
 				}
@@ -648,7 +649,7 @@ public class ChatroomController extends BaseContorller {
 		userService.updateChatrooms(userBo);
 	}
 
-	private void bo2vo(boolean isShowNick, ChatroomBo chatroomBo, ChatroomVo vo){
+	private void bo2vo(ChatroomBo chatroomBo, ChatroomVo vo){
 		LinkedHashSet<ChatroomUserVo> userVos = vo.getUserVos();
 		List<ChatroomUserBo> chatroomUserBos = chatroomService.findByUserRoomid(chatroomBo.getId());
 		for (ChatroomUserBo chatroomUser : chatroomUserBos) {
@@ -664,7 +665,7 @@ public class ChatroomController extends BaseContorller {
 			if (userid.equals(chatroomBo.getMaster())) {
 				userVo.setRole(2);
 			}
-			if (isShowNick && StringUtils.isNotEmpty(chatroomUser.getNickname())) {
+			if (StringUtils.isNotEmpty(chatroomUser.getNickname())) {
 				userVo.setNickname(chatroomUser.getNickname());
 			} else {
 				userVo.setNickname(chatUser.getUserName());
@@ -700,7 +701,7 @@ public class ChatroomController extends BaseContorller {
 				vo.setDisturb(false);
 			} else {
 				if (temp.getType() != 1) {
-					bo2vo(chatroomUserBo.isShowNick(), temp, vo);
+					bo2vo(temp, vo);
 					vo.setUserNum(temp.getUsers().size());
 					vo.setShowNick(chatroomUserBo.isShowNick());
 				} else {
@@ -1087,6 +1088,7 @@ public class ChatroomController extends BaseContorller {
 				json.put("masterName", userBo.getUserName());
 				json.put("otherIds", ids);
 				json.put("otherNames", names);
+				json.put("verify", isVerify);
 				// 向群中发某人加入群聊通知
 				String res = IMUtil.notifyInChatRoom(
 						Constant.MASTER_CHANGE_CHAT_VERIFY, chatroomBo.getId(), json.toString());
@@ -1263,13 +1265,12 @@ public class ChatroomController extends BaseContorller {
 
 	@ApiOperation("申请加入群聊，包括通过二维码扫描")
 	@PostMapping("/apply-insert")
-	public String applyInsert(String chatroomid,
+	public String applyInsert(String chatroomid, String shareUserid,
 							 HttpServletRequest request, HttpServletResponse response) {
-		UserBo userBo;
-		try {
-			userBo = checkSession(request, userService);
-		} catch (MyException e) {
-			return e.getMessage();
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		String userid = userBo.getId();
 		ChatroomBo chatroomBo = chatroomService.get(chatroomid);
@@ -1285,7 +1286,9 @@ public class ChatroomController extends BaseContorller {
 				reasonBo.setStatus(0);
 				reasonBo.setCreateuid(userid);
 				reasonBo.setReasonType(1);
+				reasonBo.setOperUserid(shareUserid);
 				reasonBo.setChatroomid(chatroomid);
+				reasonBo.setAddType(2);
 				reasonBo.setReason(reason);
 				reasonService.insert(reasonBo);
 			} else if (reasonBo.getStatus() == Constant.ADD_APPLY){
@@ -1297,7 +1300,7 @@ public class ChatroomController extends BaseContorller {
 			} else {
 				reasonService.updateApply(reasonBo.getId(), Constant.ADD_APPLY, reason);
 			}
-			return Constant.COM_RESP;
+			return Constant.RESP_SUCCES;
 		} else {
 			//第一个为返回结果信息，第二位term信息
 			String result = IMUtil.subscribe(1,chatroomid, userBo.getId());
@@ -1329,17 +1332,11 @@ public class ChatroomController extends BaseContorller {
 			ArrayList<String> imNames = new ArrayList<>();
 			ArrayList<String> imIds = new ArrayList<>();
 			// 如果群聊没有修改过名称，自动修改名称
-			RLock lock = redisServer.getRLock(chatroomid.concat("users"));
-			try {
-				lock.lock(3, TimeUnit.SECONDS);
-				if(!chatroomBo.isNameSet()){
-					String newChatRoomName = ChatRoomUtil.generateChatRoomName(userService, set, chatroomid, logger);
-					name = newChatRoomName != null ? newChatRoomName : name;
-				}
-				chatroomService.updateNameAndUsers(chatroomid, name, chatroomBo.isNameSet(), set);
-			} finally {
-				lock.unlock();
+			if(!chatroomBo.isNameSet()){
+				String newChatRoomName = ChatRoomUtil.generateChatRoomName(userService, set, chatroomid, logger);
+				name = newChatRoomName != null ? newChatRoomName : name;
 			}
+			updateChatroomNameAndUser(chatroomid, name, chatroomBo.isNameSet(), set);
 			addRoomInfo(userBo, chatroomid, imIds, imNames, otherNameAndId);
 			Map<String, Object> map = new HashMap<String, Object>();
 			map.put("ret", 0);
@@ -1367,13 +1364,24 @@ public class ChatroomController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
-		ReasonBo reasonBo = new ReasonBo();
-		reasonBo.setStatus(0);
-		reasonBo.setCreateuid(userBo.getId());
-		reasonBo.setReasonType(1);
-		reasonBo.setChatroomid(chatroomid);
-		reasonBo.setReason(reason);
-		reasonService.insert(reasonBo);
+		ReasonBo reasonBo = reasonService.findByUserAndChatroom(userBo.getId(), chatroomid);
+		if (reasonBo == null) {
+			reasonBo = new ReasonBo();
+			reasonBo.setStatus(0);
+			reasonBo.setCreateuid(userBo.getId());
+			reasonBo.setReasonType(1);
+			reasonBo.setChatroomid(chatroomid);
+			reasonBo.setReason(reason);
+			reasonService.insert(reasonBo);
+		} else if (reasonBo.getStatus() == Constant.ADD_APPLY){
+			reasonService.updateApply(reasonBo.getId(), Constant.ADD_APPLY, reason);
+			return Constant.COM_RESP;
+		} else if (reasonBo.getStatus() == Constant.ADD_AGREE) {
+			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_HAS_ADD.getIndex(),
+					ERRORCODE.CHATROOM_HAS_ADD.getReason());
+		} else {
+			reasonService.updateApply(reasonBo.getId(), Constant.ADD_APPLY, reason);
+		}
 		return Constant.COM_RESP;
 	}
 
@@ -1476,17 +1484,11 @@ public class ChatroomController extends BaseContorller {
 			ArrayList<String> imNames = new ArrayList<>();
 			ArrayList<String> imIds = new ArrayList<>();
 			// 如果群聊没有修改过名称，自动修改名称
-			RLock lock = redisServer.getRLock(chatroomid.concat("users"));
-			try {
-				lock.lock(3, TimeUnit.SECONDS);
-				if(!chatroomBo.isNameSet()){
-					String newChatRoomName = ChatRoomUtil.generateChatRoomName(userService, set, chatroomid, logger);
-					name = newChatRoomName != null ? newChatRoomName : name;
-				}
-				chatroomService.updateNameAndUsers(chatroomid, name, chatroomBo.isNameSet(), set);
-			} finally {
-				lock.unlock();
+			if(!chatroomBo.isNameSet()){
+				String newChatRoomName = ChatRoomUtil.generateChatRoomName(userService, set, chatroomid, logger);
+				name = newChatRoomName != null ? newChatRoomName : name;
 			}
+			updateChatroomNameAndUser(chatroomid, name, chatroomBo.isNameSet(), set);
 			addRoomInfo(userBo, chatroomid, imIds, imNames, otherNameAndId);
 			reasonService.updateApply(applyid, Constant.ADD_AGREE, "");
 
@@ -1558,6 +1560,20 @@ public class ChatroomController extends BaseContorller {
 			if(!IMUtil.FINISH.equals(res)){
 				logger.error("failed notifyInChatRoom Constant.SOME_ONE_BE_INVITED_OT_CHAT_ROOM, %s",res);
 			}
+		}
+	}
+
+
+	@Async
+	private void updateChatroomNameAndUser(String chatroomid, String name, boolean isNameSet,LinkedHashSet<String>
+			set) {
+		// 如果群聊没有修改过名称，自动修改名称
+		RLock lock = redisServer.getRLock(chatroomid.concat("users"));
+		try {
+			lock.lock(2, TimeUnit.SECONDS);
+			chatroomService.updateNameAndUsers(chatroomid, name, isNameSet, set);
+		} finally {
+			lock.unlock();
 		}
 	}
 

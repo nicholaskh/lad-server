@@ -41,6 +41,8 @@ public class Constant {
 	 */
 	public static final String COM_RESP =  "{\"ret\":0}";
 
+	public static final String RESP_SUCCES =  "{\"ret\":1}";
+
 	/**
 	 * 异常失败返回
 	 */
@@ -362,5 +364,8 @@ public class Constant {
 
 	// 群主修改权限通知
 	public static final int MASTER_CHANGE_CHAT_VERIFY = 12;
+
+	// 某人通过二维码加入群聊
+	public static final int SOME_ONE_BY_CODE_OT_CHAT_ROOM = 13;
 
 }

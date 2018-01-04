@@ -10,6 +10,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -275,6 +276,7 @@ public class CircleController extends BaseContorller {
 			reasonBo.setCircleid(circleid);
 			reasonBo.setReason(reason);
 			reasonBo.setNotice(isNotice);
+			reasonBo.setReasonType(0);
 			if (StringUtils.isNotEmpty(partyid)) {
 				reasonBo.setAddType(addType);
 				reasonBo.setPartyid(partyid);
@@ -345,6 +347,7 @@ public class CircleController extends BaseContorller {
 			reasonBo.setCircleid(circleid);
 			reasonBo.setCreateuid(userBo.getId());
 			reasonBo.setStatus(Constant.ADD_AGREE);
+			reasonBo.setReasonType(0);
 			reasonService.insert(reasonBo);
 		} else {
 			reasonService.updateApply(reasonBo.getId(), Constant.ADD_AGREE, "");
@@ -512,6 +515,7 @@ public class CircleController extends BaseContorller {
 					reasonBo = new ReasonBo();
 					reasonBo.setCircleid(circleid);
 					reasonBo.setCreateuid(userid);
+					reasonBo.setReasonType(0);
 					reasonBo.setStatus(Constant.ADD_AGREE);
 					reasonService.insert(reasonBo);
 					accepts.add(userid);
@@ -1600,7 +1604,7 @@ public class CircleController extends BaseContorller {
 	@ApiOperation("修改圈子公告")
 	@PostMapping("/notice")
 	public String ciecleNotice(@RequestParam String circleid,
-							   String title, String content,
+							   String title, String content, MultipartFile image,
 							   HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
 		try {
@@ -1617,17 +1621,39 @@ public class CircleController extends BaseContorller {
 		}
 		if (circleBo.getCreateuid().equals(userid) ||
 				circleBo.getMasters().contains(userid)) {
-			circleBo.setNotice(content);
-			circleBo.setNoticeTitle(title);
-			circleBo.setNoticeTime(new Date());
-			circleBo.setNoticeUserid(userid);
-			circleService.updateNotice(circleBo);
+			updateNotice(circleBo, content, title, userid, image);
 		} else {
 			return CommonUtil.toErrorResult(
 					ERRORCODE.CIRCLE_MASTER_NULL.getIndex(),
 					ERRORCODE.CIRCLE_MASTER_NULL.getReason());
 		}
 		return Constant.COM_RESP;
+	}
+
+	@Async
+	private void updateNotice(CircleBo circleBo, String content, String title, String userid, MultipartFile image){
+		circleBo.setNotice(content);
+		circleBo.setNoticeTitle(title);
+		circleBo.setNoticeTime(new Date());
+		circleBo.setNoticeUserid(userid);
+		circleService.updateNotice(circleBo);
+		CircleNoticeBo noticeBo = new CircleNoticeBo();
+		noticeBo.setType(StringUtils.isEmpty(circleBo.getNoticeTitle()) ? 0 : 1);
+		//如果都不存在则表示删除
+		if (StringUtils.isEmpty(content) && StringUtils.isEmpty(title)) {
+			noticeBo.setType(2);
+		}
+		noticeBo.setContent(content);
+		noticeBo.setTitle(title);
+		noticeBo.setUserid(userid);
+		if (image != null) {
+			long time = Calendar.getInstance().getTimeInMillis();
+			String fileName = String.format("%s-%d-%s", userid, time, image.getOriginalFilename());
+			String path = CommonUtil.upload(image,
+					Constant.CIRCLE_HEAD_PICTURE_PATH, fileName, 0);
+			noticeBo.setImages(path);
+		}
+		circleService.addNotice(noticeBo);
 	}
 
 	/**
@@ -1650,11 +1676,48 @@ public class CircleController extends BaseContorller {
 		map.put("noticeTitle", circleBo.getNoticeTitle());
 		map.put("notice", circleBo.getNotice());
 		map.put("noticeTime", circleBo.getNoticeTime());
+		CircleNoticeBo noticeBo = circleService.findLastNotice(circleid);
+		map.put("image", noticeBo != null ? noticeBo.getImages() : "");
 		if (userBo != null) {
 			UserBaseVo userBaseVo = new UserBaseVo();
 			BeanUtils.copyProperties(userBo, userBaseVo);
 			map.put("noticeUser", userBaseVo);
 		}
+		return JSONObject.fromObject(map).toString();
+	}
+
+	@ApiOperation("获取圈子公告历史列表, 返回最近10条")
+	@PostMapping("/get-notice-list")
+	public String getNoticeList(@RequestParam String circleid,
+							HttpServletRequest request, HttpServletResponse response) {
+		CircleBo circleBo = circleService.selectById(circleid);
+		if (circleBo == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CIRCLE_IS_NULL.getIndex(),
+					ERRORCODE.CIRCLE_IS_NULL.getReason());
+		}
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		List<CircleNoticeBo> noticeBos = circleService.findCircleNotice(circleid, 1, 10);
+		JSONArray array = new JSONArray();
+		if (!CommonUtil.isEmpty(noticeBos)) {
+			for (CircleNoticeBo noticeBo : noticeBos) {
+				JSONObject jsonObject = new JSONObject();
+				jsonObject.put("noticeTitle", noticeBo.getTitle());
+				jsonObject.put("notice", noticeBo.getContent());
+				jsonObject.put("noticeTime", noticeBo.getCreateTime());
+				jsonObject.put("type", noticeBo.getType());
+				jsonObject.put("image", noticeBo.getImages());
+				UserBo userBo = userService.getUser(noticeBo.getUserid());
+				if (userBo != null) {
+					UserBaseVo userBaseVo = new UserBaseVo();
+					BeanUtils.copyProperties(userBo, userBaseVo);
+					jsonObject.put("noticeUser", userBaseVo);
+				}
+				array.add(jsonObject);
+			}
+		}
+		map.put("noticeList", array);
 		return JSONObject.fromObject(map).toString();
 	}
 
@@ -1825,7 +1888,7 @@ public class CircleController extends BaseContorller {
 	 * @param response
 	 * @return
 	 */
-	@ApiOperation("要求好友加入圈子")
+	@ApiOperation("邀请好友加入圈子")
 	@PostMapping("/invite-user")
 	public String inviteUsers(@RequestParam String circleid, @RequestParam String userids,
 						   HttpServletRequest request, HttpServletResponse response) {
@@ -1859,6 +1922,7 @@ public class CircleController extends BaseContorller {
 					reasonBo.setCircleid(circleid);
 					reasonBo.setCreateuid(inviteId);
 					reasonBo.setMasterApply(true);
+					reasonBo.setReasonType(0);
 					reasonBo.setStatus(Constant.ADD_APPLY);
 					reasonService.insert(reasonBo);
 				} else {
@@ -2188,6 +2252,7 @@ public class CircleController extends BaseContorller {
 			reasonBo.setCreateuid(userid);
 			reasonBo.setStatus(1);
 			reasonBo.setAddType(0);
+			reasonBo.setReasonType(0);
 			reasonService.insert(reasonBo);
 		} else if (reasonBo.getStatus() != 1) {
 			reasonService.updateApply(reasonBo.getId(), 1, "");
