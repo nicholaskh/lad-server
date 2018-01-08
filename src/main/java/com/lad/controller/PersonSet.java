@@ -51,6 +51,7 @@ public class PersonSet extends BaseContorller {
 		userBo.setUserName(username);
 		userService.updateUserName(userBo);
 		updateUserName(userBo.getId(), username);
+		updateUserSession(request, userService);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();
@@ -69,6 +70,7 @@ public class PersonSet extends BaseContorller {
 		}
 		userBo.setBirthDay(birthday);
 		userService.updateBirthDay(userBo);
+		updateUserSession(request, userService);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();
@@ -85,9 +87,9 @@ public class PersonSet extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
-		userBo = userService.getUser(userBo.getId());
 		userBo.setSex(sex);
 		userService.updateSex(userBo);
+		updateUserSession(request, userService);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();
@@ -107,6 +109,7 @@ public class PersonSet extends BaseContorller {
 		}
 		userBo.setPersonalizedSignature(personalized_signature);
 		userService.updatePersonalizedSignature(userBo);
+		updateUserSession(request, userService);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();
@@ -235,6 +238,7 @@ public class PersonSet extends BaseContorller {
 			locationBo = locationService.insertUserPoint(locationBo);
 		}
 		userService.updateLocation(userBo.getPhone(), locationBo.getId());
+		updateUserSession(request, userService);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();

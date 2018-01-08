@@ -267,6 +267,7 @@ public class UserDaoImpl implements IUserDao {
     public List<UserBo> findUserByIds(List<String> userids) {
         Query query = new Query();
         query.addCriteria(new Criteria("_id").in(userids));
+        query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
         return mongoTemplate.find(query, UserBo.class);
     }
 

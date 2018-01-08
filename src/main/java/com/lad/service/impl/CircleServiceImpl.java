@@ -9,6 +9,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 @Service("circleService")
@@ -295,5 +296,26 @@ public class CircleServiceImpl implements ICircleService {
 	@Override
 	public CircleNoticeBo findLastNotice(String circleid) {
 		return circleNoticeDao.findLastNotice(circleid);
+	}
+
+	@Override
+	public WriteResult deleteNotice(String id, String userid) {
+		return circleNoticeDao.deleteNotice(id, userid);
+	}
+
+	@Override
+	public WriteResult updateNoticeRead(String id, LinkedHashSet<String> readUsers, LinkedHashSet<String>
+			unReadUsers) {
+		return circleNoticeDao.updateNoticeRead(id, readUsers, unReadUsers);
+	}
+
+	@Override
+	public WriteResult updateNotice(CircleNoticeBo noticeBo) {
+		return circleNoticeDao.updateNotice(noticeBo);
+	}
+
+	@Override
+	public CircleNoticeBo findNoticeById(String id) {
+		return circleNoticeDao.findNoticeById(id);
 	}
 }

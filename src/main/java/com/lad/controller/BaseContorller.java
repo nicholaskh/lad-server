@@ -88,6 +88,26 @@ public abstract class BaseContorller {
 	}
 
 	/**
+	 * 同步session ,用户数据又修改之后,保证session与数据库同步
+	 * @param request
+	 */
+	@Async
+	public void updateUserSession(HttpServletRequest request, IUserService userService) {
+		HttpSession session = request.getSession();
+		UserBo userBo = (UserBo) session.getAttribute("userBo");
+		if (null != userBo) {
+			userBo = userService.getUser(userBo.getId());
+			if (userBo == null) {
+				//用户不存在，注销用户session
+				session.invalidate();
+			} else {
+				//更新用户session
+				session.setAttribute("userBo", userBo);
+			}
+		}
+	}
+
+	/**
 	 * 更新圈子访问记录信息
 	 * @param userid
 	 * @param circleid

@@ -1044,7 +1044,27 @@ public class CircleController extends BaseContorller {
 		BeanUtils.copyProperties(hostBo, userHostVo);
 		userHostVo.setRole(2);
 
+
 		long partyNum = partyService.getCirclePartyNum(circleid);
+
+		CircleNoticeBo lastNotice = circleService.findLastNotice(circleid);
+		boolean isRead = false;
+		JSONObject jsonObject = new JSONObject();
+		if (lastNotice != null) {
+			LinkedHashSet<String> readUsers = lastNotice.getReadUsers();
+			isRead = readUsers.contains(userBo.getId());
+			jsonObject.put("noticeTitle", lastNotice.getTitle());
+			jsonObject.put("notice", lastNotice.getContent());
+			jsonObject.put("noticeTime", lastNotice.getCreateTime());
+			jsonObject.put("image", lastNotice.getImages());
+			jsonObject.put("readNum", lastNotice.getReadUsers().size());
+			UserBo user = userService.getUser(lastNotice.getCreateuid());
+			if (user != null) {
+				UserBaseVo userBaseVo = new UserBaseVo();
+				BeanUtils.copyProperties(user, userBaseVo);
+				jsonObject.put("noticeUser", userBaseVo);
+			}
+		}
 
 		//清零访问
 		Map<String, Object> map = new LinkedHashMap<>();
@@ -1054,6 +1074,8 @@ public class CircleController extends BaseContorller {
 		map.put("userVos", userList);
 		map.put("circleVo", circleVo);
 		map.put("partyNum", partyNum);
+		map.put("noticeRead", isRead);
+		map.put("notice", jsonObject);
 		return JSONObject.fromObject(map).toString();
 	}
 
@@ -1598,54 +1620,100 @@ public class CircleController extends BaseContorller {
         return Constant.COM_RESP;
     }
 
+
 	/**
-	 * 添加或修改公告
+	 * 添加公告
 	 */
-	@ApiOperation("修改圈子公告")
-	@PostMapping("/notice")
-	public String ciecleNotice(@RequestParam String circleid,
+	@ApiOperation("添加圈子公告")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "circleid", value = "圈子id", required = true, paramType = "query",
+					dataType = "string"),
+			@ApiImplicitParam(name = "title", value = "公告标题", paramType = "query",dataType = "string"),
+			@ApiImplicitParam(name = "content", value = "公告内容", paramType = "query",dataType = "string"),
+			@ApiImplicitParam(name = "image", value = "公告图片", paramType = "query",dataType = "file")})
+	@PostMapping("/add-notice")
+	public String ciecleAddNotice(@RequestParam String circleid,
 							   String title, String content, MultipartFile image,
 							   HttpServletRequest request, HttpServletResponse response) {
-		UserBo userBo;
-		try {
-			userBo = checkSession(request, userService);
-		} catch (MyException e) {
-			return e.getMessage();
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		String userid = userBo.getId();
 		CircleBo circleBo = circleService.selectById(circleid);
 		if (circleBo == null) {
-			return CommonUtil.toErrorResult(
-					ERRORCODE.CIRCLE_IS_NULL.getIndex(),
+			return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_IS_NULL.getIndex(),
 					ERRORCODE.CIRCLE_IS_NULL.getReason());
 		}
 		if (circleBo.getCreateuid().equals(userid) ||
 				circleBo.getMasters().contains(userid)) {
-			updateNotice(circleBo, content, title, userid, image);
+			CircleNoticeBo noticeBo = new CircleNoticeBo();
+			noticeBo.setContent(content);
+			noticeBo.setTitle(title);
+			noticeBo.setCreateuid(userid);
+			//发布人默认阅读
+			LinkedHashSet<String> readUsers = noticeBo.getReadUsers();
+			readUsers.add(userid);
+			HashSet<String> users = circleBo.getUsers();
+			users.remove(userid);
+			noticeBo.setUnReadUsers((LinkedHashSet<String>) users);
+			noticeBo.setType(0);
+			if (image != null) {
+				long time = Calendar.getInstance().getTimeInMillis();
+				String fileName = String.format("%s-%d-%s", userid, time, image.getOriginalFilename());
+				String path = CommonUtil.upload(image,
+						Constant.CIRCLE_HEAD_PICTURE_PATH, fileName, 0);
+				noticeBo.setImages(path);
+			}
+			circleService.addNotice(noticeBo);
 		} else {
-			return CommonUtil.toErrorResult(
-					ERRORCODE.CIRCLE_MASTER_NULL.getIndex(),
+			return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_MASTER_NULL.getIndex(),
 					ERRORCODE.CIRCLE_MASTER_NULL.getReason());
 		}
 		return Constant.COM_RESP;
 	}
 
-	@Async
-	private void updateNotice(CircleBo circleBo, String content, String title, String userid, MultipartFile image){
-		circleBo.setNotice(content);
-		circleBo.setNoticeTitle(title);
-		circleBo.setNoticeTime(new Date());
-		circleBo.setNoticeUserid(userid);
-		circleService.updateNotice(circleBo);
-		CircleNoticeBo noticeBo = new CircleNoticeBo();
-		noticeBo.setType(StringUtils.isEmpty(circleBo.getNoticeTitle()) ? 0 : 1);
-		//如果都不存在则表示删除
-		if (StringUtils.isEmpty(content) && StringUtils.isEmpty(title)) {
-			noticeBo.setType(2);
+	/**
+	 * 添加或修改公告
+	 */
+	@ApiOperation("修改圈子公告")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "noticeid", value = "公告id", required = true, paramType = "query",
+					dataType = "string"),
+			@ApiImplicitParam(name = "title", value = "公告标题", paramType = "query",dataType = "string"),
+			@ApiImplicitParam(name = "content", value = "公告内容", paramType = "query",dataType = "string"),
+			@ApiImplicitParam(name = "image", value = "公告图片", paramType = "query",dataType = "file")})
+	@PostMapping("/update-notice")
+	public String ciecleNotice(@RequestParam String noticeid,
+							   String title, String content, MultipartFile image,
+							   HttpServletRequest request, HttpServletResponse response) {
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		String userid = userBo.getId();
+		CircleNoticeBo noticeBo = circleService.findNoticeById(noticeid);
+		if (noticeBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_NOTICE_NULL.getIndex(),
+					ERRORCODE.CIRCLE_NOTICE_NULL.getReason());
+		}
+		CircleBo circleBo = circleService.selectById(noticeBo.getCircleid());
+		if (circleBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_IS_NULL.getIndex(),
+					ERRORCODE.CIRCLE_IS_NULL.getReason());
+		}
+		if (!circleBo.getCreateuid().equals(userid) &&
+				!circleBo.getMasters().contains(userid)) {
+			return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_MASTER_NULL.getIndex(),
+					ERRORCODE.CIRCLE_MASTER_NULL.getReason());
 		}
 		noticeBo.setContent(content);
 		noticeBo.setTitle(title);
-		noticeBo.setUserid(userid);
+		noticeBo.setUpdateuid(userid);
+		noticeBo.setUpdateTime(new Date());
+		noticeBo.setType(1);
 		if (image != null) {
 			long time = Calendar.getInstance().getTimeInMillis();
 			String fileName = String.format("%s-%d-%s", userid, time, image.getOriginalFilename());
@@ -1653,7 +1721,36 @@ public class CircleController extends BaseContorller {
 					Constant.CIRCLE_HEAD_PICTURE_PATH, fileName, 0);
 			noticeBo.setImages(path);
 		}
-		circleService.addNotice(noticeBo);
+		circleService.updateNotice(noticeBo);
+		return Constant.COM_RESP;
+	}
+
+	/**
+	 * 更新用户阅读数据信息
+	 * @param noticeid
+	 * @param userid
+	 */
+	@Async
+	private void updateNoticeRead(HashSet<String> users, String noticeid, String userid){
+		RLock lock = redisServer.getRLock(noticeid);
+		try {
+			lock.lock(3, TimeUnit.SECONDS);
+			CircleNoticeBo noticeBo = circleService.findNoticeById(noticeid);
+			LinkedHashSet<String> readUser = noticeBo.getReadUsers();
+			LinkedHashSet<String> unReadUser = noticeBo.getUnReadUsers();
+			//若有新圈子成员加入
+			if (users.size() != (readUser.size() + unReadUser.size())) {
+				users.removeAll(readUser);
+				unReadUser.addAll(users);
+			}
+			if (users.contains(userid)) {
+				unReadUser.remove(userid);
+				readUser.add(userid);
+				circleService.updateNoticeRead(noticeid, readUser, unReadUser);
+			}
+		} finally {
+			lock.unlock();
+		}
 	}
 
 	/**
@@ -1661,29 +1758,116 @@ public class CircleController extends BaseContorller {
 	 */
 	@ApiOperation("获取圈子公告详情")
 	@PostMapping("/get-notice")
-	public String getNotice(@RequestParam String circleid,
+	public String getNotice(@RequestParam String noticeid,
 							HttpServletRequest request, HttpServletResponse response) {
-		CircleBo circleBo = circleService.selectById(circleid);
-		if (circleBo == null) {
-			return CommonUtil.toErrorResult(
-					ERRORCODE.CIRCLE_IS_NULL.getIndex(),
-					ERRORCODE.CIRCLE_IS_NULL.getReason());
+		CircleNoticeBo noticeBo = circleService.findNoticeById(noticeid);
+		if (noticeBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_NOTICE_NULL.getIndex(),
+					ERRORCODE.CIRCLE_NOTICE_NULL.getReason());
 		}
-
-		UserBo userBo = userService.getUser(circleBo.getNoticeUserid());
-		Map<String, Object> map = new HashMap<String, Object>();
+		UserBo loginUser = getUserLogin(request);
+		LinkedHashSet<String> readUsers = noticeBo.getReadUsers();
+		int readNum = readUsers.size();
+		int role = 0;
+		if (loginUser != null) {
+			CircleBo circleBo = circleService.selectById(noticeBo.getCircleid());
+			String userid = loginUser.getId();
+			if (circleBo != null) {
+				HashSet<String> users = circleBo.getUsers();
+				updateNoticeRead(users,noticeid, loginUser.getId());
+				readNum = !readUsers.contains(userid) && users.contains(userid) ? readNum+1 : readNum;
+			}
+			role = getUserCircleRole(circleBo, userid);
+		}
+		UserBo userBo = userService.getUser(noticeBo.getCreateuid());
+		Map<String, Object> map = new LinkedHashMap<>();
 		map.put("ret", 0);
-		map.put("noticeTitle", circleBo.getNoticeTitle());
-		map.put("notice", circleBo.getNotice());
-		map.put("noticeTime", circleBo.getNoticeTime());
-		CircleNoticeBo noticeBo = circleService.findLastNotice(circleid);
-		map.put("image", noticeBo != null ? noticeBo.getImages() : "");
+		map.put("noticeTitle", noticeBo.getTitle());
+		map.put("notice", noticeBo.getContent());
+		map.put("noticeTime", noticeBo.getCreateTime());
+		map.put("readNum", readNum);
+		map.put("image", noticeBo.getImages());
 		if (userBo != null) {
 			UserBaseVo userBaseVo = new UserBaseVo();
 			BeanUtils.copyProperties(userBo, userBaseVo);
 			map.put("noticeUser", userBaseVo);
 		}
+		map.put("userRole", role);
 		return JSONObject.fromObject(map).toString();
+	}
+
+
+
+	/**
+	 * 添加或修改公告
+	 */
+	@ApiOperation("圈子公告阅读详情")
+	@PostMapping("/notice-read")
+	public String getNoticeRead(@RequestParam String noticeid,
+							HttpServletRequest request, HttpServletResponse response) {
+		CircleNoticeBo noticeBo = circleService.findNoticeById(noticeid);
+		if (noticeBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_NOTICE_NULL.getIndex(),
+					ERRORCODE.CIRCLE_NOTICE_NULL.getReason());
+		}
+		LinkedHashSet<String> readUsers = noticeBo.getReadUsers();
+		LinkedHashSet<String> unReadUser = noticeBo.getUnReadUsers();
+
+		List<String> readids = new LinkedList<>(readUsers);
+		List<String> unReadids = new LinkedList<>(unReadUser);
+
+		List<UserBaseVo> readVos = new LinkedList<>();
+		List<UserBo> readBos = userService.findUserByIds(readids);
+		for (UserBo userBo : readBos) {
+			UserBaseVo baseVo = new UserBaseVo();
+			BeanUtils.copyProperties(userBo, baseVo);
+			readVos.add(baseVo);
+		}
+
+		List<UserBaseVo> unReadVos = new LinkedList<>();
+		List<UserBo> unReadBos = userService.findUserByIds(unReadids);
+		for (UserBo userBo : unReadBos) {
+			UserBaseVo baseVo = new UserBaseVo();
+			BeanUtils.copyProperties(userBo, baseVo);
+			unReadVos.add(baseVo);
+		}
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("readNum", readUsers.size());
+		map.put("unReadNum", unReadUser.size());
+		map.put("readUserVos", readVos);
+		map.put("unReadUserVos", unReadVos);
+		return JSONObject.fromObject(map).toString();
+	}
+
+	@ApiOperation("删除圈子公告")
+	@PostMapping("/delete-notice")
+	public String deleteNoticeRead(@RequestParam String noticeid,
+								HttpServletRequest request, HttpServletResponse response) {
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		CircleNoticeBo noticeBo = circleService.findNoticeById(noticeid);
+		if (noticeBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_NOTICE_NULL.getIndex(),
+					ERRORCODE.CIRCLE_NOTICE_NULL.getReason());
+		}
+		String userid = userBo.getId();
+		CircleBo circleBo = circleService.selectById(noticeBo.getCircleid());
+		if (circleBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_IS_NULL.getIndex(),
+					ERRORCODE.CIRCLE_IS_NULL.getReason());
+		}
+		if (circleBo.getCreateuid().equals(userid) ||
+				circleBo.getMasters().contains(userid)) {
+			circleService.deleteNotice(noticeid, userid);
+		} else {
+			return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_MASTER_NULL.getIndex(),
+					ERRORCODE.CIRCLE_MASTER_NULL.getReason());
+		}
+		return Constant.COM_RESP;
 	}
 
 	@ApiOperation("获取圈子公告历史列表, 返回最近10条")
@@ -1706,9 +1890,9 @@ public class CircleController extends BaseContorller {
 				jsonObject.put("noticeTitle", noticeBo.getTitle());
 				jsonObject.put("notice", noticeBo.getContent());
 				jsonObject.put("noticeTime", noticeBo.getCreateTime());
-				jsonObject.put("type", noticeBo.getType());
 				jsonObject.put("image", noticeBo.getImages());
-				UserBo userBo = userService.getUser(noticeBo.getUserid());
+				jsonObject.put("readNum", noticeBo.getReadUsers().size());
+				UserBo userBo = userService.getUser(noticeBo.getCreateuid());
 				if (userBo != null) {
 					UserBaseVo userBaseVo = new UserBaseVo();
 					BeanUtils.copyProperties(userBo, userBaseVo);
@@ -1718,7 +1902,28 @@ public class CircleController extends BaseContorller {
 			}
 		}
 		map.put("noticeList", array);
+		UserBo userBo = getUserLogin(request);
+		if (userBo != null) {
+			map.put("userRole", getUserCircleRole(circleBo, userBo.getId()));
+		} else {
+			map.put("userRole", 0);
+		}
 		return JSONObject.fromObject(map).toString();
+	}
+
+	/**
+	 * 获取置顶用户在当前圈子的角色
+	 * @param circleBo
+	 * @param userid
+	 * @return
+	 */
+	private int getUserCircleRole(CircleBo circleBo, String userid){
+		if (circleBo.getCreateuid().equals(userid)) {
+			return 2;
+		} else if (circleBo.getMasters().contains(userid)){
+			return 1;
+		}
+		return 0;
 	}
 
 	/**

@@ -4,6 +4,7 @@ import com.lad.bo.*;
 import com.mongodb.WriteResult;
 
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 public interface ICircleService extends IBaseService {
@@ -306,5 +307,36 @@ public interface ICircleService extends IBaseService {
 	 * @return
 	 */
 	CircleNoticeBo findLastNotice(String circleid);
+
+	/**
+	 * 删除公告
+	 * @param id
+	 * @return
+	 */
+	WriteResult deleteNotice(String id, String userid);
+
+	/**
+	 * 更新阅读数
+	 * @param id
+	 * @param readUsers
+	 * @param unReadUsers
+	 * @return
+	 */
+	WriteResult updateNoticeRead(String id, LinkedHashSet<String> readUsers, LinkedHashSet<String> unReadUsers);
+
+	/**
+	 * 更新公告内容
+	 * @param noticeBo
+	 * @return
+	 */
+	WriteResult updateNotice(CircleNoticeBo noticeBo);
+
+
+	/**
+	 * 更具id查找
+	 * @param id
+	 * @return
+	 */
+	CircleNoticeBo findNoticeById(String id);
 
 }

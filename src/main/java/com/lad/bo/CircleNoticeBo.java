@@ -2,6 +2,8 @@ package com.lad.bo;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.LinkedHashSet;
+
 /**
  * 功能描述：
  * Copyright: Copyright (c) 2018
@@ -16,13 +18,15 @@ public class CircleNoticeBo extends BaseBo {
     private String content;
 
     private String circleid;
-    //操作人id
-    private String userid;
 
     //0 添加， 1修改，2删除
     private int type;
 
     private String images;
+
+    private LinkedHashSet<String> unReadUsers;
+
+    private LinkedHashSet<String> readUsers = new LinkedHashSet<>();
 
 
     public String getTitle() {
@@ -49,14 +53,6 @@ public class CircleNoticeBo extends BaseBo {
         this.circleid = circleid;
     }
 
-    public String getUserid() {
-        return userid;
-    }
-
-    public void setUserid(String userid) {
-        this.userid = userid;
-    }
-
     public int getType() {
         return type;
     }
@@ -71,5 +67,21 @@ public class CircleNoticeBo extends BaseBo {
 
     public void setImages(String images) {
         this.images = images;
+    }
+
+    public LinkedHashSet<String> getUnReadUsers() {
+        return unReadUsers;
+    }
+
+    public void setUnReadUsers(LinkedHashSet<String> unReadUsers) {
+        this.unReadUsers = unReadUsers;
+    }
+
+    public LinkedHashSet<String> getReadUsers() {
+        return readUsers;
+    }
+
+    public void setReadUsers(LinkedHashSet<String> readUsers) {
+        this.readUsers = readUsers;
     }
 }
