@@ -28,6 +28,7 @@ import javax.servlet.http.HttpSession;
 import java.lang.reflect.InvocationTargetException;
 import java.text.ParseException;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 @Api(value = "ChatroomController", description = "聊天信息相关接口")
@@ -62,24 +63,11 @@ public class ChatroomController extends BaseContorller {
 	@PostMapping("/create")
 	public String create(String name, HttpServletRequest request,
 			HttpServletResponse response) {
-		HttpSession session = request.getSession();
-		if (session.isNew()) {
-			return CommonUtil.toErrorResult(
-					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-		}
-		if (session.getAttribute("isLogin") == null) {
-			return CommonUtil.toErrorResult(
-					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-		}
-		UserBo userBo = (UserBo) session.getAttribute("userBo");
+		UserBo userBo = getUserLogin(request);
 		if (userBo == null) {
-			return CommonUtil.toErrorResult(
-					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
-		userBo = userService.getUser(userBo.getId());
 		ChatroomBo chatroomBo = new ChatroomBo();
 		chatroomBo.setName(userBo.getUserName());
 		chatroomBo.setType(Constant.ROOM_MULIT);
@@ -96,6 +84,7 @@ public class ChatroomController extends BaseContorller {
 		}
 		userService.updateChatrooms(userBo);
 		addChatroomUser(chatroomService, userBo, chatroomBo.getId(), userBo.getUserName());
+		updateUserSession(request, userService);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("channelId", chatroomBo.getId());
@@ -215,11 +204,10 @@ public class ChatroomController extends BaseContorller {
 	@PostMapping("/delete-user")
 	public String deltetUser(String userids, String chatroomid,
 							 HttpServletRequest request, HttpServletResponse response) {
-		UserBo userBo;
-		try {
-			userBo = checkSession(request, userService);
-		} catch (MyException e) {
-			return e.getMessage();
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		if (StringUtils.isEmpty(userids)) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_ID.getIndex(),
@@ -322,11 +310,10 @@ public class ChatroomController extends BaseContorller {
 	@ApiOperation("退出群聊")
 	@PostMapping("/quit")
 	public String quit(String chatroomid, HttpServletRequest request, HttpServletResponse response) {
-		UserBo userBo;
-		try {
-			userBo = checkSession(request, userService);
-		} catch (MyException e) {
-			return e.getMessage();
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		ChatroomBo chatroomBo = chatroomService.get(chatroomid);
 		if (null == chatroomBo) {
@@ -501,11 +488,10 @@ public class ChatroomController extends BaseContorller {
 	@PostMapping("/get-my-chatrooms")
 	public String getChatrooms(HttpServletRequest request,
 			HttpServletResponse response) {
-		UserBo userBo;
-		try {
-			userBo = checkSession(request, userService);
-		} catch (MyException e) {
-			return e.getMessage();
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		String userid = userBo.getId();
 		HashSet<String> chatrooms = userBo.getChatrooms();
@@ -563,11 +549,10 @@ public class ChatroomController extends BaseContorller {
 	@PostMapping("/my-chatrooms")
 	public String getChatrooms(String timestamp, HttpServletRequest request,
 							   HttpServletResponse response) {
-		UserBo userBo;
-		try {
-			userBo = checkSession(request, userService);
-		} catch (MyException e) {
-			return e.getMessage();
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		String userid = userBo.getId();
 		LinkedList<String> chatroomsTop = userBo.getChatroomsTop();
@@ -678,11 +663,10 @@ public class ChatroomController extends BaseContorller {
 	@PostMapping("/get-chatroom-info")
 	public String getChatroomInfo(@RequestParam String chatroomid,
 			HttpServletRequest request, HttpServletResponse response){
-		UserBo userBo;
-		try {
-			userBo = checkSession(request, userService);
-		} catch (MyException e) {
-			return e.getMessage();
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		ChatroomBo temp = chatroomService.get(chatroomid);
 		ChatroomVo vo = new ChatroomVo();
@@ -735,11 +719,10 @@ public class ChatroomController extends BaseContorller {
 	@PostMapping("/set-top")
 	public String setTop(String chatroomid, HttpServletRequest request,
 			HttpServletResponse response) {
-		UserBo userBo;
-		try {
-			userBo = checkSession(request, userService);
-		} catch (MyException e) {
-			return e.getMessage();
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		ChatroomBo chatroomBo = chatroomService.get(chatroomid);
 		if (null == chatroomBo) {
@@ -756,6 +739,7 @@ public class ChatroomController extends BaseContorller {
 		}
 		chatroomsTop.add(0, chatroomid);
 		userService.updateChatrooms(userBo);
+		updateUserSession(request, userService);
 		return Constant.COM_RESP;
 	}
 
@@ -763,11 +747,10 @@ public class ChatroomController extends BaseContorller {
 	@PostMapping("/cancel-top")
 	public String cancelTop(String chatroomid, HttpServletRequest request,
 			HttpServletResponse response) {
-		UserBo userBo;
-		try {
-			userBo = checkSession(request, userService);
-		} catch (MyException e) {
-			return e.getMessage();
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		ChatroomBo chatroomBo = chatroomService.get(chatroomid);
 		if (null == chatroomBo) {
@@ -783,6 +766,7 @@ public class ChatroomController extends BaseContorller {
 			chatrooms.add(chatroomid);
 		}
 		userService.updateChatrooms(userBo);
+		updateUserSession(request, userService);
 		return Constant.COM_RESP;
 	}
 
@@ -847,6 +831,7 @@ public class ChatroomController extends BaseContorller {
 		chatrooms.add(chatroom.getId());
 		userBo.setChatrooms(chatrooms);
 		userService.updateChatrooms(userBo);
+		updateUserSession(request, userService);
 		addChatroomUser(chatroomService, userBo, chatroom.getId(), userBo.getUserName());
 
 		// 发送通知推送
@@ -1083,23 +1068,27 @@ public class ChatroomController extends BaseContorller {
 				names.add(user.getUserName());
 			}
 			if(ids.size() > 0){
-				JSONObject json = new JSONObject();
-				json.put("masterId", userBo.getId());
-				json.put("masterName", userBo.getUserName());
-				json.put("otherIds", ids);
-				json.put("otherNames", names);
-				json.put("verify", isVerify);
-				// 向群中发某人加入群聊通知
-				String res = IMUtil.notifyInChatRoom(
-						Constant.MASTER_CHANGE_CHAT_VERIFY, chatroomBo.getId(), json.toString());
-				if(!IMUtil.FINISH.equals(res)){
-					logger.error("failed notifyInChatRoom Constant.MASTER_CHANGE_CHAT_VERIFY , %s",res);
-				}
+				//异步推送群聊信息
+				Callable call = () -> {
+					JSONObject json = new JSONObject();
+					json.put("masterId", userBo.getId());
+					json.put("masterName", userBo.getUserName());
+					json.put("otherIds", ids);
+					json.put("otherNames", names);
+					json.put("verify", isVerify);
+					// 向群中发某人加入群聊通知
+					String res = IMUtil.notifyInChatRoom(
+							Constant.MASTER_CHANGE_CHAT_VERIFY, chatroomid, json.toString());
+					if(!IMUtil.FINISH.equals(res)){
+						logger.error("failed notifyInChatRoom Constant.MASTER_CHANGE_CHAT_VERIFY , %s",res);
+					}
+					return null;
+				};
 			}
 			//删除不存在的用户
 			if (!removes.isEmpty()) {
 				set.add(userBo.getId());
-				set.remove(removes);
+				set.removeAll(removes);
 				updateChatroomUser(chatroomid, set);
 			}
 		} else {
@@ -1545,6 +1534,7 @@ public class ChatroomController extends BaseContorller {
 
 
 	// 向群中某人被邀请加入群聊通知
+	@Async
 	private void addRoomInfo(UserBo userBo, String chatroomid, List<String> imIds, List<String> imNames,
 							 Object[] otherNameAndId){
 		if(imIds.size() > 0 && otherNameAndId[0] != null){
@@ -1560,6 +1550,35 @@ public class ChatroomController extends BaseContorller {
 			if(!IMUtil.FINISH.equals(res)){
 				logger.error("failed notifyInChatRoom Constant.SOME_ONE_BE_INVITED_OT_CHAT_ROOM, %s",res);
 			}
+		}
+	}
+
+	/**
+	 * 往群聊发提示消息
+	 * @param roomType
+	 * @param chatroomid
+	 * @param pushInfo
+	 */
+	@Async
+	private void pushRoomInfo(int roomType, String chatroomid, String pushInfo){
+		String res = IMUtil.notifyInChatRoom(roomType, chatroomid, pushInfo);
+		if(!IMUtil.FINISH.equals(res)){
+			logger.error("failed notifyInChatRoom chatroomid: %s , pushInfo: %s, res: %s",chatroomid, pushInfo, res);
+		}
+	}
+
+
+	/**
+	 * 往群聊指定用户发提示消息
+	 * @param roomType
+	 * @param chatroomid
+	 * @param pushInfo
+	 */
+	@Async
+	private void pushRoomUsersInfo(int roomType, String chatroomid, String pushInfo, String... userids){
+		String res = IMUtil.notifyInChatRoom(roomType, chatroomid, pushInfo);
+		if(!IMUtil.FINISH.equals(res)){
+			logger.error("failed notifyInChatRoom chatroomid: %s , pushInfo: %s, res: %s",chatroomid, pushInfo, res);
 		}
 	}
 

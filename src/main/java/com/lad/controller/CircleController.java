@@ -72,6 +72,12 @@ public class CircleController extends BaseContorller {
 	@Autowired
 	private ICollectService collectService;
 
+	@Autowired
+	private IThumbsupService thumbsupService;
+
+	@Autowired
+	private IChatroomService chatroomService;
+
 	private String titlePush = "圈子通知";
 
 	/**
@@ -1652,12 +1658,15 @@ public class CircleController extends BaseContorller {
 			noticeBo.setContent(content);
 			noticeBo.setTitle(title);
 			noticeBo.setCreateuid(userid);
+			noticeBo.setCircleid(circleid);
 			//发布人默认阅读
 			LinkedHashSet<String> readUsers = noticeBo.getReadUsers();
 			readUsers.add(userid);
 			HashSet<String> users = circleBo.getUsers();
 			users.remove(userid);
-			noticeBo.setUnReadUsers((LinkedHashSet<String>) users);
+			LinkedHashSet<String> unReadUsers = new LinkedHashSet<>();
+			unReadUsers.addAll(users);
+			noticeBo.setUnReadUsers(unReadUsers);
 			noticeBo.setType(0);
 			if (image != null) {
 				long time = Calendar.getInstance().getTimeInMillis();
@@ -1872,7 +1881,7 @@ public class CircleController extends BaseContorller {
 
 	@ApiOperation("获取圈子公告历史列表, 返回最近10条")
 	@PostMapping("/get-notice-list")
-	public String getNoticeList(@RequestParam String circleid,
+	public String getNoticeList(@RequestParam String circleid,int page, int limit,
 							HttpServletRequest request, HttpServletResponse response) {
 		CircleBo circleBo = circleService.selectById(circleid);
 		if (circleBo == null) {
@@ -1882,7 +1891,7 @@ public class CircleController extends BaseContorller {
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
-		List<CircleNoticeBo> noticeBos = circleService.findCircleNotice(circleid, 1, 10);
+		List<CircleNoticeBo> noticeBos = circleService.findCircleNotice(circleid, page, limit);
 		JSONArray array = new JSONArray();
 		if (!CommonUtil.isEmpty(noticeBos)) {
 			for (CircleNoticeBo noticeBo : noticeBos) {
@@ -2588,7 +2597,7 @@ public class CircleController extends BaseContorller {
 
 
 	private CircleHistoryBo addCircleOperateHis(String userid, String circleid, String opeateid, String title, String
-			content){
+		content){
 		CircleHistoryBo historyBo = new CircleHistoryBo();
 		historyBo.setCircleid(circleid);
 		historyBo.setUserid(userid);
@@ -2598,6 +2607,77 @@ public class CircleController extends BaseContorller {
 		historyBo.setType(1);
 		circleService.insertHistory(historyBo);
 		return historyBo;
+	}
+
+
+
+
+	/**
+	 * 我所有圈子的操作历史
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@ApiOperation("圈子最新动态信息")
+	@PostMapping("/new-situation")
+	public String circleNews(String circleid, int page, int limit, HttpServletRequest request, HttpServletResponse
+			response) {
+
+		UserBo loginUser = getUserLogin(request);
+		String loginUserid = loginUser != null ? loginUser.getId() : "";
+		List<CircleShowBo> showBos = circleService.findCircleShows(circleid, page, limit);
+		Map<String, Object> map = new LinkedHashMap<>();
+		map.put("ret", 0);
+		JSONArray array = new JSONArray();
+		for (CircleShowBo showBo : showBos) {
+			int type = showBo.getType();
+			String id = showBo.getTargetid();
+			if (type == 0) {
+				NoteBo noteBo = noteService.selectById(id);
+				if (noteBo == null) {
+					continue;
+				}
+				JSONObject object = new JSONObject();
+				UserBo createBo = userService.getUser(noteBo.getCreateuid());
+				NoteVo noteVo = new NoteVo();
+				boToVo(noteBo, noteVo, createBo, loginUserid);
+				if (!"".equals(loginUserid)) {
+					ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(id, loginUserid);
+					noteVo.setMyThumbsup(thumbsupBo != null);
+				}
+				object.put("note", noteVo);
+				array.add(object);
+			} else if (type == 1) {
+				PartyBo partyBo = partyService.findById(id);
+				if (partyBo == null) {
+					continue;
+				}
+				JSONObject object = new JSONObject();
+				LinkedHashSet<String> startTimes = partyBo.getStartTime();
+				PartyListVo listVo = new PartyListVo();
+				BeanUtils.copyProperties(partyBo, listVo);
+				if (partyBo.getStatus() != 3) {
+					int status = getPartyStatus(startTimes, partyBo.getAppointment());
+					//人数以报满
+					if (status == 1 && partyBo.getUserLimit() <= partyBo.getPartyUserNum() && partyBo.getUserLimit()
+							!=0) {
+						if (partyBo.getStatus() != 2) {
+							updatePartyStatus(partyBo.getId(), 2);
+							listVo.setStatus(2);
+						}
+					} else if (status != partyBo.getStatus()){
+						listVo.setStatus(status);
+						updatePartyStatus(partyBo.getId(), status);
+					}
+				}
+				listVo.setPartyid(partyBo.getId());
+				listVo.setUserNum(partyBo.getPartyUserNum());
+				object.put("party", listVo);
+				array.add(object);
+			}
+		}
+		map.put("listVos", array);
+		return JSONObject.fromObject(map).toString();
 	}
 
 
@@ -2720,5 +2800,77 @@ public class CircleController extends BaseContorller {
 	 */
 	private void circleAddUsersRefuse(String cirlceid, HashSet<String> userApplys, HashSet<String> refuses){
 		this.circleAddUsers(cirlceid, 3, null, userApplys, refuses);
+	}
+
+
+	/**
+	 *
+	 * @param noteBo
+	 * @param noteVo
+	 * @param creatBo
+	 * @param userid
+	 */
+	private void boToVo(NoteBo noteBo, NoteVo noteVo, UserBo creatBo, String userid){
+		BeanUtils.copyProperties(noteBo, noteVo);
+		//表示转发
+		if (noteBo.getForward() == 1) {
+			NoteBo sourceNote = noteService.selectById(noteBo.getSourceid());
+			if (sourceNote != null) {
+				noteVo.setSubject(sourceNote.getSubject());
+				noteVo.setContent(sourceNote.getContent());
+				noteVo.setPhotos(sourceNote.getPhotos());
+				noteVo.setVideoPic(sourceNote.getVideoPic());
+				UserBo from = userService.getUser(sourceNote.getCreateuid());
+				if (from != null) {
+					noteVo.setFromUserid(from.getId());
+					if (!org.springframework.util.StringUtils.isEmpty(userid)) {
+						FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(userid, from.getId());
+						if (friendsBo != null) {
+							noteVo.setFromUserName(friendsBo.getBackname());
+						} else {
+							noteVo.setFromUserName(from.getUserName());
+						}
+					} else {
+						noteVo.setFromUserName(from.getUserName());
+					}
+					noteVo.setFromUserPic(from.getHeadPictureName());
+					noteVo.setFromUserSex(from.getSex());
+					noteVo.setFromUserSign(from.getPersonalizedSignature());
+				}
+			}
+			noteVo.setForward(true);
+		}
+		if (creatBo!= null) {
+			if (!"".equals(userid) && !userid.equals(creatBo.getId())) {
+				FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(userid, creatBo.getId());
+				if (friendsBo != null && !org.springframework.util.StringUtils.isEmpty(friendsBo.getBackname())) {
+					noteVo.setUsername(friendsBo.getBackname());
+				} else {
+					noteVo.setUsername(creatBo.getUserName());
+				}
+			} else {
+				noteVo.setUsername(creatBo.getUserName());
+			}
+			noteVo.setUserLevel(creatBo.getLevel());
+			noteVo.setSex(creatBo.getSex());
+			noteVo.setBirthDay(creatBo.getBirthDay());
+			noteVo.setHeadPictureName(creatBo.getHeadPictureName());
+		}
+		noteVo.setPosition(noteBo.getPosition());
+		noteVo.setCommontCount(noteBo.getCommentcount());
+		noteVo.setVisitCount(noteBo.getVisitcount());
+		noteVo.setNodeid(noteBo.getId());
+		noteVo.setTransCount(noteBo.getTranscount());
+		noteVo.setThumpsubCount(noteBo.getThumpsubcount());
+	}
+
+
+	@Async
+	private void updatePartyStatus(String partyid, int status){
+		partyService.updatePartyStatus(partyid, status);
+		//聚会结束,删除所有临时聊天
+		if (status == 3) {
+			chatroomService.deleteTempChat(partyid, Constant.ROOM_SINGLE);
+		}
 	}
 }

@@ -30,6 +30,9 @@ public class CircleServiceImpl implements ICircleService {
 	@Autowired
 	private ICircleNoticeDao circleNoticeDao;
 
+	@Autowired
+	private ICircleShowDao circleShowDao;
+
 	public CircleBo insert(CircleBo circleBo) {
 		return circleDao.insert(circleBo);
 	}
@@ -317,5 +320,20 @@ public class CircleServiceImpl implements ICircleService {
 	@Override
 	public CircleNoticeBo findNoticeById(String id) {
 		return circleNoticeDao.findNoticeById(id);
+	}
+
+	@Override
+	public CircleShowBo addCircleShow(CircleShowBo showBo) {
+		return circleShowDao.addCircleShow(showBo);
+	}
+
+	@Override
+	public List<CircleShowBo> findCircleShows(String circleid, int page, int limit) {
+		return circleShowDao.findCircleShows(circleid, page, limit);
+	}
+
+	@Override
+	public WriteResult deleteShow(String targetid) {
+		return circleShowDao.deleteShow(targetid);
 	}
 }

@@ -193,7 +193,6 @@ public class CircleDaoImpl implements ICircleDao {
 		Query query = new Query();
 		query.addCriteria(new Criteria("_id").is(circleid));
 		Update update = new Update();
-		//创建者默认为群主，后续修改需要更改群主字段
 		update.set("total", total);
 		return mongoTemplate.updateFirst(query, update, CircleBo.class);
 	}
@@ -295,6 +294,7 @@ public class CircleDaoImpl implements ICircleDao {
 			case Constant.CIRCLE_VISIT :
 				update.inc("visitNum", num);
 				update.inc("total", num);
+				update.inc("hotNum", num);
 				break;
 				//圈子评论数量
 			case Constant.CIRCLE_COMMENT:
@@ -305,16 +305,19 @@ public class CircleDaoImpl implements ICircleDao {
 			case Constant.CIRCLE_TRANS:
 				update.inc("transmitNum", num);
 				update.inc("total", num);
+				update.inc("hotNum", num);
 				break;
 				//圈子点赞数量
 			case Constant.CIRCLE_THUMP:
 				update.inc("thumpNum", num);
 				update.inc("total", num);
+				update.inc("hotNum", num);
 				break;
 				//圈子阅读数量包含帖子的阅读
 			case Constant.CIRCLE_NOTE_VISIT:
 				update.inc("visitNum", num);
 				update.inc("total", num);
+				update.inc("hotNum", num);
 				break;
 				//圈子内帖子阅读数量
 			case Constant.CIRCLE_NOTE:

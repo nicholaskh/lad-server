@@ -339,4 +339,28 @@ public interface ICircleService extends IBaseService {
 	 */
 	CircleNoticeBo findNoticeById(String id);
 
+
+	/**
+	 * 添加
+	 * @param showBo
+	 * @return
+	 */
+	CircleShowBo addCircleShow(CircleShowBo showBo);
+
+	/**
+	 * 查找
+	 * @param circleid
+	 * @param page
+	 * @param limit
+	 * @return
+	 */
+	List<CircleShowBo> findCircleShows(String circleid, int page, int limit);
+
+	/**
+	 * 删除帖子或者聚会时要删除该数据 ,由于帖子id和聚会是唯一的，转发和分享具有另外的主键，可以直接删除目标id
+	 * @param targetid
+	 * @return
+	 */
+	WriteResult deleteShow( String targetid);
+
 }

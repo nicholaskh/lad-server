@@ -5,6 +5,8 @@ import com.lad.redis.RedisServer;
 import com.lad.service.*;
 import com.lad.util.*;
 import com.lad.vo.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -13,10 +15,7 @@ import org.redisson.api.RLock;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
@@ -33,7 +32,8 @@ import java.util.concurrent.TimeUnit;
  * Version: 1.0
  * Time:2017/9/7
  */
-@Controller
+@Api(value = "PartyController", description = "圈子聚会相关接口")
+@RestController
 @RequestMapping("/party")
 public class PartyController extends BaseContorller {
 
@@ -72,13 +72,11 @@ public class PartyController extends BaseContorller {
     @Autowired
     private IFriendsService friendsService;
 
-    private int dayTimeMins = 24 * 60 * 60 * 1000;
-
     private String titlePush = "聚会通知";
 
 
-    @RequestMapping("/create")
-    @ResponseBody
+    @ApiOperation("创建发布聚会")
+    @PostMapping("/create")
     public String create(@RequestParam String partyJson, MultipartFile backPic,
                           MultipartFile[] photos, MultipartFile video,
                           HttpServletRequest request, HttpServletResponse response){
@@ -134,6 +132,7 @@ public class PartyController extends BaseContorller {
         chatroomService.addPartyChartroom(chatroomBo.getId(), partyBo.getId());
         HashSet<String> circleUsers = circleBo.getUsers();
 
+        addCircleShow(partyBo);
         String path = "/party/party-info.do?partyid=" + partyBo.getId();
         String content = String.format("“%s”发起了聚会【%s】，快去看看吧", userBo.getUserName(),
                 partyBo.getTitle());
@@ -194,8 +193,8 @@ public class PartyController extends BaseContorller {
      * @param response
      * @return
      */
-    @RequestMapping("/update")
-    @ResponseBody
+    @ApiOperation("更新聚会信息")
+    @PostMapping("/update")
     public String update(@RequestParam String partyid, String partyJson, String delPhotos,
                          MultipartFile backPic, MultipartFile[] photos, MultipartFile video,
                          HttpServletRequest request, HttpServletResponse response){
@@ -292,8 +291,8 @@ public class PartyController extends BaseContorller {
     }
 
 
-    @RequestMapping("/party-info")
-    @ResponseBody
+    @ApiOperation("聚会详情信息")
+    @PostMapping("/party-info")
     public String manageParty(@RequestParam String partyid,
                          HttpServletRequest request, HttpServletResponse response){
 
@@ -399,8 +398,8 @@ public class PartyController extends BaseContorller {
      * @param partyid
      * @return
      */
-    @RequestMapping("/enroll-party")
-    @ResponseBody
+    @ApiOperation("报名聚会")
+    @PostMapping("/enroll-party")
     public String enrollParty(String partyid,String phone, String joinInfo, int userNum, double amount,
                             HttpServletRequest request, HttpServletResponse response){
         UserBo userBo;
@@ -514,8 +513,8 @@ public class PartyController extends BaseContorller {
      * @param partyid
      * @return
      */
-    @RequestMapping("/get-users")
-    @ResponseBody
+    @ApiOperation("获取聚会报名人员信息列表")
+    @PostMapping("/get-users")
     public String enrollUsers(String partyid, HttpServletRequest request, HttpServletResponse response){
 
         PartyBo partyBo = partyService.findById(partyid);
@@ -552,8 +551,8 @@ public class PartyController extends BaseContorller {
      * @param partyid
      * @return
      */
-    @RequestMapping("/manage-enroll")
-    @ResponseBody
+    @PostMapping("/manage-enroll")
+    @Deprecated
     public String getEnroll(@RequestParam String partyid,
                            HttpServletRequest request, HttpServletResponse response){
         UserBo userBo;
@@ -574,8 +573,8 @@ public class PartyController extends BaseContorller {
      * 获取我发起的聚会
      * @return
      */
-    @RequestMapping("/my-partys")
-    @ResponseBody
+    @ApiOperation("我发布的聚会列表信息")
+    @PostMapping("/my-partys")
     public String getMyPartys(int page, int limit, HttpServletRequest request, HttpServletResponse response){
 
         UserBo userBo;
@@ -597,8 +596,8 @@ public class PartyController extends BaseContorller {
      * 获取我参与的聚会
      * @return
      */
-    @RequestMapping("/join-partys")
-    @ResponseBody
+    @ApiOperation("我参与聚会的列表信息")
+    @PostMapping("/join-partys")
     public String getJoinPartys(int page, int limit, HttpServletRequest request, HttpServletResponse response){
         UserBo userBo;
         try {
@@ -669,42 +668,6 @@ public class PartyController extends BaseContorller {
         }
     }
 
-    /**
-     * 获取聚会状态
-     * @param startTimes
-     * @param appointment
-     * @return  1 进行中， 2报名结束， 3活动结束
-     */
-    private int getPartyStatus(LinkedHashSet<String> startTimes, int appointment){
-        if (!CommonUtil.isEmpty(startTimes)) {
-            Iterator<String> iterator = startTimes.iterator();
-            String lastTime = "";
-            while (iterator.hasNext()){
-                lastTime = iterator.next();
-            }
-            if (lastTime.equals("0")) {
-               return 1;
-            }
-            Date lastDate = CommonUtil.getDate(lastTime, "yyyy-MM-dd HH:mm");
-            if (lastDate != null) {
-                Date currentLastTime = CommonUtil.getLastDate(lastDate);
-                //当前时间大于聚会的结束时间 聚会结束
-                if (System.currentTimeMillis() >= currentLastTime.getTime()) {
-                    return 3;
-                }
-                long last = lastDate.getTime();
-                //减去提前预约天数
-                if (appointment > 0) {
-                    last = last - (appointment * dayTimeMins);
-                }
-                //报名时间已经结束
-                if (System.currentTimeMillis() >= last) {
-                    return 2;
-                }
-            }
-        }
-        return 1;
-    }
 
     @Async
     private void updatePartyStatus(String partyid, int status){
@@ -720,8 +683,8 @@ public class PartyController extends BaseContorller {
      * @param partyid
      * @return
      */
-    @RequestMapping("/launch-talk")
-    @ResponseBody
+    @ApiOperation("聚会发起群聊")
+    @PostMapping("/launch-talk")
     public String launchTalk(@RequestParam String partyid,
                             HttpServletRequest request, HttpServletResponse response){
         UserBo userBo;
@@ -801,8 +764,8 @@ public class PartyController extends BaseContorller {
      * @param partyid
      * @return
      */
-    @RequestMapping("/has-chatroom")
-    @ResponseBody
+    @ApiOperation("聚会是否已经存在群聊")
+    @PostMapping("/has-chatroom")
     public String hasTalk(@RequestParam String partyid,
                              HttpServletRequest request, HttpServletResponse response){
 
@@ -823,8 +786,8 @@ public class PartyController extends BaseContorller {
      * @param partyid
      * @return
      */
-    @RequestMapping("/collect-party")
-    @ResponseBody
+    @ApiOperation("收藏聚会")
+    @PostMapping("/collect-party")
     public String collectParty(@RequestParam String partyid,
                              HttpServletRequest request, HttpServletResponse response){
         UserBo userBo;
@@ -878,8 +841,8 @@ public class PartyController extends BaseContorller {
      * @param partyid
      * @return
      */
-    @RequestMapping("/del-collect")
-    @ResponseBody
+    @ApiOperation("取消聚会收藏")
+    @PostMapping("/del-collect")
     public String deleteCollectParty(@RequestParam String partyid,
                                      HttpServletRequest request, HttpServletResponse response){
         UserBo userBo;
@@ -912,8 +875,8 @@ public class PartyController extends BaseContorller {
      * @param partyid
      * @return
      */
-    @RequestMapping("/delete-party")
-    @ResponseBody
+    @ApiOperation("删除聚会")
+    @PostMapping("/delete-party")
     public String delelteParty(@RequestParam String partyid,
                                HttpServletRequest request, HttpServletResponse response){
         UserBo userBo;
@@ -934,6 +897,7 @@ public class PartyController extends BaseContorller {
                     ERRORCODE.PARTY_NO_AUTH.getReason());
         }
         partyService.delete(partyid);
+        deleteShouw(partyid);
         partyService.deleteMulitByaPartyid(partyBo.getId());
         chatroomService.deleteTempChat(partyid, Constant.ROOM_SINGLE);
         return Constant.COM_RESP;
@@ -944,8 +908,8 @@ public class PartyController extends BaseContorller {
      * @param partyComment
      * @return
      */
-    @RequestMapping("/add-comment")
-    @ResponseBody
+    @ApiOperation("聚会添加评论")
+    @PostMapping("/add-comment")
     public String addComment(String partyComment,MultipartFile[] photos,
                              HttpServletRequest request, HttpServletResponse response){
         UserBo userBo;
@@ -1113,8 +1077,8 @@ public class PartyController extends BaseContorller {
      * @param partyid
      * @return
      */
-    @RequestMapping("/get-comments")
-    @ResponseBody
+    @ApiOperation("获取聚会评论信息")
+    @PostMapping("/get-comments")
     public String getComment(String partyid,
                              HttpServletRequest request, HttpServletResponse response){
 
@@ -1168,8 +1132,8 @@ public class PartyController extends BaseContorller {
      * 获取圈子所有聚会
      * @return
      */
-    @RequestMapping("/all-partys")
-    @ResponseBody
+    @ApiOperation("获取圈子所有聚会")
+    @PostMapping("/all-partys")
     public String getAllPartys(String circleid, int page, int limit, HttpServletRequest request, HttpServletResponse
             response){
         List<PartyBo> partyBos = partyService.findByCircleid(circleid, page, limit);
@@ -1186,8 +1150,8 @@ public class PartyController extends BaseContorller {
      * 取消报名
      * @return
      */
-    @RequestMapping("/cancel-enroll")
-    @ResponseBody
+    @ApiOperation("取消聚会报名")
+    @PostMapping("/cancel-enroll")
     public String cancelPartys(String partyid,HttpServletRequest request, HttpServletResponse
             response){
         UserBo userBo;
@@ -1241,8 +1205,8 @@ public class PartyController extends BaseContorller {
      * 删除我参与的的聚会
      * @return
      */
-    @RequestMapping("/delete-join-party")
-    @ResponseBody
+    @ApiOperation("删除我参与的聚会信息")
+    @PostMapping("/delete-join-party")
     public String delMyJoinPartys(String partyid, HttpServletRequest request, HttpServletResponse
             response){
         UserBo userBo;
@@ -1264,8 +1228,8 @@ public class PartyController extends BaseContorller {
      * 用户聚会报名详情
      * @return
      */
-    @RequestMapping("/enroll-detail")
-    @ResponseBody
+    @ApiOperation("用户报名聚会详情信息")
+    @PostMapping("/enroll-detail")
     public String enrollDetail(String partyid, String userid, HttpServletRequest request, HttpServletResponse
             response){
         PartyBo partyBo = partyService.findById(partyid);
@@ -1299,8 +1263,8 @@ public class PartyController extends BaseContorller {
      * 评论点赞
      * @return
      */
-    @RequestMapping("/comment-thumbsup")
-    @ResponseBody
+    @ApiOperation("评论点赞或取消点赞")
+    @PostMapping("/comment-thumbsup")
     public String commentThumbsup(String commentId, int type, HttpServletRequest request, HttpServletResponse
             response) {
         UserBo userBo;
@@ -1358,8 +1322,8 @@ public class PartyController extends BaseContorller {
      * @param partyid
      * @return
      */
-    @RequestMapping("/tip-off-party")
-    @ResponseBody
+    @ApiOperation("举报聚会")
+    @PostMapping("/tip-off-party")
     public String tipOffParty(@RequestParam String partyid,
                                HttpServletRequest request, HttpServletResponse response){
         UserBo userBo;
@@ -1418,8 +1382,8 @@ public class PartyController extends BaseContorller {
         }
     }
 
-    @RequestMapping("/temp-chatroom")
-    @ResponseBody
+    @ApiOperation("与聚会报名人员进行临时聊天")
+    @PostMapping("/temp-chatroom")
     public String tempChatroom(String partyid, String friendid,
                                HttpServletRequest request, HttpServletResponse response) {
         UserBo userBo;
@@ -1473,8 +1437,8 @@ public class PartyController extends BaseContorller {
      * @param response
      * @return
      */
-    @RequestMapping("/send-notice")
-    @ResponseBody
+    @ApiOperation("发送聚会通知")
+    @PostMapping("/send-notice")
     public String sendNotice(String partyid, String content,
                                HttpServletRequest request, HttpServletResponse response) {
         UserBo userBo;
@@ -1514,8 +1478,8 @@ public class PartyController extends BaseContorller {
      * @param response
      * @return
      */
-    @RequestMapping("/notice")
-    @ResponseBody
+    @ApiOperation("聚会通知信息详情")
+    @PostMapping("/notice")
     public String getNotice(String noticeid,
             HttpServletRequest request, HttpServletResponse response) {
 
@@ -1538,8 +1502,8 @@ public class PartyController extends BaseContorller {
      * @param response
      * @return
      */
-    @RequestMapping("/party-notice")
-    @ResponseBody
+    @ApiOperation("聚会所有通知信息列表")
+    @PostMapping("/party-notice")
     public String partyNotice(String partyid, int page, int limit,
                             HttpServletRequest request, HttpServletResponse response) {
         PartyBo partyBo = partyService.findById(partyid);
@@ -1561,8 +1525,8 @@ public class PartyController extends BaseContorller {
      * @param response
      * @return
      */
-    @RequestMapping("/get-my-notices")
-    @ResponseBody
+    @ApiOperation("我收到的聚会通知信息列表")
+    @PostMapping("/get-my-notices")
     public String getPartyNotices(int page, int limit,
                               HttpServletRequest request, HttpServletResponse response) {
         UserBo userBo;
@@ -1581,8 +1545,8 @@ public class PartyController extends BaseContorller {
     /**
      * 转发到我的动态
      */
-    @RequestMapping("/forward-dynamic")
-    @ResponseBody
+    @ApiOperation("将聚会转发到我的动态")
+    @PostMapping("/forward-dynamic")
     public String forwardDynamic(String partyid, String view, String landmark, HttpServletRequest request,
                                  HttpServletResponse response) {
         UserBo userBo;
@@ -1620,6 +1584,29 @@ public class PartyController extends BaseContorller {
         map.put("ret", 0);
         map.put("dynamicid", dynamicBo.getId());
         return JSONObject.fromObject(map).toString();
+    }
+
+    /**
+     * 需要和聚会展示最新信息
+     * @param partyBo
+     */
+    @Async
+    private void addCircleShow(PartyBo partyBo){
+        CircleShowBo circleShowBo = new CircleShowBo();
+        circleShowBo.setCircleid(partyBo.getCircleid());
+        circleShowBo.setTargetid(partyBo.getId());
+        circleShowBo.setType(1);
+        circleShowBo.setCreateTime(partyBo.getCreateTime());
+        circleService.addCircleShow(circleShowBo);
+    }
+
+    /**
+     * 删除展示信息
+     * @param partyid
+     */
+    @Async
+    private void deleteShouw(String partyid){
+        circleService.deleteShow(partyid);
     }
 
 }

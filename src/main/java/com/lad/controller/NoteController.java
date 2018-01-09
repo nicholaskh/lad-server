@@ -123,6 +123,7 @@ public class NoteController extends BaseContorller {
 		}
 		noteBo.setPhotos(photos);
 		noteService.insert(noteBo);
+		addCircleShow(noteBo);
 		updateCircieNoteSize(circleid, 1);
 		if (noteBo.isAsync()) {
 			DynamicBo dynamicBo = new DynamicBo();
@@ -886,6 +887,7 @@ public class NoteController extends BaseContorller {
 				if (null != noteBo) {
 					//圈主删除帖子
 					noteService.deleteNote(id, userBo.getId());
+					deleteShouw(id);
 					commentService.deleteByNote(id);
 					notes ++;
 				}
@@ -927,6 +929,7 @@ public class NoteController extends BaseContorller {
 					noteService.deleteNote(id,userBo.getId());
 					commentService.deleteByNote(id);
 					updateCircieNoteSize(noteBo.getCircleId(), -1);
+					deleteShouw(id);
 				}
 			}
 		}
@@ -1473,6 +1476,29 @@ public class NoteController extends BaseContorller {
 		} finally {
 			lock.unlock();
 		}
+	}
+
+	/**
+	 * 需要和聚会展示最新信息
+	 * @param noteBo
+	 */
+	@Async
+	private void addCircleShow(NoteBo noteBo){
+		CircleShowBo circleShowBo = new CircleShowBo();
+		circleShowBo.setCircleid(noteBo.getCircleId());
+		circleShowBo.setTargetid(noteBo.getId());
+		circleShowBo.setType(0);
+		circleShowBo.setCreateTime(noteBo.getCreateTime());
+		circleService.addCircleShow(circleShowBo);
+	}
+
+	/**
+	 * 删除展示信息
+	 * @param noteid
+	 */
+	@Async
+	private void deleteShouw(String noteid){
+		circleService.deleteShow(noteid);
 	}
 
 }

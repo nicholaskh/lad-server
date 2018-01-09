@@ -14,9 +14,14 @@ import org.springframework.ui.ModelMap;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.concurrent.TimeUnit;
 
 public abstract class BaseContorller {
+
+	protected int dayTimeMins = 24 * 60 * 60 * 1000;
 
 	/**
 	 * 定向到错误页面
@@ -208,5 +213,42 @@ public abstract class BaseContorller {
 		}
 	}
 
+
+	/**
+	 * 获取聚会状态
+	 * @param startTimes
+	 * @param appointment
+	 * @return  1 进行中， 2报名结束， 3活动结束
+	 */
+	public int getPartyStatus(LinkedHashSet<String> startTimes, int appointment){
+		if (!CommonUtil.isEmpty(startTimes)) {
+			Iterator<String> iterator = startTimes.iterator();
+			String lastTime = "";
+			while (iterator.hasNext()){
+				lastTime = iterator.next();
+			}
+			if (lastTime.equals("0")) {
+				return 1;
+			}
+			Date lastDate = CommonUtil.getDate(lastTime, "yyyy-MM-dd HH:mm");
+			if (lastDate != null) {
+				Date currentLastTime = CommonUtil.getLastDate(lastDate);
+				//当前时间大于聚会的结束时间 聚会结束
+				if (System.currentTimeMillis() >= currentLastTime.getTime()) {
+					return 3;
+				}
+				long last = lastDate.getTime();
+				//减去提前预约天数
+				if (appointment > 0) {
+					last = last - (appointment * dayTimeMins);
+				}
+				//报名时间已经结束
+				if (System.currentTimeMillis() >= last) {
+					return 2;
+				}
+			}
+		}
+		return 1;
+	}
 
 }
