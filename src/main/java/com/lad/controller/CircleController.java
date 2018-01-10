@@ -1059,6 +1059,7 @@ public class CircleController extends BaseContorller {
 		if (lastNotice != null) {
 			LinkedHashSet<String> readUsers = lastNotice.getReadUsers();
 			isRead = readUsers.contains(userBo.getId());
+			jsonObject.put("noticeid", lastNotice.getId());
 			jsonObject.put("noticeTitle", lastNotice.getTitle());
 			jsonObject.put("notice", lastNotice.getContent());
 			jsonObject.put("noticeTime", lastNotice.getCreateTime());
@@ -1774,18 +1775,20 @@ public class CircleController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_NOTICE_NULL.getIndex(),
 					ERRORCODE.CIRCLE_NOTICE_NULL.getReason());
 		}
+		CircleBo circleBo = circleService.selectById(noticeBo.getCircleid());
+		if (circleBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_IS_NULL.getIndex(),
+					ERRORCODE.CIRCLE_IS_NULL.getReason());
+		}
 		UserBo loginUser = getUserLogin(request);
 		LinkedHashSet<String> readUsers = noticeBo.getReadUsers();
 		int readNum = readUsers.size();
 		int role = 0;
 		if (loginUser != null) {
-			CircleBo circleBo = circleService.selectById(noticeBo.getCircleid());
 			String userid = loginUser.getId();
-			if (circleBo != null) {
-				HashSet<String> users = circleBo.getUsers();
-				updateNoticeRead(users,noticeid, loginUser.getId());
-				readNum = !readUsers.contains(userid) && users.contains(userid) ? readNum+1 : readNum;
-			}
+			HashSet<String> users = circleBo.getUsers();
+			updateNoticeRead(users,noticeid, loginUser.getId());
+			readNum = !readUsers.contains(userid) && users.contains(userid) ? readNum+1 : readNum;
 			role = getUserCircleRole(circleBo, userid);
 		}
 		UserBo userBo = userService.getUser(noticeBo.getCreateuid());
@@ -1800,6 +1803,7 @@ public class CircleController extends BaseContorller {
 		if (userBo != null) {
 			UserBaseVo userBaseVo = new UserBaseVo();
 			BeanUtils.copyProperties(userBo, userBaseVo);
+			userBaseVo.setRole(getUserCircleRole(circleBo, userBo.getId()));
 			map.put("noticeUser", userBaseVo);
 		}
 		map.put("userRole", role);
@@ -1907,15 +1911,17 @@ public class CircleController extends BaseContorller {
 				if (userBo != null) {
 					UserBaseVo userBaseVo = new UserBaseVo();
 					BeanUtils.copyProperties(userBo, userBaseVo);
+					int role = getUserCircleRole(circleBo, userBo.getId());
+					userBaseVo.setRole(role);
 					jsonObject.put("noticeUser", userBaseVo);
 				}
 				array.add(jsonObject);
 			}
 		}
 		map.put("noticeList", array);
-		UserBo userBo = getUserLogin(request);
-		if (userBo != null) {
-			map.put("userRole", getUserCircleRole(circleBo, userBo.getId()));
+		UserBo loginUser = getUserLogin(request);
+		if (loginUser != null) {
+			map.put("userRole", getUserCircleRole(circleBo, loginUser.getId()));
 		} else {
 			map.put("userRole", 0);
 		}
