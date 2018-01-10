@@ -1791,6 +1791,7 @@ public class CircleController extends BaseContorller {
 		UserBo userBo = userService.getUser(noticeBo.getCreateuid());
 		Map<String, Object> map = new LinkedHashMap<>();
 		map.put("ret", 0);
+		map.put("noticeid",noticeBo.getId());
 		map.put("noticeTitle", noticeBo.getTitle());
 		map.put("notice", noticeBo.getContent());
 		map.put("noticeTime", noticeBo.getCreateTime());
@@ -1896,6 +1897,7 @@ public class CircleController extends BaseContorller {
 		if (!CommonUtil.isEmpty(noticeBos)) {
 			for (CircleNoticeBo noticeBo : noticeBos) {
 				JSONObject jsonObject = new JSONObject();
+				jsonObject.put("noticeid",noticeBo.getId());
 				jsonObject.put("noticeTitle", noticeBo.getTitle());
 				jsonObject.put("notice", noticeBo.getContent());
 				jsonObject.put("noticeTime", noticeBo.getCreateTime());
