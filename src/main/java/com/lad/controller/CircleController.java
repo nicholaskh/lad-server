@@ -1637,7 +1637,7 @@ public class CircleController extends BaseContorller {
 					dataType = "string"),
 			@ApiImplicitParam(name = "title", value = "公告标题", paramType = "query",dataType = "string"),
 			@ApiImplicitParam(name = "content", value = "公告内容", paramType = "query",dataType = "string"),
-			@ApiImplicitParam(name = "image", value = "公告图片", paramType = "query",dataType = "file")})
+			@ApiImplicitParam(name = "image", value = "公告图片", dataType = "file")})
 	@PostMapping("/add-notice")
 	public String ciecleAddNotice(@RequestParam String circleid,
 							   String title, String content, MultipartFile image,
@@ -1693,7 +1693,7 @@ public class CircleController extends BaseContorller {
 					dataType = "string"),
 			@ApiImplicitParam(name = "title", value = "公告标题", paramType = "query",dataType = "string"),
 			@ApiImplicitParam(name = "content", value = "公告内容", paramType = "query",dataType = "string"),
-			@ApiImplicitParam(name = "image", value = "公告图片", paramType = "query",dataType = "file")})
+			@ApiImplicitParam(name = "image", value = "公告图片", dataType = "file")})
 	@PostMapping("/update-notice")
 	public String ciecleNotice(@RequestParam String noticeid,
 							   String title, String content, MultipartFile image,
@@ -2663,29 +2663,69 @@ public class CircleController extends BaseContorller {
 				JSONObject object = new JSONObject();
 				LinkedHashSet<String> startTimes = partyBo.getStartTime();
 				PartyListVo listVo = new PartyListVo();
-				BeanUtils.copyProperties(partyBo, listVo);
-				if (partyBo.getStatus() != 3) {
-					int status = getPartyStatus(startTimes, partyBo.getAppointment());
-					//人数以报满
-					if (status == 1 && partyBo.getUserLimit() <= partyBo.getPartyUserNum() && partyBo.getUserLimit()
-							!=0) {
-						if (partyBo.getStatus() != 2) {
-							updatePartyStatus(partyBo.getId(), 2);
-							listVo.setStatus(2);
-						}
-					} else if (status != partyBo.getStatus()){
-						listVo.setStatus(status);
-						updatePartyStatus(partyBo.getId(), status);
+				if (partyBo.getForward() == 1) {
+					PartyBo forward = partyService.findById(partyBo.getSourcePartyid());
+					if (forward == null) {
+						continue;
 					}
+					addValues(listVo, forward);
+					listVo.setSourceCirid(forward.getCircleid());
+					CircleBo circleBo = circleService.selectById(forward.getCircleid());
+					if (circleBo != null) {
+						listVo.setSourceCirName(circleBo.getName());
+					}
+					String createid = partyBo.getCreateuid();
+					listVo.setFromUserid(createid);
+					String name = "";
+					UserBo userBo = loginUser;
+					if (null != loginUser ) {
+						if (!loginUserid.equals(createid)) {
+							FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(loginUserid, createid);
+							if (friendsBo != null && StringUtils.isNotEmpty(friendsBo.getBackname())) {
+								name = friendsBo.getBackname();
+							}
+							userBo = userService.getUser(createid);
+						}
+					} else {
+						userBo = userService.getUser(createid);
+					}
+					listVo.setFromUserName("".equals(name) ? userBo.getUserName() : name);
+					listVo.setFromUserPic(userBo.getHeadPictureName());
+					listVo.setFromUserSex(userBo.getSex());
+					listVo.setFromUserSign(userBo.getPersonalizedSignature());
+					listVo.setForward(true);
+					listVo.setView(partyBo.getView());
+				} else {
+					addValues(listVo, partyBo);
 				}
-				listVo.setPartyid(partyBo.getId());
-				listVo.setUserNum(partyBo.getPartyUserNum());
 				object.put("party", listVo);
 				array.add(object);
 			}
 		}
 		map.put("listVos", array);
 		return JSONObject.fromObject(map).toString();
+	}
+
+
+	private void addValues(PartyListVo listVo, PartyBo partyBo){
+		LinkedHashSet<String> startTimes = partyBo.getStartTime();
+		BeanUtils.copyProperties(partyBo, listVo);
+		if (partyBo.getStatus() != 3) {
+			int status = getPartyStatus(startTimes, partyBo.getAppointment());
+			//人数以报满
+			if (status == 1 && partyBo.getUserLimit() <= partyBo.getPartyUserNum() && partyBo.getUserLimit()
+					!=0) {
+				if (partyBo.getStatus() != 2) {
+					updatePartyStatus(partyBo.getId(), 2);
+					listVo.setStatus(2);
+				}
+			} else if (status != partyBo.getStatus()){
+				listVo.setStatus(status);
+				updatePartyStatus(partyBo.getId(), status);
+			}
+		}
+		listVo.setPartyid(partyBo.getId());
+		listVo.setUserNum(partyBo.getPartyUserNum());
 	}
 
 

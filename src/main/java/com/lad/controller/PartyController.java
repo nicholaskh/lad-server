@@ -6,6 +6,8 @@ import com.lad.service.*;
 import com.lad.util.*;
 import com.lad.vo.*;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
@@ -108,6 +110,7 @@ public class PartyController extends BaseContorller {
         LinkedList<String> partyUsers = partyBo.getUsers();
         partyUsers.add(userId);
         partyBo.setPartyUserNum(1);
+        partyBo.setForward(0);
 
         ChatroomBo chatroomBo = new ChatroomBo();
         chatroomBo.setName(partyBo.getTitle());
@@ -585,7 +588,7 @@ public class PartyController extends BaseContorller {
         }
         List<PartyBo> partyBos = partyService.findByCreate(userBo.getId(), page, limit);
         List<PartyListVo> partyListVos = new ArrayList<>();
-        bo2listVo(partyBos, partyListVos);
+        bo2listVo(partyBos, partyListVos, userBo);
         Map<String, Object> map = new HashMap<>();
         map.put("ret", 0);
         map.put("partyListVos", partyListVos);
@@ -641,31 +644,68 @@ public class PartyController extends BaseContorller {
         return JSONObject.fromObject(map).toString();
     }
 
-    private void bo2listVo(List<PartyBo> partyBos, List<PartyListVo> partyListVos){
+    private void bo2listVo(List<PartyBo> partyBos, List<PartyListVo> partyListVos, UserBo userBo){
         for(PartyBo partyBo : partyBos) {
-            LinkedHashSet<String> startTimes = partyBo.getStartTime();
-            PartyNoticeBo partyNoticeBo = partyService.findPartyNotice(partyBo.getId());
             PartyListVo listVo = new PartyListVo();
-            listVo.setHasNotice(partyNoticeBo != null);
-            BeanUtils.copyProperties(partyBo, listVo);
-            if (partyBo.getStatus() != 3) {
-                int status = getPartyStatus(startTimes, partyBo.getAppointment());
-                //人数以报满
-                if (status == 1 && partyBo.getUserLimit() <= partyBo.getPartyUserNum() && partyBo.getUserLimit()
-                        !=0) {
-                    if (partyBo.getStatus() != 2) {
-                        updatePartyStatus(partyBo.getId(), 2);
-                        listVo.setStatus(2);
+            if (partyBo.getForward() == 1) {
+                PartyBo forward = partyService.findById(partyBo.getSourcePartyid());
+                if (forward != null) {
+                    addValues(listVo, forward);
+                    listVo.setSourceCirid(forward.getCircleid());
+                    CircleBo circleBo = circleService.selectById(forward.getCircleid());
+                    if (circleBo != null) {
+                        listVo.setSourceCirName(circleBo.getName());
                     }
-                } else if (status != partyBo.getStatus()){
-                    listVo.setStatus(status);
-                    updatePartyStatus(partyBo.getId(), status);
                 }
+                String createid = partyBo.getCreateuid();
+                listVo.setFromUserid(createid);
+                String name = "";
+                if (null != userBo ) {
+                    if (!userBo.getId().equals(createid)) {
+                        FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(userBo.getId(), createid);
+                        if (friendsBo != null && StringUtils.isNotEmpty(friendsBo.getBackname())) {
+                            name = friendsBo.getBackname();
+                        }
+                        userBo = userService.getUser(createid);
+                    }
+                } else {
+                    userBo = userService.getUser(createid);
+                }
+                listVo.setFromUserName("".equals(name) ? userBo.getUserName() : name);
+                listVo.setFromUserPic(userBo.getHeadPictureName());
+                listVo.setFromUserSex(userBo.getSex());
+                listVo.setFromUserSign(userBo.getPersonalizedSignature());
+
+                listVo.setForward(true);
+                listVo.setView(partyBo.getView());
+            } else {
+                addValues(listVo, partyBo);
             }
-            listVo.setPartyid(partyBo.getId());
-            listVo.setUserNum(partyBo.getPartyUserNum());
             partyListVos.add(listVo);
         }
+    }
+
+    private void addValues(PartyListVo listVo, PartyBo partyBo){
+        LinkedHashSet<String> startTimes = partyBo.getStartTime();
+        PartyNoticeBo partyNoticeBo = partyService.findPartyNotice(partyBo.getId());
+        listVo.setHasNotice(partyNoticeBo != null);
+        BeanUtils.copyProperties(partyBo, listVo);
+        if (partyBo.getStatus() != 3) {
+            int status = getPartyStatus(startTimes, partyBo.getAppointment());
+            //人数以报满
+            if (status == 1 && partyBo.getUserLimit() <= partyBo.getPartyUserNum() && partyBo.getUserLimit()
+                    !=0) {
+                if (partyBo.getStatus() != 2) {
+                    updatePartyStatus(partyBo.getId(), 2);
+                    listVo.setStatus(2);
+                }
+            } else if (status != partyBo.getStatus()){
+                listVo.setStatus(status);
+                updatePartyStatus(partyBo.getId(), status);
+            }
+        }
+        listVo.setPartyid(partyBo.getId());
+        listVo.setUserNum(partyBo.getPartyUserNum());
     }
 
 
@@ -1138,7 +1178,7 @@ public class PartyController extends BaseContorller {
             response){
         List<PartyBo> partyBos = partyService.findByCircleid(circleid, page, limit);
         List<PartyListVo> partyListVos = new ArrayList<>();
-        bo2listVo(partyBos, partyListVos);
+        bo2listVo(partyBos, partyListVos, getUserLogin(request));
         Map<String, Object> map = new HashMap<>();
         map.put("ret", 0);
         map.put("partyListVos", partyListVos);
@@ -1546,6 +1586,10 @@ public class PartyController extends BaseContorller {
      * 转发到我的动态
      */
     @ApiOperation("将聚会转发到我的动态")
+    @ApiImplicitParams({@ApiImplicitParam(name = "partyid", value = "聚会id", required = true,paramType = "query",
+            dataType = "string"),
+            @ApiImplicitParam(name = "view", value = "转发的评论", paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "landmark", value = "地标", paramType = "query", dataType = "string")})
     @PostMapping("/forward-dynamic")
     public String forwardDynamic(String partyid, String view, String landmark, HttpServletRequest request,
                                  HttpServletResponse response) {
@@ -1583,6 +1627,51 @@ public class PartyController extends BaseContorller {
         Map<String, Object> map = new HashMap<>();
         map.put("ret", 0);
         map.put("dynamicid", dynamicBo.getId());
+        return JSONObject.fromObject(map).toString();
+    }
+
+    /**
+     * 转发到我的动态
+     */
+    @ApiOperation("将聚会转发到指定圈子")
+    @ApiImplicitParams({@ApiImplicitParam(name = "partyid", value = "聚会id", required = true, paramType = "query",
+            dataType = "string"),
+            @ApiImplicitParam(name = "circleid", value = "要转发的圈子id",  required = true,paramType = "query",
+                    dataType = "string"),
+            @ApiImplicitParam(name = "view", value = "转发的评论", paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "landmark", value = "地标", paramType = "query", dataType = "string")})
+    @PostMapping("/forward-circle")
+    public String forwardCircle(String partyid, String circleid, String view, String landmark, HttpServletRequest
+            request, HttpServletResponse response) {
+        UserBo userBo = getUserLogin(request);
+
+        if (userBo == null){
+            return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+                    ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+        }
+        PartyBo partyBo = partyService.findById(partyid);
+        if (null == partyBo) {
+            return CommonUtil.toErrorResult(ERRORCODE.PARTY_NULL.getIndex(),
+                    ERRORCODE.PARTY_NULL.getReason());
+        }
+        CircleBo circleBo = circleService.selectById(circleid);
+        if (null == circleBo) {
+            return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_IS_NULL.getIndex(),
+                    ERRORCODE.CIRCLE_IS_NULL.getReason());
+        }
+        PartyBo forward = new PartyBo();
+        forward.setForward(1);
+        forward.setSourcePartyid(partyid);
+        forward.setView(view);
+        forward.setCreateuid(userBo.getId());
+        partyService.insert(forward);
+        //用户等级
+        userService.addUserLevel(userBo.getId(), 1, Constant.PARTY_TYPE);
+        //圈子热度
+        updateCircleHot(circleService, redisServer, partyBo.getCircleid(), 1, Constant.CIRCLE_PARTY_VISIT);
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("ret", 0);
+        map.put("partyid", partyBo.getId());
         return JSONObject.fromObject(map).toString();
     }
 

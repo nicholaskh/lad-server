@@ -34,6 +34,24 @@ public class PartyListVo extends BaseVo {
 
     private boolean hasNotice;
 
+    private boolean isForward;
+
+    private String fromUserid;
+
+    private String fromUserName;
+
+    private String fromUserPic;
+
+    private String fromUserSign;
+
+    private String fromUserSex;
+
+    private String sourceCirid;
+
+    private String sourceCirName;
+
+    private String view;
+
     public String getPartyid() {
         return partyid;
     }
@@ -128,5 +146,77 @@ public class PartyListVo extends BaseVo {
 
     public void setHasNotice(boolean hasNotice) {
         this.hasNotice = hasNotice;
+    }
+
+    public boolean isForward() {
+        return isForward;
+    }
+
+    public void setForward(boolean forward) {
+        isForward = forward;
+    }
+
+    public String getFromUserid() {
+        return fromUserid;
+    }
+
+    public void setFromUserid(String fromUserid) {
+        this.fromUserid = fromUserid;
+    }
+
+    public String getFromUserName() {
+        return fromUserName;
+    }
+
+    public void setFromUserName(String fromUserName) {
+        this.fromUserName = fromUserName;
+    }
+
+    public String getFromUserPic() {
+        return fromUserPic;
+    }
+
+    public void setFromUserPic(String fromUserPic) {
+        this.fromUserPic = fromUserPic;
+    }
+
+    public String getFromUserSign() {
+        return fromUserSign;
+    }
+
+    public void setFromUserSign(String fromUserSign) {
+        this.fromUserSign = fromUserSign;
+    }
+
+    public String getFromUserSex() {
+        return fromUserSex;
+    }
+
+    public void setFromUserSex(String fromUserSex) {
+        this.fromUserSex = fromUserSex;
+    }
+
+    public String getView() {
+        return view;
+    }
+
+    public void setView(String view) {
+        this.view = view;
+    }
+
+    public String getSourceCirid() {
+        return sourceCirid;
+    }
+
+    public void setSourceCirid(String sourceCirid) {
+        this.sourceCirid = sourceCirid;
+    }
+
+    public String getSourceCirName() {
+        return sourceCirName;
+    }
+
+    public void setSourceCirName(String sourceCirName) {
+        this.sourceCirName = sourceCirName;
     }
 }

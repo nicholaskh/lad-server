@@ -73,6 +73,13 @@ public class PartyBo extends BaseBo {
     //聚会人数,包括报名的和报名时额外添加的人数
     private int partyUserNum;
 
+    //0 原创 ， 1转发,特指转发到圈子
+    private int forward;
+    //转发时评论信息
+    private String view;
+    //来源聚会id
+    private String sourcePartyid;
+    
     public LinkedList<String> getUsers() {
         return users;
     }
@@ -305,5 +312,29 @@ public class PartyBo extends BaseBo {
 
     public void setPartyUserNum(int partyUserNum) {
         this.partyUserNum = partyUserNum;
+    }
+
+    public int getForward() {
+        return forward;
+    }
+
+    public void setForward(int forward) {
+        this.forward = forward;
+    }
+
+    public String getView() {
+        return view;
+    }
+
+    public void setView(String view) {
+        this.view = view;
+    }
+
+    public String getSourcePartyid() {
+        return sourcePartyid;
+    }
+
+    public void setSourcePartyid(String sourcePartyid) {
+        this.sourcePartyid = sourcePartyid;
     }
 }
