@@ -22,7 +22,8 @@ public class CircleNoticeBo extends BaseBo {
     //0 添加， 1修改，2删除
     private int type;
 
-    private String images;
+
+    private LinkedHashSet<String> images = new LinkedHashSet<>();
 
     private LinkedHashSet<String> unReadUsers;
 
@@ -61,14 +62,6 @@ public class CircleNoticeBo extends BaseBo {
         this.type = type;
     }
 
-    public String getImages() {
-        return images;
-    }
-
-    public void setImages(String images) {
-        this.images = images;
-    }
-
     public LinkedHashSet<String> getUnReadUsers() {
         return unReadUsers;
     }
@@ -83,5 +76,13 @@ public class CircleNoticeBo extends BaseBo {
 
     public void setReadUsers(LinkedHashSet<String> readUsers) {
         this.readUsers = readUsers;
+    }
+
+    public LinkedHashSet<String> getImages() {
+        return images;
+    }
+
+    public void setImages(LinkedHashSet<String> images) {
+        this.images = images;
     }
 }

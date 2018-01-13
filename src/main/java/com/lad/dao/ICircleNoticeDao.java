@@ -62,4 +62,26 @@ public interface ICircleNoticeDao {
      */
     WriteResult updateNotice(CircleNoticeBo noticeBo);
 
+    /**
+     * 查找未读公告信息
+     * @param userid
+     * @return
+     */
+    List<CircleNoticeBo> unReadNotice(String userid);
+
+    /**
+     * 查找未读公告信息
+     * @param userid
+     * @return
+     */
+    List<CircleNoticeBo> unReadNotice(String userid, int page, int limit);
+
+
+    /**
+     * 更具id查找
+     * @param id
+     * @return
+     */
+    List<CircleNoticeBo> findNoticeByIds(String... ids);
+
 }

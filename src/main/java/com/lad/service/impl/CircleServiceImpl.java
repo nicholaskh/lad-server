@@ -336,4 +336,20 @@ public class CircleServiceImpl implements ICircleService {
 	public WriteResult deleteShow(String targetid) {
 		return circleShowDao.deleteShow(targetid);
 	}
+
+	@Override
+	public List<CircleNoticeBo> findUnReadNotices(String userid) {
+		return circleNoticeDao.unReadNotice(userid);
+	}
+
+	@Override
+	public List<CircleNoticeBo> findUnReadNotices(String userid, int page, int limit) {
+		return circleNoticeDao.unReadNotice(userid, page, limit);
+	}
+
+
+	@Override
+	public List<CircleNoticeBo> findNoticeByIds(String... ids) {
+		return circleNoticeDao.findNoticeByIds(ids);
+	}
 }

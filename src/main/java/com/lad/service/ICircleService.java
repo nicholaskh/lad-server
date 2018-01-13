@@ -363,4 +363,30 @@ public interface ICircleService extends IBaseService {
 	 */
 	WriteResult deleteShow( String targetid);
 
+
+
+	/**
+	 * 查找未读公告信息
+	 * @param userid
+	 * @return
+	 */
+	List<CircleNoticeBo> findUnReadNotices(String userid);
+
+
+
+	/**
+	 * 查找未读公告信息
+	 * @param userid
+	 * @return
+	 */
+	List<CircleNoticeBo> findUnReadNotices(String userid, int page, int limit);
+
+
+	/**
+	 * 更具ids查找
+	 * @param ids
+	 * @return
+	 */
+	List<CircleNoticeBo> findNoticeByIds(String... ids);
+
 }

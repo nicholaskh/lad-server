@@ -1073,6 +1073,7 @@ public class CircleController extends BaseContorller {
 			}
 		}
 
+		List<CircleNoticeBo> unReadNotices = circleService.findUnReadNotices(userBo.getId());
 		//清零访问
 		Map<String, Object> map = new LinkedHashMap<>();
 		map.put("ret", 0);
@@ -1083,6 +1084,7 @@ public class CircleController extends BaseContorller {
 		map.put("partyNum", partyNum);
 		map.put("noticeRead", isRead);
 		map.put("notice", jsonObject);
+		map.put("unReadNoticeNum", unReadNotices == null ? 0 : unReadNotices.size());
 		return JSONObject.fromObject(map).toString();
 	}
 
@@ -1637,10 +1639,10 @@ public class CircleController extends BaseContorller {
 					dataType = "string"),
 			@ApiImplicitParam(name = "title", value = "公告标题", paramType = "query",dataType = "string"),
 			@ApiImplicitParam(name = "content", value = "公告内容", paramType = "query",dataType = "string"),
-			@ApiImplicitParam(name = "image", value = "公告图片", dataType = "file")})
+			@ApiImplicitParam(name = "images", value = "公告图片数组", dataType = "file")})
 	@PostMapping("/add-notice")
 	public String ciecleAddNotice(@RequestParam String circleid,
-							   String title, String content, MultipartFile image,
+							   String title, String content, MultipartFile[] images,
 							   HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo = getUserLogin(request);
 		if (userBo == null) {
@@ -1669,12 +1671,16 @@ public class CircleController extends BaseContorller {
 			unReadUsers.addAll(users);
 			noticeBo.setUnReadUsers(unReadUsers);
 			noticeBo.setType(0);
-			if (image != null) {
-				long time = Calendar.getInstance().getTimeInMillis();
-				String fileName = String.format("%s-%d-%s", userid, time, image.getOriginalFilename());
-				String path = CommonUtil.upload(image,
-						Constant.CIRCLE_HEAD_PICTURE_PATH, fileName, 0);
-				noticeBo.setImages(path);
+			if (images != null) {
+				LinkedHashSet<String> files = noticeBo.getImages();
+				for (MultipartFile file : images) {
+					long time = Calendar.getInstance().getTimeInMillis();
+					String fileName = String.format("%s-%d-%s", userid, time, file.getOriginalFilename());
+					String path = CommonUtil.upload(file,
+							Constant.CIRCLE_HEAD_PICTURE_PATH, fileName, 0);
+					files.add(path);
+				}
+				noticeBo.setImages(files);
 			}
 			circleService.addNotice(noticeBo);
 		} else {
@@ -1693,10 +1699,12 @@ public class CircleController extends BaseContorller {
 					dataType = "string"),
 			@ApiImplicitParam(name = "title", value = "公告标题", paramType = "query",dataType = "string"),
 			@ApiImplicitParam(name = "content", value = "公告内容", paramType = "query",dataType = "string"),
-			@ApiImplicitParam(name = "image", value = "公告图片", dataType = "file")})
+			@ApiImplicitParam(name = "addImages", value = "新增的公告图片", dataType = "file"),
+			@ApiImplicitParam(name = "delImages", value = "要删除的公告图片url，多个以逗号隔开", paramType = "query",
+					dataType = "string")})
 	@PostMapping("/update-notice")
-	public String ciecleNotice(@RequestParam String noticeid,
-							   String title, String content, MultipartFile image,
+	public String ciecleNotice(@RequestParam String noticeid, String title, String content,
+							   MultipartFile[] addImages, String delImages,
 							   HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo = getUserLogin(request);
 		if (userBo == null) {
@@ -1719,17 +1727,31 @@ public class CircleController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_MASTER_NULL.getIndex(),
 					ERRORCODE.CIRCLE_MASTER_NULL.getReason());
 		}
-		noticeBo.setContent(content);
-		noticeBo.setTitle(title);
+		if (StringUtils.isNotEmpty(content)) {
+			noticeBo.setContent(content);
+		}
+		if (StringUtils.isNotEmpty(title)) {
+			noticeBo.setTitle(title);
+		}
 		noticeBo.setUpdateuid(userid);
 		noticeBo.setUpdateTime(new Date());
 		noticeBo.setType(1);
-		if (image != null) {
-			long time = Calendar.getInstance().getTimeInMillis();
-			String fileName = String.format("%s-%d-%s", userid, time, image.getOriginalFilename());
-			String path = CommonUtil.upload(image,
-					Constant.CIRCLE_HEAD_PICTURE_PATH, fileName, 0);
-			noticeBo.setImages(path);
+		LinkedHashSet<String> files = noticeBo.getImages();
+		if (addImages != null) {
+			for (MultipartFile file : addImages) {
+				long time = Calendar.getInstance().getTimeInMillis();
+				String fileName = String.format("%s-%d-%s", userid, time, file.getOriginalFilename());
+				String path = CommonUtil.upload(file,
+						Constant.CIRCLE_HEAD_PICTURE_PATH, fileName, 0);
+				files.add(path);
+			}
+			noticeBo.setImages(files);
+		}
+		if(StringUtils.isNotEmpty(delImages)){
+			String[] urls = CommonUtil.getIds(delImages);
+			for (String url : urls) {
+				files.remove(url);
+			}
 		}
 		circleService.updateNotice(noticeBo);
 		return Constant.COM_RESP;
@@ -1758,6 +1780,28 @@ public class CircleController extends BaseContorller {
 				readUser.add(userid);
 				circleService.updateNoticeRead(noticeid, readUser, unReadUser);
 			}
+		} finally {
+			lock.unlock();
+		}
+	}
+
+	/**
+	 * 批量更新用户阅读数据信息
+	 * @param noticeid
+	 * @param userid
+	 */
+	@Async
+	private void updateNoticeRead(String noticeid, String userid){
+		RLock lock = redisServer.getRLock(noticeid);
+		try {
+			lock.lock(3, TimeUnit.SECONDS);
+			CircleNoticeBo noticeBo = circleService.findNoticeById(noticeid);
+			LinkedHashSet<String> readUser = noticeBo.getReadUsers();
+			LinkedHashSet<String> unReadUser = noticeBo.getUnReadUsers();
+			//若有新圈子成员加入
+			readUser.add(userid);
+			unReadUser.remove(userid);
+			circleService.updateNoticeRead(noticeid, readUser, unReadUser);
 		} finally {
 			lock.unlock();
 		}
@@ -1928,12 +1972,72 @@ public class CircleController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
+
 	/**
-	 * 获取置顶用户在当前圈子的角色
-	 * @param circleBo
-	 * @param userid
-	 * @return
+	 * 添加或修改公告
 	 */
+	@ApiOperation("获取所有未读公告信息")
+	@PostMapping("/unRead-notice-list")
+	public String unReadNotices(int page, int limit, HttpServletRequest request, HttpServletResponse response) {
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		List<CircleNoticeBo> noticeBos = circleService.findUnReadNotices(userBo.getId(), page, limit);
+		JSONArray array = new JSONArray();
+		if (!CommonUtil.isEmpty(noticeBos)) {
+			for (CircleNoticeBo noticeBo : noticeBos) {
+				JSONObject jsonObject = new JSONObject();
+				jsonObject.put("noticeid",noticeBo.getId());
+				jsonObject.put("noticeTitle", noticeBo.getTitle());
+				jsonObject.put("notice", noticeBo.getContent());
+				jsonObject.put("noticeTime", noticeBo.getCreateTime());
+				jsonObject.put("image", noticeBo.getImages());
+				jsonObject.put("readNum", noticeBo.getReadUsers().size());
+				UserBo user = userService.getUser(noticeBo.getCreateuid());
+				if (userBo != null) {
+					UserBaseVo userBaseVo = new UserBaseVo();
+					BeanUtils.copyProperties(user, userBaseVo);
+					jsonObject.put("noticeUser", userBaseVo);
+				}
+				array.add(jsonObject);
+			}
+		}
+		map.put("noticeList", array);
+		return JSONObject.fromObject(map).toString();
+	}
+
+
+	/**
+	 * 添加或修改公告
+	 */
+	@ApiOperation("将指定的公告集合设置为已读")
+	@ApiImplicitParam(name = "noticeids", value = "公告id,多个以逗号隔开", required = true, paramType = "query",
+					dataType = "string")
+	@PostMapping("/unRead-notice-list")
+	public String readNotices(@RequestParam String noticeids, HttpServletRequest request, HttpServletResponse response) {
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		String[] ids = CommonUtil.getIds(noticeids);
+		List<CircleNoticeBo> noticeBos = circleService.findNoticeByIds(ids);
+		for (CircleNoticeBo noticeBo : noticeBos) {
+			updateNoticeRead(noticeBo.getId(), userBo.getId());
+		}
+		return Constant.COM_RESP;
+	}
+
+		/**
+         * 获取置顶用户在当前圈子的角色
+         * @param circleBo
+         * @param userid
+         * @return
+         */
 	private int getUserCircleRole(CircleBo circleBo, String userid){
 		if (circleBo.getCreateuid().equals(userid)) {
 			return 2;

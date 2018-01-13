@@ -1763,7 +1763,6 @@ public class InforController extends BaseContorller {
             @ApiImplicitParam(name = "landmark", value = "转发时地标描述", required = true, paramType = "query", dataType =
                     "string")})
     @RequestMapping(value = "/forward-dynamic", method = {RequestMethod.GET, RequestMethod.POST})
-    @ResponseBody
     public String forwardDynamic(@RequestParam String inforid, @RequestParam int inforType, String view,
                                  String landmark, HttpServletRequest request, HttpServletResponse response) {
         UserBo userBo = getUserLogin(request);
@@ -1808,6 +1807,78 @@ public class InforController extends BaseContorller {
 
         dynamicBo.setCreateuid(userBo.getId());
         dynamicBo.setView(view);
+        dynamicBo.setMsgid(inforid);
+        dynamicBo.setType(Constant.INFOR_TYPE);
+        dynamicService.addDynamic(dynamicBo);
+        updateDynamicNums(userBo.getId(), 1,dynamicService, redisServer);
+        Map<String, Object> map = new HashMap<>();
+        map.put("ret", 0);
+        map.put("dynamicid", dynamicBo.getId());
+        return JSONObject.fromObject(map).toString();
+    }
+
+
+    /**
+     * 转发到我的动态
+     */
+    @ApiOperation("转发置顶的圈子")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "circleid", value = "转发圈子id", required = true, paramType = "query", dataType =
+                    "string"),
+            @ApiImplicitParam(name = "inforid", value = "资讯id", required = true, paramType = "query", dataType =
+                    "string"),
+            @ApiImplicitParam(name = "inforType", value = "1健康，2 安防，3广播，4视频", required = true,paramType = "query", dataType =
+                    "int")})
+    @RequestMapping(value = "/forward-dynamic", method = {RequestMethod.GET, RequestMethod.POST})
+    public String forwardCircle(String circleid, String inforid, int inforType,
+                                HttpServletRequest request, HttpServletResponse response) {
+        UserBo userBo = getUserLogin(request);
+        if (userBo == null) {
+            return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+                    ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+        }
+
+        NoteBo noteBo = new NoteBo();
+        noteBo.setSourceid(inforid);
+        noteBo.setNoteType(1);
+        noteBo.setInforType(inforType);
+        noteBo.setForward(1);
+
+        DynamicBo dynamicBo = new DynamicBo();
+        switch (inforType){
+            case Constant.INFOR_HEALTH:
+                InforBo inforBo = inforService.findById(inforid);
+                dynamicBo.setTitle(inforBo.getTitle());
+                dynamicBo.setSourceName(inforBo.getModule());
+                if (inforBo.getImageUrls() != null) {
+                    dynamicBo.setPhotos(new LinkedHashSet<>(inforBo.getImageUrls()));
+                }
+                break;
+            case Constant.INFOR_SECRITY:
+                SecurityBo securityBo = inforService.findSecurityById(inforid);
+                dynamicBo.setTitle(securityBo.getTitle());
+                dynamicBo.setSourceName(securityBo.getNewsType());
+                break;
+            case Constant.INFOR_RADIO:
+                BroadcastBo broadcastBo = inforService.findBroadById(inforid);
+                dynamicBo.setTitle(broadcastBo.getTitle());
+                dynamicBo.setSourceName(broadcastBo.getModule());
+                break;
+            case Constant.INFOR_VIDEO:
+                VideoBo videoBo = inforService.findVideoById(inforid);
+                dynamicBo.setTitle(videoBo.getTitle());
+                dynamicBo.setSourceName(videoBo.getModule());
+                if (videoBo.getPoster() != null) {
+                    dynamicBo.setVideoPic(videoBo.getPoster());
+                }
+                dynamicBo.setPicType("video");
+                dynamicBo.setVideo(videoBo.getUrl());
+                break;
+            default:
+                break;
+        }
+
+        dynamicBo.setCreateuid(userBo.getId());
         dynamicBo.setMsgid(inforid);
         dynamicBo.setType(Constant.INFOR_TYPE);
         dynamicService.addDynamic(dynamicBo);

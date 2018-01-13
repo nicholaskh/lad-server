@@ -94,4 +94,29 @@ public class CircleNoticeDaoImpl implements ICircleNoticeDao {
         update.set("type", noticeBo.getType());
         return mongoTemplate.updateFirst(query, update, CircleNoticeBo.class);
     }
+
+    @Override
+    public List<CircleNoticeBo> unReadNotice(String userid) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+        query.with(new Sort(Sort.Direction.DESC, "_id"));
+        return mongoTemplate.find(query, CircleNoticeBo.class);
+    }
+
+    @Override
+    public List<CircleNoticeBo> unReadNotice(String userid, int page, int limit) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+        query.with(new Sort(Sort.Direction.DESC, "_id"));
+        query.skip((page -1) * limit);
+        query.limit(limit);
+        return mongoTemplate.find(query, CircleNoticeBo.class);
+    }
+
+    @Override
+    public List<CircleNoticeBo> findNoticeByIds(String... ids) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("_id").in(ids).and("deleted").is(Constant.ACTIVITY));
+        return mongoTemplate.find(query, CircleNoticeBo.class);
+    }
 }
