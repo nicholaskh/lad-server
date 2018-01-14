@@ -86,8 +86,18 @@ public class NoteVo extends BaseVo {
     private String circleId;
 
     private String landmark;
+    //原信息id
+    private String sourceid;
 
     private boolean isForward = false;
+    //转发的来源类型，0 表示帖子，1 表示来源是资讯
+    private int forwardType;
+
+    private int inforType;
+
+    private String inforTypeName;
+    //视频或者广播的url
+    private String inforUrl;
 
     public String getNodeid() {
         return nodeid;
@@ -355,5 +365,45 @@ public class NoteVo extends BaseVo {
 
     public void setFromUserSex(String fromUserSex) {
         this.fromUserSex = fromUserSex;
+    }
+
+    public int getForwardType() {
+        return forwardType;
+    }
+
+    public void setForwardType(int forwardType) {
+        this.forwardType = forwardType;
+    }
+
+    public int getInforType() {
+        return inforType;
+    }
+
+    public void setInforType(int inforType) {
+        this.inforType = inforType;
+    }
+
+    public String getInforTypeName() {
+        return inforTypeName;
+    }
+
+    public void setInforTypeName(String inforTypeName) {
+        this.inforTypeName = inforTypeName;
+    }
+
+    public String getInforUrl() {
+        return inforUrl;
+    }
+
+    public void setInforUrl(String inforUrl) {
+        this.inforUrl = inforUrl;
+    }
+
+    public String getSourceid() {
+        return sourceid;
+    }
+
+    public void setSourceid(String sourceid) {
+        this.sourceid = sourceid;
     }
 }

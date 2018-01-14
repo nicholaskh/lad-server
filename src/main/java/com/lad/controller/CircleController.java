@@ -3,6 +3,10 @@ package com.lad.controller;
 import com.alibaba.fastjson.JSON;
 import com.lad.bo.*;
 import com.lad.redis.RedisServer;
+import com.lad.scrapybo.BroadcastBo;
+import com.lad.scrapybo.InforBo;
+import com.lad.scrapybo.SecurityBo;
+import com.lad.scrapybo.VideoBo;
 import com.lad.service.*;
 import com.lad.util.*;
 import com.lad.vo.*;
@@ -77,6 +81,8 @@ public class CircleController extends BaseContorller {
 
 	@Autowired
 	private IChatroomService chatroomService;
+	@Autowired
+	private IInforService inforService;
 
 	private String titlePush = "圈子通知";
 
@@ -2017,7 +2023,7 @@ public class CircleController extends BaseContorller {
 	@ApiOperation("将指定的公告集合设置为已读")
 	@ApiImplicitParam(name = "noticeids", value = "公告id,多个以逗号隔开", required = true, paramType = "query",
 					dataType = "string")
-	@PostMapping("/unRead-notice-list")
+	@PostMapping("/update-unRead-list")
 	public String readNotices(@RequestParam String noticeids, HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo = getUserLogin(request);
 		if (userBo == null) {
@@ -2966,31 +2972,75 @@ public class CircleController extends BaseContorller {
 		BeanUtils.copyProperties(noteBo, noteVo);
 		//表示转发
 		if (noteBo.getForward() == 1) {
-			NoteBo sourceNote = noteService.selectById(noteBo.getSourceid());
-			if (sourceNote != null) {
-				noteVo.setSubject(sourceNote.getSubject());
-				noteVo.setContent(sourceNote.getContent());
-				noteVo.setPhotos(sourceNote.getPhotos());
-				noteVo.setVideoPic(sourceNote.getVideoPic());
-				UserBo from = userService.getUser(sourceNote.getCreateuid());
-				if (from != null) {
-					noteVo.setFromUserid(from.getId());
-					if (!org.springframework.util.StringUtils.isEmpty(userid)) {
-						FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(userid, from.getId());
-						if (friendsBo != null) {
-							noteVo.setFromUserName(friendsBo.getBackname());
+			noteVo.setSourceid(noteBo.getSourceid());
+			noteVo.setForward(true);
+			//0 表示转发的帖子，1 表示转发的资讯
+			if (noteBo.getNoteType() == 1) {
+				int inforType = noteBo.getInforType();
+				noteVo.setInforType(inforType);
+				noteVo.setForwardType(1);
+				switch (inforType){
+					case Constant.INFOR_HEALTH:
+						InforBo inforBo = inforService.findById(noteBo.getSourceid());
+						if (inforBo != null) {
+							noteVo.setPhotos(inforBo.getImageUrls());
+							noteVo.setSubject(inforBo.getTitle());
+							noteVo.setVisitCount((long)inforBo.getVisitNum());
+						}
+						break;
+					case Constant.INFOR_SECRITY:
+						SecurityBo securityBo = inforService.findSecurityById(noteBo.getSourceid());
+						if (securityBo == null) {
+							noteVo.setSubject(securityBo.getTitle());
+							noteVo.setVisitCount((long)securityBo.getVisitNum());
+						}
+						break;
+					case Constant.INFOR_RADIO:
+						BroadcastBo broadcastBo = inforService.findBroadById(noteBo.getSourceid());
+						if (broadcastBo == null) {
+							noteVo.setSubject(broadcastBo.getTitle());
+							noteVo.setInforUrl(broadcastBo.getBroadcast_url());
+							noteVo.setVisitCount((long)broadcastBo.getVisitNum());
+						}
+						break;
+					case Constant.INFOR_VIDEO:
+						VideoBo videoBo = inforService.findVideoById(noteBo.getSourceid());
+						if (videoBo == null) {
+							noteVo.setSubject(videoBo.getTitle());
+							noteVo.setInforUrl(videoBo.getUrl());
+							noteVo.setVideoPic(videoBo.getPoster());
+							noteVo.setVisitCount((long)videoBo.getVisitNum());
+						}
+						break;
+					default:
+						break;
+				}
+			} else {
+				NoteBo sourceNote = noteService.selectById(noteBo.getSourceid());
+				if (sourceNote != null) {
+					noteVo.setSubject(sourceNote.getSubject());
+					noteVo.setContent(sourceNote.getContent());
+					noteVo.setPhotos(sourceNote.getPhotos());
+					noteVo.setVideoPic(sourceNote.getVideoPic());
+					UserBo from = userService.getUser(sourceNote.getCreateuid());
+					if (from != null) {
+						noteVo.setFromUserid(from.getId());
+						if (!org.springframework.util.StringUtils.isEmpty(userid)) {
+							FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(userid, from.getId());
+							if (friendsBo != null) {
+								noteVo.setFromUserName(friendsBo.getBackname());
+							} else {
+								noteVo.setFromUserName(from.getUserName());
+							}
 						} else {
 							noteVo.setFromUserName(from.getUserName());
 						}
-					} else {
-						noteVo.setFromUserName(from.getUserName());
+						noteVo.setFromUserPic(from.getHeadPictureName());
+						noteVo.setFromUserSex(from.getSex());
+						noteVo.setFromUserSign(from.getPersonalizedSignature());
 					}
-					noteVo.setFromUserPic(from.getHeadPictureName());
-					noteVo.setFromUserSex(from.getSex());
-					noteVo.setFromUserSign(from.getPersonalizedSignature());
 				}
 			}
-			noteVo.setForward(true);
 		}
 		if (creatBo!= null) {
 			if (!"".equals(userid) && !userid.equals(creatBo.getId())) {

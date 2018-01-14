@@ -151,7 +151,7 @@ public class PartyController extends BaseContorller {
         userService.addUserLevel(userBo.getId(), 1, Constant.PARTY_TYPE);
         //圈子热度
         updateCircleHot(circleService, redisServer, partyBo.getCircleid(), 1, Constant.CIRCLE_PARTY_VISIT);
-        updateDynamicNums(userId, 1, dynamicService, redisServer);
+//        updateDynamicNums(userId, 1, dynamicService, redisServer);
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("ret", 0);
         map.put("partyid", partyBo.getId());

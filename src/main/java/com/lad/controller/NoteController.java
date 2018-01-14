@@ -2,6 +2,10 @@ package com.lad.controller;
 
 import com.lad.bo.*;
 import com.lad.redis.RedisServer;
+import com.lad.scrapybo.BroadcastBo;
+import com.lad.scrapybo.InforBo;
+import com.lad.scrapybo.SecurityBo;
+import com.lad.scrapybo.VideoBo;
 import com.lad.service.*;
 import com.lad.util.*;
 import com.lad.vo.CommentVo;
@@ -69,6 +73,9 @@ public class NoteController extends BaseContorller {
 
 	@Autowired
 	private ICollectService collectService;
+
+	@Autowired
+	private IInforService inforService;
 
 
 	private String pushTitle = "互动通知";
@@ -148,11 +155,11 @@ public class NoteController extends BaseContorller {
 			}
 			dynamicBo.setCreateuid(userBo.getId());
 			dynamicService.addDynamic(dynamicBo);
+			updateDynamicNums(userId, 1, dynamicService, redisServer);
 		}
 		userService.addUserLevel(userBo.getId(), 1, Constant.LEVEL_NOTE);
 		updateCircleHot(circleService, redisServer, circleid, 1, Constant.CIRCLE_NOTE);
 		updateCircleHot(circleService, redisServer, circleid, 1, Constant.CIRCLE_NOTE_VISIT);
-		updateDynamicNums(userId, 1, dynamicService, redisServer);
 		updateCircieNoteUnReadNum(userId, circleid);
 		NoteVo noteVo = new NoteVo();
 		boToVo(noteBo, noteVo, userBo, "");
@@ -249,7 +256,6 @@ public class NoteController extends BaseContorller {
 			updateCount(noteid, Constant.THUMPSUB_NUM, 1);
 		}
 		updateCircieUnReadNum(noteBo.getCreateuid(), noteBo.getCircleId());
-		updateDynamicNums(noteBo.getCreateuid(), 1, dynamicService, redisServer);
 		String path = "/note/note-info.do?noteid=" + noteid;
 		JPushUtil.pushMessage(pushTitle, "有人刚刚赞了你的帖子，快去看看吧!", path,  noteBo.getCreateuid());
 		return Constant.COM_RESP;
@@ -272,7 +278,6 @@ public class NoteController extends BaseContorller {
 			NoteBo noteBo = noteService.selectById(noteid);
 			updateCircleHot(circleService, redisServer, noteBo.getCircleId(), -1, Constant.CIRCLE_THUMP );
 			updateCount(noteid, Constant.THUMPSUB_NUM, -1);
-			updateDynamicNums(noteBo.getCreateuid(), -1, dynamicService, redisServer);
 		}
 		return Constant.COM_RESP;
 	}
@@ -460,7 +465,6 @@ public class NoteController extends BaseContorller {
 		userService.addUserLevel(userBo.getId(),1, Constant.LEVEL_COMMENT);
 		updateCircleHot(circleService, redisServer, noteBo.getCircleId(), 1, Constant.CIRCLE_COMMENT);
 		updateRedStar(userBo, noteBo, circleid, currentDate);
-		updateDynamicNums(noteBo.getCreateuid(), 1, dynamicService, redisServer);
 		updateCircieUnReadNum(noteBo.getCreateuid(), circleid);
 		String path = "/note/note-info.do?noteid=" + noteid;
 		JPushUtil.pushMessage(pushTitle, "有人刚刚评论了你的帖子，快去看看吧!", path,  noteBo.getCreateuid());
@@ -1202,6 +1206,7 @@ public class NoteController extends BaseContorller {
 		noteBo.setVideoPic(old.getVideoPic());
 		noteBo.setPhotos(old.getPhotos());
 		noteBo.setType(old.getType());
+		noteBo.setNoteType(0);
 		noteBo.setContent(old.getContent());
 		noteBo.setCreateuid(userBo.getId());
 		noteBo.setLandmark(landmark);
@@ -1209,7 +1214,6 @@ public class NoteController extends BaseContorller {
 		noteBo.setForward(1);
 		noteService.insert(noteBo);
 		updateCount(noteid, Constant.SHARE_NUM, 1);
-		updateDynamicNums(userBo.getId(), 1,dynamicService, redisServer);
 		NoteVo noteVo = new NoteVo();
 		boToVo(noteBo, noteVo, userBo, "");
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -1323,31 +1327,80 @@ public class NoteController extends BaseContorller {
 		BeanUtils.copyProperties(noteBo, noteVo);
 		//表示转发
 		if (noteBo.getForward() == 1) {
-			NoteBo sourceNote = noteService.selectById(noteBo.getSourceid());
-			if (sourceNote != null) {
-				noteVo.setSubject(sourceNote.getSubject());
-				noteVo.setContent(sourceNote.getContent());
-				noteVo.setPhotos(sourceNote.getPhotos());
-				noteVo.setVideoPic(sourceNote.getVideoPic());
-				UserBo from = userService.getUser(sourceNote.getCreateuid());
-				if (from != null) {
-					noteVo.setFromUserid(from.getId());
-					if (!StringUtils.isEmpty(userid)) {
-						FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(userid, from.getId());
-						if (friendsBo != null) {
-							noteVo.setFromUserName(friendsBo.getBackname());
+			noteVo.setSourceid(noteBo.getSourceid());
+			noteVo.setForward(true);
+			//0 表示转发的帖子，1 表示转发的资讯
+			if (noteBo.getNoteType() == 1) {
+				int inforType = noteBo.getInforType();
+				noteVo.setInforType(inforType);
+				noteVo.setForwardType(1);
+				switch (inforType){
+					case Constant.INFOR_HEALTH:
+						InforBo inforBo = inforService.findById(noteBo.getSourceid());
+						if (inforBo != null) {
+							noteVo.setPhotos(inforBo.getImageUrls());
+							noteVo.setSubject(inforBo.getTitle());
+							noteVo.setVisitCount((long)inforBo.getVisitNum());
+							noteVo.setInforTypeName(inforBo.getModule());
+						}
+						break;
+					case Constant.INFOR_SECRITY:
+						SecurityBo securityBo = inforService.findSecurityById(noteBo.getSourceid());
+						if (securityBo == null) {
+							noteVo.setSubject(securityBo.getTitle());
+							noteVo.setVisitCount((long)securityBo.getVisitNum());
+							noteVo.setInforTypeName(securityBo.getNewsType());
+						}
+						break;
+					case Constant.INFOR_RADIO:
+						BroadcastBo broadcastBo = inforService.findBroadById(noteBo.getSourceid());
+						if (broadcastBo == null) {
+							noteVo.setSubject(broadcastBo.getTitle());
+							noteVo.setInforUrl(broadcastBo.getBroadcast_url());
+							noteVo.setVisitCount((long)broadcastBo.getVisitNum());
+							noteVo.setInforTypeName(broadcastBo.getModule());
+						}
+						break;
+					case Constant.INFOR_VIDEO:
+						VideoBo videoBo = inforService.findVideoById(noteBo.getSourceid());
+						if (videoBo == null) {
+							noteVo.setSubject(videoBo.getTitle());
+							noteVo.setInforUrl(videoBo.getUrl());
+							noteVo.setVideoPic(videoBo.getPoster());
+							noteVo.setVisitCount((long)videoBo.getVisitNum());
+							noteVo.setInforTypeName(videoBo.getModule());
+						}
+						break;
+					default:
+						break;
+				}
+			} else {
+				NoteBo sourceNote = noteService.selectById(noteBo.getSourceid());
+				if (sourceNote != null) {
+					noteVo.setSubject(sourceNote.getSubject());
+					noteVo.setContent(sourceNote.getContent());
+					noteVo.setPhotos(sourceNote.getPhotos());
+					noteVo.setVideoPic(sourceNote.getVideoPic());
+
+					UserBo from = userService.getUser(sourceNote.getCreateuid());
+					if (from != null) {
+						noteVo.setFromUserid(from.getId());
+						if (!StringUtils.isEmpty(userid)) {
+							FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(userid, from.getId());
+							if (friendsBo != null) {
+								noteVo.setFromUserName(friendsBo.getBackname());
+							} else {
+								noteVo.setFromUserName(from.getUserName());
+							}
 						} else {
 							noteVo.setFromUserName(from.getUserName());
 						}
-					} else {
-						noteVo.setFromUserName(from.getUserName());
+						noteVo.setFromUserPic(from.getHeadPictureName());
+						noteVo.setFromUserSex(from.getSex());
+						noteVo.setFromUserSign(from.getPersonalizedSignature());
 					}
-					noteVo.setFromUserPic(from.getHeadPictureName());
-					noteVo.setFromUserSex(from.getSex());
-					noteVo.setFromUserSign(from.getPersonalizedSignature());
 				}
 			}
-			noteVo.setForward(true);
 		}
 		if (creatBo!= null) {
 			if (!"".equals(userid) && !userid.equals(creatBo.getId())) {

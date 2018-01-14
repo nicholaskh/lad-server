@@ -5,6 +5,7 @@ import com.lad.service.IFriendsService;
 import com.lad.service.IUserService;
 import com.lad.util.CommonUtil;
 import com.lad.util.Constant;
+import com.lad.util.ERRORCODE;
 import net.sf.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -94,20 +95,13 @@ public class UploadController extends BaseContorller {
 	@ResponseBody
 	public String imfile(@RequestParam("imfile") MultipartFile imfile, HttpServletRequest request,
 			HttpServletResponse response) {
-		HttpSession session = request.getSession();
-		if (session.isNew()) {
-			return "{\"ret\":20002,\"error\":\"未登录\"}";
-		}
-		if (session.getAttribute("isLogin") == null) {
-			return "{\"ret\":20002,\"error\":\"未登录\"}";
-		}
-		UserBo userBo = (UserBo) session.getAttribute("userBo");
+		UserBo userBo = getUserLogin(request);
 		if (userBo == null) {
-			return "{\"ret\":20002,\"error\":\"未登录\"}";
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(), ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		long time = Calendar.getInstance().getTimeInMillis();
-		String fileName = String.format("%d-%s", time, imfile.getOriginalFilename());
-		String path = CommonUtil.upload(imfile, Constant.IMFILE_PATH, fileName, 1);
+		String fileName = String.format("%s-%d-%s",userBo.getId(), time, imfile.getOriginalFilename());
+		String path = CommonUtil.upload(imfile, Constant.IMFILE_PATH, fileName, 0);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("path", path);

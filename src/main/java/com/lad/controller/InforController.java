@@ -69,6 +69,12 @@ public class InforController extends BaseContorller {
     @Autowired
     private IDynamicService dynamicService;
 
+    @Autowired
+    private INoteService noteService;
+
+    @Autowired
+    private ICircleService circleService;
+
 
     @ApiOperation("刷新资讯分类缓存信息")
     @GetMapping("/init-cache")
@@ -1829,7 +1835,7 @@ public class InforController extends BaseContorller {
                     "string"),
             @ApiImplicitParam(name = "inforType", value = "1健康，2 安防，3广播，4视频", required = true,paramType = "query", dataType =
                     "int")})
-    @RequestMapping(value = "/forward-dynamic", method = {RequestMethod.GET, RequestMethod.POST})
+    @RequestMapping(value = "/forward-circle", method = {RequestMethod.GET, RequestMethod.POST})
     public String forwardCircle(String circleid, String inforid, int inforType,
                                 HttpServletRequest request, HttpServletResponse response) {
         UserBo userBo = getUserLogin(request);
@@ -1837,56 +1843,20 @@ public class InforController extends BaseContorller {
             return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
                     ERRORCODE.ACCOUNT_OFF_LINE.getReason());
         }
-
+        CircleBo circleBo = circleService.selectById(circleid);
+        if (circleBo == null) {
+            return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_IS_NULL.getIndex(),
+                    ERRORCODE.CIRCLE_IS_NULL.getReason());
+        }
         NoteBo noteBo = new NoteBo();
         noteBo.setSourceid(inforid);
         noteBo.setNoteType(1);
         noteBo.setInforType(inforType);
         noteBo.setForward(1);
-
-        DynamicBo dynamicBo = new DynamicBo();
-        switch (inforType){
-            case Constant.INFOR_HEALTH:
-                InforBo inforBo = inforService.findById(inforid);
-                dynamicBo.setTitle(inforBo.getTitle());
-                dynamicBo.setSourceName(inforBo.getModule());
-                if (inforBo.getImageUrls() != null) {
-                    dynamicBo.setPhotos(new LinkedHashSet<>(inforBo.getImageUrls()));
-                }
-                break;
-            case Constant.INFOR_SECRITY:
-                SecurityBo securityBo = inforService.findSecurityById(inforid);
-                dynamicBo.setTitle(securityBo.getTitle());
-                dynamicBo.setSourceName(securityBo.getNewsType());
-                break;
-            case Constant.INFOR_RADIO:
-                BroadcastBo broadcastBo = inforService.findBroadById(inforid);
-                dynamicBo.setTitle(broadcastBo.getTitle());
-                dynamicBo.setSourceName(broadcastBo.getModule());
-                break;
-            case Constant.INFOR_VIDEO:
-                VideoBo videoBo = inforService.findVideoById(inforid);
-                dynamicBo.setTitle(videoBo.getTitle());
-                dynamicBo.setSourceName(videoBo.getModule());
-                if (videoBo.getPoster() != null) {
-                    dynamicBo.setVideoPic(videoBo.getPoster());
-                }
-                dynamicBo.setPicType("video");
-                dynamicBo.setVideo(videoBo.getUrl());
-                break;
-            default:
-                break;
-        }
-
-        dynamicBo.setCreateuid(userBo.getId());
-        dynamicBo.setMsgid(inforid);
-        dynamicBo.setType(Constant.INFOR_TYPE);
-        dynamicService.addDynamic(dynamicBo);
-        updateDynamicNums(userBo.getId(), 1,dynamicService, redisServer);
-        Map<String, Object> map = new HashMap<>();
-        map.put("ret", 0);
-        map.put("dynamicid", dynamicBo.getId());
-        return JSONObject.fromObject(map).toString();
+        noteBo.setCreateuid(userBo.getId());
+        noteBo.setCircleId(circleid);
+        noteService.insert(noteBo);
+        return Constant.COM_RESP;
     }
 
 }
