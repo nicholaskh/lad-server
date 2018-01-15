@@ -22,6 +22,8 @@ import org.apache.logging.log4j.Logger;
 import org.redisson.api.RLock;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.geo.GeoResult;
+import org.springframework.data.geo.GeoResults;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -162,7 +164,7 @@ public class CircleController extends BaseContorller {
 		addBo.setStatus(1);
 		circleService.insertCircleAdd(addBo);
 
-		userService.addUserLevel(userBo.getId(), 1, Constant.LEVEL_CIRCLE);
+		userService.addUserLevel(userBo.getId(), 1, Constant.LEVEL_CIRCLE, 0);
 		updateHistory(userBo.getId(), circleBo.getId(), locationService, circleService);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
@@ -1448,8 +1450,16 @@ public class CircleController extends BaseContorller {
 			}
 		}
 		UserBo userBo = getUserLogin(request);
-		List<CircleBo> circleBos = circleService.findNearCircle(userid, position, 10000, 10);
-		return bo2vos(circleBos, userBo);
+		GeoResults<CircleBo> circleBos = circleService.findNearCircle(userid, position, 10000, 10);
+		List<CircleVo> listVo = new LinkedList<>();
+		for (GeoResult<CircleBo> result : circleBos) {
+			CircleBo circleBo = result.getContent();
+			listVo.add(bo2vo(circleBo, userBo, 0));
+		}
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("circleVoList", listVo);
+		return JSONObject.fromObject(map).toString();
 	}
 
 

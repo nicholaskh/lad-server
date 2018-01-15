@@ -2,6 +2,7 @@ package com.lad.dao;
 
 import com.lad.bo.CircleBo;
 import com.mongodb.WriteResult;
+import org.springframework.data.geo.GeoResults;
 
 import java.util.HashSet;
 import java.util.List;
@@ -84,7 +85,7 @@ public interface ICircleDao extends IBaseDao {
 	List<CircleBo> findByType(String tag, String sub_tag ,int page,int limit);
 
 	//查询附近的圈子
-	List<CircleBo> findNearCircle(String userid, double[] position, int maxDistance, int limit);
+	GeoResults<CircleBo> findNearCircle(String userid, double[] position, int maxDistance, int limit);
 
 	/**
 	 * 查找创建圈子数量

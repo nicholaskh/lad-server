@@ -59,7 +59,7 @@ public class DynamicNumDaoImpl implements IDynamicNumDao {
         AggregationResults<DynamicNumBo> results = mongoTemplate.aggregate(aggregation,
                 "dynamicNum", DynamicNumBo.class);
         List<DynamicNumBo> res = results.getMappedResults();
-        if (res != null || res.isEmpty()) {
+        if (res != null && !res.isEmpty()) {
             return res.get(0);
         }
         return null;

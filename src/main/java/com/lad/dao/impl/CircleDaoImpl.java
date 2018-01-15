@@ -7,9 +7,10 @@ import com.mongodb.WriteResult;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.geo.Point;
+import org.springframework.data.geo.*;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.NearQuery;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
@@ -216,17 +217,19 @@ public class CircleDaoImpl implements ICircleDao {
 		return mongoTemplate.find(query, CircleBo.class);
 	}
 
-	public List<CircleBo> findNearCircle(String userid, double[] position, int maxDistance, int limit){
+	public GeoResults<CircleBo> findNearCircle(String userid, double[] position, int maxDistance, int limit){
 		Point point = new Point(position[0],position[1]);
+
+		NearQuery near =NearQuery.near(point);
+		Distance distance = new Distance(maxDistance/1000, Metrics.KILOMETERS);
+		near.maxDistance(distance);
 		Query query = new Query();
 		if (StringUtils.isNotEmpty(userid)){
 			query.addCriteria(new Criteria("users").nin(userid));
 		}
-		Criteria criteria1 = Criteria.where("position").nearSphere(point)
-				.maxDistance(maxDistance/6378137.0);
-		query.addCriteria(criteria1);
 		query.limit(limit);
-		return mongoTemplate.find(query, CircleBo.class);
+		near.query(query);
+		return mongoTemplate.geoNear(near, CircleBo.class);
 	}
 
 	public List<CircleBo> selectUsersLike(String userid, double[] position, int minDistance) {

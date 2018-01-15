@@ -148,7 +148,7 @@ public class PartyController extends BaseContorller {
             pushFriends(userId, content, path, circleUsers);
         }
         //用户等级
-        userService.addUserLevel(userBo.getId(), 1, Constant.PARTY_TYPE);
+        userService.addUserLevel(userBo.getId(), 1, Constant.PARTY_TYPE, 0);
         //圈子热度
         updateCircleHot(circleService, redisServer, partyBo.getCircleid(), 1, Constant.CIRCLE_PARTY_VISIT);
 //        updateDynamicNums(userId, 1, dynamicService, redisServer);
@@ -1666,7 +1666,7 @@ public class PartyController extends BaseContorller {
         forward.setCreateuid(userBo.getId());
         partyService.insert(forward);
         //用户等级
-        userService.addUserLevel(userBo.getId(), 1, Constant.PARTY_TYPE);
+        userService.addUserLevel(userBo.getId(), 1, Constant.PARTY_TYPE, 0);
         //圈子热度
         updateCircleHot(circleService, redisServer, partyBo.getCircleid(), 1, Constant.CIRCLE_PARTY_VISIT);
         Map<String, Object> map = new HashMap<String, Object>();

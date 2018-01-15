@@ -13,7 +13,7 @@ public class UserLevelBo extends BaseBo{
 
     private String userid;
     //在线时间 毫秒
-    private long onlineHours;
+    private double onlineHours;
     //发起聚会数
     private int launchPartys;
     //发帖数
@@ -35,11 +35,11 @@ public class UserLevelBo extends BaseBo{
         this.userid = userid;
     }
 
-    public long getOnlineHours() {
+    public double getOnlineHours() {
         return onlineHours;
     }
 
-    public void setOnlineHours(long onlineHours) {
+    public void setOnlineHours(double onlineHours) {
         this.onlineHours = onlineHours;
     }
 

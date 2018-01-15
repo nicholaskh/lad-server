@@ -734,7 +734,7 @@ public class InforController extends BaseContorller {
         commentBo.setSubType(inforType);
         commentService.insert(commentBo);
         updateInforNum(inforid, inforType, 1, Constant.COMMENT_NUM);
-        userService.addUserLevel(userBo.getId(),1, Constant.LEVEL_COMMENT);
+        userService.addUserLevel(userBo.getId(),1, Constant.LEVEL_COMMENT, 0);
         infotHostAsync(inforid, inforType);
         CommentVo commentVo = comentBo2Vo(commentBo);
         Map<String, Object> map = new HashMap<>();

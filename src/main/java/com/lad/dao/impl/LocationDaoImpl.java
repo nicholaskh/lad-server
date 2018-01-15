@@ -3,9 +3,10 @@ package com.lad.dao.impl;
 import com.lad.bo.LocationBo;
 import com.lad.dao.ILocationDao;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.geo.Point;
+import org.springframework.data.geo.*;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.NearQuery;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
@@ -20,7 +21,9 @@ public class LocationDaoImpl implements ILocationDao {
 	
 	public List<LocationBo> findCircleNear(Point point, double maxDistance) {
 		Query query = new Query();
-		Criteria criteria1 = Criteria.where("position").nearSphere(point).maxDistance(maxDistance/6378137.0);
+		Distance distance = new Distance(maxDistance/1000, Metrics.KILOMETERS);
+		Circle circle = new Circle(point, distance);
+		Criteria criteria1 = Criteria.where("position").withinSphere(circle);
 		query.addCriteria(criteria1);
 		query.limit(50);
 		return mongoTemplate.find(query, LocationBo.class);
@@ -58,12 +61,24 @@ public class LocationDaoImpl implements ILocationDao {
 	}
 
 	@Override
-	public List<LocationBo> findNearFriends(double[] position, double maxDistance, List<String> friendids) {
+	public GeoResults<LocationBo> findNearFriends(double[] position, double maxDistance, List<String> friendids) {
 		Query query = new Query();
 		Point point = new Point(position[0], position[1]);
-		Criteria criteria1 = Criteria.where("position").nearSphere(point).maxDistance(maxDistance/6378137.0);
-		query.addCriteria(criteria1);
+		Distance distance = new Distance(maxDistance/1000, Metrics.KILOMETERS);
+		NearQuery nearQuery = NearQuery.near(point);
+		nearQuery.maxDistance(distance);
 		query.addCriteria(new Criteria("userid").in(friendids));
-		return mongoTemplate.find(query, LocationBo.class);
+		nearQuery.query(query);
+		return mongoTemplate.geoNear(nearQuery, LocationBo.class);
+	}
+
+	@Override
+	public GeoResults<LocationBo> findUserNear(Point point, double maxDistance) {
+		Query query = new Query();
+		Distance distance = new Distance(maxDistance/1000, Metrics.KILOMETERS);
+		NearQuery nearQuery = NearQuery.near(point);
+		nearQuery.maxDistance(distance);
+		nearQuery.query(query);
+		return mongoTemplate.geoNear(nearQuery, LocationBo.class);
 	}
 }

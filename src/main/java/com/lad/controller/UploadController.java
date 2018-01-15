@@ -10,9 +10,7 @@ import net.sf.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
@@ -22,7 +20,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
-@Controller
+@RestController
 @RequestMapping("upload")
 public class UploadController extends BaseContorller {
 	@Autowired
@@ -31,8 +29,7 @@ public class UploadController extends BaseContorller {
 	@Autowired
 	private IFriendsService friendsService;
 
-	@RequestMapping("/head-picture")
-	@ResponseBody
+	@PostMapping("/head-picture")
 	public String head_picture(@RequestParam("head_picture") MultipartFile file, HttpServletRequest request,
 			HttpServletResponse response) {
 		HttpSession session = request.getSession();
@@ -65,8 +62,7 @@ public class UploadController extends BaseContorller {
 		friendsService.updateUsernameByFriend(userid, "", headPic);
 	}
 
-	@RequestMapping("/feedback-picture")
-	@ResponseBody
+	@PostMapping("/feedback-picture")
 	public String feedback_picture(@RequestParam("feedback_picture") MultipartFile file, HttpServletRequest request,
 			HttpServletResponse response) {
 		HttpSession session = request.getSession();
@@ -91,8 +87,7 @@ public class UploadController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 	
-	@RequestMapping("/imfile")
-	@ResponseBody
+	@PostMapping("/imfile")
 	public String imfile(@RequestParam("imfile") MultipartFile imfile, HttpServletRequest request,
 			HttpServletResponse response) {
 		UserBo userBo = getUserLogin(request);

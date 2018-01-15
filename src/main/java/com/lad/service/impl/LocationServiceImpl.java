@@ -4,6 +4,7 @@ import com.lad.bo.LocationBo;
 import com.lad.dao.ILocationDao;
 import com.lad.service.ILocationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.geo.GeoResults;
 import org.springframework.data.geo.Point;
 import org.springframework.stereotype.Service;
 
@@ -39,7 +40,12 @@ public class LocationServiceImpl implements ILocationService {
 
 
 	@Override
-	public List<LocationBo> findNearFriends(double[] position, double maxDistance, List<String> friendids) {
+	public GeoResults<LocationBo> findNearFriends(double[] position, double maxDistance, List<String> friendids) {
 		return locationDao.findNearFriends(position, maxDistance, friendids);
+	}
+
+	@Override
+	public GeoResults<LocationBo> findUserNear(Point point, double maxDistance) {
+		return locationDao.findUserNear(point, maxDistance);
 	}
 }

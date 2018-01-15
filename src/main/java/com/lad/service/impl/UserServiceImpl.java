@@ -147,7 +147,7 @@ public class UserServiceImpl implements IUserService{
 
 	@Override
 	@Async
-	public void addUserLevel(String userid, long num, int type) {
+	public void addUserLevel(String userid, long num, int type, double hours) {
 		UserBo userBo = userDao.getUser(userid);
 		UserLevelBo userLevelBo = userLevelDao.findByUserid(userid);
 		int level = 1;
@@ -156,19 +156,26 @@ public class UserServiceImpl implements IUserService{
 			userLevelBo.setUserid(userid);
 			switch (type){
 				case Constant.LEVEL_HOUR:
-					userLevelBo.setOnlineHours(num);
+					userLevelBo.setOnlineHours(hours);
+					break;
 				case Constant.LEVEL_PARTY:
 					userLevelBo.setLaunchPartys((int) num);
+					break;
 				case Constant.LEVEL_NOTE:
 					userLevelBo.setNoteNum((int) num);
+					break;
 				case Constant.LEVEL_COMMENT:
 					userLevelBo.setCommentNum((int) num);
+					break;
 				case Constant.LEVEL_TRANS:
 					userLevelBo.setTransmitNum((int) num);
+					break;
 				case Constant.LEVEL_SHARE:
 					userLevelBo.setShareNum((int) num);
+					break;
 				case Constant.LEVEL_CIRCLE:
 					userLevelBo.setCircleNum((int) num);
+					break;
 				default:
 					break;
 			}
@@ -176,19 +183,26 @@ public class UserServiceImpl implements IUserService{
 		} else {
 			switch (type){
 				case Constant.LEVEL_HOUR:
-					userLevelBo.setOnlineHours(userLevelBo.getOnlineHours() + num);
+					userLevelBo.setOnlineHours(userLevelBo.getOnlineHours() + hours);
+					break;
 				case Constant.LEVEL_PARTY:
 					userLevelBo.setLaunchPartys(userLevelBo.getLaunchPartys() + (int)num);
+					break;
 				case Constant.LEVEL_NOTE:
 					userLevelBo.setNoteNum(userLevelBo.getNoteNum() + (int) num);
+					break;
 				case Constant.LEVEL_COMMENT:
 					userLevelBo.setCommentNum(userLevelBo.getCommentNum () + (int) num);
+					break;
 				case Constant.LEVEL_TRANS:
 					userLevelBo.setTransmitNum(userLevelBo.getTransmitNum() + (int) num);
+					break;
 				case Constant.LEVEL_SHARE:
 					userLevelBo.setShareNum(userLevelBo.getShareNum() + (int) num);
+					break;
 				case Constant.LEVEL_CIRCLE:
 					userLevelBo.setCircleNum(userLevelBo.getShareNum()+ (int) num);
+					break;
 				default:
 					break;
 			}
@@ -203,9 +217,7 @@ public class UserServiceImpl implements IUserService{
 
 	private int getLevel(UserLevelBo userLevelBo){
 
-		long times = userLevelBo.getOnlineHours();
-
-		long hours = times / 3600000;
+		double hours = userLevelBo.getOnlineHours();
 
 		int partys = userLevelBo.getLaunchPartys();
 

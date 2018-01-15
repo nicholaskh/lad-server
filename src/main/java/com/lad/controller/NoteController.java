@@ -157,7 +157,7 @@ public class NoteController extends BaseContorller {
 			dynamicService.addDynamic(dynamicBo);
 			updateDynamicNums(userId, 1, dynamicService, redisServer);
 		}
-		userService.addUserLevel(userBo.getId(), 1, Constant.LEVEL_NOTE);
+		userService.addUserLevel(userBo.getId(), 1, Constant.LEVEL_NOTE, 0);
 		updateCircleHot(circleService, redisServer, circleid, 1, Constant.CIRCLE_NOTE);
 		updateCircleHot(circleService, redisServer, circleid, 1, Constant.CIRCLE_NOTE_VISIT);
 		updateCircieNoteUnReadNum(userId, circleid);
@@ -462,7 +462,7 @@ public class NoteController extends BaseContorller {
 		commentService.insert(commentBo);
 
 		updateCount(noteid, Constant.COMMENT_NUM, 1);
-		userService.addUserLevel(userBo.getId(),1, Constant.LEVEL_COMMENT);
+		userService.addUserLevel(userBo.getId(),1, Constant.LEVEL_COMMENT, 0);
 		updateCircleHot(circleService, redisServer, noteBo.getCircleId(), 1, Constant.CIRCLE_COMMENT);
 		updateRedStar(userBo, noteBo, circleid, currentDate);
 		updateCircieUnReadNum(noteBo.getCreateuid(), circleid);

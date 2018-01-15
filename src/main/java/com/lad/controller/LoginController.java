@@ -17,17 +17,17 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
 
-@Controller
+@RestController
 @RequestMapping("login")
 public class LoginController extends BaseContorller {
 
@@ -45,8 +45,7 @@ public class LoginController extends BaseContorller {
 	@Autowired
 	private IUserService userService;
 
-	@RequestMapping("/verification-send")
-	@ResponseBody
+	@PostMapping("/verification-send")
 	public String verification_send(String phone, HttpServletRequest request, HttpServletResponse response) {
 		if (!StringUtils.hasLength(phone)) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PHONE_ERROR.getIndex(),
@@ -61,8 +60,7 @@ public class LoginController extends BaseContorller {
 		return Constant.COM_RESP;
 	}
 
-	@RequestMapping("/login-quick")
-	@ResponseBody
+	@PostMapping("/login-quick")
 	public String login_quick(String phone, String verification, HttpServletRequest request,
 			HttpServletResponse response) {
 		HttpSession session = request.getSession();
@@ -146,8 +144,7 @@ public class LoginController extends BaseContorller {
 	}
 
 
-	@RequestMapping("/login")
-	@ResponseBody
+	@PostMapping("/login")
 	public String login(@RequestParam("phone")String phone,
 						@RequestParam("password")String password,
 						HttpServletRequest request, HttpServletResponse response) {
@@ -187,8 +184,7 @@ public class LoginController extends BaseContorller {
 	}
 
 
-	@RequestMapping("/logout")
-	@ResponseBody
+	@PostMapping("/logout")
 	public String loginout(HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {
@@ -201,9 +197,13 @@ public class LoginController extends BaseContorller {
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
 		long loginTime = (long)session.getAttribute("loginTime");
-		long time = System.currentTimeMillis() - loginTime;
-		userService.addUserLevel(userBo.getId(), time, Constant.LEVEL_HOUR);
 		session.invalidate();
+		//登录时长
+		long time = System.currentTimeMillis() - loginTime;
+		double hours = time/3600000;
+		DecimalFormat df = new DecimalFormat("###.00");
+		double hour = Double.parseDouble(df.format(hours));
+		userService.addUserLevel(userBo.getId(), time, Constant.LEVEL_HOUR, hour);
 		logger.info("logout ========== {} ; sessionid :{}",userBo.getPhone(), session.getId());
 		return Constant.COM_RESP;
 	}

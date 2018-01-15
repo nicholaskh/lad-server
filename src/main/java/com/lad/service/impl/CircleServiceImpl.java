@@ -5,6 +5,7 @@ import com.lad.dao.*;
 import com.lad.service.ICircleService;
 import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.geo.GeoResults;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -113,7 +114,7 @@ public class CircleServiceImpl implements ICircleService {
 	}
 
 	@Override
-	public List<CircleBo> findNearCircle(String userid, double[] position, int maxDistance, int limit) {
+	public GeoResults<CircleBo> findNearCircle(String userid, double[] position, int maxDistance, int limit) {
 		return circleDao.findNearCircle(userid, position, maxDistance, limit);
 	}
 

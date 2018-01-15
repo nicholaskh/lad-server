@@ -1,6 +1,8 @@
 package com.lad.dao;
 
 import com.lad.bo.LocationBo;
+import org.springframework.data.geo.GeoResult;
+import org.springframework.data.geo.GeoResults;
 import org.springframework.data.geo.Point;
 
 import java.util.List;
@@ -19,5 +21,13 @@ public interface ILocationDao extends IBaseDao {
 	 * @param friendids
 	 * @return
 	 */
-	List<LocationBo> findNearFriends(double[] position, double maxDistance, List<String> friendids);
+	GeoResults<LocationBo> findNearFriends(double[] position, double maxDistance, List<String> friendids);
+
+	/**
+	 * 查找附近人员信息
+	 * @param point
+	 * @param maxDistance
+	 * @return
+	 */
+	GeoResults<LocationBo> findUserNear(Point point, double maxDistance);
 }

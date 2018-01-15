@@ -63,7 +63,7 @@ public interface IUserService extends IBaseService {
 	WriteResult updateTopCircles(String userid, List<String> topCircles);
 
 	
-	void addUserLevel(String userid , long num, int type);
+	void addUserLevel(String userid , long num, int type, double hours);
 
 
 	/**

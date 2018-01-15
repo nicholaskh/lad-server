@@ -6,6 +6,9 @@ import com.lad.util.Constant;
 import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.geo.Circle;
+import org.springframework.data.geo.Distance;
+import org.springframework.data.geo.Metrics;
 import org.springframework.data.geo.Point;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -48,9 +51,10 @@ public class CircleHistoryDaoImpl implements ICircleHistoryDao {
     @Override
     public List<CircleHistoryBo> findNear(String cirlcid, String userid, double[] position, double maxDistance) {
         Point point = new Point(position[0],position[1]);
-
         Query query = new Query();
-        Criteria criteria = Criteria.where("position").nearSphere(point).maxDistance(maxDistance/6378137.0);
+        Distance distance = new Distance(maxDistance/1000, Metrics.KILOMETERS);
+        Circle circle = new Circle(point, distance);
+        Criteria criteria = Criteria.where("position").withinSphere(circle);
         query.addCriteria(criteria);
         query.addCriteria(new Criteria("circleid").is(cirlcid).and("type").is(0).and("deleted").is(0));
         if (!StringUtils.isEmpty(userid)){
