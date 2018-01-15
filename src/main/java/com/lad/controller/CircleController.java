@@ -1984,7 +1984,8 @@ public class CircleController extends BaseContorller {
 	 */
 	@ApiOperation("获取所有未读公告信息")
 	@PostMapping("/unRead-notice-list")
-	public String unReadNotices(int page, int limit, HttpServletRequest request, HttpServletResponse response) {
+	public String unReadNotices(String circleid,int page, int limit, HttpServletRequest request, HttpServletResponse
+			response) {
 		UserBo userBo = getUserLogin(request);
 		if (userBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
@@ -1992,7 +1993,7 @@ public class CircleController extends BaseContorller {
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
-		List<CircleNoticeBo> noticeBos = circleService.findUnReadNotices(userBo.getId(), page, limit);
+		List<CircleNoticeBo> noticeBos = circleService.findUnReadNotices(userBo.getId(), circleid, page, limit);
 		JSONArray array = new JSONArray();
 		if (!CommonUtil.isEmpty(noticeBos)) {
 			for (CircleNoticeBo noticeBo : noticeBos) {

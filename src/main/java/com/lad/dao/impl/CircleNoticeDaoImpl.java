@@ -104,7 +104,7 @@ public class CircleNoticeDaoImpl implements ICircleNoticeDao {
     }
 
     @Override
-    public List<CircleNoticeBo> unReadNotice(String userid, int page, int limit) {
+    public List<CircleNoticeBo> unReadNotice(String userid, String circleid, int page, int limit) {
         Query query = new Query();
         query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
         query.with(new Sort(Sort.Direction.DESC, "_id"));

@@ -343,8 +343,8 @@ public class CircleServiceImpl implements ICircleService {
 	}
 
 	@Override
-	public List<CircleNoticeBo> findUnReadNotices(String userid, int page, int limit) {
-		return circleNoticeDao.unReadNotice(userid, page, limit);
+	public List<CircleNoticeBo> findUnReadNotices(String userid, String circleid, int page, int limit) {
+		return circleNoticeDao.unReadNotice(userid, circleid,page, limit);
 	}
 
 

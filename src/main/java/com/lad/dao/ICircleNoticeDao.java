@@ -74,7 +74,7 @@ public interface ICircleNoticeDao {
      * @param userid
      * @return
      */
-    List<CircleNoticeBo> unReadNotice(String userid, int page, int limit);
+    List<CircleNoticeBo> unReadNotice(String userid, String circleid, int page, int limit);
 
 
     /**
