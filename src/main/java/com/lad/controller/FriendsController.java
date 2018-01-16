@@ -865,7 +865,7 @@ public class FriendsController extends BaseContorller {
 		List<String> friendids = new LinkedList<>();
 		Map<String, Double> disMap = new HashMap<>();
 		Point point = new Point(px, py);
-		GeoResults<LocationBo> results = locationService.findUserNear(point, 5000);
+		GeoResults<LocationBo> results = locationService.findUserNear(point, 10000);
 		for (GeoResult<LocationBo> result : results) {
 			String userid = result.getContent().getUserid();
 			friendids.add(userid);
