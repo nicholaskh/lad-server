@@ -3,6 +3,7 @@ package com.lad.controller;
 import com.lad.bo.*;
 import com.lad.service.*;
 import com.lad.util.*;
+import com.lad.vo.FriendDisVo;
 import com.lad.vo.FriendsVo;
 import com.lad.vo.UserBaseVo;
 import com.lad.vo.UserVoFriends;
@@ -11,6 +12,9 @@ import net.sf.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.geo.GeoResult;
+import org.springframework.data.geo.GeoResults;
+import org.springframework.data.geo.Point;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,6 +22,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.*;
 
@@ -857,16 +862,21 @@ public class FriendsController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
-		List<LocationBo> locationBos = locationService.findCircleNear(px, py, 5000);
 		List<String> friendids = new LinkedList<>();
-		for (LocationBo bo : locationBos) {
-			friendids.add(bo.getUserid());
+		Map<String, Double> disMap = new HashMap<>();
+		Point point = new Point(px, py);
+		GeoResults<LocationBo> results = locationService.findUserNear(point, 5000);
+		for (GeoResult<LocationBo> result : results) {
+			String userid = result.getContent().getUserid();
+			friendids.add(userid);
+			disMap.put(userid, result.getDistance().getValue());
 		}
-		List<FriendsVo> voList = new LinkedList<>();
+		List<FriendDisVo> voList = new LinkedList<>();
 		if (!friendids.isEmpty()) {
+			DecimalFormat df = new DecimalFormat("###.00");
 			List<FriendsBo> friendsBos = friendsService.getFriendByInList(userBo.getId(), friendids);
 			for (FriendsBo friendsBo : friendsBos) {
-				FriendsVo vo = new FriendsVo();
+				FriendDisVo vo = new FriendDisVo();
 				BeanUtils.copyProperties(friendsBo, vo);
 				String friendid = friendsBo.getFriendid();
 				vo.setPicture(friendsBo.getFriendHeadPic());
@@ -876,6 +886,8 @@ public class FriendsController extends BaseContorller {
 					vo.setUsername(friend.getUserName());
 				}
 				vo.setChannelId(friendsBo.getChatroomid());
+				double dis = Double.parseDouble(df.format(disMap.get(friendid)));
+				vo.setDistance(dis);
 				voList.add(vo);
 			}
 		}

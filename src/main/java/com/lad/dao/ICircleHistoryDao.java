@@ -2,6 +2,7 @@ package com.lad.dao;
 
 import com.lad.bo.CircleHistoryBo;
 import com.mongodb.WriteResult;
+import org.springframework.data.geo.GeoResults;
 
 import java.util.Date;
 import java.util.List;
@@ -64,4 +65,14 @@ public interface ICircleHistoryDao {
      * @return
      */
     WriteResult deleteHisBitch(List<String> ids);
+
+    /**
+     * 查找活跃人员
+     * @param cirlcid
+     * @param userid
+     * @param position
+     * @param maxDistance
+     * @return
+     */
+    GeoResults<CircleHistoryBo> findNearPeople(String cirlcid, String userid, double[] position, double maxDistance);
 }

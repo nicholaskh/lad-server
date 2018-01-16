@@ -31,6 +31,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -1409,26 +1410,33 @@ public class CircleController extends BaseContorller {
 	@PostMapping("/near-people")
 	public String nearPeopel(String circleid, double px, double py, HttpServletRequest request, HttpServletResponse
 			response) {
-		String userid = "";
-		try {
-			UserBo userBo = checkSession(request, userService);
-			userid = userBo.getId();
-		} catch (MyException e) {
-			userid = "";
-		}
+		UserBo userBo = getUserLogin(request);
+		String userid = userBo != null ? userBo.getId() : "";
 		double[] position = new double[]{px, py};
-		List<CircleHistoryBo> historyBos = circleService.findNearPeople(circleid,
-				userid,position, 20000);
-		List<UserBaseVo> userVos = new ArrayList<>();
-		for (CircleHistoryBo historyBo : historyBos) {
-			UserBo user = userService.getUser(historyBo.getUserid());
-			UserBaseVo baseVo = new UserBaseVo();
-			BeanUtils.copyProperties(user, baseVo);
-			userVos.add(baseVo);
+		GeoResults<CircleHistoryBo> results = circleService.findNearPeopleDis(circleid, userid, position,
+				10000);
+		JSONArray array = new JSONArray();
+		DecimalFormat df = new DecimalFormat("###.00");
+		for (GeoResult<CircleHistoryBo> result : results) {
+			UserBo temp = userService.getUser(result.getContent().getUserid());
+			if (temp !=  null) {
+				JSONObject jsonObject = new JSONObject();
+				jsonObject.put("id",temp.getId());
+				jsonObject.put("userName",temp.getUserName());
+				jsonObject.put("phone",temp.getPhone());
+				jsonObject.put("sex",temp.getSex());
+				jsonObject.put("headPictureName",temp.getHeadPictureName());
+				jsonObject.put("birthDay",temp.getBirthDay());
+				jsonObject.put("personalizedSignature",temp.getPersonalizedSignature());
+				jsonObject.put("level",temp.getLevel());
+				double dis = Double.parseDouble(df.format(result.getDistance().getValue()));
+				jsonObject.put("distance",dis);
+				array.add(jsonObject);
+			}
 		}
 		Map<String, Object> map = new HashMap<>();
 		map.put("ret", 0);
-		map.put("userVoList", userVos);
+		map.put("userVoList", array);
 		return JSONObject.fromObject(map).toString();
 	}
 
@@ -1442,19 +1450,36 @@ public class CircleController extends BaseContorller {
 		HttpSession session = request.getSession();
 		double[] position = new double[]{px, py};
 		//未登录情况
-		String userid = "";
-		if (!session.isNew() &&  session.getAttribute("isLogin") != null) {
-			UserBo userBo = (UserBo) session.getAttribute("userBo");
-			if (userBo != null) {
-				userid = userBo.getId();
-			}
-		}
 		UserBo userBo = getUserLogin(request);
+		String userid = userBo != null ? userBo.getId() : "";
 		GeoResults<CircleBo> circleBos = circleService.findNearCircle(userid, position, 10000, 10);
 		List<CircleVo> listVo = new LinkedList<>();
+		DecimalFormat df = new DecimalFormat("###.00");
 		for (GeoResult<CircleBo> result : circleBos) {
 			CircleBo circleBo = result.getContent();
-			listVo.add(bo2vo(circleBo, userBo, 0));
+			CircleDisVo circleVo = new CircleDisVo();
+			BeanUtils.copyProperties(circleBo, circleVo);
+			circleVo.setId(circleBo.getId());
+			circleVo.setName(circleBo.getName());
+			circleVo.setNotesSize(circleBo.getNoteSize());
+			circleVo.setUsersSize(circleBo.getTotal());
+			circleVo.setTop(0);
+			if (null != userBo) {
+				ReasonBo reasonBo = reasonService.findByUserAndCircle(userBo.getId(),
+						circleBo.getId(), Constant.ADD_AGREE);
+				//圈子未读数量信息
+				if (reasonBo != null) {
+					circleVo.setUnReadNum(reasonBo.getUnReadNum());
+				}
+				//查找圈子加入历史
+				CircleAddBo addBo = circleService.findHisByUserAndCircle(userBo.getId(), circleBo.getId());
+				if (null != addBo) {
+					circleVo.setUserAdd(addBo.getStatus());
+				}
+			}
+			double dis = Double.parseDouble(df.format(result.getDistance().getValue()));
+			circleVo.setDistance(dis);
+			listVo.add(circleVo);
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);

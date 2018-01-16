@@ -390,4 +390,15 @@ public interface ICircleService extends IBaseService {
 	 */
 	List<CircleNoticeBo> findNoticeByIds(String... ids);
 
+	/**
+	 * 查找丼活跃人员
+	 * @param cirlcid
+	 * @param userid
+	 * @param position
+	 * @param maxDistance
+	 * @return
+	 */
+	GeoResults<CircleHistoryBo> findNearPeopleDis(String cirlcid, String userid, double[] position, double
+			maxDistance);
+
 }

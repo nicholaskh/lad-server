@@ -6,12 +6,10 @@ import com.lad.util.Constant;
 import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.geo.Circle;
-import org.springframework.data.geo.Distance;
-import org.springframework.data.geo.Metrics;
-import org.springframework.data.geo.Point;
+import org.springframework.data.geo.*;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.NearQuery;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
@@ -145,5 +143,23 @@ public class CircleHistoryDaoImpl implements ICircleHistoryDao {
         Update update = new Update();
         update.set("deleted", Constant.DELETED);
         return mongoTemplate.updateMulti(query, update, CircleHistoryBo.class);
+    }
+
+    @Override
+    public GeoResults<CircleHistoryBo> findNearPeople(String cirlcid, String userid, double[] position, double
+            maxDistance) {
+        Point point = new Point(position[0],position[1]);
+        NearQuery nearQuery = NearQuery.near(point);
+        Distance distance = new Distance(maxDistance/1000, Metrics.KILOMETERS);
+        nearQuery.maxDistance(distance);
+        Query query = new Query();
+        query.addCriteria(new Criteria("circleid").is(cirlcid).and("type").is(0).and("deleted").is(0));
+        if (!StringUtils.isEmpty(userid)){
+            query.addCriteria(new Criteria("userid").ne(userid));
+        }
+        query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "updateTime")));
+        query.limit(20);
+        nearQuery.query(query);
+        return mongoTemplate.geoNear(nearQuery, CircleHistoryBo.class);
     }
 }

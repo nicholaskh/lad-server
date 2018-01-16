@@ -219,7 +219,6 @@ public class CircleDaoImpl implements ICircleDao {
 
 	public GeoResults<CircleBo> findNearCircle(String userid, double[] position, int maxDistance, int limit){
 		Point point = new Point(position[0],position[1]);
-
 		NearQuery near =NearQuery.near(point);
 		Distance distance = new Distance(maxDistance/1000, Metrics.KILOMETERS);
 		near.maxDistance(distance);

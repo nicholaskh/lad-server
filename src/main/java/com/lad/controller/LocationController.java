@@ -42,8 +42,8 @@ public class LocationController extends BaseContorller {
 	public String near(double px, double py, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		Point point = new Point(px, py);
 		GeoResults<LocationBo> locationBoList = locationService.findUserNear(point, 10000);
-		List<UserVo> list = new LinkedList<UserVo>();
 		JSONArray array = new JSONArray();
+		DecimalFormat df = new DecimalFormat("###.00");
 		for (GeoResult<LocationBo> bo : locationBoList) {
 			LocationBo locationBo = bo.getContent();
 			UserBo temp = userService.getUser(locationBo.getUserid());
@@ -57,7 +57,6 @@ public class LocationController extends BaseContorller {
 				jsonObject.put("birthDay",temp.getBirthDay());
 				jsonObject.put("personalizedSignature",temp.getPersonalizedSignature());
 				jsonObject.put("level",temp.getLevel());
-				DecimalFormat df = new DecimalFormat("###.00");
 				double dis = Double.parseDouble(df.format(bo.getDistance().getValue()));
 				jsonObject.put("distance",dis);
 				array.add(jsonObject);

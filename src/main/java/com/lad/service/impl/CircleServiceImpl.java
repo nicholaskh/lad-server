@@ -353,4 +353,10 @@ public class CircleServiceImpl implements ICircleService {
 	public List<CircleNoticeBo> findNoticeByIds(String... ids) {
 		return circleNoticeDao.findNoticeByIds(ids);
 	}
+
+	@Override
+	public GeoResults<CircleHistoryBo> findNearPeopleDis(String cirlcid, String userid, double[] position, double
+			maxDistance) {
+		return circleHistoryDao.findNearPeople(cirlcid, userid, position, maxDistance);
+	}
 }
