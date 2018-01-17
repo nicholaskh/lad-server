@@ -67,7 +67,7 @@ public interface ICircleNoticeDao {
      * @param userid
      * @return
      */
-    List<CircleNoticeBo> unReadNotice(String userid);
+    List<CircleNoticeBo> unReadNotice(String userid, String circleid);
 
     /**
      * 查找未读公告信息

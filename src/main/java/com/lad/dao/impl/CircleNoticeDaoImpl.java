@@ -96,9 +96,11 @@ public class CircleNoticeDaoImpl implements ICircleNoticeDao {
     }
 
     @Override
-    public List<CircleNoticeBo> unReadNotice(String userid) {
+    public List<CircleNoticeBo> unReadNotice(String userid, String circleid) {
         Query query = new Query();
-        query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+        Criteria cri = new Criteria("deleted").is(Constant.ACTIVITY).and("circleid").is(circleid);
+        cri.and("unReadUsers").in(userid);
+        query.addCriteria(cri);
         query.with(new Sort(Sort.Direction.DESC, "_id"));
         return mongoTemplate.find(query, CircleNoticeBo.class);
     }
@@ -106,7 +108,9 @@ public class CircleNoticeDaoImpl implements ICircleNoticeDao {
     @Override
     public List<CircleNoticeBo> unReadNotice(String userid, String circleid, int page, int limit) {
         Query query = new Query();
-        query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+        Criteria cri = new Criteria("deleted").is(Constant.ACTIVITY).and("circleid").is(circleid);
+        cri.and("unReadUsers").in(userid);
+        query.addCriteria(cri);
         query.with(new Sort(Sort.Direction.DESC, "_id"));
         query.skip((page -1) * limit);
         query.limit(limit);

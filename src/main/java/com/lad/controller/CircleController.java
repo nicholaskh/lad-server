@@ -1082,7 +1082,7 @@ public class CircleController extends BaseContorller {
 			}
 		}
 
-		List<CircleNoticeBo> unReadNotices = circleService.findUnReadNotices(userBo.getId());
+		List<CircleNoticeBo> unReadNotices = circleService.findUnReadNotices(userBo.getId(), circleid);
 		//清零访问
 		Map<String, Object> map = new LinkedHashMap<>();
 		map.put("ret", 0);

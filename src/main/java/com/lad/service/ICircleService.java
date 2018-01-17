@@ -371,7 +371,7 @@ public interface ICircleService extends IBaseService {
 	 * @param userid
 	 * @return
 	 */
-	List<CircleNoticeBo> findUnReadNotices(String userid);
+	List<CircleNoticeBo> findUnReadNotices(String userid, String circleid);
 
 
 
