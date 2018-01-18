@@ -1718,7 +1718,8 @@ public class CircleController extends BaseContorller {
 					long time = Calendar.getInstance().getTimeInMillis();
 					String fileName = String.format("%s-%d-%s", userid, time, file.getOriginalFilename());
 					String path = CommonUtil.upload(file,
-							Constant.CIRCLE_HEAD_PICTURE_PATH, fileName, 0);
+							Constant.CIRCLE_PICTURE_PATH, fileName, 0);
+					logger.info("circle add notice pic path: {},  size: {} ", path, file.getSize());
 					files.add(path);
 				}
 				noticeBo.setImages(files);
@@ -1783,7 +1784,7 @@ public class CircleController extends BaseContorller {
 				long time = Calendar.getInstance().getTimeInMillis();
 				String fileName = String.format("%s-%d-%s", userid, time, file.getOriginalFilename());
 				String path = CommonUtil.upload(file,
-						Constant.CIRCLE_HEAD_PICTURE_PATH, fileName, 0);
+						Constant.CIRCLE_PICTURE_PATH, fileName, 0);
 				files.add(path);
 			}
 			noticeBo.setImages(files);

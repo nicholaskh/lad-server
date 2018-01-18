@@ -123,7 +123,7 @@ public class NoteController extends BaseContorller {
 				} else {
 					String path = CommonUtil.upload(file, Constant.NOTE_PICTURE_PATH,
 							fileName, 0);
-					logger.info(path);
+					logger.info("note add note pic path: {},  size: {} ", path, file.getSize());
 					photos.add(path);
 				}
 			}
