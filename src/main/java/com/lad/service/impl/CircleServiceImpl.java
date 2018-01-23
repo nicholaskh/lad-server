@@ -293,13 +293,13 @@ public class CircleServiceImpl implements ICircleService {
 	}
 
 	@Override
-	public List<CircleNoticeBo> findCircleNotice(String circleid, int page, int limit) {
-		return circleNoticeDao.findCircleNotice(circleid, page, limit);
+	public List<CircleNoticeBo> findCircleNotice(String targetid, int noticeType,int page, int limit) {
+		return circleNoticeDao.findCircleNotice(targetid, noticeType, page, limit);
 	}
 
 	@Override
-	public CircleNoticeBo findLastNotice(String circleid) {
-		return circleNoticeDao.findLastNotice(circleid);
+	public CircleNoticeBo findLastNotice(String targetid, int noticeType) {
+		return circleNoticeDao.findLastNotice(targetid, noticeType);
 	}
 
 	@Override
@@ -339,13 +339,13 @@ public class CircleServiceImpl implements ICircleService {
 	}
 
 	@Override
-	public List<CircleNoticeBo> findUnReadNotices(String userid, String circleid) {
-		return circleNoticeDao.unReadNotice(userid, circleid);
+	public List<CircleNoticeBo> findUnReadNotices(String userid, String targetid, int noticeType) {
+		return circleNoticeDao.unReadNotice(userid, targetid, noticeType);
 	}
 
 	@Override
-	public List<CircleNoticeBo> findUnReadNotices(String userid, String circleid, int page, int limit) {
-		return circleNoticeDao.unReadNotice(userid, circleid,page, limit);
+	public List<CircleNoticeBo> findUnReadNotices(String userid, String targetid, int noticeType, int page, int limit) {
+		return circleNoticeDao.unReadNotice(userid, targetid, noticeType, page, limit);
 	}
 
 

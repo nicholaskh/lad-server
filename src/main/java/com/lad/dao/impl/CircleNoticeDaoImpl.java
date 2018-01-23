@@ -34,9 +34,15 @@ public class CircleNoticeDaoImpl implements ICircleNoticeDao {
     }
 
     @Override
-    public List<CircleNoticeBo> findCircleNotice(String circleid, int page, int limit) {
+    public List<CircleNoticeBo> findCircleNotice(String targetid, int noticeType, int page, int limit) {
         Query query = new Query();
-        query.addCriteria(new Criteria("circleid").is(circleid).and("deleted").is(Constant.ACTIVITY));
+        Criteria criteria = new Criteria("deleted").is(Constant.ACTIVITY).and("noticeType").is(noticeType);
+        if (noticeType == 0) {
+            criteria.and("circleid").is(targetid);
+        } else {
+            criteria.and("chatroomid").is(targetid);
+        }
+        query.addCriteria(criteria);
         query.with(new Sort(Sort.Direction.DESC, "_id"));
         query.skip((page -1) * limit);
         query.limit(limit);
@@ -44,9 +50,15 @@ public class CircleNoticeDaoImpl implements ICircleNoticeDao {
     }
 
     @Override
-    public CircleNoticeBo findLastNotice(String circleid) {
+    public CircleNoticeBo findLastNotice(String targetid, int noticeType) {
         Query query = new Query();
-        query.addCriteria(new Criteria("circleid").is(circleid).and("deleted").is(Constant.ACTIVITY));
+        Criteria criteria = new Criteria("deleted").is(Constant.ACTIVITY).and("noticeType").is(noticeType);
+        if (noticeType == 0) {
+            criteria.and("circleid").is(targetid);
+        } else {
+            criteria.and("chatroomid").is(targetid);
+        }
+        query.addCriteria(criteria);
         query.with(new Sort(Sort.Direction.DESC, "_id"));
         query.limit(1);
         return mongoTemplate.findOne(query, CircleNoticeBo.class);
@@ -96,21 +108,31 @@ public class CircleNoticeDaoImpl implements ICircleNoticeDao {
     }
 
     @Override
-    public List<CircleNoticeBo> unReadNotice(String userid, String circleid) {
+    public List<CircleNoticeBo> unReadNotice(String userid, String targetid, int noticeType) {
         Query query = new Query();
-        Criteria cri = new Criteria("deleted").is(Constant.ACTIVITY).and("circleid").is(circleid);
-        cri.and("unReadUsers").in(userid);
-        query.addCriteria(cri);
+        Criteria criteria = new Criteria("deleted").is(Constant.ACTIVITY).and("noticeType").is(noticeType);
+        if (noticeType == 0) {
+            criteria.and("circleid").is(targetid);
+        } else {
+            criteria.and("chatroomid").is(targetid);
+        }
+        criteria.and("unReadUsers").in(userid);
+        query.addCriteria(criteria);
         query.with(new Sort(Sort.Direction.DESC, "_id"));
         return mongoTemplate.find(query, CircleNoticeBo.class);
     }
 
     @Override
-    public List<CircleNoticeBo> unReadNotice(String userid, String circleid, int page, int limit) {
+    public List<CircleNoticeBo> unReadNotice(String userid, String targetid, int noticeType, int page, int limit) {
         Query query = new Query();
-        Criteria cri = new Criteria("deleted").is(Constant.ACTIVITY).and("circleid").is(circleid);
-        cri.and("unReadUsers").in(userid);
-        query.addCriteria(cri);
+        Criteria criteria = new Criteria("deleted").is(Constant.ACTIVITY).and("noticeType").is(noticeType);
+        if (noticeType == 0) {
+            criteria.and("circleid").is(targetid);
+        } else {
+            criteria.and("chatroomid").is(targetid);
+        }
+        criteria.and("unReadUsers").in(userid);
+        query.addCriteria(criteria);
         query.with(new Sort(Sort.Direction.DESC, "_id"));
         query.skip((page -1) * limit);
         query.limit(limit);

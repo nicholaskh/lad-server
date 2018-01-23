@@ -16,11 +16,16 @@ public class CircleNoticeBo extends BaseBo {
     private String title;
 
     private String content;
-
+    //圈子id
     private String circleid;
 
     //0 添加， 1修改，2删除
     private int type;
+
+    //0 圈子公告， 1 群公告
+    private int noticeType;
+    //群聊id ，因需求变更，群聊公告和圈子公告一直，添加群聊公告类型
+    private String chatroomid;
 
 
     private LinkedHashSet<String> images = new LinkedHashSet<>();
@@ -84,5 +89,21 @@ public class CircleNoticeBo extends BaseBo {
 
     public void setImages(LinkedHashSet<String> images) {
         this.images = images;
+    }
+
+    public int getNoticeType() {
+        return noticeType;
+    }
+
+    public void setNoticeType(int noticeType) {
+        this.noticeType = noticeType;
+    }
+
+    public String getChatroomid() {
+        return chatroomid;
+    }
+
+    public void setChatroomid(String chatroomid) {
+        this.chatroomid = chatroomid;
     }
 }

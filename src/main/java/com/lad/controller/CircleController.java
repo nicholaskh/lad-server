@@ -989,11 +989,10 @@ public class CircleController extends BaseContorller {
 	@ApiOperation("猜你喜欢圈子列表")
 	@PostMapping("/guess-you-like")
 	public String youLike(HttpServletRequest request, HttpServletResponse response) {
-		UserBo userBo;
-		try {
-			userBo = checkSession(request, userService);
-		} catch (MyException e) {
-			return e.getMessage();
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		LocationBo locationBo = locationService.getLocationBoByUserid(userBo.getId());
 		List<CircleBo> circleBos = circleService.selectUsersLike(userBo.getId(), locationBo.getPosition(), 5000);
@@ -1062,7 +1061,7 @@ public class CircleController extends BaseContorller {
 
 		long partyNum = partyService.getCirclePartyNum(circleid);
 
-		CircleNoticeBo lastNotice = circleService.findLastNotice(circleid);
+		CircleNoticeBo lastNotice = circleService.findLastNotice(circleid, 0);
 		boolean isRead = false;
 		JSONObject jsonObject = new JSONObject();
 		if (lastNotice != null) {
@@ -1082,7 +1081,7 @@ public class CircleController extends BaseContorller {
 			}
 		}
 
-		List<CircleNoticeBo> unReadNotices = circleService.findUnReadNotices(userBo.getId(), circleid);
+		List<CircleNoticeBo> unReadNotices = circleService.findUnReadNotices(userBo.getId(), circleid, 0);
 		//清零访问
 		Map<String, Object> map = new LinkedHashMap<>();
 		map.put("ret", 0);
@@ -1135,11 +1134,10 @@ public class CircleController extends BaseContorller {
 	@ApiOperation("置顶圈子")
 	@PostMapping("/set-top")
 	public String setTopCircle(String circleid, HttpServletRequest request, HttpServletResponse response) {
-		UserBo userBo = null;
-		try {
-			userBo = checkSession(request, userService);
-		} catch (MyException e) {
-			return e.getMessage();
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		CircleBo circleBo = circleService.selectById(circleid);
 		if (null == circleBo) {
@@ -1162,11 +1160,10 @@ public class CircleController extends BaseContorller {
 	@ApiOperation("取消圈子置顶")
 	@PostMapping("/cancel-top")
 	public String cancelTopCircle(String circleid, HttpServletRequest request, HttpServletResponse response) {
-		UserBo userBo;
-		try {
-			userBo = checkSession(request, userService);
-		} catch (MyException e) {
-			return e.getMessage();
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		CircleBo circleBo = circleService.selectById(circleid);
 		if (null == circleBo) {
@@ -1362,11 +1359,10 @@ public class CircleController extends BaseContorller {
 	@PostMapping("/add-circle-type")
 	public String addCircleType(String name, String parent, int level, HttpServletRequest request,
 								HttpServletResponse response) {
-		UserBo userBo;
-		try {
-			userBo = checkSession(request, userService);
-		} catch (MyException e) {
-			return e.getMessage();
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		CircleTypeBo typeBo = circleService.findByName(name, level);
 		if (typeBo == null) {
@@ -1577,11 +1573,10 @@ public class CircleController extends BaseContorller {
 	@PostMapping("/update-name")
 	public String updateName(@RequestParam String circleid, @RequestParam String name,
 							   HttpServletRequest request, HttpServletResponse response) {
-		UserBo userBo;
-		try {
-			userBo = checkSession(request, userService);
-		} catch (MyException e) {
-			return e.getMessage();
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		CircleBo circleBo = circleService.selectById(circleid);
 		if (circleBo == null) {
@@ -1617,12 +1612,11 @@ public class CircleController extends BaseContorller {
     @PostMapping("/open")
     public String updateOpen(@RequestParam String circleid, boolean open,
                              HttpServletRequest request, HttpServletResponse response) {
-        UserBo userBo;
-        try {
-            userBo = checkSession(request, userService);
-        } catch (MyException e) {
-            return e.getMessage();
-        }
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
         CircleBo circleBo = circleService.selectById(circleid);
         if (circleBo == null) {
             return CommonUtil.toErrorResult(
@@ -1647,12 +1641,11 @@ public class CircleController extends BaseContorller {
     @PostMapping("/verify")
     public String updateVerify(@RequestParam String circleid, boolean verify,
                              HttpServletRequest request, HttpServletResponse response) {
-        UserBo userBo;
-        try {
-            userBo = checkSession(request, userService);
-        } catch (MyException e) {
-            return e.getMessage();
-        }
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
         CircleBo circleBo = circleService.selectById(circleid);
         if (circleBo == null) {
             return CommonUtil.toErrorResult(
@@ -1703,6 +1696,7 @@ public class CircleController extends BaseContorller {
 			noticeBo.setTitle(title);
 			noticeBo.setCreateuid(userid);
 			noticeBo.setCircleid(circleid);
+			noticeBo.setNoticeType(0);
 			//发布人默认阅读
 			LinkedHashSet<String> readUsers = noticeBo.getReadUsers();
 			readUsers.add(userid);
@@ -1982,7 +1976,7 @@ public class CircleController extends BaseContorller {
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
-		List<CircleNoticeBo> noticeBos = circleService.findCircleNotice(circleid, page, limit);
+		List<CircleNoticeBo> noticeBos = circleService.findCircleNotice(circleid,0, page, limit);
 		JSONArray array = new JSONArray();
 		if (!CommonUtil.isEmpty(noticeBos)) {
 			for (CircleNoticeBo noticeBo : noticeBos) {
@@ -2029,7 +2023,8 @@ public class CircleController extends BaseContorller {
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
-		List<CircleNoticeBo> noticeBos = circleService.findUnReadNotices(userBo.getId(), circleid, page, limit);
+		List<CircleNoticeBo> noticeBos = circleService.findUnReadNotices(userBo.getId(),
+				circleid, 0, page, limit);
 		JSONArray array = new JSONArray();
 		if (!CommonUtil.isEmpty(noticeBos)) {
 			for (CircleNoticeBo noticeBo : noticeBos) {

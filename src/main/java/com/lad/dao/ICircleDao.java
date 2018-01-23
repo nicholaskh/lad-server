@@ -174,6 +174,16 @@ public interface ICircleDao extends IBaseDao {
 	 */
 	List<CircleBo> selectUsersLike(String userid, double[] position, int minDistance);
 
+
+	/**
+	 * 猜你喜欢圈子,更具好友的兴趣类型经常查询
+	 * @param userid
+	 * @param tag
+	 * @param subTag
+	 * @return
+	 */
+	List<CircleBo> selectUsersLike(String userid, String tag, String subTag);
+
 	/**
 	 * 查找圈子，包括已删除的
 	 * @param circleid

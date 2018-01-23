@@ -370,6 +370,10 @@ public class CircleDaoImpl implements ICircleDao {
 		return mongoTemplate.find(query, CircleBo.class);
 	}
 
+	@Override
+	public List<CircleBo> selectUsersLike(String userid, String tag, String subTag) {
+		return null;
+	}
 
 	@Override
 	public List<CircleBo> findRelatedCircles(String circleid, String tag, String sub_tag, int page, int limit) {

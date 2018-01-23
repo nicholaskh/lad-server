@@ -300,14 +300,14 @@ public interface ICircleService extends IBaseService {
 	 * @param limit
 	 * @return
 	 */
-	List<CircleNoticeBo> findCircleNotice(String circleid, int page, int limit);
+	List<CircleNoticeBo> findCircleNotice(String targetid, int noticeType, int page, int limit);
 
 	/**
 	 * 查找最后一条历史信息
 	 * @param circleid
 	 * @return
 	 */
-	CircleNoticeBo findLastNotice(String circleid);
+	CircleNoticeBo findLastNotice(String targetid, int noticeType);
 
 	/**
 	 * 删除公告
@@ -371,7 +371,7 @@ public interface ICircleService extends IBaseService {
 	 * @param userid
 	 * @return
 	 */
-	List<CircleNoticeBo> findUnReadNotices(String userid, String circleid);
+	List<CircleNoticeBo> findUnReadNotices(String userid, String targetid, int noticeType);
 
 
 
@@ -380,7 +380,7 @@ public interface ICircleService extends IBaseService {
 	 * @param userid
 	 * @return
 	 */
-	List<CircleNoticeBo> findUnReadNotices(String userid, String circleid, int page, int limit);
+	List<CircleNoticeBo> findUnReadNotices(String userid, String targetid, int noticeType,int page, int limit);
 
 
 	/**

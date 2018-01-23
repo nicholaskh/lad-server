@@ -23,14 +23,14 @@ public interface ICircleNoticeDao {
      * @param limit
      * @return
      */
-    List<CircleNoticeBo> findCircleNotice(String circleid, int page, int limit);
+    List<CircleNoticeBo> findCircleNotice(String targetid, int noticeType, int page, int limit);
 
     /**
      * 查找最后一条历史信息
      * @param circleid
      * @return
      */
-    CircleNoticeBo findLastNotice(String circleid);
+    CircleNoticeBo findLastNotice(String targetid, int noticeType);
 
     /**
      * 更具id查找
@@ -67,14 +67,14 @@ public interface ICircleNoticeDao {
      * @param userid
      * @return
      */
-    List<CircleNoticeBo> unReadNotice(String userid, String circleid);
+    List<CircleNoticeBo> unReadNotice(String userid, String targetid, int noticeType);
 
     /**
      * 查找未读公告信息
      * @param userid
      * @return
      */
-    List<CircleNoticeBo> unReadNotice(String userid, String circleid, int page, int limit);
+    List<CircleNoticeBo> unReadNotice(String userid, String targetid, int noticeType, int page, int limit);
 
 
     /**

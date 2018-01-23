@@ -4,14 +4,12 @@ import com.lad.bo.*;
 import com.lad.redis.RedisServer;
 import com.lad.service.*;
 import com.lad.util.*;
-import com.lad.vo.ChatroomUserVo;
-import com.lad.vo.ChatroomVo;
-import com.lad.vo.ReasonVo;
-import com.lad.vo.UserVo;
+import com.lad.vo.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -21,6 +19,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -54,6 +53,9 @@ public class ChatroomController extends BaseContorller {
 
 	@Autowired
 	private IPartyService partyService;
+
+	@Autowired
+	private ICircleService circleService;
 
 
 	private String titlePush = "互动通知";
@@ -1521,6 +1523,397 @@ public class ChatroomController extends BaseContorller {
 		return Constant.COM_RESP;
 	}
 
+
+	/**
+	 * 添加公告
+	 */
+	@ApiOperation("添加群聊公告")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "circleid", value = "群聊id", required = true, paramType = "query",
+					dataType = "string"),
+			@ApiImplicitParam(name = "title", value = "公告标题", paramType = "query",dataType = "string"),
+			@ApiImplicitParam(name = "content", value = "公告内容", paramType = "query",dataType = "string"),
+			@ApiImplicitParam(name = "images", value = "公告图片数组", dataType = "file")})
+	@PostMapping("/add-notice")
+	public String chatroomAddNotice(@RequestParam String chatroomid,
+								  String title, String content, MultipartFile[] images,
+								  HttpServletRequest request, HttpServletResponse response) {
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		String userid = userBo.getId();
+		ChatroomBo chatroomBo = chatroomService.get(chatroomid);
+		if (chatroomBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(),
+					ERRORCODE.CHATROOM_NULL.getReason());
+		}
+		if (chatroomBo.getMaster().equals(userid)) {
+			CircleNoticeBo noticeBo = new CircleNoticeBo();
+			noticeBo.setContent(content);
+			noticeBo.setTitle(title);
+			noticeBo.setCreateuid(userid);
+			noticeBo.setChatroomid(chatroomid);
+			noticeBo.setNoticeType(1);
+			//发布人默认阅读
+			LinkedHashSet<String> readUsers = noticeBo.getReadUsers();
+			readUsers.add(userid);
+			HashSet<String> users = chatroomBo.getUsers();
+			users.remove(userid);
+			LinkedHashSet<String> unReadUsers = new LinkedHashSet<>();
+			unReadUsers.addAll(users);
+			noticeBo.setUnReadUsers(unReadUsers);
+			noticeBo.setType(0);
+			if (images != null) {
+				LinkedHashSet<String> files = noticeBo.getImages();
+				for (MultipartFile file : images) {
+					long time = Calendar.getInstance().getTimeInMillis();
+					String fileName = String.format("%s-%d-%s", userid, time, file.getOriginalFilename());
+					String path = CommonUtil.upload(file,
+							Constant.CHATROOM_PICTURE_PATH, fileName, 0);
+					logger.info("chatroom add notice pic path: {},  size: {} ", path, file.getSize());
+					files.add(path);
+				}
+				noticeBo.setImages(files);
+			}
+			circleService.addNotice(noticeBo);
+		} else {
+			return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_NOT_MASTER.getIndex(),
+					ERRORCODE.CIRCLE_MASTER_NULL.getReason());
+		}
+		return Constant.COM_RESP;
+	}
+
+	/**
+	 * 添加或修改公告
+	 */
+	@ApiOperation("修改群聊公告,不修改参数可为空")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "noticeid", value = "公告id", required = true, paramType = "query",
+					dataType = "string"),
+			@ApiImplicitParam(name = "title", value = "公告标题", paramType = "query",dataType = "string"),
+			@ApiImplicitParam(name = "content", value = "公告内容", paramType = "query",dataType = "string"),
+			@ApiImplicitParam(name = "addImages", value = "新增的公告图片", dataType = "file"),
+			@ApiImplicitParam(name = "delImages", value = "要删除的公告图片url，多个以逗号隔开", paramType = "query",
+					dataType = "string")})
+	@PostMapping("/update-notice")
+	public String updateNotice(@RequestParam String noticeid, String title, String content,
+							   MultipartFile[] addImages, String delImages,
+							   HttpServletRequest request, HttpServletResponse response) {
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		String userid = userBo.getId();
+		CircleNoticeBo noticeBo = circleService.findNoticeById(noticeid);
+		if (noticeBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NOTICE_NULL.getIndex(),
+					ERRORCODE.CHATROOM_NOTICE_NULL.getReason());
+		}
+		ChatroomBo chatroomBo = chatroomService.get(noticeBo.getChatroomid());
+		if (chatroomBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(),
+					ERRORCODE.CHATROOM_NULL.getReason());
+		}
+		if (!chatroomBo.getMaster().contains(userid)) {
+			return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_MASTER_NULL.getIndex(),
+					ERRORCODE.CIRCLE_MASTER_NULL.getReason());
+		}
+		if (StringUtils.isNotEmpty(content)) {
+			noticeBo.setContent(content);
+		}
+		if (StringUtils.isNotEmpty(title)) {
+			noticeBo.setTitle(title);
+		}
+		noticeBo.setUpdateuid(userid);
+		noticeBo.setUpdateTime(new Date());
+		noticeBo.setType(1);
+		LinkedHashSet<String> files = noticeBo.getImages();
+		if (addImages != null) {
+			for (MultipartFile file : addImages) {
+				long time = Calendar.getInstance().getTimeInMillis();
+				String fileName = String.format("%s-%d-%s", userid, time, file.getOriginalFilename());
+				String path = CommonUtil.upload(file,
+						Constant.CHATROOM_PICTURE_PATH, fileName, 0);
+				files.add(path);
+			}
+		}
+		if(StringUtils.isNotEmpty(delImages)){
+			String[] urls = CommonUtil.getIds(delImages);
+			for (String url : urls) {
+				files.remove(url);
+			}
+		}
+		noticeBo.setImages(files);
+		circleService.updateNotice(noticeBo);
+		return Constant.COM_RESP;
+	}
+
+
+	/**
+	 * 添加或修改公告
+	 */
+	@ApiOperation("获取群聊公告详情")
+	@PostMapping("/get-notice")
+	public String getNotice(@RequestParam String noticeid,
+							HttpServletRequest request, HttpServletResponse response) {
+		CircleNoticeBo noticeBo = circleService.findNoticeById(noticeid);
+		if (noticeBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NOTICE_NULL.getIndex(),
+					ERRORCODE.CHATROOM_NOTICE_NULL.getReason());
+		}
+		ChatroomBo chatroomBo = chatroomService.get(noticeBo.getChatroomid());
+		if (chatroomBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(),
+					ERRORCODE.CHATROOM_NULL.getReason());
+		}
+		UserBo loginUser = getUserLogin(request);
+		LinkedHashSet<String> readUsers = noticeBo.getReadUsers();
+		int readNum = readUsers.size();
+		int role = 0;
+		if (loginUser != null) {
+			String userid = loginUser.getId();
+			HashSet<String> users = chatroomBo.getUsers();
+			updateNoticeRead(users,noticeid, loginUser.getId());
+			readNum = !readUsers.contains(userid) && users.contains(userid) ? readNum+1 : readNum;
+		}
+		UserBo userBo = userService.getUser(noticeBo.getCreateuid());
+		Map<String, Object> map = new LinkedHashMap<>();
+		map.put("ret", 0);
+		map.put("noticeid",noticeBo.getId());
+		map.put("noticeTitle", noticeBo.getTitle());
+		map.put("notice", noticeBo.getContent());
+		map.put("noticeTime", noticeBo.getCreateTime());
+		map.put("readNum", readNum);
+		map.put("image", noticeBo.getImages());
+		if (userBo != null) {
+			UserBaseVo userBaseVo = new UserBaseVo();
+			BeanUtils.copyProperties(userBo, userBaseVo);
+			map.put("noticeUser", userBaseVo);
+		}
+		return JSONObject.fromObject(map).toString();
+	}
+
+	/**
+	 * 添加或修改公告
+	 */
+	@ApiOperation("群聊公告阅读详情")
+	@PostMapping("/notice-read")
+	public String getNoticeRead(@RequestParam String noticeid,
+								HttpServletRequest request, HttpServletResponse response) {
+		CircleNoticeBo noticeBo = circleService.findNoticeById(noticeid);
+		if (noticeBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_NOTICE_NULL.getIndex(),
+					ERRORCODE.CIRCLE_NOTICE_NULL.getReason());
+		}
+		LinkedHashSet<String> readUsers = noticeBo.getReadUsers();
+		LinkedHashSet<String> unReadUser = noticeBo.getUnReadUsers();
+
+		List<String> readids = new LinkedList<>(readUsers);
+		List<String> unReadids = new LinkedList<>(unReadUser);
+
+		List<UserBaseVo> readVos = new LinkedList<>();
+		List<UserBo> readBos = userService.findUserByIds(readids);
+		for (UserBo userBo : readBos) {
+			UserBaseVo baseVo = new UserBaseVo();
+			BeanUtils.copyProperties(userBo, baseVo);
+			readVos.add(baseVo);
+		}
+
+		List<UserBaseVo> unReadVos = new LinkedList<>();
+		List<UserBo> unReadBos = userService.findUserByIds(unReadids);
+		for (UserBo userBo : unReadBos) {
+			UserBaseVo baseVo = new UserBaseVo();
+			BeanUtils.copyProperties(userBo, baseVo);
+			unReadVos.add(baseVo);
+		}
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("readNum", readUsers.size());
+		map.put("unReadNum", unReadUser.size());
+		map.put("readUserVos", readVos);
+		map.put("unReadUserVos", unReadVos);
+		return JSONObject.fromObject(map).toString();
+	}
+
+	@ApiOperation("删除群聊公告")
+	@PostMapping("/delete-notice")
+	public String deleteNoticeRead(@RequestParam String noticeid,
+								   HttpServletRequest request, HttpServletResponse response) {
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		CircleNoticeBo noticeBo = circleService.findNoticeById(noticeid);
+		if (noticeBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_NOTICE_NULL.getIndex(),
+					ERRORCODE.CIRCLE_NOTICE_NULL.getReason());
+		}
+		String userid = userBo.getId();
+		ChatroomBo chatroomBo = chatroomService.get(noticeBo.getChatroomid());
+		if (chatroomBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(),
+					ERRORCODE.CHATROOM_NULL.getReason());
+		}
+		if (chatroomBo.getMaster().contains(userid)) {
+			circleService.deleteNotice(noticeid, userid);
+		} else {
+			return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_MASTER_NULL.getIndex(),
+					ERRORCODE.CIRCLE_MASTER_NULL.getReason());
+		}
+		return Constant.COM_RESP;
+	}
+
+	@ApiOperation("获取圈子公告历史列表, 返回最近10条")
+	@PostMapping("/get-notice-list")
+	public String getNoticeList(@RequestParam String chatroomid,int page, int limit,
+								HttpServletRequest request, HttpServletResponse response) {
+		ChatroomBo chatroomBo = chatroomService.get(chatroomid);
+		if (chatroomBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(),
+					ERRORCODE.CHATROOM_NULL.getReason());
+		}
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		List<CircleNoticeBo> noticeBos = circleService.findCircleNotice(chatroomid,1, page, limit);
+		JSONArray array = new JSONArray();
+		if (!CommonUtil.isEmpty(noticeBos)) {
+			for (CircleNoticeBo noticeBo : noticeBos) {
+				JSONObject jsonObject = new JSONObject();
+				jsonObject.put("noticeid",noticeBo.getId());
+				jsonObject.put("noticeTitle", noticeBo.getTitle());
+				jsonObject.put("notice", noticeBo.getContent());
+				jsonObject.put("noticeTime", noticeBo.getCreateTime());
+				jsonObject.put("image", noticeBo.getImages());
+				jsonObject.put("readNum", noticeBo.getReadUsers().size());
+				UserBo userBo = userService.getUser(noticeBo.getCreateuid());
+				if (userBo != null) {
+					UserBaseVo userBaseVo = new UserBaseVo();
+					BeanUtils.copyProperties(userBo, userBaseVo);
+					jsonObject.put("noticeUser", userBaseVo);
+				}
+				array.add(jsonObject);
+			}
+		}
+		map.put("noticeList", array);
+		return JSONObject.fromObject(map).toString();
+	}
+
+
+	/**
+	 * 添加或修改公告
+	 */
+	@ApiOperation("获取所有未读公告信息")
+	@PostMapping("/unRead-notice-list")
+	public String unReadNotices(String chatroomid,int page, int limit, HttpServletRequest request, HttpServletResponse
+			response) {
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		List<CircleNoticeBo> noticeBos = circleService.findUnReadNotices(userBo.getId(),
+				chatroomid, 1, page, limit);
+		JSONArray array = new JSONArray();
+		if (!CommonUtil.isEmpty(noticeBos)) {
+			for (CircleNoticeBo noticeBo : noticeBos) {
+				JSONObject jsonObject = new JSONObject();
+				jsonObject.put("noticeid",noticeBo.getId());
+				jsonObject.put("noticeTitle", noticeBo.getTitle());
+				jsonObject.put("notice", noticeBo.getContent());
+				jsonObject.put("noticeTime", noticeBo.getCreateTime());
+				jsonObject.put("image", noticeBo.getImages());
+				jsonObject.put("readNum", noticeBo.getReadUsers().size());
+				UserBo user = userService.getUser(noticeBo.getCreateuid());
+				if (userBo != null) {
+					UserBaseVo userBaseVo = new UserBaseVo();
+					BeanUtils.copyProperties(user, userBaseVo);
+					jsonObject.put("noticeUser", userBaseVo);
+				}
+				array.add(jsonObject);
+			}
+		}
+		map.put("noticeList", array);
+		return JSONObject.fromObject(map).toString();
+	}
+
+
+	/**
+	 * 添加或修改公告
+	 */
+	@ApiOperation("将指定的公告集合设置为已读")
+	@ApiImplicitParam(name = "noticeids", value = "公告id,多个以逗号隔开", required = true, paramType = "query",
+			dataType = "string")
+	@PostMapping("/update-unRead-list")
+	public String readNotices(@RequestParam String noticeids, HttpServletRequest request, HttpServletResponse response) {
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		String[] ids = CommonUtil.getIds(noticeids);
+		List<CircleNoticeBo> noticeBos = circleService.findNoticeByIds(ids);
+		for (CircleNoticeBo noticeBo : noticeBos) {
+			updateNoticeRead(noticeBo.getId(), userBo.getId());
+		}
+		return Constant.COM_RESP;
+	}
+
+
+	/**
+	 * 更新用户阅读数据信息
+	 * @param noticeid
+	 * @param userid
+	 */
+	@Async
+	private void updateNoticeRead(HashSet<String> users, String noticeid, String userid){
+		RLock lock = redisServer.getRLock(noticeid);
+		try {
+			lock.lock(3, TimeUnit.SECONDS);
+			CircleNoticeBo noticeBo = circleService.findNoticeById(noticeid);
+			LinkedHashSet<String> readUser = noticeBo.getReadUsers();
+			LinkedHashSet<String> unReadUser = noticeBo.getUnReadUsers();
+			//若有新圈子成员加入
+			if (users.size() != (readUser.size() + unReadUser.size())) {
+				users.removeAll(readUser);
+				unReadUser.addAll(users);
+			}
+			if (users.contains(userid)) {
+				unReadUser.remove(userid);
+				readUser.add(userid);
+				circleService.updateNoticeRead(noticeid, readUser, unReadUser);
+			}
+		} finally {
+			lock.unlock();
+		}
+	}
+
+	/**
+	 * 批量更新用户阅读数据信息
+	 * @param noticeid
+	 * @param userid
+	 */
+	@Async
+	private void updateNoticeRead(String noticeid, String userid){
+		RLock lock = redisServer.getRLock(noticeid);
+		try {
+			lock.lock(3, TimeUnit.SECONDS);
+			CircleNoticeBo noticeBo = circleService.findNoticeById(noticeid);
+			LinkedHashSet<String> readUser = noticeBo.getReadUsers();
+			LinkedHashSet<String> unReadUser = noticeBo.getUnReadUsers();
+			//若有新圈子成员加入
+			readUser.add(userid);
+			unReadUser.remove(userid);
+			circleService.updateNoticeRead(noticeid, readUser, unReadUser);
+		} finally {
+			lock.unlock();
+		}
+	}
 
 	/**
 	 * 删除群聊中的用户聊天昵称
