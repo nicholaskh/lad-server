@@ -130,14 +130,22 @@ public class CircleDaoImpl implements ICircleDao {
 		return mongoTemplate.count(query, CircleBo.class);
 	}
 
-	public List<CircleBo> findBykeyword(String keyword, int page, int limit) {
+	public List<CircleBo> findBykeyword(String keyword, String city, int page, int limit) {
 
 		Pattern pattern = Pattern.compile("^.*"+keyword+".*$", Pattern.CASE_INSENSITIVE);
 		Criteria cr = new Criteria();
 		Criteria name = new Criteria("name").regex(pattern);
 		Criteria tag = new Criteria("tag").is(keyword);
 		Criteria sub_tag = new Criteria("sub_tag").is(keyword);
-		Query query = new Query(cr.orOperator(name,tag,sub_tag));
+		cr.orOperator(name,tag,sub_tag);
+		if (StringUtils.isNotEmpty(city)) {
+			Criteria cr2 = new Criteria();
+			Criteria pro = new Criteria("province").is(city);
+			Criteria ci = new Criteria("city").is(city);
+			Criteria dist = new Criteria("district").is(city);
+			cr.andOperator(cr2.orOperator(pro, ci, dist));
+		}
+		Query query = new Query(cr);
 		query.with(new Sort(new Sort.Order(Sort.Direction.DESC,"hotNum")));
 		page = page < 1 ? 1 : page;
 		query.skip((page-1)*limit);
@@ -243,6 +251,19 @@ public class CircleDaoImpl implements ICircleDao {
 		query.addCriteria(criteria1);
 		query.with(new Sort(new Sort.Order(Sort.Direction.DESC,"usernum")));
 		query.limit(10);
+		return mongoTemplate.find(query, CircleBo.class);
+	}
+
+	public List<CircleBo> selectByCity(String city, int page, int limit) {
+		Criteria cr = new Criteria();
+		Criteria pro = new Criteria("province").is(city);
+		Criteria ci = new Criteria("city").is(city);
+		Criteria dist = new Criteria("district").is(city);
+		Query query = new Query(cr.orOperator(pro, ci, dist));
+		query.with(new Sort(new Sort.Order(Sort.Direction.DESC,"hotNum")));
+		page = page < 1 ? 1 : page;
+		query.skip((page-1)*limit);
+		query.limit(limit);
 		return mongoTemplate.find(query, CircleBo.class);
 	}
 
@@ -396,11 +417,10 @@ public class CircleDaoImpl implements ICircleDao {
 	@Override
 	public List<CircleBo> findByCityName(String cityName, int page, int limit) {
 		Query query = new Query();
-		String regex = "^.*".concat(cityName).concat(".*$");
 		Criteria criteria = new Criteria();
-		Criteria province = new Criteria("province").regex(regex);
-		Criteria city = new Criteria("city").regex(regex);
-		Criteria district = new Criteria("district").regex(regex);
+		Criteria province = new Criteria("province").is(cityName);
+		Criteria city = new Criteria("city").is(cityName);
+		Criteria district = new Criteria("district").is(cityName);
 		criteria.orOperator(province, city, district);
 		query.addCriteria(criteria);
 		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "hotNum")));

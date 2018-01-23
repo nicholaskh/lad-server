@@ -7,20 +7,23 @@ import com.lad.util.ERRORCODE;
 import com.lad.vo.CircleBaseVo;
 import com.lad.vo.UserBaseVo;
 import com.lad.vo.UserInfoVo;
+import io.swagger.annotations.ApiOperation;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.*;
 
-@Controller
+@RestController
 @RequestMapping("person-set")
 public class PersonSet extends BaseContorller {
 
@@ -37,8 +40,8 @@ public class PersonSet extends BaseContorller {
 	@Autowired
 	private ICircleService circleService;
 
-	@RequestMapping("/username")
-	@ResponseBody
+	@ApiOperation("修改个人用户名称")
+	@PostMapping("/username")
 	public String username(String username, HttpServletRequest request, HttpServletResponse response) {
 		if (StringUtils.isEmpty(username)) {
 			return CommonUtil.toErrorResult(ERRORCODE.USER_USERNAME.getIndex(), ERRORCODE.USER_USERNAME.getReason());
@@ -57,8 +60,8 @@ public class PersonSet extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	@RequestMapping("/birthday")
-	@ResponseBody
+	@ApiOperation("修改个人出生日期")
+	@PostMapping("/birthday")
 	public String birth_day(String birthday, HttpServletRequest request, HttpServletResponse response) {
 		if (StringUtils.isEmpty(birthday)) {
 			return CommonUtil.toErrorResult(ERRORCODE.USER_BIRTHDAY.getIndex(), ERRORCODE.USER_BIRTHDAY.getReason());
@@ -76,8 +79,8 @@ public class PersonSet extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	@RequestMapping("/sex")
-	@ResponseBody
+	@ApiOperation("修改个人性别")
+	@PostMapping("/sex")
 	public String sex(String sex, HttpServletRequest request, HttpServletResponse response) {
 		if (StringUtils.isEmpty(sex)) {
 			return CommonUtil.toErrorResult(ERRORCODE.USER_SEX.getIndex(), ERRORCODE.USER_SEX.getReason());
@@ -95,8 +98,8 @@ public class PersonSet extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	@RequestMapping("/personalized-signature")
-	@ResponseBody
+	@ApiOperation("修改个性签名")
+	@PostMapping("/personalized-signature")
 	public String personalized_signature(String personalized_signature, HttpServletRequest request,
 			HttpServletResponse response) {
 		if (StringUtils.isEmpty(personalized_signature)) {
@@ -115,8 +118,8 @@ public class PersonSet extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	@RequestMapping("/user-info")
-	@ResponseBody
+	@ApiOperation("获取用户个人信息")
+	@PostMapping("/user-info")
 	public String user_info(HttpServletRequest request, HttpServletResponse response) throws
 			Exception {
 		UserBo userBo = getUserLogin(request);
@@ -147,8 +150,8 @@ public class PersonSet extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	@RequestMapping("/search-by-name")
-	@ResponseBody
+	@ApiOperation("根据名称搜索用户")
+	@PostMapping("/search-by-name")
 	public String searchByName(String name, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		if (StringUtils.isEmpty(name)) {
 			return CommonUtil.toErrorResult(ERRORCODE.USER_USERNAME.getIndex(), ERRORCODE.USER_USERNAME.getReason());
@@ -171,8 +174,8 @@ public class PersonSet extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	@RequestMapping("/search-by-phone")
-	@ResponseBody
+	@ApiOperation("根据电话号搜索用户")
+	@PostMapping("/search-by-phone")
 	public String searchByPhone(String phone, HttpServletRequest request, HttpServletResponse response)
 			throws Exception {
 		if (StringUtils.isEmpty(phone)) {
@@ -196,8 +199,8 @@ public class PersonSet extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	@RequestMapping("/search-by-userid")
-	@ResponseBody
+	@ApiOperation("根据用户id查找用户")
+	@PostMapping("/search-by-userid")
 	public String searchByUserid(String userid, HttpServletRequest request, HttpServletResponse response)
 			throws Exception {
 		if (StringUtils.isEmpty(userid)) {
@@ -217,8 +220,8 @@ public class PersonSet extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	@RequestMapping("/location")
-	@ResponseBody
+	@ApiOperation("更新个人经纬度位置")
+	@PostMapping("/location")
 	public String location(double px, double py, HttpServletRequest request, HttpServletResponse response)
 			throws Exception {
 		UserBo userBo = getUserLogin(request);

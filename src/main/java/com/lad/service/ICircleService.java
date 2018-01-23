@@ -67,7 +67,7 @@ public interface ICircleService extends IBaseService {
 	 * @param keyword
 	 * @return
 	 */
-	List<CircleBo> findBykeyword(String keyword, int page, int limit);
+	List<CircleBo> findBykeyword(String keyword, String city, int page, int limit);
 
 
 	/**
@@ -400,5 +400,14 @@ public interface ICircleService extends IBaseService {
 	 */
 	GeoResults<CircleHistoryBo> findNearPeopleDis(String cirlcid, String userid, double[] position, double
 			maxDistance);
+
+	/**
+	 * 根据城市搜索
+	 * @param city
+	 * @param page
+	 * @param limit
+	 * @return
+	 */
+	List<CircleBo> selectByCity(String city, int page, int limit);
 
 }

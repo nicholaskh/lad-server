@@ -109,8 +109,8 @@ public class CircleServiceImpl implements ICircleService {
 
 
 	@Override
-	public List<CircleBo> findBykeyword(String keyword, int page, int limit) {
-		return circleDao.findBykeyword(keyword, page, limit);
+	public List<CircleBo> findBykeyword(String keyword, String city, int page, int limit) {
+		return circleDao.findBykeyword(keyword, city, page, limit);
 	}
 
 	@Override
@@ -358,5 +358,10 @@ public class CircleServiceImpl implements ICircleService {
 	public GeoResults<CircleHistoryBo> findNearPeopleDis(String cirlcid, String userid, double[] position, double
 			maxDistance) {
 		return circleHistoryDao.findNearPeople(cirlcid, userid, position, maxDistance);
+	}
+
+	@Override
+	public List<CircleBo> selectByCity(String city, int page, int limit) {
+		return circleDao.selectByCity(city, page, limit);
 	}
 }

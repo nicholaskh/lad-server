@@ -73,7 +73,7 @@ public interface ICircleDao extends IBaseDao {
 	 * @param keyword
 	 * @return
 	 */
-	List<CircleBo> findBykeyword(String keyword, int page, int limit);
+	List<CircleBo> findBykeyword(String keyword,String city, int page, int limit);
 
 	WriteResult updateTotal(String circleid, int total);
 
@@ -208,5 +208,14 @@ public interface ICircleDao extends IBaseDao {
 	 * @return
 	 */
 	List<CircleBo> findByCityName(String cityName, int page, int limit);
+
+	/**
+	 * 根据城市搜索
+	 * @param city
+	 * @param page
+	 * @param limit
+	 * @return
+	 */
+	List<CircleBo> selectByCity(String city, int page, int limit);
 
 }

@@ -1184,22 +1184,23 @@ public class CircleController extends BaseContorller {
 	/**
 	 * 搜索圈子
 	 */
-	@ApiOperation("根据关键字搜索圈子,默认10条返回")
+	@ApiOperation("根据城市和关键字搜索圈子,默认10条返回")
 	@PostMapping("/search")
-	public String search(String keyword, HttpServletRequest request, HttpServletResponse response) {
-		return  searchKeyword(keyword, 1, 10, request, response);
+	public String search(String keyword, String city,HttpServletRequest request, HttpServletResponse response) {
+		return  searchKeyword(keyword,city, 1, 10, request, response);
 	}
+	
 
 	/**
 	 * 搜索圈子
 	 */
-	@ApiOperation("根据关键字搜索圈子,具有分页")
+	@ApiOperation("根据城市和关键字搜索圈子,具有分页")
 	@PostMapping("/search-keyword")
-	public String searchKeyword(String keyword,int page, int limit,
+	public String searchKeyword(String keyword, String city, int page, int limit,
 								HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo = getUserLogin(request);
 		if (StringUtils.isNotEmpty(keyword)) {
-			List<CircleBo> circleBos = circleService.findBykeyword(keyword, page, limit);
+			List<CircleBo> circleBos = circleService.findBykeyword(keyword, city, page, limit);
 			saveKeyword(keyword);
 			return bo2vos(circleBos, userBo);
 		}

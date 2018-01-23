@@ -79,7 +79,7 @@ public class InforController extends BaseContorller {
     @ApiOperation("刷新资讯分类缓存信息")
     @GetMapping("/init-cache")
     public String initCache(HttpServletRequest request, HttpServletResponse response) {
-        Map<String, Object> map = new HashMap<>();
+        Map<String, Object> map = new LinkedHashMap<>();
 
         RMapCache<String, Object> cache = redisServer.getCacheMap(Constant.TEST_CACHE);
         logger.info(cache.get("securityTypes"));
