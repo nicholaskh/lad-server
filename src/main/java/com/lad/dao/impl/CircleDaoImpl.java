@@ -207,15 +207,22 @@ public class CircleDaoImpl implements ICircleDao {
 	}
 
 	@Override
-	public List<CircleBo> findByType(String tag, String sub_tag ,int page,int limit) {
+	public List<CircleBo> findByType(String tag, String sub_tag, String city, int page,int limit) {
 		Query query = new Query();
-		query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+		Criteria criteria = new Criteria("deleted").is(Constant.ACTIVITY);
 		if (StringUtils.isNotEmpty(tag)) {
-			query.addCriteria(new Criteria("tag").is(tag));
+			criteria.and("tag").is(tag);
 		}
 		if (StringUtils.isNotEmpty(sub_tag)) {
-			query.addCriteria(new Criteria("sub_tag").is(sub_tag));
+			criteria.and("sub_tag").is(sub_tag);
 		}
+		if (StringUtils.isNotEmpty(city)) {
+			Criteria pro = new Criteria("province").is(city);
+			Criteria ci = new Criteria("city").is(city);
+			Criteria dist = new Criteria("district").is(city);
+			criteria.orOperator(pro, ci, dist);
+		}
+		query.addCriteria(criteria);
 		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "hotNum")));
 		if (page <= 0){
 			page = 1;

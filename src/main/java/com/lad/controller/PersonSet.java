@@ -3,6 +3,7 @@ package com.lad.controller;
 import com.lad.bo.*;
 import com.lad.service.*;
 import com.lad.util.CommonUtil;
+import com.lad.util.Constant;
 import com.lad.util.ERRORCODE;
 import com.lad.vo.CircleBaseVo;
 import com.lad.vo.UserBaseVo;
@@ -14,10 +15,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -119,7 +117,7 @@ public class PersonSet extends BaseContorller {
 	}
 
 	@ApiOperation("获取用户个人信息")
-	@PostMapping("/user-info")
+	@GetMapping("/user-info")
 	public String user_info(HttpServletRequest request, HttpServletResponse response) throws
 			Exception {
 		UserBo userBo = getUserLogin(request);
@@ -246,6 +244,35 @@ public class PersonSet extends BaseContorller {
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();
 	}
+
+
+	@ApiOperation("更新个人基本信息")
+	@PostMapping("/update-info")
+	public String updateUserInfo(String userName, String sex, String birthDay, HttpServletRequest request,
+								 HttpServletResponse response) {
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		userBo = userService.getUser(userBo.getId());
+		if (StringUtils.isNotEmpty(userName)) {
+			userBo.setUserName(userName);
+		}
+		if (StringUtils.isNotEmpty(sex)) {
+			userBo.setSex(sex);
+		}
+		if (StringUtils.isNotEmpty(birthDay)) {
+			userBo.setBirthDay(birthDay);
+		}
+		userService.updateUserInfo(userBo);
+		updateUserSession(request, userService);
+		return Constant.COM_RESP;
+	}
+
+
+
+
 
 	@Async
 	private void updateUserName(String userid, String username){

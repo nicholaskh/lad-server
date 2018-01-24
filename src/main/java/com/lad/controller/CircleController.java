@@ -1234,25 +1234,23 @@ public class CircleController extends BaseContorller {
 	 * 根据类型获取圈子
 	 */
 	@ApiOperation("根据类型获取圈子")
+	@ApiImplicitParams({ @ApiImplicitParam(name = "tag", value = "圈子一级分类", paramType="query", dataType =
+			"string"), @ApiImplicitParam(name = "sub_tag", value = "圈子二级分类", paramType="query", dataType = "string"),
+			@ApiImplicitParam(name = "city", value = "圈子置顶搜索城市", paramType="query", dataType = "string"),
+			@ApiImplicitParam(name = "page",  value = "分页page", paramType="query", dataType = "int"),
+			@ApiImplicitParam(name = "limit", value = "limit条数", paramType="query", dataType = "int")})
 	@PostMapping("/get-by-type")
-	public String getByType(String tag, String sub_tag , int page, int limit,
+	public String getByType(String tag, String sub_tag , String city,  int page, int limit,
 							HttpServletRequest request, HttpServletResponse response) {
-		List<CircleBo> circleBos = circleService.findByType(tag, sub_tag, page, limit);
+		List<CircleBo> circleBos = circleService.findByType(tag, sub_tag, city,  page, limit);
 		if (StringUtils.isNotEmpty(sub_tag)) {
 			saveKeyword(sub_tag);
 		}
 		if (StringUtils.isNotEmpty(tag)) {
 			saveKeyword(tag);
 		}
-		HttpSession session = request.getSession();
-		boolean isLogin;
-		UserBo userBo = null;
-		if (session.isNew() || session.getAttribute("isLogin") == null) {
-			isLogin = false;
-		} else {
-			userBo = (UserBo) session.getAttribute("userBo");
-			isLogin = userBo != null;
-		}
+		UserBo userBo =  getUserLogin(request);
+		boolean isLogin = userBo != null;
 		List<CircleVo> listVo = new LinkedList<>();
 		for (CircleBo circleBo: circleBos) {
 			CircleVo circleVo = new CircleVo();
@@ -1329,7 +1327,7 @@ public class CircleController extends BaseContorller {
 	 * 获取圈子分类
 	 */
 	@ApiOperation("获取圈子分类列表")
-	@PostMapping("/circle-type")
+	@RequestMapping(value = "/circle-type", method = {RequestMethod.GET, RequestMethod.POST})
 	public String circleType(HttpServletRequest request, HttpServletResponse response) {
 
 		List<CircleTypeBo> typeBos = circleService.selectByLevel(1);
@@ -1387,7 +1385,7 @@ public class CircleController extends BaseContorller {
 	 * 更多圈子时，获取所有分类
 	 */
 	@ApiOperation("获取所有圈子分类列表")
-	@PostMapping("/circle-type-search")
+	@RequestMapping(value = "/circle-type-search",method = {RequestMethod.GET, RequestMethod.POST})
 	public String circleTypeSearch(HttpServletRequest request, HttpServletResponse response) {
 		List<CircleTypeBo> typeBos = circleService.findAllCircleTypes();
 		List<String> types = new ArrayList<>();
@@ -3055,6 +3053,7 @@ public class CircleController extends BaseContorller {
 					noteVo.setContent(sourceNote.getContent());
 					noteVo.setPhotos(sourceNote.getPhotos());
 					noteVo.setVideoPic(sourceNote.getVideoPic());
+					addNoteAtUsers(sourceNote, noteVo, userid);
 					UserBo from = userService.getUser(sourceNote.getCreateuid());
 					if (from != null) {
 						noteVo.setFromUserid(from.getId());
@@ -3074,6 +3073,8 @@ public class CircleController extends BaseContorller {
 					}
 				}
 			}
+		} else {
+			addNoteAtUsers(noteBo, noteVo, userid);
 		}
 		if (creatBo!= null) {
 			if (!"".equals(userid) && !userid.equals(creatBo.getId())) {
@@ -3097,6 +3098,35 @@ public class CircleController extends BaseContorller {
 		noteVo.setNodeid(noteBo.getId());
 		noteVo.setTransCount(noteBo.getTranscount());
 		noteVo.setThumpsubCount(noteBo.getThumpsubcount());
+	}
+
+	/**
+	 * 获取帖子中@的用户信息
+	 * @param noteBo
+	 * @param noteVo
+	 * @param loginUserid
+	 */
+	private void addNoteAtUsers(NoteBo noteBo, NoteVo noteVo, String loginUserid){
+		LinkedList<String> atUsers = noteBo.getAtUsers();
+		if (!CommonUtil.isEmpty(atUsers)) {
+			List<UserNoteVo> atUserVos = new LinkedList<>();
+			List<UserBo> userBos = userService.findUserByIds(atUsers);
+			for (UserBo userBo : userBos) {
+				UserNoteVo userNoteVo = new UserNoteVo();
+				userNoteVo.setSex(userBo.getSex());
+				userNoteVo.setUserid(userBo.getId());
+				userNoteVo.setUserName(userBo.getUserName());
+				if (org.springframework.util.StringUtils.isEmpty(loginUserid)) {
+					FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(loginUserid,
+							userBo.getId());
+					if (friendsBo != null && !org.springframework.util.StringUtils.isEmpty(friendsBo.getBackname())) {
+						userNoteVo.setBackName(friendsBo.getBackname());
+					}
+				}
+				atUserVos.add(userNoteVo);
+			}
+			noteVo.setAtUsers(atUserVos);
+		}
 	}
 
 

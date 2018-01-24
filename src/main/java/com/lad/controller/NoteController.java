@@ -8,10 +8,7 @@ import com.lad.scrapybo.SecurityBo;
 import com.lad.scrapybo.VideoBo;
 import com.lad.service.*;
 import com.lad.util.*;
-import com.lad.vo.CommentVo;
-import com.lad.vo.NoteVo;
-import com.lad.vo.UserBaseVo;
-import com.lad.vo.UserThumbsupVo;
+import com.lad.vo.*;
 import com.mongodb.BasicDBObject;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -83,10 +80,13 @@ public class NoteController extends BaseContorller {
 
 	@ApiOperation("发表帖子")
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "noteJson", value = "帖子信息json数据", required = true, dataType = "string"),
+			@ApiImplicitParam(name = "noteJson", value = "帖子信息json数据", required = true, paramType = "query",
+					dataType = "string"),
+			@ApiImplicitParam(name = "atUserids", value = "帖子中@的用户id，多个以逗号隔开", paramType = "query",
+					dataType = "string"),
 			@ApiImplicitParam(name = "pictures", value = "图片或视频文件流", dataType = "file")})
 	@PostMapping("/insert")
-	public String insert(String noteJson, MultipartFile[] pictures,
+	public String insert(String noteJson, String atUserids, MultipartFile[] pictures,
 			HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
 		try {
@@ -129,7 +129,18 @@ public class NoteController extends BaseContorller {
 			}
 		}
 		noteBo.setPhotos(photos);
+		String[] useridArr = null;
+		if (!StringUtils.isEmpty(atUserids)) {
+			useridArr = CommonUtil.getIds(atUserids);
+			LinkedList<String> atUsers = new LinkedList<>();
+			Collections.addAll(atUsers, useridArr);
+			noteBo.setAtUsers(atUsers);
+		}
 		noteService.insert(noteBo);
+		if (useridArr != null) {
+			String path = "/note/note-info.do?noteid=" + noteBo.getId();
+			JPushUtil.push(pushTitle, "有人刚刚在帖子提到了您，快去看看吧!", path, useridArr);
+		}
 		addCircleShow(noteBo);
 		updateCircieNoteSize(circleid, 1);
 		if (noteBo.isAsync()) {
@@ -1382,6 +1393,7 @@ public class NoteController extends BaseContorller {
 					noteVo.setPhotos(sourceNote.getPhotos());
 					noteVo.setVideoPic(sourceNote.getVideoPic());
 
+					addNoteAtUsers(sourceNote, noteVo, userid);
 					UserBo from = userService.getUser(sourceNote.getCreateuid());
 					if (from != null) {
 						noteVo.setFromUserid(from.getId());
@@ -1401,6 +1413,8 @@ public class NoteController extends BaseContorller {
 					}
 				}
 			}
+		} else {
+			addNoteAtUsers(noteBo, noteVo, userid);
 		}
 		if (creatBo!= null) {
 			if (!"".equals(userid) && !userid.equals(creatBo.getId())) {
@@ -1424,6 +1438,29 @@ public class NoteController extends BaseContorller {
 		noteVo.setNodeid(noteBo.getId());
 		noteVo.setTransCount(noteBo.getTranscount());
 		noteVo.setThumpsubCount(noteBo.getThumpsubcount());
+	}
+
+	private void addNoteAtUsers(NoteBo noteBo, NoteVo noteVo, String loginUserid){
+		LinkedList<String> atUsers = noteBo.getAtUsers();
+		if (!CommonUtil.isEmpty(atUsers)) {
+			List<UserNoteVo> atUserVos = new LinkedList<>();
+			List<UserBo> userBos = userService.findUserByIds(atUsers);
+			for (UserBo userBo : userBos) {
+				UserNoteVo userNoteVo = new UserNoteVo();
+				userNoteVo.setSex(userBo.getSex());
+				userNoteVo.setUserid(userBo.getId());
+				userNoteVo.setUserName(userBo.getUserName());
+				if (StringUtils.isEmpty(loginUserid)) {
+					FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(loginUserid,
+							userBo.getId());
+					if (friendsBo != null && !StringUtils.isEmpty(friendsBo.getBackname())) {
+						userNoteVo.setBackName(friendsBo.getBackname());
+					}
+				}
+				atUserVos.add(userNoteVo);
+			}
+			noteVo.setAtUsers(atUserVos);
+		}
 	}
 
 	private CommentVo comentBo2Vo(CommentBo commentBo){

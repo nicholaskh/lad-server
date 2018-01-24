@@ -184,7 +184,7 @@ public class LoginController extends BaseContorller {
 	}
 
 
-	@PostMapping("/logout")
+	@GetMapping("/logout")
 	public String loginout(HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession();
 		if (session.isNew()) {

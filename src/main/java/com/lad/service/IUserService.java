@@ -228,4 +228,11 @@ public interface IUserService extends IBaseService {
 	 */
 	WriteResult updateShowChatrooms(String userid, HashSet<String> chatrooms);
 
+	/**
+	 * 修改个人信息
+	 * @param userBo
+	 * @return
+	 */
+	WriteResult updateUserInfo(UserBo userBo);
+
 }

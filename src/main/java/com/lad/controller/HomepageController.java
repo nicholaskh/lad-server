@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -118,7 +119,7 @@ public class HomepageController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	@PostMapping("/new-visitors-count")
+	@GetMapping("/new-visitors-count")
 	public String new_visitors_count(HttpServletRequest request,
 			HttpServletResponse response) {
 		UserBo userBo = getUserLogin(request);
@@ -262,7 +263,7 @@ public class HomepageController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	@PostMapping("/interest")
+	@GetMapping("/interest")
 	public String userInterest(HttpServletRequest request, HttpServletResponse response) {
 		RMapCache<String, Object> cache = redisServer.getCacheMap("testCache");
 		Map<String, Object> map = new HashMap<>();
@@ -311,7 +312,7 @@ public class HomepageController extends BaseContorller {
 	}
 
 
-	@PostMapping("/my-interest")
+	@GetMapping("/my-interest")
 	public String getMyInterest(HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
 		try {

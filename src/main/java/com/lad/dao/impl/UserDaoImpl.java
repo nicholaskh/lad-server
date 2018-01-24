@@ -280,4 +280,18 @@ public class UserDaoImpl implements IUserDao {
         update.set("showChatrooms", chatrooms);
         return mongoTemplate.updateFirst(query, update, UserBo.class);
     }
+
+    @Override
+    public WriteResult updateUserInfo(UserBo userBo) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("_id").is(userBo.getId()));
+        Update update = new Update();
+        update.set("userName", userBo.getUserName());
+        update.set("phone", userBo.getPhone());
+        update.set("sex", userBo.getSex());
+        update.set("headPictureName", userBo.getHeadPictureName());
+        update.set("birthDay", userBo.getBirthDay());
+        update.set("personalizedSignature", userBo.getPersonalizedSignature());
+        return mongoTemplate.updateFirst(query, update, UserBo.class);
+    }
 }

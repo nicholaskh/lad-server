@@ -79,7 +79,7 @@ public interface ICircleService extends IBaseService {
 	 * 根据分类查询
 	 * @return
 	 */
-	List<CircleBo> findByType(String tag, String sub_tag ,int page,int limit);
+	List<CircleBo> findByType(String tag, String sub_tag , String city, int page,int limit);
 
 	
 	List<CircleHistoryBo> findNearPeople(String cirlcid, String userid, double[] position, double maxDistance);

@@ -50,6 +50,8 @@ public class NoteBo extends BaseBo {
 	private int inforType;
 	//来源资讯类型名称
 	private String inforTypeName;
+	//帖子中@的用户
+	private LinkedList<String> atUsers;
 
 	public String getSubject() {
 		return subject;
@@ -225,5 +227,13 @@ public class NoteBo extends BaseBo {
 
 	public void setInforTypeName(String inforTypeName) {
 		this.inforTypeName = inforTypeName;
+	}
+
+	public LinkedList<String> getAtUsers() {
+		return atUsers;
+	}
+
+	public void setAtUsers(LinkedList<String> atUsers) {
+		this.atUsers = atUsers;
 	}
 }

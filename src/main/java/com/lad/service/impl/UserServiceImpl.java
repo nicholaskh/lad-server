@@ -343,4 +343,9 @@ public class UserServiceImpl implements IUserService{
 	public WriteResult updateShowChatrooms(String userid, HashSet<String> chatrooms) {
 		return userDao.updateShowChatrooms(userid, chatrooms);
 	}
+
+	@Override
+	public WriteResult updateUserInfo(UserBo userBo) {
+		return userDao.updateUserInfo(userBo);
+	}
 }

@@ -119,8 +119,8 @@ public class CircleServiceImpl implements ICircleService {
 	}
 
 	@Override
-	public List<CircleBo> findByType(String tag, String sub_tag ,int page,int limit) {
-		return circleDao.findByType(tag, sub_tag, page, limit);
+	public List<CircleBo> findByType(String tag, String sub_tag ,String city,int page,int limit) {
+		return circleDao.findByType(tag, sub_tag, city, page, limit);
 	}
 
 	@Override

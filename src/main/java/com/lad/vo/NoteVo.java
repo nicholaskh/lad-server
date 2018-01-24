@@ -2,6 +2,7 @@ package com.lad.vo;
 
 import java.util.Date;
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * 功能描述：
@@ -98,6 +99,8 @@ public class NoteVo extends BaseVo {
     private String inforTypeName;
     //视频或者广播的url
     private String inforUrl;
+
+    private List<UserNoteVo> atUsers;
 
     public String getNodeid() {
         return nodeid;
@@ -405,5 +408,13 @@ public class NoteVo extends BaseVo {
 
     public void setSourceid(String sourceid) {
         this.sourceid = sourceid;
+    }
+
+    public List<UserNoteVo> getAtUsers() {
+        return atUsers;
+    }
+
+    public void setAtUsers(List<UserNoteVo> atUsers) {
+        this.atUsers = atUsers;
     }
 }
