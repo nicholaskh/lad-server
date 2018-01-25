@@ -247,8 +247,8 @@ public class CircleServiceImpl implements ICircleService {
 	}
 
 	@Override
-	public List<CircleBo> selectUsersLike(String userid, double[] position, int minDistance) {
-		return circleDao.selectUsersLike(userid, position, minDistance);
+	public List<CircleBo> selectUsersLike(String userid, String city, double[] position, int minDistance) {
+		return circleDao.selectUsersLike(userid, city, position, minDistance);
 	}
 
 	@Override

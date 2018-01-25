@@ -235,7 +235,7 @@ public interface ICircleService extends IBaseService {
 	 * @param minDistance
 	 * @return
 	 */
-	List<CircleBo> selectUsersLike(String userid, double[] position, int minDistance);
+	List<CircleBo> selectUsersLike(String userid, String city, double[] position, int minDistance);
 
 	/**
 	 * 查找圈子，包括已删除的

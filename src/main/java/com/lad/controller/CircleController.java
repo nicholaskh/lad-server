@@ -988,14 +988,15 @@ public class CircleController extends BaseContorller {
 	 */
 	@ApiOperation("猜你喜欢圈子列表")
 	@PostMapping("/guess-you-like")
-	public String youLike(HttpServletRequest request, HttpServletResponse response) {
+	public String youLike(String city, HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo = getUserLogin(request);
 		if (userBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		LocationBo locationBo = locationService.getLocationBoByUserid(userBo.getId());
-		List<CircleBo> circleBos = circleService.selectUsersLike(userBo.getId(), locationBo.getPosition(), 5000);
+		List<CircleBo> circleBos = circleService.selectUsersLike(userBo.getId(), city, locationBo.getPosition(),
+				5000);
 		return bo2vos(circleBos, userBo);
 	}
 
@@ -1025,7 +1026,7 @@ public class CircleController extends BaseContorller {
 		CircleVo circleVo = new CircleVo();
 		BeanUtils.copyProperties(circleBo, circleVo);
 		circleVo.setName(circleBo.getName());
-		circleVo.setUsersSize(circleBo.getTotal());
+		circleVo.setUsersSize(circleBo.getUsers().size());
 		circleVo.setNotesSize(circleBo.getNoteSize());
 		circleVo.setUserAdd(userAdd);
 		LinkedHashSet<String> masters = circleBo.getMasters();
@@ -1258,7 +1259,7 @@ public class CircleController extends BaseContorller {
 			circleVo.setId(circleBo.getId());
 			circleVo.setName(circleBo.getName());
 			circleVo.setNotesSize(circleBo.getNoteSize());
-			circleVo.setUsersSize(circleBo.getTotal());
+			circleVo.setUsersSize(circleBo.getUsers().size());
 			if (isLogin) {
 				CircleAddBo addBo = circleService.findHisByUserAndCircle(userBo.getId(), circleBo.getId());
 				if (null != addBo) {
@@ -1457,7 +1458,7 @@ public class CircleController extends BaseContorller {
 			circleVo.setId(circleBo.getId());
 			circleVo.setName(circleBo.getName());
 			circleVo.setNotesSize(circleBo.getNoteSize());
-			circleVo.setUsersSize(circleBo.getTotal());
+			circleVo.setUsersSize(circleBo.getUsers().size());
 			circleVo.setTop(0);
 			if (null != userBo) {
 				ReasonBo reasonBo = reasonService.findByUserAndCircle(userBo.getId(),
@@ -2892,7 +2893,7 @@ public class CircleController extends BaseContorller {
 		circleVo.setId(circleBo.getId());
 		circleVo.setName(circleBo.getName());
 		circleVo.setNotesSize(circleBo.getNoteSize());
-		circleVo.setUsersSize(circleBo.getTotal());
+		circleVo.setUsersSize(circleBo.getUsers().size());
 		circleVo.setTop(top);
 		if (null != userBo) {
 			ReasonBo reasonBo = reasonService.findByUserAndCircle(userBo.getId(),
