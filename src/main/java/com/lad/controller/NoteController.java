@@ -1450,7 +1450,7 @@ public class NoteController extends BaseContorller {
 				userNoteVo.setSex(userBo.getSex());
 				userNoteVo.setUserid(userBo.getId());
 				userNoteVo.setUserName(userBo.getUserName());
-				if (StringUtils.isEmpty(loginUserid)) {
+				if (!StringUtils.isEmpty(loginUserid)) {
 					FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(loginUserid,
 							userBo.getId());
 					if (friendsBo != null && !StringUtils.isEmpty(friendsBo.getBackname())) {
