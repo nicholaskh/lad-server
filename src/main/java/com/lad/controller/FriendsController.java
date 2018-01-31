@@ -8,6 +8,9 @@ import com.lad.vo.FriendsVo;
 import com.lad.vo.UserBaseVo;
 import com.lad.vo.UserVoFriends;
 import com.pushd.ImAssistant;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -17,8 +20,7 @@ import org.springframework.data.geo.GeoResults;
 import org.springframework.data.geo.Point;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -26,7 +28,7 @@ import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.*;
 
-@Controller
+@RestController
 @RequestMapping("friends")
 public class FriendsController extends BaseContorller {
 
@@ -44,8 +46,7 @@ public class FriendsController extends BaseContorller {
 
 	private String pushTitle = "好友通知";
 
-	@RequestMapping("/apply")
-	@ResponseBody
+	@RequestMapping(value = "/apply", method = {RequestMethod.GET, RequestMethod.POST})
 	public String apply(String friendid, HttpServletRequest request,
 			HttpServletResponse response) {
 		UserBo userBo;
@@ -91,8 +92,7 @@ public class FriendsController extends BaseContorller {
 	 * @param response
 	 * @return
 	 */
-	@RequestMapping("/agree")
-	@ResponseBody
+	@RequestMapping(value = "/agree",method = {RequestMethod.GET, RequestMethod.POST})
 	public String agree(String id, HttpServletRequest request,
 			HttpServletResponse response) {
 		UserBo userBo;
@@ -200,8 +200,7 @@ public class FriendsController extends BaseContorller {
 	}
 
 
-	@RequestMapping("/refuse")
-	@ResponseBody
+	@RequestMapping(value = "/refuse", method = {RequestMethod.GET, RequestMethod.POST})
 	public String refuse(String id, HttpServletRequest request,
 			HttpServletResponse response) {
 		UserBo userBo;
@@ -227,8 +226,7 @@ public class FriendsController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	@RequestMapping("/apply-list")
-	@ResponseBody
+	@RequestMapping(value = "/apply-list", method = {RequestMethod.GET, RequestMethod.POST})
 	public String applyList(HttpServletRequest request,
 			HttpServletResponse response) {
 		UserBo userBo;
@@ -249,6 +247,7 @@ public class FriendsController extends BaseContorller {
 			}
 			UserVoFriends user = new UserVoFriends();
 			BeanUtils.copyProperties(userBoTemp, user);
+			user.setApply(friendsBo.getApply());
 			user.setFriendsTableId(friendsBo.getId());
 			userVoList.add(user);
 		}
@@ -258,8 +257,9 @@ public class FriendsController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	@RequestMapping("/set-VIP")
-	@ResponseBody
+
+
+	@PostMapping("/set-VIP")
 	public String setVIP(String friendid, Integer VIP,
 			HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
@@ -291,8 +291,7 @@ public class FriendsController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	@RequestMapping("/set-black")
-	@ResponseBody
+	@PostMapping("/set-black")
 	public String setBlack(String friendid, Integer black,
 			HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
@@ -324,8 +323,7 @@ public class FriendsController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	@RequestMapping("/set-backname")
-	@ResponseBody
+	@PostMapping("/set-backname")
 	public String setBackName(String friendid, String backname,
 			HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
@@ -356,8 +354,7 @@ public class FriendsController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	@RequestMapping("/set-phone")
-	@ResponseBody
+	@PostMapping("/set-phone")
 	public String setPhone(String friendid, String phone,
 			HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
@@ -393,8 +390,7 @@ public class FriendsController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	@RequestMapping("/set-description")
-	@ResponseBody
+	@PostMapping("/set-description")
 	public String setDescription(String friendid, String description,
 			HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo;
@@ -426,8 +422,7 @@ public class FriendsController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	@RequestMapping("/get-friends")
-	@ResponseBody
+	@RequestMapping(value = "/get-friends",method = {RequestMethod.GET, RequestMethod.POST})
 	public String getFriends(HttpServletRequest request,
 			HttpServletResponse response) {
 		UserBo userBo;
@@ -484,8 +479,7 @@ public class FriendsController extends BaseContorller {
 
 
 
-	@RequestMapping("/delete")
-	@ResponseBody
+	@PostMapping("/delete")
 	public String delete(String friendid, HttpServletRequest request,
 			HttpServletResponse response) {
 		UserBo userBo;
@@ -538,8 +532,7 @@ public class FriendsController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	@RequestMapping("/multi-insert")
-	@ResponseBody
+	@PostMapping("/multi-insert")
 	public String multiInsert(String friendids, HttpServletRequest request,
 			HttpServletResponse response) {
 		UserBo userBo;
@@ -673,8 +666,7 @@ public class FriendsController extends BaseContorller {
 	}
 
 
-	@RequestMapping("/multi-out")
-	@ResponseBody
+	@PostMapping("/multi-out")
 	public String multiOut(String chatroomid, HttpServletRequest request,
 			HttpServletResponse response) {
 		UserBo userBo;
@@ -721,8 +713,7 @@ public class FriendsController extends BaseContorller {
 
 
 
-	@RequestMapping("/sign-users")
-	@ResponseBody
+	@PostMapping("/sign-users")
 	public String signUsers(String[] phones, HttpServletRequest request, HttpServletResponse response) {
 		List<UserBaseVo> userBaseVos = new ArrayList<>();
 		if(null != phones) {
@@ -742,8 +733,7 @@ public class FriendsController extends BaseContorller {
 	}
 
 
-	@RequestMapping("/sign-user-time")
-	@ResponseBody
+	@PostMapping("/sign-user-time")
 	public String signUsers(String[] phones,String timestamp, HttpServletRequest request, HttpServletResponse
 			response) {
 		List<UserBaseVo> userBaseVos = new ArrayList<>();
@@ -777,8 +767,7 @@ public class FriendsController extends BaseContorller {
 
 
 
-	@RequestMapping("/get-friends-time")
-	@ResponseBody
+	@PostMapping("/get-friends-time")
 	public String getFriendsTime( String timestamp, HttpServletRequest request,HttpServletResponse response) {
 		UserBo userBo;
 		try {
@@ -853,8 +842,7 @@ public class FriendsController extends BaseContorller {
 
 
 
-	@RequestMapping("/near-friends")
-	@ResponseBody
+	@PostMapping("/near-friends")
 	public String nearFriends(double px, double py, HttpServletRequest request,
 								 HttpServletResponse response) {
 		UserBo userBo = getUserLogin(request);
@@ -894,6 +882,124 @@ public class FriendsController extends BaseContorller {
 		Map<String, Object> map = new HashMap<>();
 		map.put("ret", 0);
 		map.put("friendVos", voList);
+		return JSONObject.fromObject(map).toString();
+	}
+
+
+
+	@ApiOperation("关联父母或子女账号")
+	@ApiImplicitParams({ @ApiImplicitParam(name = "friendid", value = "需要关联用户的id", required = true,
+			paramType = "query",  dataType = "string"),
+			@ApiImplicitParam(name = "isParent", value = "申请关联角色，true 我是父母，false 我是子女", paramType = "query",
+					dataType = "boolean")})
+	@PostMapping("/relate-account")
+	public String relateAccount(String friendid, boolean isParent, HttpServletRequest request,
+							  HttpServletResponse response) {
+		UserBo userBo = getUserLogin(request);
+		if (userBo ==null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(userBo.getId(), friendid);
+		if (friendsBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NOT_EXIST.getIndex(),
+					ERRORCODE.FRIEND_NOT_EXIST.getReason());
+		}
+		FriendsBo friend = friendsService.getFriendByIdAndVisitorIdAgree(friendid, userBo.getId());
+		if (friendsBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NOT_HAS_YOU.getIndex(),
+					ERRORCODE.FRIEND_NOT_HAS_YOU.getReason());
+		}
+		if (friendsBo.getRelateStatus() == 1) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_RELATE_APPLY.getIndex(),
+					ERRORCODE.ACCOUNT_RELATE_APPLY.getReason());
+		}
+		if (friendsBo.getRelateStatus() == 1 || friendsBo.getRelateStatus() == 2) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_RELATE_APPLY.getIndex(),
+					ERRORCODE.ACCOUNT_RELATE_APPLY.getReason());
+		}
+		if (friendsBo.getRelateStatus() == 3 ) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_RELATE_EXIST.getIndex(),
+					ERRORCODE.ACCOUNT_RELATE_EXIST.getReason());
+		}
+		//更新自己好友列表信息
+		friendsService.updateRelateStatus(friendsBo.getId(), 1, isParent);
+		friendsService.updateRelateStatus(friend.getId(), 1, isParent);
+		String path = String.format("/friends/all-apply-list.do?page=%d&limit=%d", 1, 10);
+		String name = StringUtils.isEmpty(friend.getBackname()) ? userBo.getUserName() :friend.getBackname();
+		String message = name + "申请与您进行账号关联，快去看看吧！";
+		JPushUtil.push(pushTitle, message, path, friendid);
+		return Constant.COM_RESP;
+	}
+
+
+	@ApiOperation("同意或拒绝账号关联")
+	@ApiImplicitParams({ @ApiImplicitParam(name = "id", value = "当前好友关系的id", required = true,
+			paramType = "query",  dataType = "string"),
+			@ApiImplicitParam(name = "isAgree", value = "是否同意", paramType = "query",
+					dataType = "boolean")})
+	@PostMapping("/operate-relate-account")
+	public String updateRelateAccount(String id, boolean isAgree, HttpServletRequest request,
+								HttpServletResponse response) {
+		UserBo userBo = getUserLogin(request);
+		if (userBo ==null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		FriendsBo friendsBo = friendsService.get(id);
+		if (friendsBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NOT_EXIST.getIndex(),
+					ERRORCODE.FRIEND_NOT_EXIST.getReason());
+		}
+		FriendsBo friend = friendsService.getFriendByIdAndVisitorIdAgree(friendsBo.getFriendid(), userBo.getId());
+		if (friendsBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NOT_HAS_YOU.getIndex(),
+					ERRORCODE.FRIEND_NOT_HAS_YOU.getReason());
+		}
+		if (isAgree) {
+			friendsService.updateRelateStatus(id, 3, friendsBo.isParent());
+			friendsService.updateRelateStatus(friend.getId(), 3, !friendsBo.isParent());
+
+			String path = String.format("/friends/all-apply-list.do?page=%d&limit=%d", 1, 10);
+			String name = StringUtils.isEmpty(friend.getBackname()) ? userBo.getUserName() :friend.getBackname();
+			String role = friendsBo.isParent() ? "子女" : "父母";
+			String message = "您已成功关联" + role + "，快去看看吧！";
+			JPushUtil.push(pushTitle, message, path, friendsBo.getFriendid());
+		} else {
+			friendsService.updateRelateStatus(id, -1, friendsBo.isParent());
+			friendsService.updateRelateStatus(friend.getId(), -1, !friendsBo.isParent());
+		}
+		return Constant.COM_RESP;
+	}
+
+	@ApiOperation("所有好友请求信息包括账号管理列表分页接口")
+	@PostMapping("all-apply-list")
+	public String applyList(int page, int limit, HttpServletRequest request,
+							HttpServletResponse response) {
+		UserBo userBo = getUserLogin(request);
+		if (userBo ==null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		List<FriendsBo> friendsBoList = friendsService.findAllApplyList(userBo.getId(), page, limit);
+		List<UserVoFriends> userVoList = new LinkedList<UserVoFriends>();
+		for (FriendsBo friendsBo : friendsBoList) {
+			UserBo userBoTemp = userService.getUser(friendsBo.getUserid());
+			if (null == userBoTemp) {
+				continue;
+			}
+			UserVoFriends user = new UserVoFriends();
+			BeanUtils.copyProperties(userBoTemp, user);
+			user.setFriendsTableId(friendsBo.getId());
+			user.setApply(friendsBo.getApply());
+			user.setBackname(friendsBo.getBackname());
+			user.setRelateStatus(friendsBo.getRelateStatus());
+			user.setParent(friendsBo.isParent());
+			userVoList.add(user);
+		}
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("userVoList", userVoList);
 		return JSONObject.fromObject(map).toString();
 	}
 }

@@ -126,6 +126,7 @@ public class FriendsDaoImpl implements IFriendsDao {
 		query.addCriteria(new Criteria("friendid").is(friendid));
 		query.addCriteria(new Criteria("apply").is(1));
 		query.addCriteria(new Criteria("deleted").is(0));
+		query.with(new Sort(new Sort.Order(Sort.Direction.DESC,"_id")));
 		return mongoTemplate.find(query, FriendsBo.class);
 	}
 
@@ -225,6 +226,29 @@ public class FriendsDaoImpl implements IFriendsDao {
 		query.addCriteria(new Criteria("apply").is(Constant.ADD_AGREE));
 		query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
 		query.addCriteria(new Criteria("friendid").in(friendids));
+		return mongoTemplate.find(query, FriendsBo.class);
+	}
+
+	@Override
+	public WriteResult updateRelateStatus(String id, int relateStatus, boolean isParent) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("_id").is(id));
+		Update update = new Update();
+		update.set("relateStatus", relateStatus);
+		update.set("parent", isParent);
+		update.set("updateTime", new Date());
+		return mongoTemplate.updateFirst(query, update, FriendsBo.class);
+	}
+
+	@Override
+	public List<FriendsBo> findAllApplyList(String userid, int page , int limit) {
+		Query query = new Query();
+		Criteria criteria = new Criteria("userid").is(userid).and("deleted").is(Constant.ACTIVITY);
+		query.addCriteria(criteria);
+		query.with(new Sort(Sort.Direction.DESC,"updateTime", "_id"));
+		page = page < 1 ? 1 : page;
+		query.skip((page - 1) * limit);
+		query.limit(limit);
 		return mongoTemplate.find(query, FriendsBo.class);
 	}
 }

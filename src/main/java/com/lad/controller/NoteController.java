@@ -138,7 +138,7 @@ public class NoteController extends BaseContorller {
 		}
 		noteService.insert(noteBo);
 		if (useridArr != null) {
-			String path = "/note/note-info.do?noteid=" + noteBo.getId();
+			String path = String.format("/note/note-info.do?noteid=%s&type=%s",noteBo.getId(), noteBo.getType());
 			JPushUtil.push(pushTitle, "有人刚刚在帖子提到了您，快去看看吧!", path, useridArr);
 		}
 		addCircleShow(noteBo);
@@ -173,7 +173,7 @@ public class NoteController extends BaseContorller {
 		updateCircleHot(circleService, redisServer, circleid, 1, Constant.CIRCLE_NOTE_VISIT);
 		updateCircieNoteUnReadNum(userId, circleid);
 		NoteVo noteVo = new NoteVo();
-		boToVo(noteBo, noteVo, userBo, "");
+		boToVo(noteBo, noteVo, userBo, userId);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("noteVo", noteVo);
@@ -435,16 +435,13 @@ public class NoteController extends BaseContorller {
 	 */
 	@ApiOperation("评论帖子或者回复评论")
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "circleid", value = "圈子id", required = true,
-					dataType = "string", paramType = "query"),
 			@ApiImplicitParam(name = "noteid", value = "帖子id", required = true,
 					dataType = "string", paramType = "query"),
 			@ApiImplicitParam(name = "countent", value = "评论内容", required = true,
 					dataType = "string", paramType = "query"),
 			@ApiImplicitParam(name = "parentid", value = "父评论id", dataType = "string", paramType = "query")})
 	@PostMapping("/add-comment")
-	public String addComment(@RequestParam(required = true)String circleid,
-							 @RequestParam(required = true) String noteid,
+	public String addComment(@RequestParam(required = true) String noteid,
 							 @RequestParam(required = true) String countent,
 							 String parentid, HttpServletRequest request, HttpServletResponse response){
 		UserBo userBo;
@@ -475,14 +472,14 @@ public class NoteController extends BaseContorller {
 		updateCount(noteid, Constant.COMMENT_NUM, 1);
 		userService.addUserLevel(userBo.getId(),1, Constant.LEVEL_COMMENT, 0);
 		updateCircleHot(circleService, redisServer, noteBo.getCircleId(), 1, Constant.CIRCLE_COMMENT);
-		updateRedStar(userBo, noteBo, circleid, currentDate);
-		updateCircieUnReadNum(noteBo.getCreateuid(), circleid);
+		updateRedStar(userBo, noteBo, noteBo.getCircleId(), currentDate);
+		updateCircieUnReadNum(noteBo.getCreateuid(), noteBo.getCircleId());
 		String path = "/note/note-info.do?noteid=" + noteid;
 		JPushUtil.pushMessage(pushTitle, "有人刚刚评论了你的帖子，快去看看吧!", path,  noteBo.getCreateuid());
 		if (!StringUtils.isEmpty(parentid)) {
 			CommentBo comment = commentService.findById(parentid);
 			if (comment != null) {
-				updateCircieUnReadNum(comment.getCreateuid(), circleid);
+				updateCircieUnReadNum(comment.getCreateuid(), noteBo.getCircleId());
 				JPushUtil.pushMessage(pushTitle, "有人刚刚回复了你的评论，快去看看吧!", path,  comment.getCreateuid());
 			}
 		}
@@ -838,12 +835,8 @@ public class NoteController extends BaseContorller {
 	@PostMapping("/my-notes")
 	public String myNotes(int page, int limit, HttpServletRequest request,
 						   HttpServletResponse response) {
-		UserBo userBo;
-		try {
-			userBo = checkSession(request, userService);
-		} catch (MyException e) {
-			return e.getMessage();
-		}
+		UserBo userBo = getUserLogin(request);
+		String loginUserid = userBo != null ? userBo.getId() : "";
 		List<NoteBo> noteBos = noteService.selectMyNotes(userBo.getId(), page, limit);
 		if (noteBos != null && !noteBos.isEmpty()){
 			updateHistory(userBo.getId(), noteBos.get(0).getCircleId(), locationService, circleService);
@@ -857,8 +850,8 @@ public class NoteController extends BaseContorller {
 			noteVo.setCirNoteNum(circleBo.getNoteSize());
 			noteVo.setCirHeadPic(circleBo.getHeadPicture());
 			noteVo.setCirVisitNum(circleBo.getVisitNum());
-			boToVo(noteBo, noteVo, userBo, "");
-			noteVo.setMyThumbsup(hasThumbsup(userBo.getId(), noteBo.getId()));
+			boToVo(noteBo, noteVo, userBo, loginUserid);
+			noteVo.setMyThumbsup(hasThumbsup(loginUserid, noteBo.getId()));
 			noteVoList.add(noteVo);
 		}
 		Map<String, Object> map = new HashMap<>();

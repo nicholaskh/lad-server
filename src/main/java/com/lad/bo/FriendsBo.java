@@ -6,8 +6,9 @@ import java.util.HashSet;
 
 @Document(collection = "friends")
 public class FriendsBo extends BaseBo {
-
+	//主用户
 	private String userid;
+	//好友用户
 	private String friendid;
 	private int apply;//0：申请；1：同意好友；-1拒绝好友
 	private String backname;
@@ -18,6 +19,10 @@ public class FriendsBo extends BaseBo {
 	private String username;
 	private String friendHeadPic;
 	private String chatroomid;
+	//关联账号的角色，true 表示当前主用户角色是父母，false表示当前主用户角色是子女
+	private boolean parent;
+	//关联账号状态， 1 表示发送关联申请，2 表示被申请用户的状态， 3表示已建立关联， -1  表示拒绝或取消
+	private int relateStatus;
 
 	public String getUserid() {
 		return userid;
@@ -105,5 +110,21 @@ public class FriendsBo extends BaseBo {
 
 	public void setChatroomid(String chatroomid) {
 		this.chatroomid = chatroomid;
+	}
+
+	public boolean isParent() {
+		return parent;
+	}
+
+	public void setParent(boolean parent) {
+		this.parent = parent;
+	}
+
+	public int getRelateStatus() {
+		return relateStatus;
+	}
+
+	public void setRelateStatus(int relateStatus) {
+		this.relateStatus = relateStatus;
 	}
 }

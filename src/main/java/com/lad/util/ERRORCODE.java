@@ -64,8 +64,12 @@ public enum ERRORCODE {
 	FRIEND_TAG_NULL(80011, "好友标签为空"),
 	TAG_NAME_EXIST(80012, "标签名称已存在"),
 	FRIEND_ERROR(80013, "好友关系错误"),
+	FRIEND_NOT_EXIST(80014, "朋友关系不存在"),
+	FRIEND_NOT_HAS_YOU(80015, "您没在对方的好友列表中"),
 	
 	COMPLAIN_IS_NULL(90001, "投诉为空"),
+	ACCOUNT_RELATE_EXIST(90002, "账号关联关系已存在"),
+	ACCOUNT_RELATE_APPLY(90003, "关联账号申请已发送"),
 	
 	CIRCLE_IS_NULL(110001, "该圈子不存在"),
 	CIRCLE_APPLY_USER_NULL(110002, "该用户没有申请加入此圈子"),

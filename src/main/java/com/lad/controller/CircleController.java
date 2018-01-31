@@ -1004,7 +1004,7 @@ public class CircleController extends BaseContorller {
 	 * 圈子详情
 	 */
 	@ApiOperation("圈子详情信息")
-	@PostMapping("/circle-info")
+	@RequestMapping(value = "/circle-info", method = {RequestMethod.GET, RequestMethod.POST})
 	public String info(String circleid, HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo = getUserLogin(request);
 		int userAdd = 0;
@@ -1082,7 +1082,6 @@ public class CircleController extends BaseContorller {
 			}
 		}
 
-		List<CircleNoticeBo> unReadNotices = circleService.findUnReadNotices(userBo.getId(), circleid, 0);
 		//清零访问
 		Map<String, Object> map = new LinkedHashMap<>();
 		map.put("ret", 0);
@@ -1093,7 +1092,10 @@ public class CircleController extends BaseContorller {
 		map.put("partyNum", partyNum);
 		map.put("noticeRead", isRead);
 		map.put("notice", jsonObject);
-		map.put("unReadNoticeNum", unReadNotices == null ? 0 : unReadNotices.size());
+		if (userBo != null) {
+			List<CircleNoticeBo> unReadNotices = circleService.findUnReadNotices(userBo.getId(), circleid, 0);
+			map.put("unReadNoticeNum", unReadNotices == null ? 0 : unReadNotices.size());
+		}
 		return JSONObject.fromObject(map).toString();
 	}
 

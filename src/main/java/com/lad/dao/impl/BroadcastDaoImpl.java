@@ -67,7 +67,7 @@ public class BroadcastDaoImpl implements IBroadcastDao {
     public List<BroadcastBo> selectClassByGroups(String groupName) {
         Criteria criteria = new Criteria("module").is(groupName);
         MatchOperation match = Aggregation.match(criteria);
-        GroupOperation groupOperation = Aggregation.group("className","source", "intro")
+        GroupOperation groupOperation = Aggregation.group("className","source")
                 .sum("visitNum").as("visitNum");
         Aggregation aggregation = Aggregation.newAggregation(match, groupOperation,
                 Aggregation.sort(Sort.Direction.ASC, "className"));

@@ -101,4 +101,14 @@ public class FriendsServiceImpl implements IFriendsService {
 	public List<FriendsBo> getFriendByInList(String userid, List<String> friendids) {
 		return friendsDao.getFriendByInList(userid, friendids);
 	}
+
+	@Override
+	public WriteResult updateRelateStatus(String id, int relateStatus, boolean isParent) {
+		return friendsDao.updateRelateStatus(id, relateStatus, isParent);
+	}
+
+	@Override
+	public List<FriendsBo> findAllApplyList(String userid, int page , int limit) {
+		return friendsDao.findAllApplyList(userid, page, limit);
+	}
 }

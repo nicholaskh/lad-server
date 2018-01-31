@@ -24,8 +24,6 @@ public class UserBo extends BaseBo {
 
 	private String personalizedSignature;
 
-	private List<String> friends = new LinkedList<String>();
-
 	private HashSet<String> chatrooms = new HashSet<String>();
 
 	private List<String> circleTops = new LinkedList<>();
@@ -101,14 +99,6 @@ public class UserBo extends BaseBo {
 
 	public void setPersonalizedSignature(String personalizedSignature) {
 		this.personalizedSignature = personalizedSignature;
-	}
-
-	public List<String> getFriends() {
-		return friends;
-	}
-
-	public void setFriends(List<String> friends) {
-		this.friends = friends;
 	}
 
 	public HashSet<String> getChatrooms() {

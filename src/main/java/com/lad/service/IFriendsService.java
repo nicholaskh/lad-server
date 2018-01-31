@@ -69,4 +69,19 @@ public interface IFriendsService extends IBaseService {
 	 * @return
 	 */
 	List<FriendsBo> getFriendByInList(String userid, List<String> friendids);
+
+	/**
+	 * 更新关联用户状态
+	 * @param id
+	 * @param relateStatus
+	 * @return
+	 */
+	WriteResult updateRelateStatus(String id, int relateStatus, boolean isParent);
+
+	/**
+	 * 查询所有好友申请添加及关联信息
+	 * @param userid
+	 * @return
+	 */
+	List<FriendsBo> findAllApplyList(String userid, int page , int limit);
 }
