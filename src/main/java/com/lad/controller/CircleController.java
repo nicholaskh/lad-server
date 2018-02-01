@@ -2258,11 +2258,10 @@ public class CircleController extends BaseContorller {
 	@PostMapping("/invite-user")
 	public String inviteUsers(@RequestParam String circleid, @RequestParam String userids,
 						   HttpServletRequest request, HttpServletResponse response) {
-		UserBo userBo;
-		try {
-			userBo = checkSession(request, userService);
-		} catch (MyException e) {
-			return e.getMessage();
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		CircleBo circleBo = circleService.selectById(circleid);
 		if (circleBo == null) {
@@ -2312,41 +2311,56 @@ public class CircleController extends BaseContorller {
 	 */
 	@ApiOperation("邀请好友列表")
 	@PostMapping("/invite-friend-list")
-	public String inviteList(@RequestParam String circleid,
+	public String inviteList(String circleid,
 							  HttpServletRequest request, HttpServletResponse response) {
-		UserBo userBo;
-		try {
-			userBo = checkSession(request, userService);
-		} catch (MyException e) {
-			return e.getMessage();
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
-		CircleBo circleBo = circleService.selectById(circleid);
-		if (circleBo == null) {
-			return CommonUtil.toErrorResult(
-					ERRORCODE.CIRCLE_IS_NULL.getIndex(),
-					ERRORCODE.CIRCLE_IS_NULL.getReason());
-		}
-		List<FriendsBo> friendsBos = friendsService.getFriendByUserid(userBo.getId());
-		HashSet<String> circleUsers = circleBo.getUsers();
 		List<FriendsVo> voList = new ArrayList<>();
-		for (FriendsBo friendsBo : friendsBos) {
-			FriendsVo vo = new FriendsVo();
-			BeanUtils.copyProperties(friendsBo, vo);
-			String friendid = friendsBo.getFriendid();
-			if (circleUsers.contains(friendid)) {
-				continue;
+		List<FriendsBo> friendsBos = friendsService.getFriendByUserid(userBo.getId());
+		if (StringUtils.isEmpty(circleid)) {
+			for (FriendsBo friendsBo : friendsBos) {
+				FriendsVo vo = new FriendsVo();
+				BeanUtils.copyProperties(friendsBo, vo);
+				String friendid = friendsBo.getFriendid();
+				UserBo friend = userService.getUser(friendsBo.getFriendid());
+				if (friend == null) {
+					continue;
+				}
+				vo.setSex(friend.getSex());
+				vo.setUsername(friend.getUserName());
+				vo.setPicture(friend.getHeadPictureName());
+				vo.setBackname(friendsBo.getBackname());
+				vo.setUserid("");
+				voList.add(vo);
 			}
-			UserBo friend = userService.getUser(friendsBo.getFriendid());
-			if (friend == null) {
-				friendsService.delete(userBo.getId(), friendid);
-				continue;
+		} else {
+			CircleBo circleBo = circleService.selectById(circleid);
+			if (circleBo == null) {
+				return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_IS_NULL.getIndex(),
+						ERRORCODE.CIRCLE_IS_NULL.getReason());
 			}
-			vo.setSex(friend.getSex());
-			vo.setUsername(friend.getUserName());
-			vo.setPicture(friend.getHeadPictureName());
-			vo.setBackname(friendsBo.getBackname());
-			vo.setUserid("");
-			voList.add(vo);
+			HashSet<String> circleUsers = circleBo.getUsers();
+			for (FriendsBo friendsBo : friendsBos) {
+				FriendsVo vo = new FriendsVo();
+				BeanUtils.copyProperties(friendsBo, vo);
+				String friendid = friendsBo.getFriendid();
+				if (circleUsers.contains(friendid)) {
+					continue;
+				}
+				UserBo friend = userService.getUser(friendsBo.getFriendid());
+				if (friend == null) {
+					continue;
+				}
+				vo.setSex(friend.getSex());
+				vo.setUsername(friend.getUserName());
+				vo.setPicture(friend.getHeadPictureName());
+				vo.setBackname(friendsBo.getBackname());
+				vo.setUserid("");
+				voList.add(vo);
+			}
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);

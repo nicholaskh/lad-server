@@ -253,23 +253,24 @@ public class InforController extends BaseContorller {
         List<BroadcastBo> broadcastBos = inforService.selectBroadClassByGroups(module);
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("ret", 0);
-        JSONArray array = new JSONArray();
-        addRadios(broadcastBos, array);
-        jsonObject.put("radioClasses", array);
+        List<RadioClassVo> classVos = new ArrayList<>();
+        addRadios(broadcastBos, classVos);
+        jsonObject.put("radioClasses", classVos);
         return jsonObject.toString();
     }
 
-    private void addRadios(List<BroadcastBo> broadcastBos, JSONArray array){
+    private void addRadios(List<BroadcastBo> broadcastBos, List<RadioClassVo> classVos){
         if (broadcastBos == null) {
             return;
         }
         for (BroadcastBo bo : broadcastBos) {
+            RadioClassVo classVo = new RadioClassVo();
             JSONObject object = new JSONObject();
-            object.put("module", bo.getModule());
-            object.put("title", bo.getClassName());
-            object.put("source", bo.getSource());
-            object.put("totalVisit", bo.getVisitNum());
-            array.add(object);
+            classVo.setModule(bo.getModule());
+            classVo.setTitle(bo.getClassName());
+            classVo.setSource(bo.getSource());
+            classVo.setTotalVisit(bo.getVisitNum());
+            classVos.add(classVo);
         }
     }
 
@@ -445,9 +446,9 @@ public class InforController extends BaseContorller {
         String userid = userBo != null ? userBo.getId() : "";
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("ret", 0);
-        JSONArray array = new JSONArray();
-        addVideo(videoBos, array, userid);
-        jsonObject.put("videoClasses", array);
+        List<VideoClassVo> classVos = new ArrayList<>();
+        addVideo(videoBos, classVos, userid);
+        jsonObject.put("videoClasses", classVos);
         return jsonObject.toString();
     }
 
@@ -1241,7 +1242,7 @@ public class InforController extends BaseContorller {
 
         LinkedHashSet<String> modules = new LinkedHashSet<>();
         LinkedHashSet<String> classNames = new LinkedHashSet<>();
-        JSONArray array = new JSONArray();
+        List<RadioClassVo> classVos = new ArrayList<>();
         if (myRecomBos != null) {
             for (InforGroupRecomBo recomBo : myRecomBos) {
                 modules.add(recomBo.getModule());
@@ -1249,15 +1250,15 @@ public class InforController extends BaseContorller {
                 num ++;
             }
             List<BroadcastBo> radioBos = inforService.selectRadioClassByGroups(modules, classNames);
-            addRadios(radioBos, array);
+            addRadios(radioBos, classVos);
         }
         if  (num < 50) {
             List<BroadcastBo> radioBos = inforService.findRadioByLimit(modules, classNames, 50-num);
-            addRadios(radioBos, array);
+            addRadios(radioBos, classVos);
         }
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("ret", 0);
-        jsonObject.put("radioClasses", array);
+        jsonObject.put("radioClasses", classVos);
         return jsonObject.toString();
     }
 
@@ -1299,7 +1300,7 @@ public class InforController extends BaseContorller {
         }
         LinkedList<String> modules = new LinkedList<>();
         LinkedList<String> classNames = new LinkedList<>();
-        JSONArray array = new JSONArray();
+        List<VideoClassVo> classVos = new ArrayList<>();
         if (myRecomBos != null) {
             for (InforGroupRecomBo recomBo : myRecomBos) {
                 String module = recomBo.getModule();
@@ -1307,23 +1308,23 @@ public class InforController extends BaseContorller {
                 if (StringUtils.isEmpty(module) || StringUtils.isEmpty(className)) {
                     continue;
                 }
-                VideoBo videoBo = inforService.findVideoByFirst(module, className);
-                if (videoBo != null) {
-                    JSONObject object = new JSONObject();
-                    object.put("module", videoBo.getModule());
-                    object.put("title", videoBo.getClassName());
-                    object.put("source", videoBo.getSource());
-                    object.put("totalVisit", videoBo.getVisitNum());
-                    object.put("inforid", videoBo.getFirstId());
-                    object.put("url", videoBo.getFirstUrl());
-                    object.put("shareNum", videoBo.getFirstShare());
-                    object.put("thumpsubNum", videoBo.getFirstThump());
-                    object.put("commentNum", videoBo.getFirstComment());
+                VideoBo bo = inforService.findVideoByFirst(module, className);
+                if (bo != null) {
+                    VideoClassVo classVo = new VideoClassVo();
+                    classVo.setInforid(bo.getFirstId());
+                    classVo.setModule(bo.getModule());
+                    classVo.setTitle(bo.getClassName());
+                    classVo.setTotalVisit(bo.getVisitNum());
+                    classVo.setSource(bo.getSource());
+                    classVo.setShareNum(bo.getFirstShare());
+                    classVo.setThumpsubNum(bo.getFirstThump());
+                    classVo.setCommentNum(bo.getFirstComment());
+                    classVo.setUrl(bo.getFirstUrl());
                     if (!"".equals(userid)) {
-                        ThumbsupBo thumbsupBo = thumbsupService.findHaveOwenidAndVisitorid(videoBo.getFirstId(),userid);
-                        object.put("selfSub", thumbsupBo != null);
+                        ThumbsupBo thumbsupBo = thumbsupService.findHaveOwenidAndVisitorid(bo.getFirstId(),userid);
+                        classVo.setSelfSub(thumbsupBo != null);
                     }
-                    array.add(object);
+                    classVos.add(classVo);
                     num ++;
                 }
                 modules.add(module);
@@ -1332,32 +1333,32 @@ public class InforController extends BaseContorller {
         }
         if  (num < 50) {
             List<VideoBo> videoBos = inforService.findVideoByLimit(modules, classNames, 50-num);
-            addVideo(videoBos, array, userid);
+            addVideo(videoBos, classVos, userid);
         }
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("ret", 0);
-        jsonObject.put("videoClasses", array);
+        jsonObject.put("videoClasses", classVos);
         return jsonObject.toString();
     }
 
-    private void addVideo(List<VideoBo> videoBos, JSONArray array, String userid){
+    private void addVideo(List<VideoBo> videoBos, List<VideoClassVo> classVos, String userid){
         if (videoBos != null) {
             for (VideoBo bo : videoBos) {
-                JSONObject object = new JSONObject();
-                object.put("module", bo.getModule());
-                object.put("title", bo.getClassName());
-                object.put("source", bo.getSource());
-                object.put("totalVisit", bo.getVisitNum());
-                object.put("inforid", bo.getFirstId());
-                object.put("url", bo.getFirstUrl());
-                object.put("shareNum", bo.getFirstShare());
-                object.put("thumpsubNum", bo.getFirstThump());
-                object.put("commentNum", bo.getFirstComment());
+                VideoClassVo classVo = new VideoClassVo();
+                classVo.setInforid(bo.getFirstId());
+                classVo.setModule(bo.getModule());
+                classVo.setTitle(bo.getClassName());
+                classVo.setTotalVisit(bo.getVisitNum());
+                classVo.setSource(bo.getSource());
+                classVo.setShareNum(bo.getFirstShare());
+                classVo.setThumpsubNum(bo.getFirstThump());
+                classVo.setCommentNum(bo.getFirstComment());
+                classVo.setUrl(bo.getFirstUrl());
                 if (!"".equals(userid)) {
                     ThumbsupBo thumbsupBo = thumbsupService.findHaveOwenidAndVisitorid(bo.getFirstId(),userid);
-                    object.put("selfSub", thumbsupBo != null);
+                    classVo.setSelfSub(thumbsupBo != null);
                 }
-                array.add(object);
+                classVos.add(classVo);
             }
         }
     }

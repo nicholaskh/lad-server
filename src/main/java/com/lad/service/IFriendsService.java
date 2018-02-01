@@ -84,4 +84,14 @@ public interface IFriendsService extends IBaseService {
 	 * @return
 	 */
 	List<FriendsBo> findAllApplyList(String userid, int page , int limit);
+
+	/**
+	 * 根据状态查询好友信息
+	 * @param applyStatus
+	 * @param relateStatus
+	 * @param page
+	 * @param limit
+	 * @return
+	 */
+	List<FriendsBo> findByStatus(String userid, int applyStatus, int relateStatus, int page , int limit);
 }

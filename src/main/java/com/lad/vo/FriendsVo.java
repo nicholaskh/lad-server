@@ -19,6 +19,12 @@ public class FriendsVo extends BaseVo {
 
 	private String channelId;
 
+	private int apply;
+
+	//关联账号的角色，true 表示当前主用户角色是父母，false表示当前主用户角色是子女
+	private boolean parent;
+	//关联账号状态， 1 表示发送关联申请，2 表示被申请用户的状态， 3表示已建立关联， -1  表示拒绝或取消
+	private int relateStatus;
 
 	public String getUserid() {
 		return userid;
@@ -122,5 +128,29 @@ public class FriendsVo extends BaseVo {
 
 	public void setSex(String sex) {
 		this.sex = sex;
+	}
+
+	public int getApply() {
+		return apply;
+	}
+
+	public void setApply(int apply) {
+		this.apply = apply;
+	}
+
+	public boolean isParent() {
+		return parent;
+	}
+
+	public void setParent(boolean parent) {
+		this.parent = parent;
+	}
+
+	public int getRelateStatus() {
+		return relateStatus;
+	}
+
+	public void setRelateStatus(int relateStatus) {
+		this.relateStatus = relateStatus;
 	}
 }

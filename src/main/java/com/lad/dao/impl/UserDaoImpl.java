@@ -104,12 +104,7 @@ public class UserDaoImpl implements IUserDao {
     }
 
     public WriteResult updateFriends(UserBo userBo) {
-        Query query = new Query();
-        query.addCriteria(new Criteria("_id").is(userBo.getId()));
-        query.addCriteria(new Criteria("deleted").is(0));
-        Update update = new Update();
-        update.set("friends", userBo.getFriends());
-        return mongoTemplate.updateFirst(query, update, UserBo.class);
+        return null;
     }
 
     public WriteResult updateChatrooms(UserBo userBo) {

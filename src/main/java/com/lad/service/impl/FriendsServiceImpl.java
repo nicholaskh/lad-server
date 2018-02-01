@@ -111,4 +111,10 @@ public class FriendsServiceImpl implements IFriendsService {
 	public List<FriendsBo> findAllApplyList(String userid, int page , int limit) {
 		return friendsDao.findAllApplyList(userid, page, limit);
 	}
+
+
+	@Override
+	public List<FriendsBo> findByStatus(String userid, int applyStatus, int relateStatus, int page, int limit) {
+		return friendsDao.findByStatus(userid, applyStatus, relateStatus, page, limit);
+	}
 }

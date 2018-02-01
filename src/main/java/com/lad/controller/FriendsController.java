@@ -455,11 +455,15 @@ public class FriendsController extends BaseContorller {
 			BeanUtils.copyProperties(friendsBo, vo);
 			String friendid = friendsBo.getFriendid();
 			UserBo friend = userService.getUser(friendid);
+			if (friend == null) {
+				continue;
+			}
 			List<TagBo> tagBos = tagService.getTagBoListByUseridAndFrinedid(userid, friendid);
 			List<String> tagList = new ArrayList<>();
 			for (TagBo tagBo : tagBos) {
 				tagList.add(tagBo.getName());
 			}
+			vo.setSex(friend.getSex());
 			vo.setTag(tagList);
 			vo.setUsername(friend.getUserName());
 			vo.setPicture(friend.getHeadPictureName());
@@ -961,7 +965,6 @@ public class FriendsController extends BaseContorller {
 			friendsService.updateRelateStatus(friend.getId(), 3, !friendsBo.isParent());
 
 			String path = String.format("/friends/all-apply-list.do?page=%d&limit=%d", 1, 10);
-			String name = StringUtils.isEmpty(friend.getBackname()) ? userBo.getUserName() :friend.getBackname();
 			String role = friendsBo.isParent() ? "子女" : "父母";
 			String message = "您已成功关联" + role + "，快去看看吧！";
 			JPushUtil.push(pushTitle, message, path, friendsBo.getFriendid());
@@ -982,6 +985,55 @@ public class FriendsController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		List<FriendsBo> friendsBoList = friendsService.findAllApplyList(userBo.getId(), page, limit);
+		List<FriendsVo> userVoList = new LinkedList<FriendsVo>();
+		for (FriendsBo friendsBo : friendsBoList) {
+			UserBo userBoTemp = userService.getUser(friendsBo.getUserid());
+			if (null == userBoTemp) {
+				continue;
+			}
+			FriendsVo user = new FriendsVo();
+			BeanUtils.copyProperties(friendsBo, user);
+			String friendid = friendsBo.getFriendid();
+			UserBo friend = userService.getUser(friendid);
+			if (friend == null) {
+				continue;
+			}
+			List<TagBo> tagBos = tagService.getTagBoListByUseridAndFrinedid(userBo.getId(), friendid);
+			List<String> tagList = new ArrayList<>();
+			for (TagBo tagBo : tagBos) {
+				tagList.add(tagBo.getName());
+			}
+			user.setSex(friend.getSex());
+			user.setTag(tagList);
+			user.setUsername(friend.getUserName());
+			user.setPicture(friend.getHeadPictureName());
+			user.setChannelId(friendsBo.getChatroomid());
+			if (StringUtils.isEmpty(friendsBo.getBackname())) {
+				user.setBackname(friend.getUserName());
+			} else {
+				user.setBackname(friendsBo.getBackname());
+			}
+			userVoList.add(user);
+		}
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("userVoList", userVoList);
+		return JSONObject.fromObject(map).toString();
+	}
+
+
+
+	@ApiOperation("已关联的账号列表")
+	@PostMapping("has-relate-account")
+	public String haRelateAccount(int page, int limit, HttpServletRequest request,
+							HttpServletResponse response) {
+		UserBo userBo = getUserLogin(request);
+		if (userBo ==null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		List<FriendsBo> friendsBoList = friendsService.findByStatus(userBo.getId(),
+				Constant.ADD_AGREE, 3, page, limit);
 		List<UserVoFriends> userVoList = new LinkedList<UserVoFriends>();
 		for (FriendsBo friendsBo : friendsBoList) {
 			UserBo userBoTemp = userService.getUser(friendsBo.getUserid());
@@ -1001,5 +1053,37 @@ public class FriendsController extends BaseContorller {
 		map.put("ret", 0);
 		map.put("userVoList", userVoList);
 		return JSONObject.fromObject(map).toString();
+	}
+
+
+	@ApiOperation("取消账号关联")
+	@ApiImplicitParam(name = "id", value = "当前好友关系的id", required = true,
+			paramType = "query",  dataType = "string")
+	@PostMapping("cancel-relate-account")
+	public String cancelRelateAccount(String id, HttpServletRequest request,
+								  HttpServletResponse response) {
+		UserBo userBo = getUserLogin(request);
+		if (userBo ==null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		FriendsBo friendsBo = friendsService.get(id);
+		if (friendsBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NOT_EXIST.getIndex(),
+					ERRORCODE.FRIEND_NOT_EXIST.getReason());
+		}
+		FriendsBo friend = friendsService.getFriendByIdAndVisitorIdAgree(friendsBo.getFriendid(), userBo.getId());
+		if (friendsBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NOT_HAS_YOU.getIndex(),
+					ERRORCODE.FRIEND_NOT_HAS_YOU.getReason());
+		}
+		friendsService.updateRelateStatus(id, 0, friendsBo.isParent());
+		friendsService.updateRelateStatus(friend.getId(), 0, !friendsBo.isParent());
+
+		String path = String.format("/friends/all-apply-list.do?page=%d&limit=%d", 1, 10);
+		String name = StringUtils.isEmpty(friend.getBackname()) ? userBo.getUserName() :friend.getBackname();
+		String message =  name + "已取消与您的账号关联，快去看看吧！";
+		JPushUtil.push(pushTitle, message, path, friendsBo.getFriendid());
+		return Constant.COM_RESP;
 	}
 }

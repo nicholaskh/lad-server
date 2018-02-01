@@ -74,6 +74,7 @@ public abstract class BaseContorller {
 					ERRORCODE.USER_NULL.getIndex(),
 					ERRORCODE.USER_NULL.getReason()));
 		}
+		session.setAttribute("userBo", userBo);
 		return userBo;
 	}
 

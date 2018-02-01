@@ -251,4 +251,17 @@ public class FriendsDaoImpl implements IFriendsDao {
 		query.limit(limit);
 		return mongoTemplate.find(query, FriendsBo.class);
 	}
+
+	@Override
+	public List<FriendsBo> findByStatus(String userid, int applyStatus, int relateStatus, int page, int limit) {
+		Query query = new Query();
+		Criteria criteria = new Criteria("userid").is(userid).and("deleted").is(Constant.ACTIVITY);
+		criteria.and("apply").is(Constant.ADD_AGREE).and("relateStatus").is(3);
+		query.addCriteria(criteria);
+		query.with(new Sort(Sort.Direction.DESC,"_id"));
+		page = page < 1 ? 1 : page;
+		query.skip((page - 1) * limit);
+		query.limit(limit);
+		return mongoTemplate.find(query, FriendsBo.class);
+	}
 }
