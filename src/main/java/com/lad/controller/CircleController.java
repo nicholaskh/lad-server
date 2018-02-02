@@ -87,6 +87,9 @@ public class CircleController extends BaseContorller {
 	@Autowired
 	private IInforService inforService;
 
+	@Autowired
+	private IMessageService messageService;
+
 	private String titlePush = "圈子通知";
 
 	/**
@@ -314,11 +317,13 @@ public class CircleController extends BaseContorller {
 				circleBo.getName());
 		String path = "/circle/user-apply.do?circleid=" + circleid;
 		JPushUtil.push(titlePush, content, path,  circleBo.getCreateuid());
+		addMessage(messageService, path, content, titlePush, circleBo.getCreateuid());
 		HashSet<String> masters = circleBo.getMasters();
 		if (!CommonUtil.isEmpty(masters)) {
 			String[] pushUser = new String[masters.size()];
 			masters.toArray(pushUser);
 			JPushUtil.push(titlePush, content, path,  pushUser);
+			addMessage(messageService, path, content, titlePush, pushUser);
 		}
 		return Constant.COM_RESP;
 	}
@@ -523,6 +528,7 @@ public class CircleController extends BaseContorller {
 					if (reasonBo.getAddType() == 1) {
 						String party = String.format("/party/party-info.do?partyid=%s", reasonBo.getPartyid());
 						JPushUtil.push(titlePush, content, party,  userid);
+						addMessage(messageService, party, content, titlePush, userid);
 					} else {
 						accepts.add(userid);
 					}
@@ -543,6 +549,7 @@ public class CircleController extends BaseContorller {
 			String[] userArr = new String[accepts.size()];
 			accepts.toArray(userArr);
 			JPushUtil.push(titlePush, content, path,  userArr);
+			addMessage(messageService, path, content, titlePush, userArr);
 		}
 		pushToFriends(circleBo.getName(), path, pushFriends);
 		return Constant.COM_RESP;
@@ -576,6 +583,7 @@ public class CircleController extends BaseContorller {
 				}
 				String content = String.format("“%s”已申请加入圈子【%s】，你也快去看看吧",name, circleName);
 				JPushUtil.push(titlePush, content, path, friend.getId());
+				addMessage(messageService, path, content, titlePush, friend.getId());
 			}
 		}
 	}
@@ -788,6 +796,7 @@ public class CircleController extends BaseContorller {
 		CircleHistoryBo historyBo = addCircleOperateHis(userid,circleid, userBo.getId(),"圈主转让通知", content);
 		String path = "/circle/get-circle-his.do?circleid=" + historyBo.getId();
 		JPushUtil.push("圈主转让通知", content, path, userid);
+		addMessage(messageService, path, content, titlePush, userid);
 		return Constant.COM_RESP;
 	}
 
@@ -843,6 +852,7 @@ public class CircleController extends BaseContorller {
 					CircleHistoryBo historyBo = addCircleOperateHis(id,circleid, userBo.getId(),title, content);
 					String path = "/circle/get-circle-his.do?circleid=".concat(historyBo.getId());
 					JPushUtil.push(title, content, path, id);
+					addMessage(messageService, path, content, title, id);
 				}
 			}
 
@@ -855,6 +865,7 @@ public class CircleController extends BaseContorller {
 					CircleHistoryBo historyBo = addCircleOperateHis(id,circleid, userBo.getId(),title, content);
 					String path = "/circle/get-circle-his.do?circleid=".concat(historyBo.getId());
 					JPushUtil.push(title, content, path, id);
+					addMessage(messageService, path, content, title, id);
 				}
 			}
 		}
@@ -2298,6 +2309,7 @@ public class CircleController extends BaseContorller {
 		} else {
 			JPushUtil.push(titlePush, content, path,  useridArr);
 		}
+		addMessage(messageService, path, content, titlePush, useridArr);
 		return Constant.COM_RESP;
 	}
 

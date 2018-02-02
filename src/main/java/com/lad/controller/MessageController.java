@@ -1,18 +1,20 @@
 package com.lad.controller;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.apache.commons.beanutils.BeanUtils;
+import com.lad.util.Constant;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -25,8 +27,10 @@ import com.lad.util.ERRORCODE;
 import com.lad.vo.MessageVo;
 
 import net.sf.json.JSONObject;
+import org.springframework.web.bind.annotation.RestController;
 
-@Controller
+@Api("消息接口")
+@RestController
 @RequestMapping("message")
 public class MessageController extends BaseContorller {
 
@@ -35,83 +39,100 @@ public class MessageController extends BaseContorller {
 	@Autowired
 	private IUserService userService;
 
-	@RequestMapping("/insert")
-	@ResponseBody
-	public String isnert(String content, String source,
+	@ApiOperation("未读消息查询")
+	@PostMapping("/unread-message")
+	public String my_message(int page, int limit,
 			HttpServletRequest request, HttpServletResponse response) {
-		HttpSession session = request.getSession();
-		if (session.isNew()) {
-			return CommonUtil.toErrorResult(
-					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-		}
-		if (session.getAttribute("isLogin") == null) {
-			return CommonUtil.toErrorResult(
-					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-		}
-		UserBo userBo = (UserBo) session.getAttribute("userBo");
+		UserBo userBo = getUserLogin(request);
 		if (userBo == null) {
-			return CommonUtil.toErrorResult(
-					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
-		userBo = userService.getUser(userBo.getId());
-		if (!StringUtils.hasLength(content)) {
-			return CommonUtil.toErrorResult(
-					ERRORCODE.CONTACT_CONTENT.getIndex(),
-					ERRORCODE.CONTACT_CONTENT.getReason());
-		}
-		if (!StringUtils.hasLength(source)) {
-			return CommonUtil.toErrorResult(
-					ERRORCODE.CONTACT_SOURCE.getIndex(),
-					ERRORCODE.CONTACT_SOURCE.getReason());
-		}
-		Map<String, Object> map = new HashMap<String, Object>();
-		MessageBo messageBo = new MessageBo();
-		messageBo.setContent(content);
-		messageBo.setSource(source);
-		messageBo.setOwnerId(userBo.getId());
-		messageService.insert(messageBo);
-		map.put("ret", 0);
-		return JSONObject.fromObject(map).toString();
-	}
 
-	@RequestMapping("/my-message")
-	@ResponseBody
-	public String my_message(String start_id, boolean gt, int limit,
-			HttpServletRequest request, HttpServletResponse response)
-			throws Exception {
-		HttpSession session = request.getSession();
-		if (session.isNew()) {
-			return CommonUtil.toErrorResult(
-					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-		}
-		if (session.getAttribute("isLogin") == null) {
-			return CommonUtil.toErrorResult(
-					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-		}
-		UserBo userBo = (UserBo) session.getAttribute("userBo");
-		if (userBo == null) {
-			return CommonUtil.toErrorResult(
-					ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-		}
-		userBo = userService.getUser(userBo.getId());
-		List<MessageBo> list = messageService.selectByUserIdPaged(start_id, gt,
-				limit, userBo.getId());
+		List<MessageBo> list = messageService.findByUserId(userBo.getId(), 0, page, limit);
 		List<MessageVo> message_from_me_vo = new ArrayList<MessageVo>();
 		for (MessageBo item : list) {
 			MessageVo vo = new MessageVo();
-			BeanUtils.copyProperties(vo, item);
+			BeanUtils.copyProperties(item, vo);
 			message_from_me_vo.add(vo);
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
-		map.put("message_from_me_vo", message_from_me_vo);
+		map.put("messageVos", message_from_me_vo);
 		return JSONObject.fromObject(map).toString();
+	}
+
+
+	@ApiOperation("所有消息查询")
+	@PostMapping("/all-message")
+	public String allMessage(int page, int limit,
+							 HttpServletRequest request, HttpServletResponse response) {
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		List<MessageBo> list = messageService.findByUserId(userBo.getId(), -1, page, limit);
+		List<MessageVo> message_from_me_vo = new ArrayList<MessageVo>();
+		for (MessageBo item : list) {
+			MessageVo vo = new MessageVo();
+			BeanUtils.copyProperties(item, vo);
+			vo.setMessageid(item.getId());
+			message_from_me_vo.add(vo);
+		}
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("messageVos", message_from_me_vo);
+		return JSONObject.fromObject(map).toString();
+	}
+
+
+	@ApiOperation("查看消息详情")
+	@ApiImplicitParam(name = "messageid", value = "消息id", dataType = "string", paramType = "query")
+	@PostMapping("/get-message")
+	public String allMessage(String messageid, HttpServletRequest request, HttpServletResponse response) {
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		MessageBo messageBo = messageService.selectById(messageid);
+		MessageVo messageVo = new MessageVo();
+		BeanUtils.copyProperties(messageBo, messageVo);
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("messageVo", messageVo);
+		return JSONObject.fromObject(map).toString();
+	}
+
+
+	@ApiOperation("删除消息")
+	@ApiImplicitParam(name = "messageid", value = "消息id", dataType = "string", paramType = "query")
+	@PostMapping("/del-message")
+	public String delMessage(String messageid, HttpServletRequest request, HttpServletResponse response) {
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		messageService.deleteMessage(messageid);
+		return Constant.COM_RESP;
+	}
+
+	@ApiOperation("批量删除消息")
+	@ApiImplicitParam(name = "messageids", value = "消息id,多个以逗号隔开", dataType = "string", paramType = "query")
+	@PostMapping("/multi-del-message")
+	public String delsMessage(String messageids, HttpServletRequest request, HttpServletResponse response) {
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		String[] idArr = CommonUtil.getIds(messageids);
+		List<String> ids = new ArrayList<>();
+		Collections.addAll(ids, idArr);
+		messageService.deleteMessages(ids);
+		return Constant.COM_RESP;
 	}
 
 }

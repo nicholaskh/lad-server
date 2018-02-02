@@ -57,6 +57,9 @@ public class ChatroomController extends BaseContorller {
 	@Autowired
 	private ICircleService circleService;
 
+	@Autowired
+	private IMessageService messageService;
+
 
 	private String titlePush = "互动通知";
 
@@ -144,6 +147,7 @@ public class ChatroomController extends BaseContorller {
 			String path = "";
 			String content = String.format("“%s”邀请您加入群聊", userBo.getUserName());
 			JPushUtil.push(titlePush, content, path,  useridArr);
+			addMessage(messageService, path, content, titlePush, useridArr);
 			return Constant.COM_RESP;
 		}
 		//第一个为返回结果信息，第二位term信息
@@ -175,7 +179,9 @@ public class ChatroomController extends BaseContorller {
 				set.add(userid);
 				imNames.add(user.getUserName());
 				imIds.add(user.getId());
-				JPushUtil.pushTo(String.format("“%s”邀请您加入群聊", userBo.getUserName()), userid);
+				String msg = String.format("“%s”邀请您加入群聊", userBo.getUserName());
+				JPushUtil.pushTo(msg, userid);
+				addMessage(messageService, "", msg, titlePush, userid);
 			}
 		}
 		String name = chatroomBo.getName();
@@ -911,6 +917,7 @@ public class ChatroomController extends BaseContorller {
 		String content = String.format("“%s将群聊【%s】转让给了您，快去看看吧", userBo.getUserName(),
 				chatroomBo.getName());
         JPushUtil.push(titlePush, content, "", userid);
+		addMessage(messageService, "", content, titlePush, userid);
 		return Constant.COM_RESP;
 	}
 
@@ -1446,7 +1453,7 @@ public class ChatroomController extends BaseContorller {
 			String path = "";
 			String content = String.format("%s已通过您的加群申请", userBo.getUserName());
 			JPushUtil.push(titlePush, content, path,  reasonBo.getCreateuid());
-
+			addMessage(messageService, path, content, titlePush, reasonBo.getCreateuid());
 			map.put("chatroomUser", set.size());
 		} else {
 			reasonService.updateApply(applyid, Constant.ADD_REFUSE, refues);

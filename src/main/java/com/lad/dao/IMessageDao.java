@@ -3,6 +3,7 @@ package com.lad.dao;
 import java.util.List;
 
 import com.lad.bo.MessageBo;
+import com.mongodb.WriteResult;
 
 public interface IMessageDao extends IBaseDao {
 
@@ -10,7 +11,10 @@ public interface IMessageDao extends IBaseDao {
 
 	public MessageBo selectById(String messageId);
 	
-	public  List<MessageBo> selectByUserId(String userId);
-	
-	public  List<MessageBo> selectByUserIdPaged(String startId, boolean gt, int limit, String userId);
+	public List<MessageBo> findUnReadByUserId(String userId, int status, int page, int limit);
+
+	WriteResult deleteMessage(String id);
+
+	WriteResult deleteMessages(List<String> ids);
+
 }

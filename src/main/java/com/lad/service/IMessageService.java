@@ -3,14 +3,18 @@ package com.lad.service;
 import java.util.List;
 
 import com.lad.bo.MessageBo;
+import com.mongodb.WriteResult;
 
 public interface IMessageService extends IBaseService {
 
-	public MessageBo insert(MessageBo messageBo);
 
-	public MessageBo selectById(String messageId);
+	MessageBo insert(MessageBo messageBo);
 
-	public List<MessageBo> selectByUserId(String userId);
-	
-	public  List<MessageBo> selectByUserIdPaged(String startId, boolean gt, int limit, String userId);
+	MessageBo selectById(String messageId);
+
+	List<MessageBo> findByUserId(String userId, int status, int page, int limit);
+
+	WriteResult deleteMessage(String id);
+
+	WriteResult deleteMessages(List<String> ids);
 }

@@ -5,16 +5,27 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "message")
 public class MessageBo extends BaseBo {
 
-	private String ownerId;
+	private String userid;
+	private String title;
 	private String content;
-	private String source;
+	private String path;
+	//阅读状态，0未读， 1已读
+	private int status;
 
-	public String getOwnerId() {
-		return ownerId;
+	public String getUserid() {
+		return userid;
 	}
 
-	public void setOwnerId(String ownerId) {
-		this.ownerId = ownerId;
+	public void setUserid(String userid) {
+		this.userid = userid;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
 	}
 
 	public String getContent() {
@@ -25,11 +36,19 @@ public class MessageBo extends BaseBo {
 		this.content = content;
 	}
 
-	public String getSource() {
-		return source;
+	public String getPath() {
+		return path;
 	}
 
-	public void setSource(String source) {
-		this.source = source;
+	public void setPath(String path) {
+		this.path = path;
+	}
+
+	public int getStatus() {
+		return status;
+	}
+
+	public void setStatus(int status) {
+		this.status = status;
 	}
 }

@@ -252,4 +252,16 @@ public abstract class BaseContorller {
 		return 1;
 	}
 
+	@Async
+	public void addMessage(IMessageService service, String path, String content, String title, String... userids){
+		for (String userid : userids) {
+			MessageBo messageBo = new MessageBo();
+			messageBo.setContent(content);
+			messageBo.setPath(path);
+			messageBo.setUserid(userid);
+			messageBo.setTitle(title);
+			service.insert(messageBo);
+		}
+	}
+
 }

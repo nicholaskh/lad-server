@@ -74,6 +74,9 @@ public class PartyController extends BaseContorller {
     @Autowired
     private IFriendsService friendsService;
 
+    @Autowired
+    private IMessageService messageService;
+
     private String titlePush = "聚会通知";
 
 
@@ -143,6 +146,7 @@ public class PartyController extends BaseContorller {
             String[] userids = new String[circleUsers.size()];
             circleUsers.toArray(userids);
             JPushUtil.push(titlePush, content, path, userids);
+            addMessage(messageService, path, content, titlePush, userids);
         }
         if (circleBo.isOpen()) {
             pushFriends(userId, content, path, circleUsers);
@@ -151,7 +155,8 @@ public class PartyController extends BaseContorller {
         userService.addUserLevel(userBo.getId(), 1, Constant.PARTY_TYPE, 0);
         //圈子热度
         updateCircleHot(circleService, redisServer, partyBo.getCircleid(), 1, Constant.CIRCLE_PARTY_VISIT);
-//        updateDynamicNums(userId, 1, dynamicService, redisServer);
+
+        updateDynamicNums(userId, 1, dynamicService, redisServer);
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("ret", 0);
         map.put("partyid", partyBo.getId());
@@ -179,6 +184,7 @@ public class PartyController extends BaseContorller {
             }
             if (i > 0) {
                 JPushUtil.push(titlePush, content, path, friendids);
+                addMessage(messageService, path, content, titlePush, friendids);
             }
         }
     }
@@ -507,7 +513,7 @@ public class PartyController extends BaseContorller {
         String content = String.format("“%s”报名了您发起的聚会【%s】，请尽快与他沟通参与事宜", userBo.getUserName(),
                 partyBo.getTitle());
         JPushUtil.push(titlePush, content, path,  partyBo.getCreateuid());
-        
+        addMessage(messageService, path, content, titlePush, partyBo.getCreateuid());
         return Constant.COM_RESP;
     }
 
@@ -1012,11 +1018,15 @@ public class PartyController extends BaseContorller {
         commentService.insert(commentBo);
 
         String path = "/party/party-info.do?partyid=" + comment.getPartyid();
-        JPushUtil.pushMessage(titlePush, "有人刚刚评论了你的聚会，快去看看吧!", path,  partyBo.getCreateuid());
+        String content = "有人刚刚评论了你的聚会，快去看看吧!";
+        JPushUtil.pushMessage(titlePush, content, path,  partyBo.getCreateuid());
+        addMessage(messageService, path, content, titlePush, partyBo.getCreateuid());
         if (!StringUtils.isEmpty(comment.getParentid())) {
             CommentBo commentBo1 = commentService.findById(comment.getParentid());
             if (commentBo1 != null) {
-                JPushUtil.pushMessage(titlePush, "有人刚刚回复了你的评论，快去看看吧!", path,  commentBo1.getCreateuid());
+                content = "有人刚刚回复了你的评论，快去看看吧!";
+                JPushUtil.pushMessage(titlePush, content, path,  commentBo1.getCreateuid());
+                addMessage(messageService, path, content, titlePush, partyBo.getCreateuid());
             }
         }
         //圈子热度
@@ -1351,6 +1361,8 @@ public class PartyController extends BaseContorller {
             if (commentBo != null) {
                 String path = "/party/party-info.do?partyid=" + commentBo.getTargetid();
                 JPushUtil.pushMessage(titlePush, "有人刚刚赞了你的聚会，快去看看吧!", path,  commentBo.getCreateuid());
+                addMessage(messageService, path, "有人刚刚赞了你的聚会，快去看看吧!", titlePush,
+                        commentBo.getCreateuid());
             }
         }
         return Constant.COM_RESP;
@@ -1507,6 +1519,7 @@ public class PartyController extends BaseContorller {
             String[] userids = new String[users.size()];
             users.toArray(userids);
             JPushUtil.push(titlePush, content, path, userids);
+            addMessage(messageService, path, content, titlePush, userids);
         }
         return Constant.COM_RESP;
     }

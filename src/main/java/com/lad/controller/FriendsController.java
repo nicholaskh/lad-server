@@ -44,6 +44,9 @@ public class FriendsController extends BaseContorller {
 	@Autowired
 	private ITagService tagService;
 
+	@Autowired
+	private IMessageService messageService;
+
 	private String pushTitle = "好友通知";
 
 	@RequestMapping(value = "/apply", method = {RequestMethod.GET, RequestMethod.POST})
@@ -80,6 +83,8 @@ public class FriendsController extends BaseContorller {
 		friendsService.insert(friendsBo);
 		String path = "/friends/apply-list.do";
 		JPushUtil.push(pushTitle,userBo.getUserName() + JPushUtil.APPLY, path, friendid);
+		addMessage(messageService, path, userBo.getUserName() + JPushUtil.APPLY,
+				pushTitle, friendid);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();
@@ -165,6 +170,8 @@ public class FriendsController extends BaseContorller {
 		
 		JPushUtil.pushTo(userBo.getUserName() + JPushUtil.AGREE_APPLY_FRIEND,
 				friendid);
+		addMessage(messageService, "", userBo.getUserName() + JPushUtil.AGREE_APPLY_FRIEND,
+				pushTitle, friendid);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("channelId", chatroomBo.getId());
@@ -221,6 +228,8 @@ public class FriendsController extends BaseContorller {
 		friendsService.updateApply(id, -1, "");
 		JPushUtil.pushTo(userBo.getUserName() + JPushUtil.REFUSE_APPLY_FRIEND,
 				friendsBo.getUserid());
+		addMessage(messageService, "", userBo.getUserName() + JPushUtil.REFUSE_APPLY_FRIEND,
+				pushTitle, friendsBo.getUserid());
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();
@@ -623,6 +632,8 @@ public class FriendsController extends BaseContorller {
 			return res;
 		}
 		JPushUtil.pushTo(userBo.getUserName() + JPushUtil.MULTI_INSERT, idsList);
+		addMessage(messageService, "", userBo.getUserName() + JPushUtil.MULTI_INSERT,
+				pushTitle, idsList);
 
 		// 某人被邀请加入群聊通知
 		if(nameAndIds[0] != null){
@@ -933,6 +944,7 @@ public class FriendsController extends BaseContorller {
 		String name = StringUtils.isEmpty(friend.getBackname()) ? userBo.getUserName() :friend.getBackname();
 		String message = name + "申请与您进行账号关联，快去看看吧！";
 		JPushUtil.push(pushTitle, message, path, friendid);
+		addMessage(messageService, path, message, pushTitle, friendid);
 		return Constant.COM_RESP;
 	}
 
@@ -968,6 +980,7 @@ public class FriendsController extends BaseContorller {
 			String role = friendsBo.isParent() ? "子女" : "父母";
 			String message = "您已成功关联" + role + "，快去看看吧！";
 			JPushUtil.push(pushTitle, message, path, friendsBo.getFriendid());
+			addMessage(messageService, path, message, pushTitle, friendsBo.getFriendid());
 		} else {
 			friendsService.updateRelateStatus(id, -1, friendsBo.isParent());
 			friendsService.updateRelateStatus(friend.getId(), -1, !friendsBo.isParent());
@@ -1077,13 +1090,14 @@ public class FriendsController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NOT_HAS_YOU.getIndex(),
 					ERRORCODE.FRIEND_NOT_HAS_YOU.getReason());
 		}
-		friendsService.updateRelateStatus(id, 0, friendsBo.isParent());
-		friendsService.updateRelateStatus(friend.getId(), 0, !friendsBo.isParent());
+		friendsService.updateRelateStatus(id, 0, false);
+		friendsService.updateRelateStatus(friend.getId(), 0, false);
 
 		String path = String.format("/friends/all-apply-list.do?page=%d&limit=%d", 1, 10);
 		String name = StringUtils.isEmpty(friend.getBackname()) ? userBo.getUserName() :friend.getBackname();
 		String message =  name + "已取消与您的账号关联，快去看看吧！";
 		JPushUtil.push(pushTitle, message, path, friendsBo.getFriendid());
+		addMessage(messageService, path, message, pushTitle, friendsBo.getFriendid());
 		return Constant.COM_RESP;
 	}
 }

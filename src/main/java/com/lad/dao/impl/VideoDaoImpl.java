@@ -70,8 +70,8 @@ public class VideoDaoImpl implements IVideoDao {
                 .sum("visitNum").as("visitNum").first("url").as("firstUrl")
                 .first("_id").as("firstId").first("shareNum").as("firstShare")
                 .first("commnetNum").as("firstComment").first("thumpsubNum").as("firstThump");
-        Aggregation aggregation = Aggregation.newAggregation(match,
-                Aggregation.sort(Sort.Direction.ASC, "className"), groupOperation);
+        Aggregation aggregation = Aggregation.newAggregation(match, groupOperation,
+                Aggregation.sort(Sort.Direction.ASC, "className"));
         AggregationResults<VideoBo> results = mongoTemplateTwo.aggregate(aggregation, "video", VideoBo.class);
         return results != null ? results.getMappedResults() : null;
     }

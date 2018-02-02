@@ -2,6 +2,8 @@ package com.lad.dao.impl;
 
 import java.util.List;
 
+import com.lad.util.Constant;
+import com.mongodb.WriteResult;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -10,6 +12,7 @@ import org.springframework.data.domain.Sort.Order;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 import com.lad.bo.MessageBo;
@@ -28,31 +31,40 @@ public class MessageDaoImpl implements IMessageDao {
 
 	public MessageBo selectById(String messageId) {
 		Query query = new Query();
-		query.addCriteria(new Criteria("_id").is(messageId));
-		query.addCriteria(new Criteria("deleted").is(0));
+		query.addCriteria(new Criteria("_id").is(messageId).and("deleted").is(0));
 		return mongoTemplate.findOne(query, MessageBo.class);
 	}
 
-	public List<MessageBo> selectByUserId(String userId) {
+	@Override
+	public List<MessageBo> findUnReadByUserId(String userId, int status, int page, int limit) {
 		Query query = new Query();
-		query.addCriteria(new Criteria("ownerId").is(userId));
-		query.addCriteria(new Criteria("deleted").is(0));
+		Criteria criteria = new Criteria("userid").is(userId).and("deleted").is(0);
+		if (status != -1) {
+			criteria.and("status").is(status);
+		}
+		query.addCriteria(criteria);
+		query.with(new Sort(Direction.DESC, "_id"));
+		page = page < 1 ? 1 : page;
+		query.skip((page - 1) * limit);
+		query.limit(limit);
 		return mongoTemplate.find(query, MessageBo.class);
 	}
 
-	public List<MessageBo> selectByUserIdPaged(String startId, boolean gt, int limit, String userId) {
+	@Override
+	public WriteResult deleteMessage(String id) {
 		Query query = new Query();
-		query.limit(limit);
-		query.with(new Sort(new Order(Direction.DESC, "_id")));
-		query.addCriteria(new Criteria("deleted").is(0));
-		query.addCriteria(new Criteria("owner_id").is(userId));
-		if (!StringUtils.isEmpty(startId)) {
-			if (gt) {
-				query.addCriteria(new Criteria("_id").gt(startId));
-			} else {
-				query.addCriteria(new Criteria("_id").lt(startId));
-			}
-		}
-		return mongoTemplate.find(query, MessageBo.class);
+		query.addCriteria(new Criteria("_id").is(id).and("deleted").is(0));
+		Update update = new Update();
+		update.set("deleted", Constant.DELETED);
+		return mongoTemplate.updateFirst(query, update, MessageBo.class);
+	}
+
+	@Override
+	public WriteResult deleteMessages(List<String> ids) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("_id").in(ids).and("deleted").is(0));
+		Update update = new Update();
+		update.set("deleted", Constant.DELETED);
+		return mongoTemplate.updateMulti(query, update, MessageBo.class);
 	}
 }

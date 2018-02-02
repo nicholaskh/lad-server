@@ -2,6 +2,7 @@ package com.lad.service.impl;
 
 import java.util.List;
 
+import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,12 +24,18 @@ public class MessageServiceImpl implements IMessageService {
 		return messageDao.selectById(messageId);
 	}
 
-	public List<MessageBo> selectByUserId(String userId) {
-		return messageDao.selectByUserId(userId);
+	@Override
+	public List<MessageBo> findByUserId(String userId, int status, int page, int limit) {
+		return messageDao.findUnReadByUserId(userId, status, page, limit);
 	}
 
-	public List<MessageBo> selectByUserIdPaged(String startId, boolean gt, int limit, String userId) {
-		return messageDao.selectByUserIdPaged(startId, gt, limit, userId);
+	@Override
+	public WriteResult deleteMessage(String id) {
+		return messageDao.deleteMessage(id);
 	}
 
+	@Override
+	public WriteResult deleteMessages(List<String> ids) {
+		return messageDao.deleteMessages(ids);
+	}
 }

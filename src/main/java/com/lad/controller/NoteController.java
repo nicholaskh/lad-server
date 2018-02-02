@@ -74,6 +74,9 @@ public class NoteController extends BaseContorller {
 	@Autowired
 	private IInforService inforService;
 
+	@Autowired
+	private IMessageService messageService;
+
 
 	private String pushTitle = "互动通知";
 
@@ -139,7 +142,9 @@ public class NoteController extends BaseContorller {
 		noteService.insert(noteBo);
 		if (useridArr != null) {
 			String path = String.format("/note/note-info.do?noteid=%s&type=%s",noteBo.getId(), noteBo.getType());
-			JPushUtil.push(pushTitle, "有人刚刚在帖子提到了您，快去看看吧!", path, useridArr);
+			String content = "有人刚刚在帖子提到了您，快去看看吧!";
+			JPushUtil.push(pushTitle, content, path, useridArr);
+			addMessage(messageService, path, content, pushTitle, useridArr);
 		}
 		addCircleShow(noteBo);
 		updateCircieNoteSize(circleid, 1);
@@ -166,8 +171,8 @@ public class NoteController extends BaseContorller {
 			}
 			dynamicBo.setCreateuid(userBo.getId());
 			dynamicService.addDynamic(dynamicBo);
-			updateDynamicNums(userId, 1, dynamicService, redisServer);
 		}
+		updateDynamicNums(userId, 1, dynamicService, redisServer);
 		userService.addUserLevel(userBo.getId(), 1, Constant.LEVEL_NOTE, 0);
 		updateCircleHot(circleService, redisServer, circleid, 1, Constant.CIRCLE_NOTE);
 		updateCircleHot(circleService, redisServer, circleid, 1, Constant.CIRCLE_NOTE_VISIT);
@@ -269,6 +274,7 @@ public class NoteController extends BaseContorller {
 		updateCircieUnReadNum(noteBo.getCreateuid(), noteBo.getCircleId());
 		String path = "/note/note-info.do?noteid=" + noteid;
 		JPushUtil.pushMessage(pushTitle, "有人刚刚赞了你的帖子，快去看看吧!", path,  noteBo.getCreateuid());
+		addMessage(messageService, path, "有人刚刚赞了你的帖子，快去看看吧!", pushTitle, noteBo.getCreateuid());
 		return Constant.COM_RESP;
 	}
 
@@ -475,12 +481,16 @@ public class NoteController extends BaseContorller {
 		updateRedStar(userBo, noteBo, noteBo.getCircleId(), currentDate);
 		updateCircieUnReadNum(noteBo.getCreateuid(), noteBo.getCircleId());
 		String path = "/note/note-info.do?noteid=" + noteid;
-		JPushUtil.pushMessage(pushTitle, "有人刚刚评论了你的帖子，快去看看吧!", path,  noteBo.getCreateuid());
+		String content = "有人刚刚评论了你的帖子，快去看看吧!";
+		JPushUtil.pushMessage(pushTitle, content, path,  noteBo.getCreateuid());
+		addMessage(messageService, path, content, pushTitle, noteBo.getCreateuid());
 		if (!StringUtils.isEmpty(parentid)) {
 			CommentBo comment = commentService.findById(parentid);
 			if (comment != null) {
 				updateCircieUnReadNum(comment.getCreateuid(), noteBo.getCircleId());
-				JPushUtil.pushMessage(pushTitle, "有人刚刚回复了你的评论，快去看看吧!", path,  comment.getCreateuid());
+				content = "有人刚刚回复了你的评论，快去看看吧!";
+				JPushUtil.pushMessage(pushTitle, content, path,  comment.getCreateuid());
+				addMessage(messageService, path, content, pushTitle, noteBo.getCreateuid());
 			}
 		}
 		Map<String, Object> map = new HashMap<>();
