@@ -1677,7 +1677,9 @@ public class PartyController extends BaseContorller {
         forward.setSourcePartyid(partyid);
         forward.setView(view);
         forward.setCreateuid(userBo.getId());
+        forward.setCircleid(circleid);
         partyService.insert(forward);
+        addCircleShow(forward);
         //用户等级
         userService.addUserLevel(userBo.getId(), 1, Constant.PARTY_TYPE, 0);
         //圈子热度

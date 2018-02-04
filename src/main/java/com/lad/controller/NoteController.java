@@ -1220,7 +1220,6 @@ public class NoteController extends BaseContorller {
 		noteBo.setVideoPic(old.getVideoPic());
 		noteBo.setPhotos(old.getPhotos());
 		noteBo.setType(old.getType());
-		noteBo.setNoteType(0);
 		noteBo.setContent(old.getContent());
 		noteBo.setCreateuid(userBo.getId());
 		noteBo.setLandmark(landmark);
@@ -1343,77 +1342,30 @@ public class NoteController extends BaseContorller {
 		if (noteBo.getForward() == 1) {
 			noteVo.setSourceid(noteBo.getSourceid());
 			noteVo.setForward(true);
-			//0 表示转发的帖子，1 表示转发的资讯
-			if (noteBo.getNoteType() == 1) {
-				int inforType = noteBo.getInforType();
-				noteVo.setInforType(inforType);
-				noteVo.setForwardType(1);
-				switch (inforType){
-					case Constant.INFOR_HEALTH:
-						InforBo inforBo = inforService.findById(noteBo.getSourceid());
-						if (inforBo != null) {
-							noteVo.setPhotos(inforBo.getImageUrls());
-							noteVo.setSubject(inforBo.getTitle());
-							noteVo.setVisitCount((long)inforBo.getVisitNum());
-							noteVo.setInforTypeName(inforBo.getModule());
-						}
-						break;
-					case Constant.INFOR_SECRITY:
-						SecurityBo securityBo = inforService.findSecurityById(noteBo.getSourceid());
-						if (securityBo == null) {
-							noteVo.setSubject(securityBo.getTitle());
-							noteVo.setVisitCount((long)securityBo.getVisitNum());
-							noteVo.setInforTypeName(securityBo.getNewsType());
-						}
-						break;
-					case Constant.INFOR_RADIO:
-						BroadcastBo broadcastBo = inforService.findBroadById(noteBo.getSourceid());
-						if (broadcastBo == null) {
-							noteVo.setSubject(broadcastBo.getTitle());
-							noteVo.setInforUrl(broadcastBo.getBroadcast_url());
-							noteVo.setVisitCount((long)broadcastBo.getVisitNum());
-							noteVo.setInforTypeName(broadcastBo.getModule());
-						}
-						break;
-					case Constant.INFOR_VIDEO:
-						VideoBo videoBo = inforService.findVideoById(noteBo.getSourceid());
-						if (videoBo == null) {
-							noteVo.setSubject(videoBo.getTitle());
-							noteVo.setInforUrl(videoBo.getUrl());
-							noteVo.setVideoPic(videoBo.getPoster());
-							noteVo.setVisitCount((long)videoBo.getVisitNum());
-							noteVo.setInforTypeName(videoBo.getModule());
-						}
-						break;
-					default:
-						break;
-				}
-			} else {
-				NoteBo sourceNote = noteService.selectById(noteBo.getSourceid());
-				if (sourceNote != null) {
-					noteVo.setSubject(sourceNote.getSubject());
-					noteVo.setContent(sourceNote.getContent());
-					noteVo.setPhotos(sourceNote.getPhotos());
-					noteVo.setVideoPic(sourceNote.getVideoPic());
 
-					addNoteAtUsers(sourceNote, noteVo, userid);
-					UserBo from = userService.getUser(sourceNote.getCreateuid());
-					if (from != null) {
-						noteVo.setFromUserid(from.getId());
-						if (!StringUtils.isEmpty(userid)) {
-							FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(userid, from.getId());
-							if (friendsBo != null) {
-								noteVo.setFromUserName(friendsBo.getBackname());
-							} else {
-								noteVo.setFromUserName(from.getUserName());
-							}
+			NoteBo sourceNote = noteService.selectById(noteBo.getSourceid());
+			if (sourceNote != null) {
+				noteVo.setSubject(sourceNote.getSubject());
+				noteVo.setContent(sourceNote.getContent());
+				noteVo.setPhotos(sourceNote.getPhotos());
+				noteVo.setVideoPic(sourceNote.getVideoPic());
+				addNoteAtUsers(sourceNote, noteVo, userid);
+				UserBo from = userService.getUser(sourceNote.getCreateuid());
+				if (from != null) {
+					noteVo.setFromUserid(from.getId());
+					if (!StringUtils.isEmpty(userid)) {
+						FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(userid, from.getId());
+						if (friendsBo != null) {
+							noteVo.setFromUserName(friendsBo.getBackname());
 						} else {
 							noteVo.setFromUserName(from.getUserName());
 						}
-						noteVo.setFromUserPic(from.getHeadPictureName());
-						noteVo.setFromUserSex(from.getSex());
-						noteVo.setFromUserSign(from.getPersonalizedSignature());
+					} else {
+						noteVo.setFromUserName(from.getUserName());
 					}
+					noteVo.setFromUserPic(from.getHeadPictureName());
+					noteVo.setFromUserSex(from.getSex());
+					noteVo.setFromUserSign(from.getPersonalizedSignature());
 				}
 			}
 		} else {

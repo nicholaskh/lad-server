@@ -2838,7 +2838,10 @@ public class CircleController extends BaseContorller {
 					if (forward == null) {
 						continue;
 					}
+					BeanUtils.copyProperties(forward, listVo);
 					addValues(listVo, forward);
+					listVo.setPartyid(forward.getId());
+					listVo.setUserNum(forward.getPartyUserNum());
 					listVo.setSourceCirid(forward.getCircleid());
 					CircleBo circleBo = circleService.selectById(forward.getCircleid());
 					if (circleBo != null) {
@@ -2866,9 +2869,84 @@ public class CircleController extends BaseContorller {
 					listVo.setForward(true);
 					listVo.setView(partyBo.getView());
 				} else {
+					PartyNoticeBo partyNoticeBo = partyService.findPartyNotice(partyBo.getId());
+					BeanUtils.copyProperties(partyBo, listVo);
 					addValues(listVo, partyBo);
+					listVo.setPartyid(partyBo.getId());
+					listVo.setHasNotice(partyNoticeBo != null);
+					listVo.setUserNum(partyBo.getPartyUserNum());
 				}
 				object.put("party", listVo);
+				array.add(object);
+			} else if (type == 2) {
+				int inforType = showBo.getInforType();
+				InforBaseVo inforVo = new InforBaseVo();
+				JSONObject object = new JSONObject();
+				String inforid = showBo.getTargetid();
+				inforVo.setInforType(inforType);
+				inforVo.setInforid(inforid);
+				if (!"".equals(loginUserid)) {
+					ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(inforid, loginUserid);
+					inforVo.setSelfSub(thumbsupBo != null);
+				}
+				switch (inforType){
+					case Constant.INFOR_HEALTH:
+						InforBo inforBo = inforService.findById(inforid);
+						if (inforBo != null) {
+							inforVo.setImageUrls(inforBo.getImageUrls());
+							inforVo.setTitle(inforBo.getTitle());
+							inforVo.setReadNum(inforBo.getVisitNum());
+							inforVo.setModule(inforBo.getModule());
+							inforVo.setClassName(inforBo.getClassName());
+							inforVo.setCommentNum(inforBo.getCommnetNum());
+							inforVo.setShareNum(inforBo.getShareNum());
+							inforVo.setType("pic");
+							inforVo.setThumpsubNum(inforBo.getThumpsubNum());
+						}
+						break;
+					case Constant.INFOR_SECRITY:
+						SecurityBo securityBo = inforService.findSecurityById(inforid);
+						if (securityBo == null) {
+							inforVo.setTitle(securityBo.getTitle());
+							inforVo.setReadNum(securityBo.getVisitNum());
+							inforVo.setModule(securityBo.getNewsType());
+							inforVo.setClassName(securityBo.getNewsType());
+							inforVo.setCommentNum(securityBo.getCommnetNum());
+							inforVo.setShareNum(securityBo.getShareNum());
+							inforVo.setThumpsubNum(securityBo.getThumpsubNum());
+						}
+						break;
+					case Constant.INFOR_RADIO:
+						BroadcastBo broadcastBo = inforService.findBroadById(inforid);
+						if (broadcastBo == null) {
+							inforVo.setTitle(broadcastBo.getTitle());
+							inforVo.setReadNum(broadcastBo.getVisitNum());
+							inforVo.setModule(broadcastBo.getModule());
+							inforVo.setClassName(broadcastBo.getClassName());
+							inforVo.setCommentNum(broadcastBo.getCommnetNum());
+							inforVo.setShareNum(broadcastBo.getShareNum());
+							inforVo.setThumpsubNum(broadcastBo.getThumpsubNum());
+						}
+						break;
+					case Constant.INFOR_VIDEO:
+						VideoBo videoBo = inforService.findVideoById(inforid);
+						if (videoBo == null) {
+							inforVo.setTitle(videoBo.getTitle());
+							inforVo.setReadNum(videoBo.getVisitNum());
+							inforVo.setModule(videoBo.getModule());
+							inforVo.setClassName(videoBo.getClassName());
+							inforVo.setCommentNum(videoBo.getCommnetNum());
+							inforVo.setShareNum(videoBo.getShareNum());
+							inforVo.setType("video");
+							inforVo.setVideoPic(videoBo.getPoster());
+							inforVo.setVideoUrl(videoBo.getUrl());
+							inforVo.setThumpsubNum(videoBo.getThumpsubNum());
+						}
+						break;
+					default:
+						break;
+				}
+				object.put("infor", inforVo);
 				array.add(object);
 			}
 		}
@@ -3034,72 +3112,29 @@ public class CircleController extends BaseContorller {
 		if (noteBo.getForward() == 1) {
 			noteVo.setSourceid(noteBo.getSourceid());
 			noteVo.setForward(true);
-			//0 表示转发的帖子，1 表示转发的资讯
-			if (noteBo.getNoteType() == 1) {
-				int inforType = noteBo.getInforType();
-				noteVo.setInforType(inforType);
-				noteVo.setForwardType(1);
-				switch (inforType){
-					case Constant.INFOR_HEALTH:
-						InforBo inforBo = inforService.findById(noteBo.getSourceid());
-						if (inforBo != null) {
-							noteVo.setPhotos(inforBo.getImageUrls());
-							noteVo.setSubject(inforBo.getTitle());
-							noteVo.setVisitCount((long)inforBo.getVisitNum());
-						}
-						break;
-					case Constant.INFOR_SECRITY:
-						SecurityBo securityBo = inforService.findSecurityById(noteBo.getSourceid());
-						if (securityBo == null) {
-							noteVo.setSubject(securityBo.getTitle());
-							noteVo.setVisitCount((long)securityBo.getVisitNum());
-						}
-						break;
-					case Constant.INFOR_RADIO:
-						BroadcastBo broadcastBo = inforService.findBroadById(noteBo.getSourceid());
-						if (broadcastBo == null) {
-							noteVo.setSubject(broadcastBo.getTitle());
-							noteVo.setInforUrl(broadcastBo.getBroadcast_url());
-							noteVo.setVisitCount((long)broadcastBo.getVisitNum());
-						}
-						break;
-					case Constant.INFOR_VIDEO:
-						VideoBo videoBo = inforService.findVideoById(noteBo.getSourceid());
-						if (videoBo == null) {
-							noteVo.setSubject(videoBo.getTitle());
-							noteVo.setInforUrl(videoBo.getUrl());
-							noteVo.setVideoPic(videoBo.getPoster());
-							noteVo.setVisitCount((long)videoBo.getVisitNum());
-						}
-						break;
-					default:
-						break;
-				}
-			} else {
-				NoteBo sourceNote = noteService.selectById(noteBo.getSourceid());
-				if (sourceNote != null) {
-					noteVo.setSubject(sourceNote.getSubject());
-					noteVo.setContent(sourceNote.getContent());
-					noteVo.setPhotos(sourceNote.getPhotos());
-					noteVo.setVideoPic(sourceNote.getVideoPic());
-					addNoteAtUsers(sourceNote, noteVo, userid);
-					UserBo from = userService.getUser(sourceNote.getCreateuid());
-					if (from != null) {
-						noteVo.setFromUserid(from.getId());
-						if (!org.springframework.util.StringUtils.isEmpty(userid)) {
-							FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(userid, from.getId());
-							if (friendsBo != null) {
-								noteVo.setFromUserName(friendsBo.getBackname());
-							} else {
-								noteVo.setFromUserName(from.getUserName());
-							}
+			NoteBo sourceNote = noteService.selectById(noteBo.getSourceid());
+			if (sourceNote != null) {
+				noteVo.setSubject(sourceNote.getSubject());
+				noteVo.setContent(sourceNote.getContent());
+				noteVo.setPhotos(sourceNote.getPhotos());
+				noteVo.setVideoPic(sourceNote.getVideoPic());
+				addNoteAtUsers(sourceNote, noteVo, userid);
+				UserBo from = userService.getUser(sourceNote.getCreateuid());
+				if (from != null) {
+					noteVo.setFromUserid(from.getId());
+					if (!org.springframework.util.StringUtils.isEmpty(userid)) {
+						FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(userid, from.getId());
+						if (friendsBo != null) {
+							noteVo.setFromUserName(friendsBo.getBackname());
 						} else {
 							noteVo.setFromUserName(from.getUserName());
 						}
-						noteVo.setFromUserPic(from.getHeadPictureName());
-						noteVo.setFromUserSex(from.getSex());
-						noteVo.setFromUserSign(from.getPersonalizedSignature());
+					} else {
+						noteVo.setFromUserName(from.getUserName());
 					}
+					noteVo.setFromUserPic(from.getHeadPictureName());
+					noteVo.setFromUserSex(from.getSex());
+					noteVo.setFromUserSign(from.getPersonalizedSignature());
 				}
 			}
 		} else {

@@ -1828,7 +1828,7 @@ public class InforController extends BaseContorller {
     /**
      * 转发到我的动态
      */
-    @ApiOperation("转发置顶的圈子")
+    @ApiOperation("转发指定的圈子")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "circleid", value = "转发圈子id", required = true, paramType = "query", dataType =
                     "string"),
@@ -1849,15 +1849,23 @@ public class InforController extends BaseContorller {
             return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_IS_NULL.getIndex(),
                     ERRORCODE.CIRCLE_IS_NULL.getReason());
         }
-        NoteBo noteBo = new NoteBo();
-        noteBo.setSourceid(inforid);
-        noteBo.setNoteType(1);
-        noteBo.setInforType(inforType);
-        noteBo.setForward(1);
-        noteBo.setCreateuid(userBo.getId());
-        noteBo.setCircleId(circleid);
-        noteService.insert(noteBo);
+        CircleShowBo circleShowBo = new CircleShowBo();
+        circleShowBo.setType(2);
+        circleShowBo.setTargetid(inforid);
+        circleShowBo.setCircleid(circleid);
+        circleShowBo.setInforType(inforType);
+        circleShowBo.setCreateTime(new Date());
+        circleService.addCircleShow(circleShowBo);
         return Constant.COM_RESP;
+    }
+
+    /**
+     * 需要和聚会展示最新信息
+     * @param noteBo
+     */
+    @Async
+    private void addCircleShow(NoteBo noteBo){
+
     }
 
 }

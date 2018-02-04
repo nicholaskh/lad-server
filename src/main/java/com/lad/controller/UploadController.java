@@ -7,6 +7,8 @@ import com.lad.util.CommonUtil;
 import com.lad.util.Constant;
 import com.lad.util.ERRORCODE;
 import net.sf.json.JSONObject;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Controller;
@@ -23,6 +25,9 @@ import java.util.Map;
 @RestController
 @RequestMapping("upload")
 public class UploadController extends BaseContorller {
+
+	private static Logger logger = LogManager.getLogger(UploadController.class);
+
 	@Autowired
 	private IUserService userService;
 
@@ -88,19 +93,25 @@ public class UploadController extends BaseContorller {
 	}
 	
 	@PostMapping("/imfile")
-	public String imfile(@RequestParam("imfile") MultipartFile imfile, HttpServletRequest request,
+	public String imfile(MultipartFile imfile, HttpServletRequest request,
 			HttpServletResponse response) {
 		UserBo userBo = getUserLogin(request);
 		if (userBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(), ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
-		long time = Calendar.getInstance().getTimeInMillis();
-		String fileName = String.format("%s-%d-%s",userBo.getId(), time, imfile.getOriginalFilename());
-		String path = CommonUtil.upload(imfile, Constant.IMFILE_PATH, fileName, 0);
-		Map<String, Object> map = new HashMap<String, Object>();
-		map.put("ret", 0);
-		map.put("path", path);
-		return JSONObject.fromObject(map).toString();
+		if (imfile != null) {
+			long time = Calendar.getInstance().getTimeInMillis();
+			String fileName = String.format("%s-%d-%s",userBo.getId(), time, imfile.getOriginalFilename());
+			logger.info("===== start upload  imfile name : {}" , fileName);
+			String path = CommonUtil.upload(imfile, Constant.IMFILE_PATH, fileName, 0);
+			logger.info("===== end upload  imfile path : {}, update time : {}" , path,
+					(System.currentTimeMillis()- time));
+			Map<String, Object> map = new HashMap<String, Object>();
+			map.put("ret", 0);
+			map.put("path", path);
+			return JSONObject.fromObject(map).toString();
+		}
+		return Constant.COM_FAIL_RESP;
 	}
 
 }

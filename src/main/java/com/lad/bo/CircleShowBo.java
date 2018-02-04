@@ -17,8 +17,10 @@ public class CircleShowBo implements Serializable {
 
     @Id
     private String id;
-
+    //0 帖子， 1聚会 ，2 资讯
     private int type;
+    //资讯类型
+    private int inforType;
 
     private String targetid;
 
@@ -64,5 +66,13 @@ public class CircleShowBo implements Serializable {
 
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
+    }
+
+    public int getInforType() {
+        return inforType;
+    }
+
+    public void setInforType(int inforType) {
+        this.inforType = inforType;
     }
 }

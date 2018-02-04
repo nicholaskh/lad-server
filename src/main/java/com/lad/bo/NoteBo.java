@@ -44,12 +44,6 @@ public class NoteBo extends BaseBo {
 	private int forward;
 	//转发的原帖子id
 	private String sourceid;
-	//0 表示帖子， 1表示资讯
-	private int noteType;
-	//资讯类型
-	private int inforType;
-	//来源资讯类型名称
-	private String inforTypeName;
 	//帖子中@的用户
 	private LinkedList<String> atUsers;
 
@@ -203,30 +197,6 @@ public class NoteBo extends BaseBo {
 
 	public void setSourceid(String sourceid) {
 		this.sourceid = sourceid;
-	}
-
-	public int getNoteType() {
-		return noteType;
-	}
-
-	public void setNoteType(int noteType) {
-		this.noteType = noteType;
-	}
-
-	public int getInforType() {
-		return inforType;
-	}
-
-	public void setInforType(int inforType) {
-		this.inforType = inforType;
-	}
-
-	public String getInforTypeName() {
-		return inforTypeName;
-	}
-
-	public void setInforTypeName(String inforTypeName) {
-		this.inforTypeName = inforTypeName;
 	}
 
 	public LinkedList<String> getAtUsers() {
