@@ -1210,6 +1210,7 @@ public class NoteController extends BaseContorller {
 		if (userBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(), ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		String userid = userBo.getId();
 		NoteBo old = noteService.selectById(noteid);
 		if (null == old) {
 			return CommonUtil.toErrorResult(ERRORCODE.NOTE_IS_NULL.getIndex(),
@@ -1226,9 +1227,10 @@ public class NoteController extends BaseContorller {
 		noteBo.setSourceid(noteid);
 		noteBo.setForward(1);
 		noteService.insert(noteBo);
+		addCircleShow(noteBo);
 		updateCount(noteid, Constant.SHARE_NUM, 1);
 		NoteVo noteVo = new NoteVo();
-		boToVo(noteBo, noteVo, userBo, "");
+		boToVo(noteBo, noteVo, userBo, userid);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("noteVo", noteVo);

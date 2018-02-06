@@ -28,6 +28,8 @@ public class CircleShowBo implements Serializable {
 
     private Date createTime;
 
+    private String createuid;
+
     public String getId() {
         return id;
     }
@@ -74,5 +76,13 @@ public class CircleShowBo implements Serializable {
 
     public void setInforType(int inforType) {
         this.inforType = inforType;
+    }
+
+    public String getCreateuid() {
+        return createuid;
+    }
+
+    public void setCreateuid(String createuid) {
+        this.createuid = createuid;
     }
 }

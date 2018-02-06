@@ -655,13 +655,17 @@ public class PartyController extends BaseContorller {
             PartyListVo listVo = new PartyListVo();
             if (partyBo.getForward() == 1) {
                 PartyBo forward = partyService.findById(partyBo.getSourcePartyid());
-                if (forward != null) {
-                    addValues(listVo, forward);
-                    listVo.setSourceCirid(forward.getCircleid());
-                    CircleBo circleBo = circleService.selectById(forward.getCircleid());
-                    if (circleBo != null) {
-                        listVo.setSourceCirName(circleBo.getName());
-                    }
+                if (forward == null) {
+                    continue;
+                }
+                BeanUtils.copyProperties(forward, listVo);
+                addValues(listVo, forward);
+                listVo.setPartyid(forward.getId());
+                listVo.setUserNum(forward.getPartyUserNum());
+                listVo.setSourceCirid(forward.getCircleid());
+                CircleBo circleBo = circleService.selectById(forward.getCircleid());
+                if (circleBo != null) {
+                    listVo.setSourceCirName(circleBo.getName());
                 }
                 String createid = partyBo.getCreateuid();
                 listVo.setFromUserid(createid);
@@ -681,11 +685,15 @@ public class PartyController extends BaseContorller {
                 listVo.setFromUserPic(userBo.getHeadPictureName());
                 listVo.setFromUserSex(userBo.getSex());
                 listVo.setFromUserSign(userBo.getPersonalizedSignature());
-
                 listVo.setForward(true);
                 listVo.setView(partyBo.getView());
             } else {
+                PartyNoticeBo partyNoticeBo = partyService.findPartyNotice(partyBo.getId());
+                BeanUtils.copyProperties(partyBo, listVo);
                 addValues(listVo, partyBo);
+                listVo.setPartyid(partyBo.getId());
+                listVo.setHasNotice(partyNoticeBo != null);
+                listVo.setUserNum(partyBo.getPartyUserNum());
             }
             partyListVos.add(listVo);
         }
@@ -1679,7 +1687,7 @@ public class PartyController extends BaseContorller {
         forward.setCreateuid(userBo.getId());
         forward.setCircleid(circleid);
         partyService.insert(forward);
-        addCircleShow(forward);
+        addCircleShow(partyBo);
         //用户等级
         userService.addUserLevel(userBo.getId(), 1, Constant.PARTY_TYPE, 0);
         //圈子热度

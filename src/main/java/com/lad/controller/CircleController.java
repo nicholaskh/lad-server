@@ -2866,6 +2866,7 @@ public class CircleController extends BaseContorller {
 					listVo.setFromUserPic(userBo.getHeadPictureName());
 					listVo.setFromUserSex(userBo.getSex());
 					listVo.setFromUserSign(userBo.getPersonalizedSignature());
+					listVo.setFromUserLevel(userBo.getLevel());
 					listVo.setForward(true);
 					listVo.setView(partyBo.getView());
 				} else {
@@ -2889,6 +2890,26 @@ public class CircleController extends BaseContorller {
 					ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(inforid, loginUserid);
 					inforVo.setSelfSub(thumbsupBo != null);
 				}
+				String name = "";
+				UserBo userBo = loginUser;
+				String createid = showBo.getCreateuid();
+				if (null != loginUser ) {
+					if (!loginUserid.equals(createid)) {
+						FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(loginUserid, createid);
+						if (friendsBo != null && StringUtils.isNotEmpty(friendsBo.getBackname())) {
+							name = friendsBo.getBackname();
+						}
+						userBo = userService.getUser(createid);
+					}
+				} else {
+					userBo = userService.getUser(createid);
+				}
+				inforVo.setFromUserid(createid);
+				inforVo.setFromUserName("".equals(name) ? userBo.getUserName() : name);
+				inforVo.setFromUserPic(userBo.getHeadPictureName());
+				inforVo.setFromUserSex(userBo.getSex());
+				inforVo.setFromUserSign(userBo.getPersonalizedSignature());
+				inforVo.setFromUserLevel(userBo.getLevel());
 				switch (inforType){
 					case Constant.INFOR_HEALTH:
 						InforBo inforBo = inforService.findById(inforid);
@@ -3135,6 +3156,7 @@ public class CircleController extends BaseContorller {
 					noteVo.setFromUserPic(from.getHeadPictureName());
 					noteVo.setFromUserSex(from.getSex());
 					noteVo.setFromUserSign(from.getPersonalizedSignature());
+					noteVo.setFromUserLevel(from.getLevel());
 				}
 			}
 		} else {

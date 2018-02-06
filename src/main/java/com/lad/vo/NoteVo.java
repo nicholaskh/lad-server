@@ -69,6 +69,8 @@ public class NoteVo extends BaseVo {
 
     private String fromUserSex;
 
+    private int fromUserLevel;
+
     public boolean getMyThumbsup() {
         return isMyThumbsup;
     }
@@ -416,5 +418,13 @@ public class NoteVo extends BaseVo {
 
     public void setAtUsers(List<UserNoteVo> atUsers) {
         this.atUsers = atUsers;
+    }
+
+    public int getFromUserLevel() {
+        return fromUserLevel;
+    }
+
+    public void setFromUserLevel(int fromUserLevel) {
+        this.fromUserLevel = fromUserLevel;
     }
 }

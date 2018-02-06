@@ -38,6 +38,18 @@ public class InforBaseVo extends BaseVo {
 
     private boolean selfSub;
 
+    private String fromUserid;
+
+    private String fromUserName;
+
+    private String fromUserPic;
+
+    private String fromUserSign;
+
+    private String fromUserSex;
+
+    private int fromUserLevel;
+
     public String getInforid() {
         return inforid;
     }
@@ -148,5 +160,53 @@ public class InforBaseVo extends BaseVo {
 
     public void setSelfSub(boolean selfSub) {
         this.selfSub = selfSub;
+    }
+
+    public String getFromUserid() {
+        return fromUserid;
+    }
+
+    public void setFromUserid(String fromUserid) {
+        this.fromUserid = fromUserid;
+    }
+
+    public String getFromUserName() {
+        return fromUserName;
+    }
+
+    public void setFromUserName(String fromUserName) {
+        this.fromUserName = fromUserName;
+    }
+
+    public String getFromUserPic() {
+        return fromUserPic;
+    }
+
+    public void setFromUserPic(String fromUserPic) {
+        this.fromUserPic = fromUserPic;
+    }
+
+    public String getFromUserSign() {
+        return fromUserSign;
+    }
+
+    public void setFromUserSign(String fromUserSign) {
+        this.fromUserSign = fromUserSign;
+    }
+
+    public String getFromUserSex() {
+        return fromUserSex;
+    }
+
+    public void setFromUserSex(String fromUserSex) {
+        this.fromUserSex = fromUserSex;
+    }
+
+    public int getFromUserLevel() {
+        return fromUserLevel;
+    }
+
+    public void setFromUserLevel(int fromUserLevel) {
+        this.fromUserLevel = fromUserLevel;
     }
 }

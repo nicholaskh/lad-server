@@ -102,7 +102,7 @@ public class UploadController extends BaseContorller {
 		if (imfile != null) {
 			long time = Calendar.getInstance().getTimeInMillis();
 			String fileName = String.format("%s-%d-%s",userBo.getId(), time, imfile.getOriginalFilename());
-			logger.info("===== start upload  imfile name : {}" , fileName);
+			logger.info("===== start upload  imfile name : {}, imfile size: {}" , fileName, imfile.getSize());
 			String path = CommonUtil.upload(imfile, Constant.IMFILE_PATH, fileName, 0);
 			logger.info("===== end upload  imfile path : {}, update time : {}" , path,
 					(System.currentTimeMillis()- time));
