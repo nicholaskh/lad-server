@@ -16,6 +16,7 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.apache.commons.collections.map.LinkedMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.redisson.api.RLock;
@@ -286,6 +287,9 @@ public class InforController extends BaseContorller {
     public String radioGroups(String module, String className,int start, int end,
                               HttpServletRequest request, HttpServletResponse response){
         List<BroadcastBo> broadcastBos = inforService.findByClassNamePage(module, className,start, end);
+
+        long counts = inforService.findRadioByClassCount(module, className);
+
         List<BroadcastVo> vos = new ArrayList<>();
         for (BroadcastBo bo : broadcastBos) {
             BroadcastVo broadcastVo = new BroadcastVo();
@@ -301,8 +305,9 @@ public class InforController extends BaseContorller {
         if (userBo != null) {
             updateUserReadHis(userBo.getId(), module, className, Constant.INFOR_RADIO);
         }
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map<String, Object> map = new LinkedHashMap<>();
         map.put("ret", 0);
+        map.put("radioCounts", counts);
         map.put("radioList", vos);
         return JSONObject.fromObject(map).toString();
     }
@@ -344,12 +349,15 @@ public class InforController extends BaseContorller {
     private void updateRadioHis(String radioid, BroadcastBo broadcastBo, HttpServletRequest request){
         if (broadcastBo == null) {
             broadcastBo = inforService.findBroadById(radioid);
-            updateGrouprHistroy(radioid, broadcastBo.getModule(), broadcastBo.getClassName(),Constant.INFOR_RADIO);
-            UserBo userBo = getUserLogin(request);
-            if (userBo != null) {
-                updateUserReadHis(userBo.getId(),broadcastBo.getModule(),
-                        broadcastBo.getClassName(),Constant.INFOR_RADIO);
+            if (broadcastBo == null) {
+                return;
             }
+            updateGrouprHistroy(radioid, broadcastBo.getModule(), broadcastBo.getClassName(),Constant.INFOR_RADIO);
+        }
+        UserBo userBo = getUserLogin(request);
+        if (userBo != null) {
+            updateUserReadHis(userBo.getId(),broadcastBo.getModule(),
+                    broadcastBo.getClassName(),Constant.INFOR_RADIO);
         }
     }
 
@@ -389,6 +397,9 @@ public class InforController extends BaseContorller {
     public String videoInfors(String module, String className, int page,  int limit,
                               HttpServletRequest request, HttpServletResponse response){
         List<VideoBo> videoBos = inforService.selectClassNamePage(module,className, page, limit);
+
+        long counts = inforService.findVideoByClassCount(module,className);
+
         List<VideoVo> videoVos = new ArrayList<>();
         for (VideoBo bo : videoBos) {
             VideoVo videoVo = new VideoVo();
@@ -432,6 +443,7 @@ public class InforController extends BaseContorller {
         }
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("ret", 0);
+        map.put("videoCounts", counts);
         map.put("videoList", videoVos);
         return JSONObject.fromObject(map).toString();
     }
@@ -1817,6 +1829,7 @@ public class InforController extends BaseContorller {
         dynamicBo.setMsgid(inforid);
         dynamicBo.setType(Constant.INFOR_TYPE);
         dynamicService.addDynamic(dynamicBo);
+        updateInforNum(inforid, inforType, 1, Constant.SHARE_NUM);
         updateDynamicNums(userBo.getId(), 1,dynamicService, redisServer);
         Map<String, Object> map = new HashMap<>();
         map.put("ret", 0);
@@ -1855,7 +1868,10 @@ public class InforController extends BaseContorller {
         circleShowBo.setCircleid(circleid);
         circleShowBo.setInforType(inforType);
         circleShowBo.setCreateTime(new Date());
+        //后补充的转发人员信息id
+        circleShowBo.setCreateuid(userBo.getId());
         circleService.addCircleShow(circleShowBo);
+        updateInforNum(inforid, inforType, 1, Constant.SHARE_NUM);
         return Constant.COM_RESP;
     }
 

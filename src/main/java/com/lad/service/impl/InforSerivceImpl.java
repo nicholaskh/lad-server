@@ -318,4 +318,14 @@ public class InforSerivceImpl implements IInforService {
     public VideoBo findVideoByFirst(String module, String className) {
         return videoDao.findVideoByFirst(module, className);
     }
+
+    @Override
+    public long findVideoByClassCount(String module, String className) {
+        return videoDao.findByClassNameCount(module, className);
+    }
+
+    @Override
+    public long findRadioByClassCount(String module, String className) {
+        return broadcastDao.findByClassNamePage(module, className);
+    }
 }

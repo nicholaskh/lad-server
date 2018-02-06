@@ -202,6 +202,13 @@ public class VideoDaoImpl implements IVideoDao {
         return results != null && !CommonUtil.isEmpty(results.getMappedResults()) ? results.getMappedResults().get
                 (0) : null;
     }
+
+    @Override
+    public long findByClassNameCount(String module, String className) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("module").is(module).and("className").is(className));
+        return mongoTemplateTwo.count(query, VideoBo.class);
+    }
 }
 
 

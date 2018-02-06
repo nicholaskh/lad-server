@@ -26,6 +26,8 @@ public interface IVideoDao {
 
 
     List<VideoBo> findByClassNamePage(String module, String className, int start, int end);
+
+
     /**
      * 
      * @param modules
@@ -82,5 +84,7 @@ public interface IVideoDao {
      * @return
      */
     VideoBo findVideoByFirst(String modules, String classNames);
+
+    long findByClassNameCount(String module, String className);
 
 }

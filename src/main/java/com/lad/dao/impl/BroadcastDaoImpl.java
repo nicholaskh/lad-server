@@ -102,6 +102,12 @@ public class BroadcastDaoImpl implements IBroadcastDao {
         return mongoTemplateTwo.find(query, BroadcastBo.class);
     }
 
+    @Override
+    public long findByClassNamePage(String groupName, String className) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("module").is(groupName).and("className").is(className));
+        return mongoTemplateTwo.count(query, BroadcastBo.class);
+    }
 
     @Override
     public List<BroadcastBo> findByLimit(int limit) {

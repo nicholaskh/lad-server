@@ -44,4 +44,7 @@ public interface IBroadcastDao {
 
     List<BroadcastBo> findByLimit(HashSet<String> modules, HashSet<String> classNames, int limit);
 
+
+    long findByClassNamePage(String groupName, String className);
+
 }

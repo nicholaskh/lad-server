@@ -310,4 +310,11 @@ public interface IInforService {
      * @return
      */
     VideoBo findVideoByFirst(String module, String className);
+
+
+    long findVideoByClassCount(String module, String className);
+
+
+    long findRadioByClassCount(String module, String className);
+
 }
