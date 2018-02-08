@@ -52,6 +52,8 @@ public class PartyListVo extends BaseVo {
 
     private String sourceCirName;
 
+    private String fromUserBirth;
+
     private String view;
 
     public String getPartyid() {
@@ -228,5 +230,13 @@ public class PartyListVo extends BaseVo {
 
     public void setFromUserLevel(int fromUserLevel) {
         this.fromUserLevel = fromUserLevel;
+    }
+
+    public String getFromUserBirth() {
+        return fromUserBirth;
+    }
+
+    public void setFromUserBirth(String fromUserBirth) {
+        this.fromUserBirth = fromUserBirth;
     }
 }

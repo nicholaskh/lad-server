@@ -90,6 +90,7 @@ public enum ERRORCODE {
 
 	INFOR_IS_NULL(130001, "资讯不存在"),
 	INFOR_NAME_ERROR(130002, "分类名称错误"),
+	INFOR_READ_HIS_NULL(130003, "阅读历史为空"),
 
 	PARTY_ERROR(140001, "聚会参数错误"),
 	PARTY_NULL(140002, "聚会不存在"),

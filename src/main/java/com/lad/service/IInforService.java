@@ -2,6 +2,7 @@ package com.lad.service;
 
 import com.lad.bo.InforReadNumBo;
 import com.lad.bo.InforSubscriptionBo;
+import com.lad.bo.UserReadHisBo;
 import com.lad.scrapybo.BroadcastBo;
 import com.lad.scrapybo.InforBo;
 import com.lad.scrapybo.SecurityBo;
@@ -316,5 +317,31 @@ public interface IInforService {
 
 
     long findRadioByClassCount(String module, String className);
+
+
+    UserReadHisBo addUserReadHis(UserReadHisBo hisBo);
+
+
+    /**
+     * 根据类型查找最后一次阅读信息
+     * @param userid
+     * @param inforType
+     * @param module
+     * @param className
+     * @return
+     */
+    UserReadHisBo findByType(String userid, int inforType, String module, String className);
+
+
+
+    WriteResult updateUserReadHis(String id, String inforid);
+
+
+    /**
+     * 查找最后一次阅读信息
+     * @param userid
+     * @return
+     */
+    UserReadHisBo findMyLastRead(String userid);
 
 }

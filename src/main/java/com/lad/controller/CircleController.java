@@ -2867,6 +2867,7 @@ public class CircleController extends BaseContorller {
 					listVo.setFromUserSex(userBo.getSex());
 					listVo.setFromUserSign(userBo.getPersonalizedSignature());
 					listVo.setFromUserLevel(userBo.getLevel());
+					listVo.setFromUserBirth(userBo.getBirthDay());
 					listVo.setForward(true);
 					listVo.setView(partyBo.getView());
 				} else {
@@ -2904,12 +2905,15 @@ public class CircleController extends BaseContorller {
 				} else {
 					userBo = userService.getUser(createid);
 				}
+				if (userBo != null) {
+					inforVo.setFromUserName("".equals(name) ? userBo.getUserName() : name);
+					inforVo.setFromUserPic(userBo.getHeadPictureName());
+					inforVo.setFromUserSex(userBo.getSex());
+					inforVo.setFromUserSign(userBo.getPersonalizedSignature());
+					inforVo.setFromUserLevel(userBo.getLevel());
+					inforVo.setFromUserBirth(userBo.getBirthDay());
+				}
 				inforVo.setFromUserid(createid);
-				inforVo.setFromUserName("".equals(name) ? userBo.getUserName() : name);
-				inforVo.setFromUserPic(userBo.getHeadPictureName());
-				inforVo.setFromUserSex(userBo.getSex());
-				inforVo.setFromUserSign(userBo.getPersonalizedSignature());
-				inforVo.setFromUserLevel(userBo.getLevel());
 				switch (inforType){
 					case Constant.INFOR_HEALTH:
 						InforBo inforBo = inforService.findById(inforid);

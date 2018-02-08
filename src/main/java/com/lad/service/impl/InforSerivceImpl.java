@@ -2,6 +2,7 @@ package com.lad.service.impl;
 
 import com.lad.bo.InforReadNumBo;
 import com.lad.bo.InforSubscriptionBo;
+import com.lad.bo.UserReadHisBo;
 import com.lad.dao.*;
 import com.lad.scrapybo.BroadcastBo;
 import com.lad.scrapybo.InforBo;
@@ -43,6 +44,8 @@ public class InforSerivceImpl implements IInforService {
 
     @Autowired
     private IVideoDao videoDao;
+
+    private IUserReadHisDao userReadHisDao;
 
     @Override
     public List<InforBo> findAllGroups() {
@@ -327,5 +330,25 @@ public class InforSerivceImpl implements IInforService {
     @Override
     public long findRadioByClassCount(String module, String className) {
         return broadcastDao.findByClassNamePage(module, className);
+    }
+
+    @Override
+    public UserReadHisBo addUserReadHis(UserReadHisBo hisBo) {
+        return userReadHisDao.addUserReadHis(hisBo);
+    }
+
+    @Override
+    public UserReadHisBo findByType(String userid, int inforType, String module, String className) {
+        return userReadHisDao.findByType(userid, inforType, module, className);
+    }
+
+    @Override
+    public WriteResult updateUserReadHis(String id, String inforid) {
+        return userReadHisDao.updateUserReadHis(id, inforid);
+    }
+
+    @Override
+    public UserReadHisBo findMyLastRead(String userid) {
+        return userReadHisDao.findMyLastRead(userid);
     }
 }

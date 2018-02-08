@@ -48,6 +48,8 @@ public class InforBaseVo extends BaseVo {
 
     private String fromUserSex;
 
+    private String fromUserBirth;
+
     private int fromUserLevel;
 
     public String getInforid() {
@@ -208,5 +210,13 @@ public class InforBaseVo extends BaseVo {
 
     public void setFromUserLevel(int fromUserLevel) {
         this.fromUserLevel = fromUserLevel;
+    }
+
+    public String getFromUserBirth() {
+        return fromUserBirth;
+    }
+
+    public void setFromUserBirth(String fromUserBirth) {
+        this.fromUserBirth = fromUserBirth;
     }
 }

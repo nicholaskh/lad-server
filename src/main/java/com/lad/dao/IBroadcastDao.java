@@ -47,4 +47,13 @@ public interface IBroadcastDao {
 
     long findByClassNamePage(String groupName, String className);
 
+    /**
+     * 根据名称匹配
+     * @param title
+     * @param page
+     * @param limit
+     * @return
+     */
+    List<BroadcastBo> findByTitle(String title, int page, int limit);
+
 }

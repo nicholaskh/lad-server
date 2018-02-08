@@ -18,6 +18,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * 功能描述：
@@ -182,5 +183,16 @@ public class BroadcastDaoImpl implements IBroadcastDao {
         }
         AggregationResults<BroadcastBo> results = mongoTemplateTwo.aggregate(aggregation, "broadcast", BroadcastBo.class);
         return results != null ? results.getMappedResults() : null;
+    }
+
+    @Override
+    public List<BroadcastBo> findByTitle(String title, int page, int limit) {
+        Pattern pattern = Pattern.compile("^.*"+title+".*$", Pattern.CASE_INSENSITIVE);
+        Query query = new Query(new Criteria("name").regex(pattern));
+        query.with(new Sort(Sort.Direction.ASC,"edition", "title"));
+        page = page < 1 ? 1 : page;
+        query.skip((page-1)*limit);
+        query.limit(limit);
+        return mongoTemplateTwo.find(query, BroadcastBo.class);
     }
 }
