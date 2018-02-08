@@ -1368,6 +1368,7 @@ public class NoteController extends BaseContorller {
 					noteVo.setFromUserPic(from.getHeadPictureName());
 					noteVo.setFromUserSex(from.getSex());
 					noteVo.setFromUserSign(from.getPersonalizedSignature());
+					noteVo.setFromUserBirth(from.getBirthDay());
 				}
 			}
 		} else {

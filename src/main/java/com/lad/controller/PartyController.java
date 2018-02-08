@@ -138,7 +138,7 @@ public class PartyController extends BaseContorller {
         chatroomService.addPartyChartroom(chatroomBo.getId(), partyBo.getId());
         HashSet<String> circleUsers = circleBo.getUsers();
 
-        addCircleShow(partyBo);
+//        addCircleShow(partyBo);
         String path = "/party/party-info.do?partyid=" + partyBo.getId();
         String content = String.format("“%s”发起了聚会【%s】，快去看看吧", userBo.getUserName(),
                 partyBo.getTitle());
@@ -685,6 +685,7 @@ public class PartyController extends BaseContorller {
                 listVo.setFromUserPic(userBo.getHeadPictureName());
                 listVo.setFromUserSex(userBo.getSex());
                 listVo.setFromUserSign(userBo.getPersonalizedSignature());
+                listVo.setFromUserBirth(userBo.getBirthDay());
                 listVo.setForward(true);
                 listVo.setView(partyBo.getView());
             } else {
@@ -1687,7 +1688,7 @@ public class PartyController extends BaseContorller {
         forward.setCreateuid(userBo.getId());
         forward.setCircleid(circleid);
         partyService.insert(forward);
-        addCircleShow(partyBo);
+//        addCircleShow(partyBo);
         //用户等级
         userService.addUserLevel(userBo.getId(), 1, Constant.PARTY_TYPE, 0);
         //圈子热度
