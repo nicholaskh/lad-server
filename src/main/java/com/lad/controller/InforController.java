@@ -1890,7 +1890,7 @@ public class InforController extends BaseContorller {
     }
 
 
-    @ApiOperation("根据类型和分类下获取最后5条阅读信息")
+    @ApiOperation("根据类型获取最后5条阅读信息")
     @ApiImplicitParam(name = "inforType", value = "1健康，2 安防，3广播，4视频, 0表示查询所有阅读记录信息", required = true, paramType =
             "query", dataType = "int")
     @RequestMapping(value = "/last-read", method = {RequestMethod.GET, RequestMethod.POST})
@@ -1984,106 +1984,6 @@ public class InforController extends BaseContorller {
                     }
                 }
                 map.put("videoVos", videoVos);
-                break;
-            default:
-                break;
-        }
-        return JSONObject.fromObject(map).toString();
-    }
-
-    @ApiOperation("获取最后一条阅读信息")
-    @RequestMapping(value = "/last-read", method = {RequestMethod.GET, RequestMethod.POST})
-    public String lastReadByType(HttpServletRequest request, HttpServletResponse response) {
-        UserBo userBo = getUserLogin(request);
-        if (userBo == null) {
-            return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-                    ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-        }
-        String userid = userBo.getId();
-        UserReadHisBo hisBo = inforService.findMyLastRead(userid);
-        if (hisBo == null) {
-            return CommonUtil.toErrorResult(ERRORCODE.INFOR_READ_HIS_NULL.getIndex(),
-                    ERRORCODE.INFOR_READ_HIS_NULL.getReason());
-        }
-        String inforid = hisBo.getInforid();
-        inforService.updateUserReadHis(hisBo.getId(), inforid);
-        Map<String, Object> map = new LinkedHashMap<>();
-        map.put("ret", 0);
-        map.put("inforType", hisBo.getInforType());
-        switch (hisBo.getInforType()){
-            case Constant.INFOR_HEALTH:
-                InforBo inforBo = inforService.findById(inforid);
-                if (inforBo == null) {
-                    return CommonUtil.toErrorResult(ERRORCODE.INFOR_IS_NULL.getIndex(),
-                            ERRORCODE.INFOR_IS_NULL.getReason());
-                }
-                InforVo inforVo = new InforVo();
-                ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(inforid, userid);
-                inforVo.setSelfSub(thumbsupBo != null);
-                updateUserReadHis(userid,inforBo.getClassName(),"", Constant.INFOR_HEALTH);
-                updateInforNum(inforid, Constant.INFOR_HEALTH, 1, Constant.VISIT_NUM);
-                updateInforHistroy(inforid, inforBo.getClassName(), Constant.INFOR_HEALTH);
-                inforVo.setInforid(inforid);
-                BeanUtils.copyProperties(inforBo, inforVo);
-                inforVo.setThumpsubNum(inforBo.getThumpsubNum());
-                inforVo.setCommentNum(inforBo.getCommnetNum());
-                inforVo.setReadNum(inforBo.getVisitNum());
-                map.put("inforVo", inforVo);
-                break;
-            case Constant.INFOR_SECRITY:
-                SecurityBo securityBo = inforService.findSecurityById(inforid);
-                if (securityBo == null) {
-                    return CommonUtil.toErrorResult(ERRORCODE.INFOR_IS_NULL.getIndex(),
-                            ERRORCODE.INFOR_IS_NULL.getReason());
-                }
-                updateInforNum(inforid, Constant.INFOR_SECRITY, 1, Constant.VISIT_NUM);
-                SecurityVo securityVo = new SecurityVo();
-                thumbsupBo = thumbsupService.getByVidAndVisitorid(inforid, userid);
-                securityVo.setSelfSub(thumbsupBo != null);
-                updateUserReadHis(userid,securityBo.getNewsType(),"",Constant.INFOR_SECRITY);
-                updateInforHistroy(inforid, securityBo.getNewsType(), Constant.INFOR_SECRITY);
-                securityVo.setInforid(inforid);
-                BeanUtils.copyProperties(securityBo, securityVo);
-                securityVo.setThumpsubNum(securityBo.getThumpsubNum());
-                securityVo.setCommentNum(securityBo.getCommnetNum());
-                securityVo.setReadNum(securityBo.getVisitNum());
-                map.put("securityVo", securityVo);
-                break;
-            case Constant.INFOR_RADIO:
-                BroadcastBo broadcastBo = inforService.findBroadById(inforid);
-                if (broadcastBo == null) {
-                    return CommonUtil.toErrorResult(ERRORCODE.INFOR_IS_NULL.getIndex(),
-                            ERRORCODE.INFOR_IS_NULL.getReason());
-                }
-                updateInforNum(inforid, Constant.INFOR_RADIO, 1, Constant.VISIT_NUM);
-                BroadcastVo broadcastVo = new BroadcastVo();
-                BeanUtils.copyProperties(broadcastBo, broadcastVo);
-                broadcastVo.setInforid(broadcastBo.getId());
-                broadcastVo.setReadNum(broadcastBo.getVisitNum());
-                broadcastVo.setCommentNum(broadcastBo.getCommnetNum());
-                broadcastVo.setThumpsubNum(broadcastBo.getThumpsubNum());
-                updateGrouprHistroy(inforid, broadcastBo.getModule(), broadcastBo.getClassName(),Constant.INFOR_RADIO);
-                updateRadioHis(inforid, broadcastBo, userid);
-                map.put("radioVo", broadcastVo);
-                break;
-            case Constant.INFOR_VIDEO:
-                VideoBo videoBo = inforService.findVideoById(inforid);
-                if (videoBo == null) {
-                    return CommonUtil.toErrorResult(ERRORCODE.INFOR_IS_NULL.getIndex(),
-                            ERRORCODE.INFOR_IS_NULL.getReason());
-                }
-                updateInforNum(inforid, Constant.INFOR_VIDEO, 1, Constant.VISIT_NUM);
-                VideoVo videoVo = new VideoVo();
-                thumbsupBo = thumbsupService.getByVidAndVisitorid(inforid, userid);
-                videoVo.setSelfSub(thumbsupBo != null);
-                updateUserReadHis(userid,videoBo.getModule(), videoBo.getClassName(), Constant.INFOR_VIDEO);
-                updateGrouprHistroy(inforid, videoBo.getModule(), videoBo.getClassName(),Constant.INFOR_VIDEO);
-                videoVo.setInforid(inforid);
-                BeanUtils.copyProperties( videoBo, videoVo);
-                videoVo.setThumpsubNum(videoBo.getThumpsubNum());
-                videoVo.setCommentNum(videoBo.getCommnetNum());
-                videoVo.setReadNum(videoBo.getVisitNum());
-                map.put("video", videoVo);
                 break;
             default:
                 break;
