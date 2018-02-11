@@ -1891,8 +1891,8 @@ public class InforController extends BaseContorller {
 
 
     @ApiOperation("根据类型和分类下获取最后5条阅读信息")
-    @ApiImplicitParam(name = "inforType", value = "1健康，2 安防，3广播，4视频", required = true, paramType = "query", dataType =
-            "int")
+    @ApiImplicitParam(name = "inforType", value = "1健康，2 安防，3广播，4视频, 0表示查询所有阅读记录信息", required = true, paramType =
+            "query", dataType = "int")
     @RequestMapping(value = "/last-read", method = {RequestMethod.GET, RequestMethod.POST})
     public String lastReadByType(int inforType,
                                 HttpServletRequest request, HttpServletResponse response) {

@@ -95,11 +95,14 @@ public class UserReadHisDaoImpl implements IUserReadHisDao {
     public List<UserReadHisBo> findByUserAndInfor(String userid, int inforType) {
         Query query = new Query();
         Criteria criteria = new Criteria("userid").is(userid);
-        if (inforType != -1) {
+        if (inforType != 0) {
             criteria.and("inforType").is(inforType);
         }
+        query.addCriteria(criteria);
         query.with(new Sort(Sort.Direction.DESC, "lastTime"));
-        query.limit(5);
+        if (inforType != 0) {
+            query.limit(5);
+        }
         return mongoTemplate.find(query, UserReadHisBo.class);
     }
 }
