@@ -330,7 +330,7 @@ public class InforController extends BaseContorller {
             updateGrouprHistroy(radioid, broadcastBo.getModule(), broadcastBo.getClassName(),Constant.INFOR_RADIO);
             UserBo userBo = getUserLogin(request);
             String userid = userBo == null ? "" : userBo.getId();
-            addReadhis(userid, radioid, Constant.INFOR_RADIO, broadcastBo.getModule(), broadcastBo.getClassName());
+            addUserReadhis(userid, radioid, Constant.INFOR_RADIO, broadcastBo.getModule(), broadcastBo.getClassName());
             updateRadioHis(radioid, broadcastBo, userid);
         }
         Map<String, Object> map = new HashMap<String, Object>();
@@ -352,7 +352,7 @@ public class InforController extends BaseContorller {
         UserBo userBo = getUserLogin(request);
         if (userBo != null) {
             updateRadioHis(inforid, broadcastBo, userBo.getId());
-            addReadhis(userBo.getId(), inforid, Constant.INFOR_RADIO, broadcastBo.getModule(), broadcastBo
+            addUserReadhis(userBo.getId(), inforid, Constant.INFOR_RADIO, broadcastBo.getModule(), broadcastBo
                     .getClassName());
         } else {
             updateRadioHis(inforid, broadcastBo, "");
@@ -389,7 +389,7 @@ public class InforController extends BaseContorller {
         UserBo userBo = getUserLogin(request);
         updateGrouprHistroy(inforid, videoBo.getModule(), videoBo.getClassName(),Constant.INFOR_VIDEO);
         if (userBo != null) {
-            addReadhis(userBo.getId(), inforid, Constant.INFOR_VIDEO, videoBo.getModule(), videoBo.getClassName());
+            addUserReadhis(userBo.getId(), inforid, Constant.INFOR_VIDEO, videoBo.getModule(), videoBo.getClassName());
             updateUserReadHis(userBo.getId(), videoBo.getModule(), videoBo.getClassName(), Constant.INFOR_VIDEO);
         }
         return Constant.COM_RESP;
@@ -492,7 +492,7 @@ public class InforController extends BaseContorller {
             ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(videoid, userBo.getId());
             videoVo.setSelfSub(thumbsupBo != null);
             updateUserReadHis(userBo.getId(),videoBo.getModule(), videoBo.getClassName(), Constant.INFOR_VIDEO);
-            addReadhis(userBo.getId(), videoid, Constant.INFOR_VIDEO, videoBo.getModule(), videoBo.getClassName());
+            addUserReadhis(userBo.getId(), videoid, Constant.INFOR_VIDEO, videoBo.getModule(), videoBo.getClassName());
         }
         updateGrouprHistroy(videoid, videoBo.getModule(), videoBo.getClassName(),Constant.INFOR_VIDEO);
         videoVo.setInforid(videoid);
@@ -645,7 +645,7 @@ public class InforController extends BaseContorller {
             ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(inforBo.getId(), userBo.getId());
             inforVo.setSelfSub(thumbsupBo != null);
             updateUserReadHis(userBo.getId(),inforBo.getClassName(),"", Constant.INFOR_HEALTH);
-            addReadhis(userBo.getId(), inforid, Constant.INFOR_HEALTH, inforBo.getModule(), inforBo.getClassName());
+            addUserReadhis(userBo.getId(), inforid, Constant.INFOR_HEALTH, inforBo.getModule(), inforBo.getClassName());
         }
         updateInforNum(inforid, Constant.INFOR_HEALTH, 1, Constant.VISIT_NUM);
         updateInforHistroy(inforid, inforBo.getClassName(), Constant.INFOR_HEALTH);
@@ -678,7 +678,7 @@ public class InforController extends BaseContorller {
             ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(inforid, userBo.getId());
             securityVo.setSelfSub(thumbsupBo != null);
             updateUserReadHis(userBo.getId(),securityBo.getNewsType(),"",Constant.INFOR_SECRITY);
-            addReadhis(userBo.getId(), inforid, Constant.INFOR_SECRITY, securityBo.getNewsType(), "");
+            addUserReadhis(userBo.getId(), inforid, Constant.INFOR_SECRITY, securityBo.getNewsType(), "");
         }
         updateInforHistroy(inforid, securityBo.getNewsType(), Constant.INFOR_SECRITY);
         securityVo.setInforid(securityBo.getId());
@@ -2223,31 +2223,6 @@ public class InforController extends BaseContorller {
     @Async
     private void addCircleShow(NoteBo noteBo){
 
-    }
-
-    /**
-     * 用户阅读历史信息添加
-     * @param userid
-     * @param inforid
-     * @param inforType
-     * @param module
-     * @param className
-     */
-    @Async
-    private void addReadhis(String userid, String inforid, int inforType, String module, String className){
-        UserReadHisBo hisBo = inforService.findByType(userid, inforType, module, className);
-        if (hisBo == null) {
-            hisBo = new UserReadHisBo();
-            hisBo.setUserid(userid);
-            hisBo.setInforid(inforid);
-            hisBo.setInforType(inforType);
-            hisBo.setModule(module);
-            hisBo.setClassName(className);
-            hisBo.setLastTime(new Date());
-            inforService.addUserReadHis(hisBo);
-        } else {
-            inforService.updateUserReadHis(hisBo.getId(), inforid);
-        }
     }
 
 
