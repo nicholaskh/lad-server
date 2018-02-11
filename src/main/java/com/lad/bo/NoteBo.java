@@ -47,6 +47,13 @@ public class NoteBo extends BaseBo {
 	//帖子中@的用户
 	private LinkedList<String> atUsers;
 
+	//0 表示帖子， 1表示资讯
+	private int noteType;
+	//资讯类型
+	private int inforType;
+	//来源资讯类型名称
+	private String inforTypeName;
+
 	public String getSubject() {
 		return subject;
 	}
@@ -205,5 +212,29 @@ public class NoteBo extends BaseBo {
 
 	public void setAtUsers(LinkedList<String> atUsers) {
 		this.atUsers = atUsers;
+	}
+
+	public int getNoteType() {
+		return noteType;
+	}
+
+	public void setNoteType(int noteType) {
+		this.noteType = noteType;
+	}
+
+	public int getInforType() {
+		return inforType;
+	}
+
+	public void setInforType(int inforType) {
+		this.inforType = inforType;
+	}
+
+	public String getInforTypeName() {
+		return inforTypeName;
+	}
+
+	public void setInforTypeName(String inforTypeName) {
+		this.inforTypeName = inforTypeName;
 	}
 }

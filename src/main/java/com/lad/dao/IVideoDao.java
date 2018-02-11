@@ -1,5 +1,6 @@
 package com.lad.dao;
 
+import com.lad.scrapybo.InforBo;
 import com.lad.scrapybo.VideoBo;
 import com.mongodb.WriteResult;
 
@@ -86,5 +87,14 @@ public interface IVideoDao {
     VideoBo findVideoByFirst(String modules, String classNames);
 
     long findByClassNameCount(String module, String className);
+
+    /**
+     * 根据名称匹配
+     * @param title
+     * @param page
+     * @param limit
+     * @return
+     */
+    List<VideoBo> findByTitleRegex(String title, int page, int limit);
 
 }

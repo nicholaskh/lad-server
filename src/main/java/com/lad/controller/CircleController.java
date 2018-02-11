@@ -2927,11 +2927,13 @@ public class CircleController extends BaseContorller {
 							inforVo.setShareNum(inforBo.getShareNum());
 							inforVo.setType("pic");
 							inforVo.setThumpsubNum(inforBo.getThumpsubNum());
+							object.put("infor", inforVo);
+							array.add(object);
 						}
 						break;
 					case Constant.INFOR_SECRITY:
 						SecurityBo securityBo = inforService.findSecurityById(inforid);
-						if (securityBo == null) {
+						if (securityBo != null) {
 							inforVo.setTitle(securityBo.getTitle());
 							inforVo.setReadNum(securityBo.getVisitNum());
 							inforVo.setModule(securityBo.getNewsType());
@@ -2939,11 +2941,13 @@ public class CircleController extends BaseContorller {
 							inforVo.setCommentNum(securityBo.getCommnetNum());
 							inforVo.setShareNum(securityBo.getShareNum());
 							inforVo.setThumpsubNum(securityBo.getThumpsubNum());
+							object.put("infor", inforVo);
+							array.add(object);
 						}
 						break;
 					case Constant.INFOR_RADIO:
 						BroadcastBo broadcastBo = inforService.findBroadById(inforid);
-						if (broadcastBo == null) {
+						if (broadcastBo != null) {
 							inforVo.setTitle(broadcastBo.getTitle());
 							inforVo.setReadNum(broadcastBo.getVisitNum());
 							inforVo.setModule(broadcastBo.getModule());
@@ -2951,11 +2955,13 @@ public class CircleController extends BaseContorller {
 							inforVo.setCommentNum(broadcastBo.getCommnetNum());
 							inforVo.setShareNum(broadcastBo.getShareNum());
 							inforVo.setThumpsubNum(broadcastBo.getThumpsubNum());
+							object.put("infor", inforVo);
+							array.add(object);
 						}
 						break;
 					case Constant.INFOR_VIDEO:
 						VideoBo videoBo = inforService.findVideoById(inforid);
-						if (videoBo == null) {
+						if (videoBo != null) {
 							inforVo.setTitle(videoBo.getTitle());
 							inforVo.setReadNum(videoBo.getVisitNum());
 							inforVo.setModule(videoBo.getModule());
@@ -2966,13 +2972,13 @@ public class CircleController extends BaseContorller {
 							inforVo.setVideoPic(videoBo.getPoster());
 							inforVo.setVideoUrl(videoBo.getUrl());
 							inforVo.setThumpsubNum(videoBo.getThumpsubNum());
+							object.put("infor", inforVo);
+							array.add(object);
 						}
 						break;
 					default:
 						break;
 				}
-				object.put("infor", inforVo);
-				array.add(object);
 			}
 		}
 		map.put("listVos", array);

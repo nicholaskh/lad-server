@@ -3,6 +3,8 @@ package com.lad.dao;
 import com.lad.bo.UserReadHisBo;
 import com.mongodb.WriteResult;
 
+import java.util.List;
+
 /**
  * 功能描述：
  * Copyright: Copyright (c) 2018
@@ -36,6 +38,36 @@ public interface IUserReadHisDao {
      * @return
      */
     UserReadHisBo findMyLastRead(String userid);
+
+
+    /**
+     * 根据类型查找最后一次阅读信息
+     * @param userid
+     * @return
+     */
+    UserReadHisBo findByInforid(String userid, String inforid);
+
+    /**
+     * 根据类型查找最后一次阅读信息
+     * @param id
+     * @return
+     */
+    WriteResult updateUserReadHis(String id);
+
+
+    /**
+     * 查找最后一次阅读信息
+     * @param userid
+     * @return
+     */
+    WriteResult deleteUserReadHis(String userid, int inforType);
+
+    /**
+     * 查找我的阅读历史
+     * @param userid
+     * @return
+     */
+    List<UserReadHisBo> findByUserAndInfor(String userid, int inforType);
 
     
 }

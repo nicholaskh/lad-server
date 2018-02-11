@@ -14,6 +14,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * 功能描述：
@@ -65,5 +66,40 @@ public class UserReadHisDaoImpl implements IUserReadHisDao {
         query.with(new Sort(Sort.Direction.DESC, "lastTime"));
         query.limit(1);
         return mongoTemplate.findOne(query, UserReadHisBo.class);
+    }
+
+    @Override
+    public UserReadHisBo findByInforid(String userid, String inforid) {
+        Query query = new Query(new Criteria("userid").is(userid).and("inforid").is(inforid));
+        return mongoTemplate.findOne(query, UserReadHisBo.class);
+    }
+
+    @Override
+    public WriteResult updateUserReadHis(String id) {
+        Query query = new Query();
+        Criteria criteria = new Criteria("_id").is(id);
+        Update update = new Update();
+        update.set("lastTime", new Date());
+        return mongoTemplate.updateFirst(query, update, UserReadHisBo.class);
+    }
+
+    @Override
+    public WriteResult deleteUserReadHis(String userid, int inforType) {
+        Query query = new Query(new Criteria("userid").is(userid).and("inforType").is(inforType));
+        query.with(new Sort(Sort.Direction.DESC, "lastTime"));
+        query.skip(5);
+        return mongoTemplate.remove(query, UserReadHisBo.class);
+    }
+
+    @Override
+    public List<UserReadHisBo> findByUserAndInfor(String userid, int inforType) {
+        Query query = new Query();
+        Criteria criteria = new Criteria("userid").is(userid);
+        if (inforType != -1) {
+            criteria.and("inforType").is(inforType);
+        }
+        query.with(new Sort(Sort.Direction.DESC, "lastTime"));
+        query.limit(5);
+        return mongoTemplate.find(query, UserReadHisBo.class);
     }
 }

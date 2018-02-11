@@ -1,10 +1,11 @@
 package com.lad.controller;
 
 import com.lad.bo.*;
-import com.lad.service.ICircleService;
-import com.lad.service.ICollectService;
-import com.lad.service.IPartyService;
-import com.lad.service.IUserService;
+import com.lad.scrapybo.BroadcastBo;
+import com.lad.scrapybo.InforBo;
+import com.lad.scrapybo.SecurityBo;
+import com.lad.scrapybo.VideoBo;
+import com.lad.service.*;
 import com.lad.util.CommonUtil;
 import com.lad.util.Constant;
 import com.lad.util.ERRORCODE;
@@ -36,6 +37,9 @@ public class CollectController extends BaseContorller {
 
 	@Autowired
 	private IPartyService partyService;
+
+	@Autowired
+	private IInforService inforService;
 	
 	@RequestMapping("/chat")
 	@ResponseBody
@@ -294,6 +298,44 @@ public class CollectController extends BaseContorller {
 					}
 				}  else if (collectBo.getSub_type() == Constant.INFOR_TYPE) {
 					vo.setCollectPic(collectBo.getTargetPic());
+					int inforType = collectBo.getSourceType();
+					String inforid = collectBo.getTargetid();
+					vo.setSourceType(inforType);
+					switch (inforType){
+						case Constant.INFOR_HEALTH:
+							InforBo inforBo = inforService.findById(inforid);
+							if (inforBo != null) {
+								vo.setModule(inforBo.getModule());
+								vo.setClassName(inforBo.getClassName());
+								vo.setTitle(inforBo.getTitle());
+							}
+							break;
+						case Constant.INFOR_SECRITY:
+							SecurityBo securityBo = inforService.findSecurityById(inforid);
+							if (securityBo != null) {
+								vo.setModule(securityBo.getNewsType());
+								vo.setTitle(securityBo.getTitle());
+							}
+							break;
+						case Constant.INFOR_RADIO:
+							BroadcastBo broadcastBo = inforService.findBroadById(inforid);
+							if (broadcastBo != null) {
+								vo.setModule(broadcastBo.getModule());
+								vo.setClassName(broadcastBo.getClassName());
+								vo.setTitle(broadcastBo.getTitle());
+							}
+							break;
+						case Constant.INFOR_VIDEO:
+							VideoBo videoBo = inforService.findVideoById(inforid);
+							if (videoBo != null) {
+								vo.setModule(videoBo.getModule());
+								vo.setClassName(videoBo.getClassName());
+								vo.setTitle(videoBo.getTitle());
+							}
+							break;
+						default:
+							break;
+					}
 				}
 				vo.setVideo(collectBo.getVideo());
 			}

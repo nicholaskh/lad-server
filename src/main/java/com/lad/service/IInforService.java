@@ -344,4 +344,73 @@ public interface IInforService {
      */
     UserReadHisBo findMyLastRead(String userid);
 
+
+    /**
+     * 根据名称匹配
+     * @param title
+     * @param page
+     * @param limit
+     * @return
+     */
+    List<InforBo> findInforByTitleRegex(String title, int page, int limit);
+
+
+    /**
+     * 根据名称匹配
+     * @param title
+     * @param page
+     * @param limit
+     * @return
+     */
+    List<SecurityBo> findSecurByTitleRegex(String title, int page, int limit);
+
+    /**
+     * 根据名称匹配
+     * @param title
+     * @param page
+     * @param limit
+     * @return
+     */
+    List<BroadcastBo> findRadioByTitleRegex(String title, int page, int limit);
+
+    /**
+     * 根据名称匹配
+     * @param title
+     * @param page
+     * @param limit
+     * @return
+     */
+    List<VideoBo> findVideoByTitleRegex(String title, int page, int limit);
+
+
+    /**
+     * 根据类型查找最后一次阅读信息
+     * @param userid
+     * @return
+     */
+    UserReadHisBo findByInforid(String userid, String inforid);
+
+    /**
+     * 根据类型查找最后一次阅读信息
+     * @param id
+     * @return
+     */
+    WriteResult updateUserReadHis(String id);
+
+
+    /**
+     * 查找最后一次阅读信息
+     * @param userid
+     * @return
+     */
+    WriteResult deleteUserReadHis(String userid, int inforType);
+
+    /**
+     * 查找我的阅读历史
+     * @param userid
+     * @return
+     */
+    List<UserReadHisBo> findByUserAndInfor(String userid, int inforType);
+
+
 }

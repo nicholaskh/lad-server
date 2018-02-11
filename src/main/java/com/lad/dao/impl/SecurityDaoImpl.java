@@ -1,6 +1,7 @@
 package com.lad.dao.impl;
 
 import com.lad.dao.ISecurityDao;
+import com.lad.scrapybo.BroadcastBo;
 import com.lad.scrapybo.SecurityBo;
 import com.lad.util.Constant;
 import com.mongodb.WriteResult;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * 功能描述：
@@ -115,6 +117,17 @@ public class SecurityDaoImpl implements ISecurityDao {
     public List<SecurityBo> findSecurityByIds(List<String> securityIds) {
         Query query = new Query();
         query.addCriteria(new Criteria("_id").in(securityIds));
+        return mongoTemplateTwo.find(query, SecurityBo.class);
+    }
+
+    @Override
+    public List<SecurityBo> findByTitleRegex(String title, int page, int limit) {
+        Pattern pattern = Pattern.compile("^.*"+title+".*$", Pattern.CASE_INSENSITIVE);
+        Query query = new Query(new Criteria("title").regex(pattern));
+        query.with(new Sort(Sort.Direction.ASC,"title"));
+        page = page < 1 ? 1 : page;
+        query.skip((page-1)*limit);
+        query.limit(limit);
         return mongoTemplateTwo.find(query, SecurityBo.class);
     }
 }

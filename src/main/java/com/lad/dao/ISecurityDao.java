@@ -1,5 +1,6 @@
 package com.lad.dao;
 
+import com.lad.scrapybo.BroadcastBo;
 import com.lad.scrapybo.SecurityBo;
 import com.mongodb.WriteResult;
 
@@ -40,4 +41,13 @@ public interface ISecurityDao {
      * @return
      */
     List<SecurityBo> findSecurityByIds(List<String> SecurityIds);
+
+    /**
+     * 根据名称匹配
+     * @param title
+     * @param page
+     * @param limit
+     * @return
+     */
+    List<SecurityBo> findByTitleRegex(String title, int page, int limit);
 }

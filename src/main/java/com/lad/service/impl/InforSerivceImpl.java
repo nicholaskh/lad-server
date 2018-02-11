@@ -348,7 +348,47 @@ public class InforSerivceImpl implements IInforService {
     }
 
     @Override
+    public UserReadHisBo findByInforid(String userid, String inforid) {
+        return userReadHisDao.findByInforid(userid, inforid);
+    }
+
+    @Override
+    public WriteResult updateUserReadHis(String id) {
+        return userReadHisDao.updateUserReadHis(id);
+    }
+
+    @Override
+    public WriteResult deleteUserReadHis(String userid, int inforType) {
+        return userReadHisDao.deleteUserReadHis(userid, inforType);
+    }
+
+    @Override
+    public List<UserReadHisBo> findByUserAndInfor(String userid, int inforType) {
+        return userReadHisDao.findByUserAndInfor(userid, inforType);
+    }
+
+    @Override
     public UserReadHisBo findMyLastRead(String userid) {
         return userReadHisDao.findMyLastRead(userid);
+    }
+
+    @Override
+    public List<InforBo> findInforByTitleRegex(String title, int page, int limit) {
+        return inforDao.findByTitleRegex(title, page, limit);
+    }
+
+    @Override
+    public List<SecurityBo> findSecurByTitleRegex(String title, int page, int limit) {
+        return securityDao.findByTitleRegex(title, page, limit);
+    }
+
+    @Override
+    public List<BroadcastBo> findRadioByTitleRegex(String title, int page, int limit) {
+        return broadcastDao.findByTitle(title, page, limit);
+    }
+
+    @Override
+    public List<VideoBo> findVideoByTitleRegex(String title, int page, int limit) {
+        return videoDao.findByTitleRegex(title, page, limit);
     }
 }

@@ -1,6 +1,7 @@
 package com.lad.dao;
 
 import com.lad.scrapybo.InforBo;
+import com.lad.scrapybo.SecurityBo;
 import com.mongodb.WriteResult;
 
 import java.util.List;
@@ -45,5 +46,15 @@ public interface IInforDao {
      * @return
      */
     WriteResult updateInforNum(String inforid, int type, int num);
+
+
+    /**
+     * 根据名称匹配
+     * @param title
+     * @param page
+     * @param limit
+     * @return
+     */
+    List<InforBo> findByTitleRegex(String title, int page, int limit);
 
 }

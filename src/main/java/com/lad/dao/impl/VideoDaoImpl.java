@@ -1,6 +1,7 @@
 package com.lad.dao.impl;
 
 import com.lad.dao.IVideoDao;
+import com.lad.scrapybo.InforBo;
 import com.lad.scrapybo.VideoBo;
 import com.lad.util.CommonUtil;
 import com.lad.util.Constant;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Repository;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * 功能描述：
@@ -146,7 +148,7 @@ public class VideoDaoImpl implements IVideoDao {
     public List<VideoBo> selectClassByGroups(HashSet<String> modules, HashSet<String> classNames) {
         Criteria criteria = new Criteria("module").in(modules).and("className").in(classNames);
         MatchOperation match = Aggregation.match(criteria);
-        GroupOperation groupOperation = Aggregation.group("module","className", "source")
+        GroupOperation groupOperation = Aggregation.group("module","className")
                 .sum("visitNum").as("visitNum").first("url").as("firstUrl")
                 .first("_id").as("firstId").first("shareNum").as("firstShare")
                 .first("commnetNum").as("firstComment").first("thumpsubNum").as("firstThump");
@@ -160,7 +162,7 @@ public class VideoDaoImpl implements IVideoDao {
     @Override
     public List<VideoBo> findByLimit(LinkedList<String> modules, LinkedList<String> classNames, int limit) {
 
-        GroupOperation groupOperation = Aggregation.group("module","className", "source")
+        GroupOperation groupOperation = Aggregation.group("module","className")
                 .sum("visitNum").as("visitNum").first("url").as("firstUrl")
                 .first("_id").as("firstId").first("shareNum").as("firstShare")
                 .first("commnetNum").as("firstComment").first("thumpsubNum").as("firstThump");
@@ -208,6 +210,17 @@ public class VideoDaoImpl implements IVideoDao {
         Query query = new Query();
         query.addCriteria(new Criteria("module").is(module).and("className").is(className));
         return mongoTemplateTwo.count(query, VideoBo.class);
+    }
+
+    @Override
+    public List<VideoBo> findByTitleRegex(String title, int page, int limit) {
+        Pattern pattern = Pattern.compile("^.*"+title+".*$", Pattern.CASE_INSENSITIVE);
+        Query query = new Query(new Criteria("title").regex(pattern));
+        query.with(new Sort(Sort.Direction.ASC,"num", "title"));
+        page = page < 1 ? 1 : page;
+        query.skip((page-1)*limit);
+        query.limit(limit);
+        return mongoTemplateTwo.find(query, VideoBo.class);
     }
 }
 

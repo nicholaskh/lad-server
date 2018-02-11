@@ -1,6 +1,7 @@
 package com.lad.dao.impl;
 
 import com.lad.dao.IInforDao;
+import com.lad.scrapybo.BroadcastBo;
 import com.lad.scrapybo.InforBo;
 import com.lad.util.Constant;
 import com.mongodb.WriteResult;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * 功能描述：
@@ -125,5 +127,16 @@ public class InforDaoImpl implements IInforDao {
                 break;
         }
         return mongoTemplateTwo.updateFirst(query, update, InforBo.class);
+    }
+
+    @Override
+    public List<InforBo> findByTitleRegex(String title, int page, int limit) {
+        Pattern pattern = Pattern.compile("^.*"+title+".*$", Pattern.CASE_INSENSITIVE);
+        Query query = new Query(new Criteria("title").regex(pattern));
+        query.with(new Sort(Sort.Direction.ASC,"num", "title"));
+        page = page < 1 ? 1 : page;
+        query.skip((page-1)*limit);
+        query.limit(limit);
+        return mongoTemplateTwo.find(query, InforBo.class);
     }
 }

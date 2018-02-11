@@ -188,7 +188,7 @@ public class BroadcastDaoImpl implements IBroadcastDao {
     @Override
     public List<BroadcastBo> findByTitle(String title, int page, int limit) {
         Pattern pattern = Pattern.compile("^.*"+title+".*$", Pattern.CASE_INSENSITIVE);
-        Query query = new Query(new Criteria("name").regex(pattern));
+        Query query = new Query(new Criteria("title").regex(pattern));
         query.with(new Sort(Sort.Direction.ASC,"edition", "title"));
         page = page < 1 ? 1 : page;
         query.skip((page-1)*limit);
