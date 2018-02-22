@@ -418,9 +418,13 @@ public class InforController extends BaseContorller {
             videoVo.setReadNum(bo.getVisitNum());
             //缩略图
             if (StringUtils.isEmpty(bo.getPoster())){
-                String picName = FFmpegUtil.inforTransfer(bo.getUrl(), Constant.INFOR_PICTURE_PATH, bo.getId());
+                String url = bo.getUrl();
+                if (url.indexOf(',') > -1) {
+                    url = url.substring(0, url.indexOf(','));
+                }
+                String picName = FFmpegUtil.inforTransfer(url, Constant.INFOR_PICTURE_PATH, bo.getId());
                 if (StringUtils.isEmpty(picName)){
-                    picName = FFmpegUtil.inforTransfer(bo.getUrl(),  Constant.INFOR_PICTURE_PATH, bo.getId());
+                    picName = FFmpegUtil.inforTransfer(url,  Constant.INFOR_PICTURE_PATH, bo.getId());
                 }
                 if (!StringUtils.isEmpty(picName)){
                     File file = null;
@@ -654,7 +658,7 @@ public class InforController extends BaseContorller {
         inforVo.setThumpsubNum(inforBo.getThumpsubNum());
         inforVo.setCommentNum(inforBo.getCommnetNum());
         inforVo.setReadNum(inforBo.getVisitNum());
-        inforVo.setText("");
+        inforVo.setImageUrls(inforBo.getImageUrls());
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("ret", 0);
         map.put("inforVo", inforVo);

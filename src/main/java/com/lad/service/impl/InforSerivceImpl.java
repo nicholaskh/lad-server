@@ -45,6 +45,7 @@ public class InforSerivceImpl implements IInforService {
     @Autowired
     private IVideoDao videoDao;
 
+    @Autowired
     private IUserReadHisDao userReadHisDao;
 
     @Override
