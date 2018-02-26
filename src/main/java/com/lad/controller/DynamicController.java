@@ -14,6 +14,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
@@ -438,9 +439,17 @@ public class DynamicController extends BaseContorller {
                 UserBo user = userService.getUser(msgBo.getCreateuid());
                 dynamicVo.setUserPic(user.getHeadPictureName());
                 dynamicVo.setUserid(msgBo.getCreateuid());
+                FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(user.getId(), msgBo
+                        .getCreateuid());
+                if (friendsBo != null || StringUtils.isEmpty(friendsBo.getBackname())) {
+                    dynamicVo.setUserName(friendsBo.getBackname());
+                } else {
+                    dynamicVo.setUserName(user.getUserName());
+                }
             } else {
                 dynamicVo.setUserPic(userBo.getHeadPictureName());
                 dynamicVo.setUserid(userBo.getCreateuid());
+                dynamicVo.setUserName(userBo.getUserName());
             }
             int type = msgBo.getType();
             if (type == Constant.NOTE_TYPE) {

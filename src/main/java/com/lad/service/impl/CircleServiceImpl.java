@@ -364,4 +364,9 @@ public class CircleServiceImpl implements ICircleService {
 	public List<CircleBo> selectByCity(String city, int page, int limit) {
 		return circleDao.selectByCity(city, page, limit);
 	}
+
+	@Override
+	public long findNoticeTotal(String targetid, int noticeType) {
+		return circleNoticeDao.findNoticeTotal(targetid, noticeType);
+	}
 }

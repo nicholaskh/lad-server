@@ -410,4 +410,13 @@ public interface ICircleService extends IBaseService {
 	 */
 	List<CircleBo> selectByCity(String city, int page, int limit);
 
+
+	/**
+	 * 公告总数查询
+	 * @param targetid
+	 * @param noticeType
+	 * @return
+	 */
+	long findNoticeTotal(String targetid, int noticeType);
+
 }

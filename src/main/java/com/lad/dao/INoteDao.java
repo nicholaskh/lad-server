@@ -180,4 +180,37 @@ public interface INoteDao extends IBaseDao {
 	 */
 	WriteResult updateCollectCount(String noteId, int num);
 
+	/**
+	 * 根据标题搜索圈子内帖子
+	 * @param circleid
+	 * @param title
+	 * @param page
+	 * @param limit
+	 * @return
+	 */
+	List<NoteBo> selectByTitle(String circleid, String title, int page, int limit);
+
+
+	/**
+	 * 根据用户搜索圈子内帖子
+	 * @param circleid
+	 * @param userid
+	 * @param page
+	 * @param limit
+	 * @return
+	 */
+	List<NoteBo> selectByUserid(String circleid, String userid, int page, int limit);
+
+	/**
+	 * 根据发帖时间搜索帖子
+	 * @param circleid
+	 * @param startTime
+	 * @param endTime
+	 * @param page
+	 * @param limit
+	 * @return
+	 */
+	List<NoteBo> selectByCreatTime(String circleid, Date startTime, Date endTime,int page, int limit);
+	
+
 }

@@ -145,4 +145,16 @@ public class CircleNoticeDaoImpl implements ICircleNoticeDao {
         query.addCriteria(new Criteria("_id").in(ids).and("deleted").is(Constant.ACTIVITY));
         return mongoTemplate.find(query, CircleNoticeBo.class);
     }
+
+    @Override
+    public long findNoticeTotal(String targetid, int noticeType) {
+        Query query = new Query();
+        Criteria criteria = new Criteria("deleted").is(Constant.ACTIVITY).and("noticeType").is(noticeType);
+        if (noticeType == 0) {
+            criteria.and("circleid").is(targetid);
+        } else {
+            criteria.and("chatroomid").is(targetid);
+        }
+        return mongoTemplate.count(query, CircleNoticeBo.class);
+    }
 }

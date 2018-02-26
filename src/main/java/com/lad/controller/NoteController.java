@@ -30,6 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -1261,7 +1262,7 @@ public class NoteController extends BaseContorller {
 	}
 
 
-	@ApiOperation("根据指定日常查找指定类型的帖子")
+	@ApiOperation("根据指定日期查找指定类型的帖子")
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "circleid", value = "圈子id", required = true,
 					dataType = "string", paramType = "query"),
@@ -1273,8 +1274,7 @@ public class NoteController extends BaseContorller {
 			@ApiImplicitParam(name = "limit", value = "每页数量", dataType = "int", paramType = "query")})
 	@PostMapping("/by-assign-date")
 	public String findByDateAndType(String circleid, String date, int type, int page, int limit, HttpServletRequest
-			request,
-								   HttpServletResponse response) {
+			request, HttpServletResponse response) {
 		UserBo loginUser = getUserLogin(request);
 		Date dateTime;
 		SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd");
@@ -1296,6 +1296,94 @@ public class NoteController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
+
+	@ApiOperation("根据帖子标题关键字搜索")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "circleid", value = "圈子id", required = true,
+					dataType = "string", paramType = "query"),
+			@ApiImplicitParam(name = "title", value = "标题关键字", required = true,
+					dataType = "string", paramType = "query"),
+			@ApiImplicitParam(name = "page", value = "分页页码", dataType = "int", paramType = "query"),
+			@ApiImplicitParam(name = "limit", value = "每页数量", dataType = "int", paramType = "query")})
+	@PostMapping("/search-title")
+	public String findByNoteTitle(String circleid, String title, int page, int limit, HttpServletRequest
+			request, HttpServletResponse response) {
+		UserBo loginUser = getUserLogin(request);
+		List<NoteBo> noteBos = noteService.selectByTitle(circleid, title, page, limit);
+		List<NoteVo> noteVoList = new LinkedList<>();
+		if (noteBos != null) {
+			vosToList(noteBos, noteVoList, loginUser);
+		}
+		Map<String, Object> map = new LinkedHashMap<>();
+		map.put("ret", 0);
+		map.put("noteVoList", noteVoList);
+		return JSONObject.fromObject(map).toString();
+	}
+
+
+	@ApiOperation("搜索指定用户发表的帖子")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "circleid", value = "圈子id", required = true,
+					dataType = "string", paramType = "query"),
+			@ApiImplicitParam(name = "userid", value = "圈子中指定的用户", required = true,
+					dataType = "string", paramType = "query"),
+			@ApiImplicitParam(name = "page", value = "分页页码", dataType = "int", paramType = "query"),
+			@ApiImplicitParam(name = "limit", value = "每页数量", dataType = "int", paramType = "query")})
+	@PostMapping("/search-user")
+	public String findByNoteCreatUser(String circleid, String userid, int page, int limit,
+									  HttpServletRequest request, HttpServletResponse response) {
+		UserBo loginUser = getUserLogin(request);
+		List<NoteBo> noteBos = noteService.selectByUserid(circleid, userid, page, limit);
+		List<NoteVo> noteVoList = new LinkedList<>();
+		if (noteBos != null) {
+			vosToList(noteBos, noteVoList, loginUser);
+		}
+		Map<String, Object> map = new LinkedHashMap<>();
+		map.put("ret", 0);
+		map.put("noteVoList", noteVoList);
+		return JSONObject.fromObject(map).toString();
+	}
+
+
+	@ApiOperation("搜索指定日期内的帖子")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "circleid", value = "圈子id", required = true,
+					dataType = "string", paramType = "query"),
+			@ApiImplicitParam(name = "startTime", value = "指定开始日期，格式yyyy-MM-dd", required = true,
+					dataType = "string", paramType = "query"),
+			@ApiImplicitParam(name = "startTime", value = "指定结束日期，若为空，则搜索范围为startTime全天，格式yyyy-MM-dd",
+					dataType = "string", paramType = "query"),
+			@ApiImplicitParam(name = "page", value = "分页页码", dataType = "int", paramType = "query"),
+			@ApiImplicitParam(name = "limit", value = "每页数量", dataType = "int", paramType = "query")})
+	@PostMapping("/search-time")
+	public String findByNoteTime(String circleid, String startTime, String endTime, int page, int limit,
+									  HttpServletRequest request, HttpServletResponse response) {
+		UserBo loginUser = getUserLogin(request);
+		SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd");
+		try {
+			Date startDate = sf.parse(startTime);
+			Date start = CommonUtil.getZeroDate(startDate);
+			Date end;
+			if (StringUtils.isEmpty(endTime)) {
+				end = CommonUtil.getLastDate(startDate);
+			} else {
+				end = CommonUtil.getLastDate(sf.parse(endTime));
+			}
+			List<NoteBo> noteBos = noteService.selectByCreatTime(circleid, start, end,  page, limit);
+			List<NoteVo> noteVoList = new LinkedList<>();
+			if (noteBos != null) {
+				vosToList(noteBos, noteVoList, loginUser);
+			}
+			Map<String, Object> map = new LinkedHashMap<>();
+			map.put("ret", 0);
+			map.put("noteVoList", noteVoList);
+			return JSONObject.fromObject(map).toString();
+		} catch (ParseException e) {
+			logger.error("Date Format Error {} ", e);
+		}
+		return CommonUtil.toErrorResult(ERRORCODE.FORMAT_ERROR.getIndex(),
+				ERRORCODE.FORMAT_ERROR.getReason());
+	}
 
 
 	private RedstarBo setRedstarBo(String userid, String circleid, int weekNo, int year){

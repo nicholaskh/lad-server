@@ -1102,6 +1102,7 @@ public class CircleController extends BaseContorller {
 		map.put("circleVo", circleVo);
 		map.put("partyNum", partyNum);
 		map.put("noticeRead", isRead);
+		map.put("noticeTotal", circleService.findNoticeTotal(circleid, 0));
 		map.put("notice", jsonObject);
 		if (userBo != null) {
 			List<CircleNoticeBo> unReadNotices = circleService.findUnReadNotices(userBo.getId(), circleid, 0);

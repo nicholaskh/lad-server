@@ -29,6 +29,8 @@ public class DynamicVo extends BaseVo {
 
     private String userPic;
 
+    private String userName;
+
     //地理位置
     private String landmark;
 
@@ -261,5 +263,13 @@ public class DynamicVo extends BaseVo {
 
     public void setCircleNoteNum(int circleNoteNum) {
         this.circleNoteNum = circleNoteNum;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 }

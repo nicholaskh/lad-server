@@ -939,7 +939,7 @@ public class FriendsController extends BaseContorller {
 		}
 		//更新自己好友列表信息
 		friendsService.updateRelateStatus(friendsBo.getId(), 1, isParent);
-		friendsService.updateRelateStatus(friend.getId(), 1, isParent);
+		friendsService.updateRelateStatus(friend.getId(), 2, !isParent);
 		String path = String.format("/friends/all-apply-list.do?page=%d&limit=%d", 1, 10);
 		String name = StringUtils.isEmpty(friend.getBackname()) ? userBo.getUserName() :friend.getBackname();
 		String message = name + "申请与您进行账号关联，快去看看吧！";
@@ -1000,7 +1000,7 @@ public class FriendsController extends BaseContorller {
 		List<FriendsBo> friendsBoList = friendsService.findAllApplyList(userBo.getId(), page, limit);
 		List<FriendsVo> userVoList = new LinkedList<FriendsVo>();
 		for (FriendsBo friendsBo : friendsBoList) {
-			UserBo userBoTemp = userService.getUser(friendsBo.getUserid());
+			UserBo userBoTemp = userService.getUser(friendsBo.getFriendid());
 			if (null == userBoTemp) {
 				continue;
 			}
@@ -1049,7 +1049,7 @@ public class FriendsController extends BaseContorller {
 				Constant.ADD_AGREE, 3, page, limit);
 		List<UserVoFriends> userVoList = new LinkedList<UserVoFriends>();
 		for (FriendsBo friendsBo : friendsBoList) {
-			UserBo userBoTemp = userService.getUser(friendsBo.getUserid());
+			UserBo userBoTemp = userService.getUser(friendsBo.getFriendid());
 			if (null == userBoTemp) {
 				continue;
 			}
@@ -1085,7 +1085,7 @@ public class FriendsController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NOT_EXIST.getIndex(),
 					ERRORCODE.FRIEND_NOT_EXIST.getReason());
 		}
-		FriendsBo friend = friendsService.getFriendByIdAndVisitorIdAgree(friendsBo.getFriendid(), userBo.getId());
+		FriendsBo friend = friendsService.getFriendByIdAndVisitorIdAgree(friendsBo.getFriendid(), friendsBo.getUserid());
 		if (friendsBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NOT_HAS_YOU.getIndex(),
 					ERRORCODE.FRIEND_NOT_HAS_YOU.getReason());

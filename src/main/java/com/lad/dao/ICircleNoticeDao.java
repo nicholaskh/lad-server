@@ -84,4 +84,13 @@ public interface ICircleNoticeDao {
      */
     List<CircleNoticeBo> findNoticeByIds(String... ids);
 
+
+    /**
+     * 公告总数查询
+     * @param targetid
+     * @param noticeType
+     * @return
+     */
+    long findNoticeTotal(String targetid, int noticeType);
+
 }

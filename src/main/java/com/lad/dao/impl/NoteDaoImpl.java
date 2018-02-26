@@ -21,6 +21,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 @Repository("noteDao")
 public class NoteDaoImpl implements INoteDao {
@@ -303,5 +304,46 @@ public class NoteDaoImpl implements INoteDao {
 		update.inc("collectcount", 1);
 		update.inc("temp",1);
 		return mongoTemplate.updateFirst(query, update, NoteBo.class);
+	}
+
+
+	@Override
+	public List<NoteBo> selectByTitle(String circleid, String title, int page, int limit) {
+		Query query = new Query();
+		Pattern pattern = Pattern.compile("^.*"+title+".*$", Pattern.CASE_INSENSITIVE);
+		Criteria criteria = new Criteria("circleId").is(circleid).and("deleted").is(Constant.ACTIVITY);
+		criteria.and("subject").regex(title);
+		query.addCriteria(criteria);
+		query.with(new Sort(Sort.Direction.DESC, "_id"));
+		page = page < 1 ? 1 : page;
+		query.skip((page -1) * limit);
+		query.limit(limit);
+		return mongoTemplate.find(query, NoteBo.class);
+	}
+
+	@Override
+	public List<NoteBo> selectByUserid(String circleid, String userid, int page, int limit) {
+		Query query = new Query();
+		Criteria criteria = new Criteria("circleId").is(circleid).and("deleted").is(Constant.ACTIVITY);
+		criteria.and("createuid").is(userid);
+		query.addCriteria(criteria);
+		query.with(new Sort(Sort.Direction.DESC, "_id"));
+		page = page < 1 ? 1 : page;
+		query.skip((page -1) * limit);
+		query.limit(limit);
+		return mongoTemplate.find(query, NoteBo.class);
+	}
+
+	@Override
+	public List<NoteBo> selectByCreatTime(String circleid, Date startTime, Date endTime, int page, int limit) {
+		Query query = new Query();
+		Criteria criteria = new Criteria("circleId").is(circleid).and("deleted").is(Constant.ACTIVITY);
+		criteria.and("createTime").gte(startTime).lte(endTime);
+		query.addCriteria(criteria);
+		query.with(new Sort(Sort.Direction.DESC, "_id"));
+		page = page < 1 ? 1 : page;
+		query.skip((page -1) * limit);
+		query.limit(limit);
+		return mongoTemplate.find(query, NoteBo.class);
 	}
 }

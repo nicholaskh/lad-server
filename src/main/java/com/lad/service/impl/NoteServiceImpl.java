@@ -144,4 +144,19 @@ public class NoteServiceImpl implements INoteService {
 	public WriteResult updateCollectCount(String noteId, int num) {
 		return noteDao.updateCollectCount(noteId, num);
 	}
+
+	@Override
+	public List<NoteBo> selectByTitle(String circleid, String title, int page, int limit) {
+		return noteDao.selectByTitle(circleid, title, page, limit);
+	}
+
+	@Override
+	public List<NoteBo> selectByUserid(String circleid, String userid, int page, int limit) {
+		return noteDao.selectByUserid(circleid, userid, page, limit);
+	}
+
+	@Override
+	public List<NoteBo> selectByCreatTime(String circleid, Date startTime, Date endTime, int page, int limit) {
+		return noteDao.selectByCreatTime(circleid, startTime, endTime, page, limit);
+	}
 }
