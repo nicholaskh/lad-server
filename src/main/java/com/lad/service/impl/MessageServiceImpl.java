@@ -38,4 +38,14 @@ public class MessageServiceImpl implements IMessageService {
 	public WriteResult deleteMessages(List<String> ids) {
 		return messageDao.deleteMessages(ids);
 	}
+
+	@Override
+	public WriteResult updateMessage(String id, int status) {
+		return messageDao.updateMessage(id, status);
+	}
+
+	@Override
+	public WriteResult betchUpdateMessage(List<String> ids, int status) {
+		return messageDao.betchUpdateMessage(ids, status);
+	}
 }

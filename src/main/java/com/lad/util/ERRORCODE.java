@@ -107,6 +107,9 @@ public enum ERRORCODE {
 	COLLECT_IS_NULL(150001, "收藏不存在"),
 	COLLECT_TYPE_ERR(150002, "收藏类型错误"),
 	COLLECT_EXIST(150003, "收藏已存在"),
+
+
+	MESSAGE_NULL(160001, "消息不存在"),
 	
 	NOTE_IS_NULL(120001, "帖子不存在"),
 	NOTE_NOT_MASTER(120002, "没有权限"),

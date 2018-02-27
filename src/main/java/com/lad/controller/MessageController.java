@@ -97,11 +97,16 @@ public class MessageController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		MessageBo messageBo = messageService.selectById(messageid);
+		if (messageBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.MESSAGE_NULL.getIndex(),
+					ERRORCODE.MESSAGE_NULL.getReason());
+		}
 		MessageVo messageVo = new MessageVo();
 		BeanUtils.copyProperties(messageBo, messageVo);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("messageVo", messageVo);
+		messageService.updateMessage(messageid, 1);
 		return JSONObject.fromObject(map).toString();
 	}
 
@@ -132,6 +137,22 @@ public class MessageController extends BaseContorller {
 		List<String> ids = new ArrayList<>();
 		Collections.addAll(ids, idArr);
 		messageService.deleteMessages(ids);
+		return Constant.COM_RESP;
+	}
+
+	@ApiOperation("批量阅读消息")
+	@ApiImplicitParam(name = "messageids", value = "消息id,多个以逗号隔开", dataType = "string", paramType = "query")
+	@PostMapping("/multi-read-message")
+	public String betchReadMessage(String messageids, HttpServletRequest request, HttpServletResponse response) {
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		String[] idArr = CommonUtil.getIds(messageids);
+		List<String> ids = new ArrayList<>();
+		Collections.addAll(ids, idArr);
+		messageService.betchUpdateMessage(ids, 1);
 		return Constant.COM_RESP;
 	}
 

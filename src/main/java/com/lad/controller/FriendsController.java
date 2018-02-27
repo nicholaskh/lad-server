@@ -106,14 +106,10 @@ public class FriendsController extends BaseContorller {
 		} catch (MyException e) {
 			return e.getMessage();
 		}
-		if (StringUtils.isEmpty(id)) {
-			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NULL.getIndex(),
-					ERRORCODE.FRIEND_NULL.getReason());
-		}
 		FriendsBo friendsBo = friendsService.get(id);
 		if (friendsBo == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NULL.getIndex(),
-					ERRORCODE.FRIEND_NULL.getReason());
+			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_ERROR.getIndex(),
+					ERRORCODE.FRIEND_ERROR.getReason());
 		}
 		String userid = friendsBo.getFriendid();
 		String friendid = friendsBo.getUserid();
@@ -121,10 +117,6 @@ public class FriendsController extends BaseContorller {
 		if (friendBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NULL.getIndex(),
 					ERRORCODE.FRIEND_NULL.getReason());
-		}
-		if (!userid.equals(userBo.getId())) {
-			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_ERROR.getIndex(),
-					ERRORCODE.FRIEND_ERROR.getReason());
 		}
 		ChatroomBo chatroomBo = chatroomService.selectByUserIdAndFriendid(
 				userid, friendid);

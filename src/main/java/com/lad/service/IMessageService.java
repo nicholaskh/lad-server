@@ -17,4 +17,21 @@ public interface IMessageService extends IBaseService {
 	WriteResult deleteMessage(String id);
 
 	WriteResult deleteMessages(List<String> ids);
+
+	/**
+	 * 更新消息状态
+	 * @param id
+	 * @param status
+	 * @return
+	 */
+	WriteResult updateMessage(String id, int status);
+
+
+	/**
+	 * 批量更新消息状态
+	 * @param id
+	 * @param status
+	 * @return
+	 */
+	WriteResult betchUpdateMessage(List<String> ids, int status);
 }

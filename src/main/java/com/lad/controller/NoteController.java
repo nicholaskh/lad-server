@@ -1349,26 +1349,19 @@ public class NoteController extends BaseContorller {
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "circleid", value = "圈子id", required = true,
 					dataType = "string", paramType = "query"),
-			@ApiImplicitParam(name = "startTime", value = "指定开始日期，格式yyyy-MM-dd", required = true,
-					dataType = "string", paramType = "query"),
-			@ApiImplicitParam(name = "startTime", value = "指定结束日期，若为空，则搜索范围为startTime全天，格式yyyy-MM-dd",
+			@ApiImplicitParam(name = "startTime", value = "指定查询日期，格式yyyy-MM-dd", required = true,
 					dataType = "string", paramType = "query"),
 			@ApiImplicitParam(name = "page", value = "分页页码", dataType = "int", paramType = "query"),
 			@ApiImplicitParam(name = "limit", value = "每页数量", dataType = "int", paramType = "query")})
 	@PostMapping("/search-time")
-	public String findByNoteTime(String circleid, String startTime, String endTime, int page, int limit,
+	public String findByNoteTime(String circleid, String startTime, int page, int limit,
 									  HttpServletRequest request, HttpServletResponse response) {
 		UserBo loginUser = getUserLogin(request);
 		SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd");
 		try {
 			Date startDate = sf.parse(startTime);
 			Date start = CommonUtil.getZeroDate(startDate);
-			Date end;
-			if (StringUtils.isEmpty(endTime)) {
-				end = CommonUtil.getLastDate(startDate);
-			} else {
-				end = CommonUtil.getLastDate(sf.parse(endTime));
-			}
+			Date end = CommonUtil.getLastDate(startDate);
 			List<NoteBo> noteBos = noteService.selectByCreatTime(circleid, start, end,  page, limit);
 			List<NoteVo> noteVoList = new LinkedList<>();
 			if (noteBos != null) {

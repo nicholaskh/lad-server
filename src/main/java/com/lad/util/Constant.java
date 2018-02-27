@@ -370,4 +370,8 @@ public class Constant {
 	// 某人通过二维码加入群聊
 	public static final int SOME_ONE_BY_CODE_OT_CHAT_ROOM = 13;
 
+	public static final String WX_APP_ID = "wx9db7bfc8d75ff1d7";
+
+	public static final String WX_APP_SECRET = "94fcf5520ce067be9aa34dac143e89e5";
+
 }

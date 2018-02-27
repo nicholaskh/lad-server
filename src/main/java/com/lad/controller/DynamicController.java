@@ -437,15 +437,15 @@ public class DynamicController extends BaseContorller {
             dynamicVo.setSourceid(msgBo.getMsgid());
             if (!userBo.getId().equals(msgBo.getCreateuid())) {
                 UserBo user = userService.getUser(msgBo.getCreateuid());
-                dynamicVo.setUserPic(user.getHeadPictureName());
-                dynamicVo.setUserid(msgBo.getCreateuid());
-                FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(user.getId(), msgBo
-                        .getCreateuid());
-                if (friendsBo != null || StringUtils.isEmpty(friendsBo.getBackname())) {
-                    dynamicVo.setUserName(friendsBo.getBackname());
-                } else {
-                    dynamicVo.setUserName(user.getUserName());
-                }
+                    dynamicVo.setUserPic(user.getHeadPictureName());
+                    dynamicVo.setUserid(msgBo.getCreateuid());
+                    FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(userBo.getId(), msgBo
+                            .getCreateuid());
+                    if (friendsBo != null && StringUtils.isEmpty(friendsBo.getBackname())) {
+                        dynamicVo.setUserName(friendsBo.getBackname());
+                    } else {
+                        dynamicVo.setUserName(user.getUserName());
+                    }
             } else {
                 dynamicVo.setUserPic(userBo.getHeadPictureName());
                 dynamicVo.setUserid(userBo.getCreateuid());

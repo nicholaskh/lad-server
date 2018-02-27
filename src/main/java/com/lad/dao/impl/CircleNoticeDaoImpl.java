@@ -155,6 +155,7 @@ public class CircleNoticeDaoImpl implements ICircleNoticeDao {
         } else {
             criteria.and("chatroomid").is(targetid);
         }
+        query.addCriteria(criteria);
         return mongoTemplate.count(query, CircleNoticeBo.class);
     }
 }

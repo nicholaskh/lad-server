@@ -67,4 +67,22 @@ public class MessageDaoImpl implements IMessageDao {
 		update.set("deleted", Constant.DELETED);
 		return mongoTemplate.updateMulti(query, update, MessageBo.class);
 	}
+
+	@Override
+	public WriteResult updateMessage(String id, int status) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("_id").is(id).and("deleted").is(0));
+		Update update = new Update();
+		update.set("status", status);
+		return mongoTemplate.updateFirst(query, update, MessageBo.class);
+	}
+
+	@Override
+	public WriteResult betchUpdateMessage(List<String> ids, int status) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("_id").in(ids).and("deleted").is(0));
+		Update update = new Update();
+		update.set("status", status);
+		return mongoTemplate.updateMulti(query, update, MessageBo.class);
+	}
 }
