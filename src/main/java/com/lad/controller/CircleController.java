@@ -2800,189 +2800,25 @@ public class CircleController extends BaseContorller {
 	@ApiOperation("圈子最新动态信息")
 	@PostMapping("/new-situation")
 	public String circleNews(String circleid, int page, int limit, HttpServletRequest request, HttpServletResponse
-			response) {
-
+			response) {                                  List<NoteBo> noteBos = noteService.finyByCreateTime(circleid,page,limit);
+		List<NoteVo> noteVos = new LinkedList<>();
 		UserBo loginUser = getUserLogin(request);
-		String loginUserid = loginUser != null ? loginUser.getId() : "";
-		List<CircleShowBo> showBos = circleService.findCircleShows(circleid, page, limit);
-		Map<String, Object> map = new LinkedHashMap<>();
-		map.put("ret", 0);
-		JSONArray array = new JSONArray();
-		for (CircleShowBo showBo : showBos) {
-			int type = showBo.getType();
-			String id = showBo.getTargetid();
-			if (type == 0) {
-				NoteBo noteBo = noteService.selectById(id);
-				if (noteBo == null) {
-					continue;
-				}
-				JSONObject object = new JSONObject();
-				UserBo createBo = userService.getUser(noteBo.getCreateuid());
-				NoteVo noteVo = new NoteVo();
-				boToVo(noteBo, noteVo, createBo, loginUserid);
-				if (!"".equals(loginUserid)) {
-					ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(id, loginUserid);
-					noteVo.setMyThumbsup(thumbsupBo != null);
-				}
-				object.put("note", noteVo);
-				array.add(object);
-			} else if (type == 1) {
-				PartyBo partyBo = partyService.findById(id);
-				if (partyBo == null) {
-					continue;
-				}
-				JSONObject object = new JSONObject();
-				LinkedHashSet<String> startTimes = partyBo.getStartTime();
-				PartyListVo listVo = new PartyListVo();
-				if (partyBo.getForward() == 1) {
-					PartyBo forward = partyService.findById(partyBo.getSourcePartyid());
-					if (forward == null) {
-						continue;
-					}
-					BeanUtils.copyProperties(forward, listVo);
-					addValues(listVo, forward);
-					listVo.setPartyid(forward.getId());
-					listVo.setUserNum(forward.getPartyUserNum());
-					listVo.setSourceCirid(forward.getCircleid());
-					CircleBo circleBo = circleService.selectById(forward.getCircleid());
-					if (circleBo != null) {
-						listVo.setSourceCirName(circleBo.getName());
-					}
-					String createid = partyBo.getCreateuid();
-					listVo.setFromUserid(createid);
-					String name = "";
-					UserBo userBo = loginUser;
-					if (null != loginUser ) {
-						if (!loginUserid.equals(createid)) {
-							FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(loginUserid, createid);
-							if (friendsBo != null && StringUtils.isNotEmpty(friendsBo.getBackname())) {
-								name = friendsBo.getBackname();
-							}
-							userBo = userService.getUser(createid);
-						}
-					} else {
-						userBo = userService.getUser(createid);
-					}
-					listVo.setFromUserName("".equals(name) ? userBo.getUserName() : name);
-					listVo.setFromUserPic(userBo.getHeadPictureName());
-					listVo.setFromUserSex(userBo.getSex());
-					listVo.setFromUserSign(userBo.getPersonalizedSignature());
-					listVo.setFromUserLevel(userBo.getLevel());
-					listVo.setFromUserBirth(userBo.getBirthDay());
-					listVo.setForward(true);
-					listVo.setView(partyBo.getView());
-				} else {
-					PartyNoticeBo partyNoticeBo = partyService.findPartyNotice(partyBo.getId());
-					BeanUtils.copyProperties(partyBo, listVo);
-					addValues(listVo, partyBo);
-					listVo.setPartyid(partyBo.getId());
-					listVo.setHasNotice(partyNoticeBo != null);
-					listVo.setUserNum(partyBo.getPartyUserNum());
-				}
-				object.put("party", listVo);
-				array.add(object);
-			} else if (type == 2) {
-				int inforType = showBo.getInforType();
-				InforBaseVo inforVo = new InforBaseVo();
-				JSONObject object = new JSONObject();
-				String inforid = showBo.getTargetid();
-				inforVo.setInforType(inforType);
-				inforVo.setInforid(inforid);
-				if (!"".equals(loginUserid)) {
-					ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(inforid, loginUserid);
-					inforVo.setSelfSub(thumbsupBo != null);
-				}
-				String name = "";
-				UserBo userBo = loginUser;
-				String createid = showBo.getCreateuid();
-				if (null != loginUser ) {
-					if (!loginUserid.equals(createid)) {
-						FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(loginUserid, createid);
-						if (friendsBo != null && StringUtils.isNotEmpty(friendsBo.getBackname())) {
-							name = friendsBo.getBackname();
-						}
-						userBo = userService.getUser(createid);
-					}
-				} else {
-					userBo = userService.getUser(createid);
-				}
-				if (userBo != null) {
-					inforVo.setFromUserName("".equals(name) ? userBo.getUserName() : name);
-					inforVo.setFromUserPic(userBo.getHeadPictureName());
-					inforVo.setFromUserSex(userBo.getSex());
-					inforVo.setFromUserSign(userBo.getPersonalizedSignature());
-					inforVo.setFromUserLevel(userBo.getLevel());
-					inforVo.setFromUserBirth(userBo.getBirthDay());
-				}
-				inforVo.setFromUserid(createid);
-				switch (inforType){
-					case Constant.INFOR_HEALTH:
-						InforBo inforBo = inforService.findById(inforid);
-						if (inforBo != null) {
-							inforVo.setImageUrls(inforBo.getImageUrls());
-							inforVo.setTitle(inforBo.getTitle());
-							inforVo.setReadNum(inforBo.getVisitNum());
-							inforVo.setModule(inforBo.getModule());
-							inforVo.setClassName(inforBo.getClassName());
-							inforVo.setCommentNum(inforBo.getCommnetNum());
-							inforVo.setShareNum(inforBo.getShareNum());
-							inforVo.setType("pic");
-							inforVo.setThumpsubNum(inforBo.getThumpsubNum());
-							object.put("infor", inforVo);
-							array.add(object);
-						}
-						break;
-					case Constant.INFOR_SECRITY:
-						SecurityBo securityBo = inforService.findSecurityById(inforid);
-						if (securityBo != null) {
-							inforVo.setTitle(securityBo.getTitle());
-							inforVo.setReadNum(securityBo.getVisitNum());
-							inforVo.setModule(securityBo.getNewsType());
-							inforVo.setClassName(securityBo.getNewsType());
-							inforVo.setCommentNum(securityBo.getCommnetNum());
-							inforVo.setShareNum(securityBo.getShareNum());
-							inforVo.setThumpsubNum(securityBo.getThumpsubNum());
-							object.put("infor", inforVo);
-							array.add(object);
-						}
-						break;
-					case Constant.INFOR_RADIO:
-						BroadcastBo broadcastBo = inforService.findBroadById(inforid);
-						if (broadcastBo != null) {
-							inforVo.setTitle(broadcastBo.getTitle());
-							inforVo.setReadNum(broadcastBo.getVisitNum());
-							inforVo.setModule(broadcastBo.getModule());
-							inforVo.setClassName(broadcastBo.getClassName());
-							inforVo.setCommentNum(broadcastBo.getCommnetNum());
-							inforVo.setShareNum(broadcastBo.getShareNum());
-							inforVo.setThumpsubNum(broadcastBo.getThumpsubNum());
-							object.put("infor", inforVo);
-							array.add(object);
-						}
-						break;
-					case Constant.INFOR_VIDEO:
-						VideoBo videoBo = inforService.findVideoById(inforid);
-						if (videoBo != null) {
-							inforVo.setTitle(videoBo.getTitle());
-							inforVo.setReadNum(videoBo.getVisitNum());
-							inforVo.setModule(videoBo.getModule());
-							inforVo.setClassName(videoBo.getClassName());
-							inforVo.setCommentNum(videoBo.getCommnetNum());
-							inforVo.setShareNum(videoBo.getShareNum());
-							inforVo.setType("video");
-							inforVo.setVideoPic(videoBo.getPoster());
-							inforVo.setVideoUrl(videoBo.getUrl());
-							inforVo.setThumpsubNum(videoBo.getThumpsubNum());
-							object.put("infor", inforVo);
-							array.add(object);
-						}
-						break;
-					default:
-						break;
-				}
+		String loginUserid = loginUser == null ? "" : loginUser.getId();
+		for (NoteBo noteBo : noteBos) {
+			NoteVo noteVo = new NoteVo();
+			if (noteBo.getCreateuid().equals(loginUserid)) {
+				boToVo(noteBo, noteVo, loginUser, loginUserid);
+			} else {
+				UserBo userBo = userService.getUser(noteBo.getCreateuid());
+				boToVo(noteBo, noteVo, userBo, loginUserid);
 			}
+			ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(noteBo.getId(), loginUserid);
+			noteVo.setMyThumbsup(thumbsupBo != null);
+			noteVos.add(noteVo);
 		}
-		map.put("listVos", array);
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("noteVoList", noteVos);
 		return JSONObject.fromObject(map).toString();
 	}
 
@@ -3144,30 +2980,78 @@ public class CircleController extends BaseContorller {
 		if (noteBo.getForward() == 1) {
 			noteVo.setSourceid(noteBo.getSourceid());
 			noteVo.setForward(true);
-			NoteBo sourceNote = noteService.selectById(noteBo.getSourceid());
-			if (sourceNote != null) {
-				noteVo.setSubject(sourceNote.getSubject());
-				noteVo.setContent(sourceNote.getContent());
-				noteVo.setPhotos(sourceNote.getPhotos());
-				noteVo.setVideoPic(sourceNote.getVideoPic());
-				addNoteAtUsers(sourceNote, noteVo, userid);
-				UserBo from = userService.getUser(sourceNote.getCreateuid());
-				if (from != null) {
-					noteVo.setFromUserid(from.getId());
-					if (!org.springframework.util.StringUtils.isEmpty(userid)) {
-						FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(userid, from.getId());
-						if (friendsBo != null) {
-							noteVo.setFromUserName(friendsBo.getBackname());
+			//0 表示转发的帖子，1 表示转发的资讯
+			if (noteBo.getNoteType() == 1) {
+				int inforType = noteBo.getInforType();
+				noteVo.setInforType(inforType);
+				noteVo.setForwardType(1);
+				switch (inforType){
+					case Constant.INFOR_HEALTH:
+						InforBo inforBo = inforService.findById(noteBo.getSourceid());
+						if (inforBo != null) {
+							noteVo.setPhotos(inforBo.getImageUrls());
+							noteVo.setSubject(inforBo.getTitle());
+							noteVo.setVisitCount((long)inforBo.getVisitNum());
+							noteVo.setInforTypeName(inforBo.getModule());
+						}
+						break;
+					case Constant.INFOR_SECRITY:
+						SecurityBo securityBo = inforService.findSecurityById(noteBo.getSourceid());
+						if (securityBo == null) {
+							noteVo.setSubject(securityBo.getTitle());
+							noteVo.setVisitCount((long)securityBo.getVisitNum());
+							noteVo.setInforTypeName(securityBo.getNewsType());
+						}
+						break;
+					case Constant.INFOR_RADIO:
+						BroadcastBo broadcastBo = inforService.findBroadById(noteBo.getSourceid());
+						if (broadcastBo == null) {
+							noteVo.setSubject(broadcastBo.getTitle());
+							noteVo.setInforUrl(broadcastBo.getBroadcast_url());
+							noteVo.setVisitCount((long)broadcastBo.getVisitNum());
+							noteVo.setInforTypeName(broadcastBo.getModule());
+						}
+						break;
+					case Constant.INFOR_VIDEO:
+						VideoBo videoBo = inforService.findVideoById(noteBo.getSourceid());
+						if (videoBo == null) {
+							noteVo.setSubject(videoBo.getTitle());
+							noteVo.setInforUrl(videoBo.getUrl());
+							noteVo.setVideoPic(videoBo.getPoster());
+							noteVo.setVisitCount((long)videoBo.getVisitNum());
+							noteVo.setInforTypeName(videoBo.getModule());
+						}
+						break;
+					default:
+						break;
+				}
+			} else {
+				NoteBo sourceNote = noteService.selectById(noteBo.getSourceid());
+				if (sourceNote != null) {
+					noteVo.setSubject(sourceNote.getSubject());
+					noteVo.setContent(sourceNote.getContent());
+					noteVo.setPhotos(sourceNote.getPhotos());
+					noteVo.setVideoPic(sourceNote.getVideoPic());
+					addNoteAtUsers(sourceNote, noteVo, userid);
+					UserBo from = userService.getUser(sourceNote.getCreateuid());
+					if (from != null) {
+						noteVo.setFromUserid(from.getId());
+						if (!org.springframework.util.StringUtils.isEmpty(userid)) {
+							FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(userid, from.getId());
+							if (friendsBo != null) {
+								noteVo.setFromUserName(friendsBo.getBackname());
+							} else {
+								noteVo.setFromUserName(from.getUserName());
+							}
 						} else {
 							noteVo.setFromUserName(from.getUserName());
 						}
-					} else {
-						noteVo.setFromUserName(from.getUserName());
+						noteVo.setFromUserPic(from.getHeadPictureName());
+						noteVo.setFromUserSex(from.getSex());
+						noteVo.setFromUserSign(from.getPersonalizedSignature());
+						noteVo.setFromUserBirth(from.getBirthDay());
+						noteVo.setFromUserLevel(from.getLevel());
 					}
-					noteVo.setFromUserPic(from.getHeadPictureName());
-					noteVo.setFromUserSex(from.getSex());
-					noteVo.setFromUserSign(from.getPersonalizedSignature());
-					noteVo.setFromUserLevel(from.getLevel());
 				}
 			}
 		} else {

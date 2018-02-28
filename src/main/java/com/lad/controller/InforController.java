@@ -1880,21 +1880,20 @@ public class InforController extends BaseContorller {
             return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_IS_NULL.getIndex(),
                     ERRORCODE.CIRCLE_IS_NULL.getReason());
         }
-        CircleShowBo circleShowBo = new CircleShowBo();
-        circleShowBo.setType(2);
-        circleShowBo.setTargetid(inforid);
-        circleShowBo.setCircleid(circleid);
-        circleShowBo.setInforType(inforType);
-        circleShowBo.setCreateTime(new Date());
-        //后补充的转发人员信息id
-        circleShowBo.setCreateuid(userBo.getId());
-        circleService.addCircleShow(circleShowBo);
+        NoteBo noteBo = new NoteBo();
+        noteBo.setSourceid(inforid);
+        noteBo.setNoteType(1);
+        noteBo.setInforType(inforType);
+        noteBo.setForward(1);
+        noteBo.setCreateuid(userBo.getId());
+        noteBo.setCircleId(circleid);
+        noteService.insert(noteBo);
         updateInforNum(inforid, inforType, 1, Constant.SHARE_NUM);
         return Constant.COM_RESP;
     }
 
 
-    @ApiOperation("根据类型获取最后5条阅读信息")
+    @ApiOperation("根据类型获取最后5条历史阅读信息")
     @ApiImplicitParam(name = "inforType", value = "1健康，2 安防，3广播，4视频, 0表示查询所有阅读记录信息", required = true, paramType =
             "query", dataType = "int")
     @RequestMapping(value = "/last-read", method = {RequestMethod.GET, RequestMethod.POST})
