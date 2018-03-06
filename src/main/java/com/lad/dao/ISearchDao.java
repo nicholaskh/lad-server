@@ -23,4 +23,22 @@ public interface ISearchDao {
 
     List<SearchBo> findByTimes(int type, int limit);
 
+    /**
+     * 资讯搜索历史
+     * @param type
+     * @param inforType
+     * @param limit
+     * @return
+     */
+    List<SearchBo> findInforByTimes(int type, int inforType, int limit);
+
+    /**
+     * 资讯搜索
+     * @param keyword
+     * @param type
+     * @param inforType
+     * @return
+     */
+    SearchBo findInforByKeyword(String keyword, int type, int inforType);
+
 }

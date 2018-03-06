@@ -76,6 +76,9 @@ public class InforController extends BaseContorller {
     @Autowired
     private ICircleService circleService;
 
+    @Autowired
+    private ISearchService searchService;
+
 
     @ApiOperation("刷新资讯分类缓存信息")
     @GetMapping("/init-cache")
@@ -2010,18 +2013,19 @@ public class InforController extends BaseContorller {
         Map<String, Object> map = new LinkedHashMap<>();
         map.put("ret", 0);
         map.put("inforType", inforType);
+        saveKeyword(keyword, inforType);
         switch (inforType){
             case Constant.INFOR_HEALTH:
                 List<InforBo> inforBos = inforService.findInforByTitleRegex(keyword,page, limit);
                 List<InforVo> inforVos = new ArrayList<>();
                 for (InforBo inforBo : inforBos) {
                     InforVo inforVo = new InforVo();
+                    BeanUtils.copyProperties(inforBo, inforVo);
                     if (!"".equals(userid)) {
                         ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(inforBo.getId(), userid);
                         inforVo.setSelfSub(thumbsupBo != null);
                     }
                     inforVo.setInforid(inforBo.getId());
-                    BeanUtils.copyProperties(inforBo, inforVo);
                     inforVo.setText("");
                     inforVo.setThumpsubNum(inforBo.getThumpsubNum());
                     inforVo.setCommentNum(inforBo.getCommnetNum());
@@ -2035,11 +2039,11 @@ public class InforController extends BaseContorller {
                 LinkedList<SecurityVo> vos = new LinkedList<>();
                 for (SecurityBo securityBo : securityBos) {
                     SecurityVo securityVo = new SecurityVo();
+                    BeanUtils.copyProperties(securityBo, securityVo);
                     if (!"".equals(userid)) {
                         ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(securityBo.getId(), userid);
                         securityVo.setSelfSub(thumbsupBo != null);
                     }
-                    BeanUtils.copyProperties(securityBo, securityVo);
                     securityVo.setInforid(securityBo.getId());
                     securityVo.setThumpsubNum(securityBo.getThumpsubNum());
                     securityVo.setCommentNum(securityBo.getCommnetNum());
@@ -2119,6 +2123,26 @@ public class InforController extends BaseContorller {
         return JSONObject.fromObject(map).toString();
     }
 
+    @ApiOperation("资讯热门搜索关键词")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "inforType", value = "1健康，2 安防，3广播，4视频",  paramType = "query", dataType =
+                    "int"),
+            @ApiImplicitParam(name = "limit", value = "显示关键词数量", paramType = "query", dataType = "int")})
+    @RequestMapping(value = "/hot-search-words", method = {RequestMethod.GET, RequestMethod.POST})
+    public String searchHotHis(int inforType, int limit, HttpServletRequest request,
+                         HttpServletResponse response) {
+
+        List<SearchBo> searchBos = searchService.findInforByTimes(2, inforType, limit);
+        List<String> words = new ArrayList<>();
+        for (SearchBo searchBo : searchBos) {
+            words.add(searchBo.getKeyword());
+        }
+        Map<String, Object> map = new HashMap<>();
+        map.put("ret", 0);
+        map.put("hotWords", words);
+        return JSONObject.fromObject(map).toString();
+    }
+
     /**
      * 需要和聚会展示最新信息
      * @param noteBo
@@ -2154,6 +2178,30 @@ public class InforController extends BaseContorller {
         }
         inforService.deleteUserReadHis(userid, inforType);
     }
-    
 
+
+    /**
+     * 搜索记录添加
+     * @param keyword
+     */
+    @Async
+    private void saveKeyword(String keyword, int inforType) {
+        RLock lock = redisServer.getRLock("inforkeyword" + inforType);
+        try {
+            lock.lock(2, TimeUnit.SECONDS);
+            SearchBo searchBo = searchService.findInforByKeyword(keyword, 2, inforType);
+            if (searchBo == null) {
+                searchBo = new SearchBo();
+                searchBo.setKeyword(keyword);
+                searchBo.setType(2);
+                searchBo.setTimes(1);
+                searchBo.setInforType(inforType);
+                searchService.insert(searchBo);
+            } else {
+                searchService.update(searchBo.getId());
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
 }

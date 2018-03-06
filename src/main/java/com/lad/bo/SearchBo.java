@@ -26,6 +26,8 @@ public class SearchBo implements Serializable {
 
     //0 圈子， 1帖子， 2 资讯, 4 城市
     private Integer type;
+    //资讯搜索的分类，与资讯分类对应
+    private int inforType;
 
     public String getId() {
         return id;
@@ -65,5 +67,13 @@ public class SearchBo implements Serializable {
 
     public void setType(Integer type) {
         this.type = type;
+    }
+
+    public int getInforType() {
+        return inforType;
+    }
+
+    public void setInforType(int inforType) {
+        this.inforType = inforType;
     }
 }

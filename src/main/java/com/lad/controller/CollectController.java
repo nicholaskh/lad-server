@@ -15,6 +15,7 @@ import net.sf.json.JSONObject;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -297,44 +298,54 @@ public class CollectController extends BaseContorller {
 						vo.setCollectPic(partyBo.getBackPic());
 					}
 				}  else if (collectBo.getSub_type() == Constant.INFOR_TYPE) {
+					String inforid = "";
 					vo.setCollectPic(collectBo.getTargetPic());
 					int inforType = collectBo.getSourceType();
-					String inforid = collectBo.getTargetid();
 					vo.setSourceType(inforType);
-					switch (inforType){
-						case Constant.INFOR_HEALTH:
-							InforBo inforBo = inforService.findById(inforid);
-							if (inforBo != null) {
-								vo.setModule(inforBo.getModule());
-								vo.setClassName(inforBo.getClassName());
-								vo.setTitle(inforBo.getTitle());
-							}
-							break;
-						case Constant.INFOR_SECRITY:
-							SecurityBo securityBo = inforService.findSecurityById(inforid);
-							if (securityBo != null) {
-								vo.setModule(securityBo.getNewsType());
-								vo.setTitle(securityBo.getTitle());
-							}
-							break;
-						case Constant.INFOR_RADIO:
-							BroadcastBo broadcastBo = inforService.findBroadById(inforid);
-							if (broadcastBo != null) {
-								vo.setModule(broadcastBo.getModule());
-								vo.setClassName(broadcastBo.getClassName());
-								vo.setTitle(broadcastBo.getTitle());
-							}
-							break;
-						case Constant.INFOR_VIDEO:
-							VideoBo videoBo = inforService.findVideoById(inforid);
-							if (videoBo != null) {
-								vo.setModule(videoBo.getModule());
-								vo.setClassName(videoBo.getClassName());
-								vo.setTitle(videoBo.getTitle());
-							}
-							break;
-						default:
-							break;
+					//表示收藏的为合集
+					if (!StringUtils.isEmpty(collectBo.getFirstid())) {
+						vo.setInforGroups(true);
+						vo.setModule(collectBo.getModule());
+						vo.setClassName(collectBo.getClassName());
+						vo.setTargetid(collectBo.getFirstid());
+					} else {
+						inforid = collectBo.getTargetid();
+						vo.setTargetid(inforid);
+						switch (inforType){
+							case Constant.INFOR_HEALTH:
+								InforBo inforBo = inforService.findById(inforid);
+								if (inforBo != null) {
+									vo.setModule(inforBo.getModule());
+									vo.setClassName(inforBo.getClassName());
+									vo.setTitle(inforBo.getTitle());
+								}
+								break;
+							case Constant.INFOR_SECRITY:
+								SecurityBo securityBo = inforService.findSecurityById(inforid);
+								if (securityBo != null) {
+									vo.setModule(securityBo.getNewsType());
+									vo.setTitle(securityBo.getTitle());
+								}
+								break;
+							case Constant.INFOR_RADIO:
+								BroadcastBo broadcastBo = inforService.findBroadById(inforid);
+								if (broadcastBo != null) {
+									vo.setModule(broadcastBo.getModule());
+									vo.setClassName(broadcastBo.getClassName());
+									vo.setTitle(broadcastBo.getTitle());
+								}
+								break;
+							case Constant.INFOR_VIDEO:
+								VideoBo videoBo = inforService.findVideoById(inforid);
+								if (videoBo != null) {
+									vo.setModule(videoBo.getModule());
+									vo.setClassName(videoBo.getClassName());
+									vo.setTitle(videoBo.getTitle());
+								}
+								break;
+							default:
+								break;
+						}
 					}
 				}
 				vo.setVideo(collectBo.getVideo());

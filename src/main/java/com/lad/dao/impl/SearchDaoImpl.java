@@ -56,10 +56,28 @@ public class SearchDaoImpl implements ISearchDao {
     @Override
     public List<SearchBo> findByTimes(int type, int limit) {
         Query query = new Query();
-        query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "times")));
         //圈子
         query.addCriteria(new Criteria("type").is(type));
+        query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "times")));
         query.limit(limit);
         return mongoTemplate.find(query, SearchBo.class);
+    }
+
+    @Override
+    public List<SearchBo> findInforByTimes(int type, int inforType, int limit) {
+        Query query = new Query();
+        //圈子
+        query.addCriteria(new Criteria("type").is(type).and("inforType").is(inforType));
+        query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "times")));
+        query.limit(limit);
+        return mongoTemplate.find(query, SearchBo.class);
+
+    }
+
+    @Override
+    public SearchBo findInforByKeyword(String keyword, int type, int inforType) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("keyword").is(keyword).and("type").is(type).and("inforType").is(inforType));
+        return mongoTemplate.findOne(query,SearchBo.class);
     }
 }

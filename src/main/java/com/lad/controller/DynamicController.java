@@ -9,6 +9,8 @@ import com.lad.util.ERRORCODE;
 import com.lad.util.MyException;
 import com.lad.vo.DynamicVo;
 import com.lad.vo.UserBaseVo;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import net.sf.json.JSONObject;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +18,9 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
@@ -29,7 +33,8 @@ import java.util.*;
  * Version: 1.0
  * Time:2017/9/23
  */
-@Controller
+@Api("动态信息相关接口")
+@RestController
 @RequestMapping("/dynamic")
 public class DynamicController extends BaseContorller {
 
@@ -65,8 +70,8 @@ public class DynamicController extends BaseContorller {
      * @param response
      * @return
      */
-    @RequestMapping("/insert")
-    @ResponseBody
+    @ApiOperation("添加动态信息")
+    @RequestMapping(value = "/insert", method = {RequestMethod.GET, RequestMethod.POST})
     public String insert(double px, double py, String title, String content, String landmark,
                          MultipartFile[] pictures, String type, HttpServletRequest request,
                          HttpServletResponse response){
@@ -116,8 +121,8 @@ public class DynamicController extends BaseContorller {
      * @param response
      * @return
      */
-    @RequestMapping("/all-dynamics")
-    @ResponseBody
+    @ApiOperation("所有好友动态列表")
+    @RequestMapping(value = "/all-dynamics", method = {RequestMethod.GET, RequestMethod.POST})
     public String allDynamics(int page, int limit, HttpServletRequest request, HttpServletResponse response){
 
         UserBo userBo;
@@ -163,8 +168,8 @@ public class DynamicController extends BaseContorller {
      * @param response
      * @return
      */
-    @RequestMapping("/all-dynamics-num")
-    @ResponseBody
+    @ApiOperation("获取所有好友动态数量")
+    @RequestMapping(value = "/all-dynamics-num", method = {RequestMethod.GET, RequestMethod.POST})
     public String allFriendsNum(HttpServletRequest request, HttpServletResponse response){
         UserBo userBo;
         try {
@@ -191,8 +196,8 @@ public class DynamicController extends BaseContorller {
                 }
             }
         }
-        DynamicNumBo dynamicNumBo = dynamicService.findByUserids(friends);
-        int total = dynamicNumBo != null ? dynamicNumBo.getNumber() : 0;
+        List<DynamicBo> msgBos = dynamicService.findAllFriendsMsg(friends, -1, 0);
+        int total = msgBos != null ? msgBos.size() : 0;
         Map<String, Object> map = new HashMap<>();
         map.put("ret", 0);
         map.put("dynamicNum", total);
@@ -205,8 +210,8 @@ public class DynamicController extends BaseContorller {
      * @param response
      * @return
      */
-    @RequestMapping("/friend-dynamics")
-    @ResponseBody
+    @ApiOperation("好友动态列表")
+    @RequestMapping(value = "/friend-dynamics", method = {RequestMethod.GET, RequestMethod.POST})
     public String allDynamics(String friendid,int page, int limit,
                               HttpServletRequest request, HttpServletResponse response){
         UserBo userBo;
@@ -239,22 +244,25 @@ public class DynamicController extends BaseContorller {
      * @param response
      * @return
      */
-    @RequestMapping("/one-dynamics-num")
-    @ResponseBody
+    @ApiOperation(" 获取好友动态数量")
+    @RequestMapping(value = "/one-dynamics-num", method = {RequestMethod.GET, RequestMethod.POST})
     public String friendsNum(String friendid, HttpServletRequest request, HttpServletResponse response){
         UserBo userBo = getUserLogin(request);
         if (userBo == null) {
             return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
                     ERRORCODE.ACCOUNT_OFF_LINE.getReason());
         }
-        DynamicNumBo numBo = dynamicService.findNumByUserid(friendid);
-        long total = 0L;
-        if (numBo != null) {
-            total = numBo.getNumber();
-        }
+        List<DynamicBo> msgBos = dynamicService.findOneFriendMsg(friendid, -1, 0);
+
+//        DynamicNumBo numBo = dynamicService.findNumByUserid(friendid);
+//        long total = 0L;
+//        if (numBo != null) {
+//            total = numBo.getNumber();
+//        }
+
         Map<String, Object> map = new HashMap<>();
         map.put("ret", 0);
-        map.put("dynamicNum", total);
+        map.put("dynamicNum", msgBos == null ? 0 : msgBos.size());
         return JSONObject.fromObject(map).toString();
     }
 
@@ -264,8 +272,8 @@ public class DynamicController extends BaseContorller {
      * @param response
      * @return
      */
-    @RequestMapping("/my-dynamics")
-    @ResponseBody
+    @ApiOperation("我的动态")
+    @RequestMapping(value = "/my-dynamics", method = {RequestMethod.GET, RequestMethod.POST})
     public String myDynamics(int page, int limit,
                               HttpServletRequest request, HttpServletResponse response){
         UserBo userBo = getUserLogin(request);
@@ -300,34 +308,35 @@ public class DynamicController extends BaseContorller {
      * @param response
      * @return
      */
-    @RequestMapping("/my-dynamics-num")
-    @ResponseBody
+    @ApiOperation("我的动态数量")
+    @RequestMapping(value = "/my-dynamics-num", method = {RequestMethod.GET, RequestMethod.POST})
     public String myDynamicsNum(HttpServletRequest request, HttpServletResponse response){
         UserBo userBo = getUserLogin(request);
         if (userBo == null) {
             return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
                     ERRORCODE.ACCOUNT_OFF_LINE.getReason());
         }
-        DynamicNumBo numBo = dynamicService.findNumByUserid(userBo.getId());
-        long total = 0L;
-        if (numBo != null) {
-            total = numBo.getNumber();
-        }
+//        DynamicNumBo numBo = dynamicService.findNumByUserid(userBo.getId());
+//        long total = 0L;
+//        if (numBo != null) {
+//            total = numBo.getNumber();
+//        }
+        List<DynamicBo> msgBos = dynamicService.findOneFriendMsg(userBo.getId(), -1, 0);
         Map<String, Object> map = new HashMap<>();
         map.put("ret", 0);
-        map.put("dynamicNum", total);
+        map.put("dynamicNum", msgBos == null ? 0 : msgBos.size());
         return JSONObject.fromObject(map).toString();
     }
 
 
     /**
-     * 不看他的动态
+     *
      * @param request
      * @param response
      * @return
      */
-    @RequestMapping("/dynamic-not-see")
-    @ResponseBody
+    @ApiOperation("不看他的动态")
+    @RequestMapping(value = "/dynamic-not-see", method = {RequestMethod.GET, RequestMethod.POST})
     public String notSee(String friendid, HttpServletRequest request, HttpServletResponse response){
         UserBo userBo = getUserLogin(request);
         if (userBo == null) {
@@ -357,8 +366,8 @@ public class DynamicController extends BaseContorller {
      * @param response
      * @return
      */
-    @RequestMapping("/visit-my-dynamic")
-    @ResponseBody
+    @ApiOperation("谁看过我的动态")
+    @RequestMapping(value = "/visit-my-dynamic", method = {RequestMethod.GET, RequestMethod.POST})
     public String visitMyDynamics(int page, int limit,
                              HttpServletRequest request, HttpServletResponse response){
         UserBo userBo = getUserLogin(request);
@@ -389,8 +398,8 @@ public class DynamicController extends BaseContorller {
      * @param response
      * @return
      */
-    @RequestMapping("/update-backpic")
-    @ResponseBody
+    @ApiOperation("更新动态背景图片")
+    @RequestMapping(value = "/update-backpic", method = {RequestMethod.GET, RequestMethod.POST})
     public String updateDynamicsPic(MultipartFile backPic,
                                   HttpServletRequest request, HttpServletResponse response){
         UserBo userBo = getUserLogin(request);
@@ -441,14 +450,14 @@ public class DynamicController extends BaseContorller {
                     dynamicVo.setUserid(msgBo.getCreateuid());
                     FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(userBo.getId(), msgBo
                             .getCreateuid());
-                    if (friendsBo != null && StringUtils.isEmpty(friendsBo.getBackname())) {
+                    if (friendsBo != null && !StringUtils.isEmpty(friendsBo.getBackname())) {
                         dynamicVo.setUserName(friendsBo.getBackname());
                     } else {
                         dynamicVo.setUserName(user.getUserName());
                     }
             } else {
                 dynamicVo.setUserPic(userBo.getHeadPictureName());
-                dynamicVo.setUserid(userBo.getCreateuid());
+                dynamicVo.setUserid(userBo.getId());
                 dynamicVo.setUserName(userBo.getUserName());
             }
             int type = msgBo.getType();

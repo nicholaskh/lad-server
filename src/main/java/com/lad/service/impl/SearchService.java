@@ -45,4 +45,14 @@ public class SearchService implements ISearchService {
     public List<SearchBo> findByTimes(int type, int limit) {
         return searchDao.findByTimes(type, limit);
     }
+
+    @Override
+    public List<SearchBo> findInforByTimes(int type, int inforType, int limit) {
+        return searchDao.findInforByTimes(type, inforType, limit);
+    }
+
+    @Override
+    public SearchBo findInforByKeyword(String keyword, int type, int inforType) {
+        return searchDao.findInforByKeyword(keyword, type, inforType);
+    }
 }

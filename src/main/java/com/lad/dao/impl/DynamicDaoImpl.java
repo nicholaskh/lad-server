@@ -82,9 +82,12 @@ public class DynamicDaoImpl implements IDynamicDao {
         Query query = new Query();
         query.addCriteria(new Criteria("createuid").in(friendids).and("deleted").is(Constant.ACTIVITY));
         query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
-        page = page < 1 ? 1 :page;
-        query.skip((page -1)*limit);
-        query.limit(limit);
+        //-1表示查询所有动态信息
+        if (page != -1) {
+            page = page < 1 ? 1 :page;
+            query.skip((page -1)*limit);
+            query.limit(limit);
+        }
         return mongoTemplate.find(query, DynamicBo.class);
     }
 
@@ -93,9 +96,11 @@ public class DynamicDaoImpl implements IDynamicDao {
         Query query = new Query();
         query.addCriteria(new Criteria("createuid").is(friendid).and("deleted").is(Constant.ACTIVITY));
         query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
-        page = page < 1 ? 1 :page;
-        query.skip((page -1)*limit);
-        query.limit(limit);
+        if (page != -1) {
+            page = page < 1 ? 1 : page;
+            query.skip((page - 1) * limit);
+            query.limit(limit);
+        }
         return mongoTemplate.find(query, DynamicBo.class);
     }
 }

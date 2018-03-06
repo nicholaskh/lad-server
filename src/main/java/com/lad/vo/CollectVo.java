@@ -55,6 +55,8 @@ public class CollectVo extends BaseVo {
     //合集第一条信息id
     private String firstid;
 
+    private boolean inforGroups;
+
     public String getCollectid() {
         return collectid;
     }
@@ -221,5 +223,13 @@ public class CollectVo extends BaseVo {
 
     public void setFirstid(String firstid) {
         this.firstid = firstid;
+    }
+
+    public boolean isInforGroups() {
+        return inforGroups;
+    }
+
+    public void setInforGroups(boolean inforGroups) {
+        this.inforGroups = inforGroups;
     }
 }
