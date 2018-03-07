@@ -348,4 +348,30 @@ public class UserServiceImpl implements IUserService{
 	public WriteResult updateUserInfo(UserBo userBo) {
 		return userDao.updateUserInfo(userBo);
 	}
+
+
+	@Override
+	public UserBo findByOpenid(String openid) {
+		return userDao.findByOpenid(openid);
+	}
+
+	@Override
+	public WriteResult updateRefeshToken(String openid, String acces_token, String refesh_token) {
+		return userDao.updateRefeshToken(openid, acces_token, refesh_token);
+	}
+
+	@Override
+	public WriteResult updateUserByOpenid(String openid, UserBo userBo) {
+		return userDao.updateUserByOpenid(openid, userBo);
+	}
+
+	@Override
+	public UserBo findByUnionid(String unionid) {
+		return userDao.findByUnionid(unionid);
+	}
+
+	@Override
+	public WriteResult updateLastLoginTime(int loginType, String id) {
+		return userDao.updateLastLoginTime(loginType, id);
+	}
 }

@@ -289,4 +289,50 @@ public class UserDaoImpl implements IUserDao {
         update.set("personalizedSignature", userBo.getPersonalizedSignature());
         return mongoTemplate.updateFirst(query, update, UserBo.class);
     }
+
+    @Override
+    public UserBo findByOpenid(String openid) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("openid").is(openid));
+        return mongoTemplate.findOne(query, UserBo.class);
+    }
+
+    @Override
+    public WriteResult updateRefeshToken(String openid, String acces_token, String refesh_token) {
+        return null;
+    }
+
+    @Override
+    public WriteResult updateUserByOpenid(String openid, UserBo userBo) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("openid").is(openid));
+        Update update = new Update();
+        update.set("userName", userBo.getUserName());
+        update.set("sex", userBo.getSex());
+        update.set("headPictureName", userBo.getHeadPictureName());
+        update.set("province", userBo.getProvince());
+        update.set("city", userBo.getCity());
+        update.set("privilege", userBo.getPrivilege());
+        update.set("unionid", userBo.getUnionid());
+        return mongoTemplate.updateFirst(query, update, UserBo.class);
+    }
+
+
+    @Override
+    public UserBo findByUnionid(String unionid) {
+        return null;
+    }
+
+    @Override
+    public WriteResult updateLastLoginTime(int loginType, String id) {
+        Query query = new Query();
+        if (loginType == 0) {
+            query.addCriteria(new Criteria("_id").is(id));
+        } else if (loginType == 1) {
+            query.addCriteria(new Criteria("openid").is(id));
+        }
+        Update update = new Update();
+        update.set("lastLoginTime", new Date());
+        return mongoTemplate.updateFirst(query, update, UserBo.class);
+    }
 }

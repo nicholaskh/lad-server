@@ -233,4 +233,41 @@ public interface IUserService extends IBaseService {
 	 */
 	WriteResult updateUserInfo(UserBo userBo);
 
+	/**
+	 * 第三方登录授权id
+	 * @param openid
+	 * @return
+	 */
+	UserBo findByOpenid(String openid);
+
+
+	/**
+	 * 第三方登录授权id
+	 * @param openid
+	 * @return
+	 */
+	WriteResult updateRefeshToken(String openid, String acces_token, String refesh_token);
+
+	/**
+	 * 根据授权信息，更新用户
+	 * @param openid
+	 * @return
+	 */
+	WriteResult updateUserByOpenid(String openid, UserBo userBo);
+
+	/**
+	 * 第三方登录授权id
+	 * @param openid
+	 * @return
+	 */
+	UserBo findByUnionid(String unionid);
+
+	/**
+	 * 最后一次登录记录
+	 * @param loginType
+	 * @param id
+	 * @return
+	 */
+	WriteResult updateLastLoginTime(int loginType, String id);
+
 }

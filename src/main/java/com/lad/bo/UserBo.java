@@ -2,10 +2,7 @@ package com.lad.bo;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 @Document(collection = "user")
 public class UserBo extends BaseBo {
@@ -31,6 +28,43 @@ public class UserBo extends BaseBo {
 	private int level = 1;
 	//个人动态页面背景图
 	private String dynamicPic;
+
+	//登录类型 0 普通注册用户， 1 微信授权， 2 QQ授权， 3 微博授权
+	private int loginType;
+	//授权用户唯一标识
+	private String openid;
+	//微信个人用户授权userinfo
+	private String unionid;
+	//授权的token
+	private String accessToken;
+	//
+	private String scope;
+	//
+	private String refeshToken;
+	//获取授权时间
+	private String tokenTime;
+	//授权token的有效持续时间 单位秒
+	private long expiresTime;
+	//授权的用户特权信息，json数组，如微信沃卡用户为（chinaunicom）
+	private String privilege;
+
+	private String province;
+
+	private String city;
+
+	//vip等级，0表示非vip
+	private int vipLevel;
+
+	//实名认证 类型 0 未实名认证， 1 身份证实名认证， 2 银行卡实名认证
+	private int idCardType;
+	//实名认证卡号
+	private String idCardNo;
+	//实名认证的图片
+	private String idCardPic;
+	//实名名称
+	private String realName;
+
+	private Date lastLoginTime;
 
 	/**
 	 * 面对面群聊
@@ -163,5 +197,141 @@ public class UserBo extends BaseBo {
 
 	public void setShowChatrooms(HashSet<String> showChatrooms) {
 		this.showChatrooms = showChatrooms;
+	}
+
+	public String getOpenid() {
+		return openid;
+	}
+
+	public void setOpenid(String openid) {
+		this.openid = openid;
+	}
+
+	public String getUnionid() {
+		return unionid;
+	}
+
+	public void setUnionid(String unionid) {
+		this.unionid = unionid;
+	}
+
+	public String getAccessToken() {
+		return accessToken;
+	}
+
+	public void setAccessToken(String accessToken) {
+		this.accessToken = accessToken;
+	}
+
+	public String getTokenTime() {
+		return tokenTime;
+	}
+
+	public void setTokenTime(String tokenTime) {
+		this.tokenTime = tokenTime;
+	}
+
+	public long getExpiresTime() {
+		return expiresTime;
+	}
+
+	public void setExpiresTime(long expiresTime) {
+		this.expiresTime = expiresTime;
+	}
+
+	public String getPrivilege() {
+		return privilege;
+	}
+
+	public void setPrivilege(String privilege) {
+		this.privilege = privilege;
+	}
+
+	public String getProvince() {
+		return province;
+	}
+
+	public void setProvince(String province) {
+		this.province = province;
+	}
+
+	public String getCity() {
+		return city;
+	}
+
+	public void setCity(String city) {
+		this.city = city;
+	}
+
+	public int getLoginType() {
+		return loginType;
+	}
+
+	public void setLoginType(int loginType) {
+		this.loginType = loginType;
+	}
+
+	public int getVipLevel() {
+		return vipLevel;
+	}
+
+	public void setVipLevel(int vipLevel) {
+		this.vipLevel = vipLevel;
+	}
+
+	public int getIdCardType() {
+		return idCardType;
+	}
+
+	public void setIdCardType(int idCardType) {
+		this.idCardType = idCardType;
+	}
+
+	public String getIdCardNo() {
+		return idCardNo;
+	}
+
+	public void setIdCardNo(String idCardNo) {
+		this.idCardNo = idCardNo;
+	}
+
+	public String getIdCardPic() {
+		return idCardPic;
+	}
+
+	public void setIdCardPic(String idCardPic) {
+		this.idCardPic = idCardPic;
+	}
+
+	public String getRealName() {
+		return realName;
+	}
+
+	public void setRealName(String realName) {
+		this.realName = realName;
+	}
+
+	public Date getLastLoginTime() {
+		return lastLoginTime;
+	}
+
+	public void setLastLoginTime(Date lastLoginTime) {
+		this.lastLoginTime = lastLoginTime;
+	}
+
+	public String getScope() {
+		return scope;
+	}
+
+	public void setScope(String scope) {
+		this.scope = scope;
+	}
+
+	public String getRefeshToken() {
+		return refeshToken;
+	}
+
+	public void setRefeshToken(String refeshToken) {
+		this.refeshToken = refeshToken;
 	}
 }
