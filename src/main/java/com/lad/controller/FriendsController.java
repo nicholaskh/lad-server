@@ -97,6 +97,9 @@ public class FriendsController extends BaseContorller {
 	 * @param response
 	 * @return
 	 */
+	@ApiOperation("同意好友请求")
+	@ApiImplicitParam(name = "id", value = "好友关系中的ID，不是userid或者朋友ID", required = true, paramType = "query", dataType =
+			"string")
 	@RequestMapping(value = "/agree",method = {RequestMethod.GET, RequestMethod.POST})
 	public String agree(String id, HttpServletRequest request,
 			HttpServletResponse response) {

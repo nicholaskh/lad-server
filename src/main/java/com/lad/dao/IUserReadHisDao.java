@@ -63,6 +63,13 @@ public interface IUserReadHisDao {
     WriteResult deleteUserReadHis(String userid, int inforType);
 
     /**
+     * 删除多余的阅读历史信息
+     * @param userid
+     * @return
+     */
+    WriteResult deleteUserReadHis(List<String> removeIds);
+
+    /**
      * 查找我的阅读历史
      * @param userid
      * @return

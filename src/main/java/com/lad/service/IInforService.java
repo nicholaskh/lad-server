@@ -413,4 +413,12 @@ public interface IInforService {
     List<UserReadHisBo> findByUserAndInfor(String userid, int inforType);
 
 
+
+    /**
+     * 删除多余的阅读历史信息
+     * @param userid
+     * @return
+     */
+    WriteResult deleteUserReadHis(List<String> removeIds);
+
 }

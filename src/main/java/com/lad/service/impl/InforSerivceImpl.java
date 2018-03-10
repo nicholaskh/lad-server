@@ -392,4 +392,9 @@ public class InforSerivceImpl implements IInforService {
     public List<VideoBo> findVideoByTitleRegex(String title, int page, int limit) {
         return videoDao.findByTitleRegex(title, page, limit);
     }
+
+    @Override
+    public WriteResult deleteUserReadHis(List<String> removeIds) {
+        return userReadHisDao.deleteUserReadHis(removeIds);
+    }
 }

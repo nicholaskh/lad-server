@@ -102,7 +102,14 @@ public class UserReadHisDaoImpl implements IUserReadHisDao {
         query.with(new Sort(Sort.Direction.DESC, "lastTime"));
         if (inforType != 0) {
             query.limit(5);
-        }
+        } 
         return mongoTemplate.find(query, UserReadHisBo.class);
+    }
+
+    @Override
+    public WriteResult deleteUserReadHis(List<String> removeIds) {
+        Query query = new Query();
+        Criteria criteria = new Criteria("_id").in(removeIds);
+        return mongoTemplate.remove(query, UserReadHisBo.class);
     }
 }

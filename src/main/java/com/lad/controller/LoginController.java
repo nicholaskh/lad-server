@@ -25,6 +25,7 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -253,13 +254,18 @@ public class LoginController extends BaseContorller {
 			String refresh_token = jsonObject.getString("refresh_token");
 
 			StringBuilder userInforUrl = new StringBuilder(weixin_user);
-			url.append("?access_token=").append(access_token).append("&openid=").append(openid);
+			userInforUrl.append("access_token=").append(access_token).append("&openid=").append(openid);
 			String userStr = httpClient.doGetRequest(userInforUrl.toString());
-			JSONObject userInfo = JSONObject.fromObject(userStr);
 			logger.info("微信获取个人信息返回结果 ： {}" , userStr);
 			if (StringUtils.isEmpty(userStr)) {
 				return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OPEN_ERROR.getIndex(),
 						ERRORCODE.ACCOUNT_OPEN_ERROR.getReason());
+			}
+			JSONObject userInfo = JSONObject.fromObject(userStr);
+			if (userInfo.has("errcode")) {
+				map.put("ret", jsonObject.getString("errcode"));
+				map.put("error", jsonObject.getString("errmsg"));
+				return JSONObject.fromObject(map).toString();
 			}
 			UserBo userBo = userService.findByOpenid(openid);
 			if (userBo == null) {
@@ -276,6 +282,7 @@ public class LoginController extends BaseContorller {
 			userBo.setCity(userInfo.getString("city"));
 			userBo.setHeadPictureName(userInfo.getString("headimgurl"));
 			userBo.setUnionid(userInfo.getString("unionid"));
+			userBo.setUpdateTime(new Date());
 			int sex = userInfo.getInt("sex");
 			userBo.setSex(sex == 1 ? "男" : "女");
 			userService.save(userBo);
