@@ -101,4 +101,11 @@ public class ThumbsupDaoImpl implements IThumbsupDao {
 		update.set("deleted", 0);
 		return mongoTemplate.updateFirst(query,update,ThumbsupBo.class );
 	}
+
+
+	public long selectCountByOwnerId(String ownerId, int type){
+		Query query = new Query();
+		query.addCriteria(new Criteria("deleted").is(0).and("owner_id").is(ownerId).and("type").is(type));
+		return mongoTemplate.count(query, ThumbsupBo.class);
+	}
 }

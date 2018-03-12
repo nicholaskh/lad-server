@@ -59,4 +59,8 @@ public class ThumbsupService implements IThumbsupService {
 	public WriteResult udateDeleteById(String thumbsupId) {
 		return thumbsupDao.updateDelete(thumbsupId);
 	}
+
+	public long selectCountByOwnerId(String ownerId, int type){
+		return thumbsupDao.selectCountByOwnerId(ownerId, type);
+	}
 }

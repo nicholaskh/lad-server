@@ -97,4 +97,7 @@ public interface IVideoDao {
      */
     List<VideoBo> findByTitleRegex(String title, int page, int limit);
 
+
+    List<VideoBo> findByClassNamePage(String module, String className);
+
 }

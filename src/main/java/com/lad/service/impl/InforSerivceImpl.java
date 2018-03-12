@@ -397,4 +397,9 @@ public class InforSerivceImpl implements IInforService {
     public WriteResult deleteUserReadHis(List<String> removeIds) {
         return userReadHisDao.deleteUserReadHis(removeIds);
     }
+
+    @Override
+    public List<VideoBo> selectClassNamePage(String module, String className) {
+        return videoDao.findByClassNamePage(module, className);
+    }
 }

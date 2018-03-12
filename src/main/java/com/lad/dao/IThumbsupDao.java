@@ -30,4 +30,6 @@ public interface IThumbsupDao extends IBaseDao {
 	 * @return
 	 */
 	long selectByOwnerIdCount(String ownerId);
+
+	long selectCountByOwnerId(String ownerId, int type);
 }

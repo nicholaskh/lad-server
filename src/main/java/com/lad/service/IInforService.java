@@ -202,6 +202,9 @@ public interface IInforService {
 
     List<VideoBo> selectClassNamePage(String module, String className, int start, int end);
 
+
+    List<VideoBo> selectClassNamePage(String module, String className);
+
     /**
      * 更新缩略图
      * @param id

@@ -374,4 +374,7 @@ public class Constant {
 
 	public static final String WX_APP_SECRET = "94fcf5520ce067be9aa34dac143e89e5";
 
+
+	public static final int PAGE_LIMIT = 20;
+
 }

@@ -279,6 +279,43 @@ public class NoteController extends BaseContorller {
 		return Constant.COM_RESP;
 	}
 
+
+	@ApiOperation("帖子点赞列表")
+	@ApiImplicitParam(name = "noteid", value = "帖子id", required = true, dataType = "string", paramType = "query")
+	@PostMapping("/thumbsup-list")
+	public String noteThumbsups(String noteid, int page, int limit, HttpServletRequest request, HttpServletResponse
+			response){
+		UserBo userBo = getUserLogin(request);
+		boolean isLogin = userBo != null;
+		String userid = isLogin ? "" : userBo.getId();
+		List<ThumbsupBo> thumbsupBos = thumbsupService.selectByOwnerIdPaged(page, limit, noteid, Constant.NOTE_TYPE);
+		List<UserBaseVo> userVos = new LinkedList<>();
+		for (ThumbsupBo thumbsupBo : thumbsupBos)  {
+			UserBaseVo baseVo = new UserBaseVo();
+			if (userid.endsWith(thumbsupBo.getVisitor_id())) {
+				BeanUtils.copyProperties(userBo, baseVo);
+				userVos.add(baseVo);
+			} else {
+				UserBo user = userService.getUser(thumbsupBo.getVisitor_id());
+				if (user == null) {
+					continue;
+				}
+				BeanUtils.copyProperties(user, baseVo);
+				if (isLogin) {
+					FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(userid, user.getId());
+					if (friendsBo != null && !StringUtils.isEmpty(friendsBo.getBackname())) {
+						baseVo.setUserName(friendsBo.getBackname());
+					}
+				}
+				userVos.add(baseVo);
+			}
+		}
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("userVos", userVos);
+		return JSONObject.fromObject(map).toString();
+	}
+
 	@ApiOperation("取消帖子点赞")
 	@ApiImplicitParam(name = "noteid", value = "帖子id", required = true,
 					dataType = "string", paramType = "query")

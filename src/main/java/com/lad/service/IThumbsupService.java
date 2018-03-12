@@ -32,4 +32,7 @@ public interface IThumbsupService extends IBaseService {
 	
 
 	WriteResult udateDeleteById(String thumbsupId);
+
+
+	long selectCountByOwnerId(String ownerId, int type);
 }

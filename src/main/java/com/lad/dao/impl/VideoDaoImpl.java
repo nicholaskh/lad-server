@@ -92,6 +92,16 @@ public class VideoDaoImpl implements IVideoDao {
         return mongoTemplateTwo.find(query, VideoBo.class);
     }
 
+    public List<VideoBo> findByClassNamePage(String module, String className) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("module").is(module));
+        if (StringUtils.isNotEmpty(className)) {
+            query.addCriteria(new Criteria("className").is(className));
+        }
+        query.with(new Sort(new Sort.Order(Sort.Direction.ASC, "title")));
+        return mongoTemplateTwo.find(query, VideoBo.class);
+    }
+
     @Override
     public WriteResult updatePicById(String id, String pic) {
         Query query = new Query();

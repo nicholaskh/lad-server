@@ -54,6 +54,8 @@ public class InforAllVo extends BaseVo {
 
     private String picture;
 
+    private int inforType;
+
 
     public String getInforid() {
         return inforid;
@@ -229,5 +231,13 @@ public class InforAllVo extends BaseVo {
 
     public void setPicture(String picture) {
         this.picture = picture;
+    }
+
+    public int getInforType() {
+        return inforType;
+    }
+
+    public void setInforType(int inforType) {
+        this.inforType = inforType;
     }
 }
