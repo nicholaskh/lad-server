@@ -32,4 +32,7 @@ public interface IThumbsupDao extends IBaseDao {
 	long selectByOwnerIdCount(String ownerId);
 
 	long selectCountByOwnerId(String ownerId, int type);
+
+
+	ThumbsupBo selectById(String thumbsupId);
 }

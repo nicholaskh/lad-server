@@ -43,7 +43,7 @@ public class MessageDaoImpl implements IMessageDao {
 			criteria.and("status").is(status);
 		}
 		query.addCriteria(criteria);
-		query.with(new Sort(Direction.DESC, "_id"));
+		query.with(new Sort(Direction.DESC, "createTime"));
 		page = page < 1 ? 1 : page;
 		query.skip((page - 1) * limit);
 		query.limit(limit);
@@ -83,6 +83,58 @@ public class MessageDaoImpl implements IMessageDao {
 		query.addCriteria(new Criteria("_id").in(ids).and("deleted").is(0));
 		Update update = new Update();
 		update.set("status", status);
+		return mongoTemplate.updateMulti(query, update, MessageBo.class);
+	}
+
+	@Override
+	public List<MessageBo> findUnReadByNoteId(String noteid, int status) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("deleted").is(0).and("status").is(status)
+				.and("targetid").is(noteid).and("type").ne(0));
+		return mongoTemplate.find(query, MessageBo.class);
+	}
+
+	public List<MessageBo> findUnReadByMyUserid(String userid, String circleid) {
+		Query query = new Query();
+		Criteria criteria = new Criteria("deleted").is(0).and("status").is(0).and("userid").is(userid);
+		criteria.and(circleid).is(circleid).and("type").ne(0);
+		query.addCriteria(criteria);
+		query.with(new Sort(Direction.DESC, "createTime"));
+		return mongoTemplate.find(query, MessageBo.class);
+	}
+
+	@Override
+	public MessageBo findMessageBySource(String sourceid, int type) {
+		Query query = new Query();
+		Criteria criteria = new Criteria("sourceid").is(sourceid);
+		//-1 表示查询当前帖子的全部内容信息
+		if (type != -1) {
+			criteria.and("type").is(type);
+		}
+		query.addCriteria(criteria);
+		return mongoTemplate.findOne(query, MessageBo.class);
+	}
+
+	@Override
+	public WriteResult deleteMessageBySource(String sourceid, int type) {
+		Query query = new Query(new Criteria("sourceid").is(sourceid).and("type").is(type));
+		//-1 表示查询当前帖子的全部内容信息
+		Update update = new Update();
+		update.set("deleted", Constant.DELETED);
+		return mongoTemplate.updateFirst(query, update, MessageBo.class);
+	}
+
+
+	public WriteResult deleteMessageByNoteid(String noteid, int type) {
+		Query query = new Query();
+		Criteria criteria = new Criteria("targetid").is(noteid);
+		if (type != -1) {
+			criteria.and("type").is(type);
+		}
+		query.addCriteria(criteria);
+		//-1 表示查询当前帖子的全部内容信息
+		Update update = new Update();
+		update.set("deleted", Constant.DELETED);
 		return mongoTemplate.updateMulti(query, update, MessageBo.class);
 	}
 }

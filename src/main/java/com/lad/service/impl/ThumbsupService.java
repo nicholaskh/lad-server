@@ -63,4 +63,9 @@ public class ThumbsupService implements IThumbsupService {
 	public long selectCountByOwnerId(String ownerId, int type){
 		return thumbsupDao.selectCountByOwnerId(ownerId, type);
 	}
+
+	@Override
+	public ThumbsupBo selectById(String thumbsupId) {
+		return thumbsupDao.selectById(thumbsupId);
+	}
 }

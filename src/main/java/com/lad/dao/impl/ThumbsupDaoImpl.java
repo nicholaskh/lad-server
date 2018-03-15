@@ -108,4 +108,11 @@ public class ThumbsupDaoImpl implements IThumbsupDao {
 		query.addCriteria(new Criteria("deleted").is(0).and("owner_id").is(ownerId).and("type").is(type));
 		return mongoTemplate.count(query, ThumbsupBo.class);
 	}
+
+	@Override
+	public ThumbsupBo selectById(String thumbsupId) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("_id").is(thumbsupId).and("deleted").is(0));
+		return mongoTemplate.findOne(query, ThumbsupBo.class);
+	}
 }

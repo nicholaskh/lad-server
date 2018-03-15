@@ -146,8 +146,8 @@ public class NoteServiceImpl implements INoteService {
 	}
 
 	@Override
-	public List<NoteBo> selectByTitle(String circleid, String title, int page, int limit) {
-		return noteDao.selectByTitle(circleid, title, page, limit);
+	public List<NoteBo> selectByTitle(String circleid, String title, String type, int page, int limit) {
+		return noteDao.selectByTitle(circleid, title, type, page, limit);
 	}
 
 	@Override
@@ -158,5 +158,10 @@ public class NoteServiceImpl implements INoteService {
 	@Override
 	public List<NoteBo> selectByCreatTime(String circleid, Date startTime, Date endTime, int page, int limit) {
 		return noteDao.selectByCreatTime(circleid, startTime, endTime, page, limit);
+	}
+
+	@Override
+	public List<NoteBo> selectByNoteType(String circleid, String type, int page, int limit) {
+		return noteDao.selectByNoteType(circleid, type, page, limit);
 	}
 }

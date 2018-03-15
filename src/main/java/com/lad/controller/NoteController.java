@@ -145,7 +145,7 @@ public class NoteController extends BaseContorller {
 			String path = String.format("/note/note-info.do?noteid=%s&type=%s",noteBo.getId(), noteBo.getType());
 			String content = "有人刚刚在帖子提到了您，快去看看吧!";
 			JPushUtil.push(pushTitle, content, path, useridArr);
-			addMessage(messageService, path, content, pushTitle, useridArr);
+			addMessage(messageService, path, content, pushTitle, noteBo.getId(), useridArr);
 		}
 		addCircleShow(noteBo);
 		updateCircieNoteSize(circleid, 1);
@@ -272,10 +272,12 @@ public class NoteController extends BaseContorller {
 		if (isThumsup) {
 			updateCount(noteid, Constant.THUMPSUB_NUM, 1);
 		}
+		String content = "有人刚刚赞了你的帖子，快去看看吧!";
 		updateCircieUnReadNum(noteBo.getCreateuid(), noteBo.getCircleId());
 		String path = "/note/note-info.do?noteid=" + noteid;
-		JPushUtil.pushMessage(pushTitle, "有人刚刚赞了你的帖子，快去看看吧!", path,  noteBo.getCreateuid());
-		addMessage(messageService, path, "有人刚刚赞了你的帖子，快去看看吧!", pushTitle, noteBo.getCreateuid());
+		JPushUtil.pushMessage(pushTitle, content, path,  noteBo.getCreateuid());
+		addMessage(messageService, path, content, pushTitle, noteid, 2, thumbsupBo.getId(),
+				noteBo.getCircleId(), userBo.getId(), noteBo.getCreateuid());
 		return Constant.COM_RESP;
 	}
 
@@ -333,6 +335,7 @@ public class NoteController extends BaseContorller {
 			NoteBo noteBo = noteService.selectById(noteid);
 			updateCircleHot(circleService, redisServer, noteBo.getCircleId(), -1, Constant.CIRCLE_THUMP );
 			updateCount(noteid, Constant.THUMPSUB_NUM, -1);
+			messageService.deleteMessageBySource(thumbsupBo.getId(),2);
 		}
 		return Constant.COM_RESP;
 	}
@@ -521,14 +524,16 @@ public class NoteController extends BaseContorller {
 		String path = "/note/note-info.do?noteid=" + noteid;
 		String content = "有人刚刚评论了你的帖子，快去看看吧!";
 		JPushUtil.pushMessage(pushTitle, content, path,  noteBo.getCreateuid());
-		addMessage(messageService, path, content, pushTitle, noteBo.getCreateuid());
+		addMessage(messageService, path, content, pushTitle, noteid, 1, commentBo.getId(),
+				noteBo.getCircleId(),userBo.getId(), noteBo.getCreateuid());
 		if (!StringUtils.isEmpty(parentid)) {
 			CommentBo comment = commentService.findById(parentid);
 			if (comment != null) {
 				updateCircieUnReadNum(comment.getCreateuid(), noteBo.getCircleId());
 				content = "有人刚刚回复了你的评论，快去看看吧!";
 				JPushUtil.pushMessage(pushTitle, content, path,  comment.getCreateuid());
-				addMessage(messageService, path, content, pushTitle, noteBo.getCreateuid());
+				addMessage(messageService, path, content, pushTitle, noteid, 1, comment.getId(),
+						noteBo.getCircleId(), userBo.getId(), noteBo.getCreateuid());
 			}
 		}
 		Map<String, Object> map = new HashMap<>();
@@ -613,6 +618,7 @@ public class NoteController extends BaseContorller {
 		if (commentBo != null) {
 			if (userBo.getId().equals(commentBo.getCreateuid())) {
 				commentService.delete(commentid);
+				messageService.deleteMessageBySource(commentid,1);
 				updateCount(commentBo.getNoteid(), Constant.COMMENT_NUM, -1);
 			} else {
 				return CommonUtil.toErrorResult(ERRORCODE.NOTE_NOT_MASTER.getIndex(),
@@ -844,7 +850,7 @@ public class NoteController extends BaseContorller {
 	 * 获取帖子点赞列表
 	 * @return
 	 */
-	@ApiOperation("获取帖子的点赞用户列表")
+	@ApiOperation("获取指定帖子的点赞用户列表")
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "noteid", value = "帖子id", required = true,
 					dataType = "string", paramType = "query"),
@@ -855,19 +861,33 @@ public class NoteController extends BaseContorller {
 									HttpServletRequest request, HttpServletResponse response) {
 		List<ThumbsupBo> thumbsupBos = thumbsupService.selectByOwnerIdPaged(
 				page, limit, noteid, Constant.NOTE_TYPE);
-		List<UserBaseVo> userBaseVos = new ArrayList<>();
+		List<UserThumbsupVo> userVos = new ArrayList<>();
+		UserBo userBo = getUserLogin(request);
+		boolean isLogin = userBo != null;
+		String userid = isLogin ? "" : userBo.getId();
 		for (ThumbsupBo thumbsupBo : thumbsupBos) {
-			UserBo user = userService.getUser(thumbsupBo.getVisitor_id());
-			if (user != null) {
-				UserThumbsupVo userBaseVo = new UserThumbsupVo();
-				BeanUtils.copyProperties(user, userBaseVo);
-				userBaseVo.setThumbsupTime(thumbsupBo.getCreateTime());
-				userBaseVos.add(userBaseVo);
+			UserThumbsupVo baseVo = new UserThumbsupVo();
+			if (userid.equals(thumbsupBo.getVisitor_id())) {
+				BeanUtils.copyProperties(userBo, baseVo);
+			} else {
+				UserBo user = userService.getUser(thumbsupBo.getVisitor_id());
+				if (user == null) {
+					continue;
+				}
+				BeanUtils.copyProperties(user, baseVo);
+				if (isLogin) {
+					FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(userid, user.getId());
+					if (friendsBo != null && !StringUtils.isEmpty(friendsBo.getBackname())) {
+						baseVo.setUserName(friendsBo.getBackname());
+					}
+				}
 			}
+			baseVo.setThumbsupTime(thumbsupBo.getCreateTime());
+			userVos.add(baseVo);
 		}
 		Map<String, Object> map = new HashMap<>();
 		map.put("ret", 0);
-		map.put("userVoList", userBaseVos);
+		map.put("userVoList", userVos);
 		return JSONObject.fromObject(map).toString();
 	}
 
@@ -945,6 +965,7 @@ public class NoteController extends BaseContorller {
 					noteService.deleteNote(id, userBo.getId());
 					deleteShouw(id);
 					commentService.deleteByNote(id);
+					messageService.deleteMessageByNoteid(id, -1);
 					notes ++;
 				}
 			}
@@ -984,6 +1005,7 @@ public class NoteController extends BaseContorller {
 				if (noteBo.getCreateuid().equals(userBo.getId())) {
 					noteService.deleteNote(id,userBo.getId());
 					commentService.deleteByNote(id);
+					messageService.deleteMessageByNoteid(id, -1);
 					updateCircieNoteSize(noteBo.getCircleId(), -1);
 					deleteShouw(id);
 				}
@@ -1334,19 +1356,20 @@ public class NoteController extends BaseContorller {
 	}
 
 
-	@ApiOperation("根据帖子标题关键字搜索")
+	@ApiOperation("根据帖子标题关键字或帖子类型搜索")
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "circleid", value = "圈子id", required = true,
 					dataType = "string", paramType = "query"),
-			@ApiImplicitParam(name = "title", value = "标题关键字", required = true,
+			@ApiImplicitParam(name = "title", value = "标题关键字，空表示按照类型搜索", dataType = "string", paramType = "query"),
+			@ApiImplicitParam(name = "type", value = "帖子类型，根据创建帖子的type确定是图片还是视频，空表示查找所所】有",
 					dataType = "string", paramType = "query"),
 			@ApiImplicitParam(name = "page", value = "分页页码", dataType = "int", paramType = "query"),
 			@ApiImplicitParam(name = "limit", value = "每页数量", dataType = "int", paramType = "query")})
 	@PostMapping("/search-title")
-	public String findByNoteTitle(String circleid, String title, int page, int limit, HttpServletRequest
+	public String findByNoteTitle(String circleid, String title, String type, int page, int limit, HttpServletRequest
 			request, HttpServletResponse response) {
 		UserBo loginUser = getUserLogin(request);
-		List<NoteBo> noteBos = noteService.selectByTitle(circleid, title, page, limit);
+		List<NoteBo> noteBos = noteService.selectByTitle(circleid, title, type, page, limit);
 		List<NoteVo> noteVoList = new LinkedList<>();
 		if (noteBos != null) {
 			vosToList(noteBos, noteVoList, loginUser);
@@ -1414,6 +1437,7 @@ public class NoteController extends BaseContorller {
 		return CommonUtil.toErrorResult(ERRORCODE.FORMAT_ERROR.getIndex(),
 				ERRORCODE.FORMAT_ERROR.getReason());
 	}
+
 
 
 	private RedstarBo setRedstarBo(String userid, String circleid, int weekNo, int year){

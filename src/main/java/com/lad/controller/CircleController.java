@@ -83,6 +83,9 @@ public class CircleController extends BaseContorller {
 	private IThumbsupService thumbsupService;
 
 	@Autowired
+	private ICommentService commentService;
+
+	@Autowired
 	private IChatroomService chatroomService;
 	@Autowired
 	private IInforService inforService;
@@ -323,7 +326,7 @@ public class CircleController extends BaseContorller {
 			String[] pushUser = new String[masters.size()];
 			masters.toArray(pushUser);
 			JPushUtil.push(titlePush, content, path,  pushUser);
-			addMessage(messageService, path, content, titlePush, pushUser);
+			addMessage(messageService, path, content, titlePush, userBo.getId(), pushUser);
 		}
 		return Constant.COM_RESP;
 	}
@@ -549,7 +552,7 @@ public class CircleController extends BaseContorller {
 			String[] userArr = new String[accepts.size()];
 			accepts.toArray(userArr);
 			JPushUtil.push(titlePush, content, path,  userArr);
-			addMessage(messageService, path, content, titlePush, userArr);
+			addMessage(messageService, path, content, titlePush, userBo.getId(), userArr);
 		}
 		pushToFriends(circleBo.getName(), path, pushFriends);
 		return Constant.COM_RESP;
@@ -2310,7 +2313,7 @@ public class CircleController extends BaseContorller {
 		} else {
 			JPushUtil.push(titlePush, content, path,  useridArr);
 		}
-		addMessage(messageService, path, content, titlePush, useridArr);
+		addMessage(messageService, path, content, titlePush, userid, useridArr);
 		return Constant.COM_RESP;
 	}
 
@@ -2800,7 +2803,8 @@ public class CircleController extends BaseContorller {
 	@ApiOperation("圈子最新动态信息")
 	@PostMapping("/new-situation")
 	public String circleNews(String circleid, int page, int limit, HttpServletRequest request, HttpServletResponse
-			response) {                                  List<NoteBo> noteBos = noteService.finyByCreateTime(circleid,page,limit);
+			response) {
+		List<NoteBo> noteBos = noteService.finyByCreateTime(circleid,page,limit);
 		List<NoteVo> noteVos = new LinkedList<>();
 		UserBo loginUser = getUserLogin(request);
 		String loginUserid = loginUser == null ? "" : loginUser.getId();
@@ -2816,9 +2820,123 @@ public class CircleController extends BaseContorller {
 			noteVo.setMyThumbsup(thumbsupBo != null);
 			noteVos.add(noteVo);
 		}
-		Map<String, Object> map = new HashMap<String, Object>();
+		Map<String, Object> map = new LinkedHashMap<String, Object>();
 		map.put("ret", 0);
+		if (loginUser != null) {
+			List<MessageBo> messageBos = messageService.findUnReadByMyUserid(loginUserid, circleid);
+			int num = 0;
+			if (messageBos != null) {
+				num = messageBos.size();
+				//返回第一条动态评论人的
+				MessageBo first = messageBos.get(0);
+				UserBo user = userService.getUser(first.getCreateuid());
+				if (user == null) {
+					user = userService.getUser(messageBos.get(1).getCreateuid());
+				}
+				UserBaseVo baseVo = new UserBaseVo();
+				BeanUtils.copyProperties(user, baseVo);
+				map.put("noteDynamicFirstUser", baseVo);
+			}
+			map.put("noteDynamicNum", num);
+		}
 		map.put("noteVoList", noteVos);
+		return JSONObject.fromObject(map).toString();
+	}
+
+
+	/**
+	 * 我所有圈子的操作历史
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@ApiOperation("当前圈子中帖子点赞或评论的最新动态信息")
+	@PostMapping("/new-situation")
+	public String circleNews(String circleid, HttpServletRequest request, HttpServletResponse
+			response) {
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		String userid = userBo.getId();
+		Map<String, Object> map = new LinkedHashMap<String, Object>();
+		map.put("ret", 0);
+		List<MessageBo> messageBos = messageService.findUnReadByMyUserid(userid, circleid);
+		List<UserShowVo> userShowVos = new LinkedList<>();
+		Map<String, NoteBo> noteMap = new HashMap<>();
+		if (messageBos != null) {
+			messageBos.forEach( messageBo -> {
+				UserShowVo showVo = new UserShowVo();
+				int type = messageBo.getType();
+				String noteid = messageBo.getTargetid();
+				NoteBo noteBo = null;
+				if (noteMap.containsKey(noteid)) {
+					noteBo = noteMap.get(noteid);
+				} else {
+					noteBo = noteService.selectById(noteid);
+					if (noteBo == null) {
+						return;
+					}
+					noteMap.put(noteid, noteBo);
+				}
+				if (!CommonUtil.isEmpty(noteBo.getPhotos())){
+					if ("video".equals(noteBo.getType())) {
+						showVo.setNotePic(noteBo.getVideoPic());
+						showVo.setNoteVideo(noteBo.getPhotos().get(0));
+					} else {
+						showVo.setNotePic(noteBo.getPhotos().get(0));
+					}
+				} else {
+					showVo.setNoteContent(noteBo.getContent());
+				}
+				String creatuid = "";
+				if (type == 1) {
+					CommentBo commentBo = commentService.findById(messageBo.getSourceid());
+					if (commentBo == null) {
+						return;
+					}
+					showVo.setComment(commentBo.getContent());
+					showVo.setThumbsup(false);
+					showVo.setCreateTime(commentBo.getCreateTime());
+					creatuid = commentBo.getCreateuid();
+				} else if (type == 2) {
+					ThumbsupBo thumbsupBo = thumbsupService.selectById(messageBo.getSourceid());
+					if (thumbsupBo == null) {
+						return;
+					}
+					showVo.setThumbsup(true);
+					showVo.setCreateTime(thumbsupBo.getCreateTime());
+					creatuid = thumbsupBo.getCreateuid();
+				} else {
+					return;
+				}
+
+				if (userid.equals(messageBo.getCreateuid())) {
+					showVo.setId(userid);
+					showVo.setUserName(userBo.getUserName());
+					showVo.setBirthDay(userBo.getBirthDay());
+					showVo.setHeadPictureName(userBo.getHeadPictureName());
+					showVo.setSex(userBo.getSex());
+				} else {
+					UserBo user = userService.getUser(creatuid);
+					if (user == null) {
+						return;
+					}
+					showVo.setId(creatuid);
+					showVo.setUserName(user.getUserName());
+					showVo.setBirthDay(user.getBirthDay());
+					showVo.setHeadPictureName(user.getHeadPictureName());
+					showVo.setSex(user.getSex());
+					FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(userid, user.getId());
+					if (friendsBo != null && !org.springframework.util.StringUtils.isEmpty(friendsBo.getBackname())) {
+						showVo.setUserName(friendsBo.getBackname());
+					}
+				}
+				userShowVos.add(showVo);
+			});
+		}
+		map.put("userVoList", userShowVos);
 		return JSONObject.fromObject(map).toString();
 	}
 

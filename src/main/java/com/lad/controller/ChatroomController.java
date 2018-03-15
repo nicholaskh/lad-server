@@ -147,7 +147,7 @@ public class ChatroomController extends BaseContorller {
 			String path = "";
 			String content = String.format("“%s”邀请您加入群聊", userBo.getUserName());
 			JPushUtil.push(titlePush, content, path,  useridArr);
-			addMessage(messageService, path, content, titlePush, useridArr);
+			addMessage(messageService, path, content, titlePush, userBo.getId(),useridArr);
 			return Constant.COM_RESP;
 		}
 		//第一个为返回结果信息，第二位term信息

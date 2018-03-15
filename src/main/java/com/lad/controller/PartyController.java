@@ -146,7 +146,7 @@ public class PartyController extends BaseContorller {
             String[] userids = new String[circleUsers.size()];
             circleUsers.toArray(userids);
             JPushUtil.push(titlePush, content, path, userids);
-            addMessage(messageService, path, content, titlePush, userids);
+            addMessage(messageService, path, content, titlePush, userId, userids);
         }
         if (circleBo.isOpen()) {
             pushFriends(userId, content, path, circleUsers);
@@ -184,7 +184,7 @@ public class PartyController extends BaseContorller {
             }
             if (i > 0) {
                 JPushUtil.push(titlePush, content, path, friendids);
-                addMessage(messageService, path, content, titlePush, friendids);
+                addMessage(messageService, path, content, titlePush, userid, friendids);
             }
         }
     }
@@ -1528,7 +1528,7 @@ public class PartyController extends BaseContorller {
             String[] userids = new String[users.size()];
             users.toArray(userids);
             JPushUtil.push(titlePush, content, path, userids);
-            addMessage(messageService, path, content, titlePush, userids);
+            addMessage(messageService, path, content, titlePush, userBo.getId(), userids);
         }
         return Constant.COM_RESP;
     }

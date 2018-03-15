@@ -197,7 +197,7 @@ public interface INoteService extends IBaseService {
 	 * @param limit
 	 * @return
 	 */
-	List<NoteBo> selectByTitle(String circleid, String title, int page, int limit);
+	List<NoteBo> selectByTitle(String circleid, String title, String type, int page, int limit);
 
 
 	/**
@@ -221,5 +221,15 @@ public interface INoteService extends IBaseService {
 	 */
 	List<NoteBo> selectByCreatTime(String circleid, Date startTime, Date endTime,int page, int limit);
 
+
+	/**
+	 * 更具帖子类型搜索
+	 * @param circleid
+	 * @param type
+	 * @param page
+	 * @param limit
+	 * @return
+	 */
+	List<NoteBo> selectByNoteType(String circleid, String type, int page, int limit);
 }
 

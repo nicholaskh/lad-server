@@ -181,14 +181,24 @@ public interface INoteDao extends IBaseDao {
 	WriteResult updateCollectCount(String noteId, int num);
 
 	/**
-	 * 根据标题搜索圈子内帖子
+	 * 根据标题及类型搜索圈子内帖子
 	 * @param circleid
 	 * @param title
 	 * @param page
 	 * @param limit
 	 * @return
 	 */
-	List<NoteBo> selectByTitle(String circleid, String title, int page, int limit);
+	List<NoteBo> selectByTitle(String circleid, String title, String type, int page, int limit);
+
+	/**
+	 * 更具类型搜索
+	 * @param circleid
+	 * @param type
+	 * @param page
+	 * @param limit
+	 * @return
+	 */
+	List<NoteBo> selectByNoteType(String circleid, String type, int page, int limit);
 
 
 	/**
@@ -211,6 +221,15 @@ public interface INoteDao extends IBaseDao {
 	 * @return
 	 */
 	List<NoteBo> selectByCreatTime(String circleid, Date startTime, Date endTime,int page, int limit);
+
+	/**
+	 * 查找指定类型的帖子
+	 * @param type  类型如只有视频
+	 * @param page
+	 * @param limit
+	 * @return
+	 */
+	List<NoteBo> findTypeNotes(String type, int page, int limit);
 	
 
 }

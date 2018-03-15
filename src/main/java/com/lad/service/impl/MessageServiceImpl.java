@@ -48,4 +48,29 @@ public class MessageServiceImpl implements IMessageService {
 	public WriteResult betchUpdateMessage(List<String> ids, int status) {
 		return messageDao.betchUpdateMessage(ids, status);
 	}
+
+	@Override
+	public List<MessageBo> findUnReadByNoteId(String noteid, int status) {
+		return messageDao.findUnReadByNoteId(noteid, status);
+	}
+
+	@Override
+	public MessageBo findMessageBySource(String sourceid, int type) {
+		return messageDao.findMessageBySource(sourceid, type);
+	}
+
+	@Override
+	public WriteResult deleteMessageBySource(String sourceid, int type) {
+		return messageDao.deleteMessageBySource(sourceid, type);
+	}
+
+	@Override
+	public WriteResult deleteMessageByNoteid(String noteid, int type) {
+		return messageDao.deleteMessageByNoteid(noteid, type);
+	}
+
+	@Override
+	public List<MessageBo> findUnReadByMyUserid(String userid, String circleid) {
+		return messageDao.findUnReadByMyUserid(userid, circleid);
+	}
 }

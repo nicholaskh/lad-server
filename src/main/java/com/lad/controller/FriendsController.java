@@ -628,7 +628,7 @@ public class FriendsController extends BaseContorller {
 		}
 		JPushUtil.pushTo(userBo.getUserName() + JPushUtil.MULTI_INSERT, idsList);
 		addMessage(messageService, "", userBo.getUserName() + JPushUtil.MULTI_INSERT,
-				pushTitle, idsList);
+				pushTitle, userBo.getId(), idsList);
 
 		// 某人被邀请加入群聊通知
 		if(nameAndIds[0] != null){

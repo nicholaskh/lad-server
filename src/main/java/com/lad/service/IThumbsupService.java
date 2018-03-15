@@ -35,4 +35,7 @@ public interface IThumbsupService extends IBaseService {
 
 
 	long selectCountByOwnerId(String ownerId, int type);
+
+
+	ThumbsupBo selectById(String thumbsupId);
 }

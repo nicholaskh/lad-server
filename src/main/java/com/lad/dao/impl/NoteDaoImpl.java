@@ -17,6 +17,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.StringUtils;
 
 import java.util.Date;
 import java.util.LinkedList;
@@ -308,11 +309,16 @@ public class NoteDaoImpl implements INoteDao {
 
 
 	@Override
-	public List<NoteBo> selectByTitle(String circleid, String title, int page, int limit) {
+	public List<NoteBo> selectByTitle(String circleid, String title, String type, int page, int limit) {
 		Query query = new Query();
-		Pattern pattern = Pattern.compile("^.*"+title+".*$", Pattern.CASE_INSENSITIVE);
 		Criteria criteria = new Criteria("circleId").is(circleid).and("deleted").is(Constant.ACTIVITY);
-		criteria.and("subject").regex(title);
+		if (!StringUtils.isEmpty(title)) {
+			Pattern pattern = Pattern.compile("^.*"+title+".*$", Pattern.CASE_INSENSITIVE);
+			criteria.and("subject").regex(pattern);
+		}
+		if (!StringUtils.isEmpty(type)) {
+			criteria.and("type").is(type);
+		}
 		query.addCriteria(criteria);
 		query.with(new Sort(Sort.Direction.DESC, "_id"));
 		page = page < 1 ? 1 : page;
@@ -339,6 +345,35 @@ public class NoteDaoImpl implements INoteDao {
 		Query query = new Query();
 		Criteria criteria = new Criteria("circleId").is(circleid).and("deleted").is(Constant.ACTIVITY);
 		criteria.and("createTime").gte(startTime).lte(endTime);
+		query.addCriteria(criteria);
+		query.with(new Sort(Sort.Direction.DESC, "_id"));
+		page = page < 1 ? 1 : page;
+		query.skip((page -1) * limit);
+		query.limit(limit);
+		return mongoTemplate.find(query, NoteBo.class);
+	}
+
+	@Override
+	public List<NoteBo> findTypeNotes(String type, int page, int limit) {
+		Query query = new Query();
+		Criteria criteria = new Criteria("deleted").is(Constant.ACTIVITY);
+		if (!StringUtils.isEmpty(type)) {
+			criteria.and("type").is(type);
+		}
+		query.addCriteria(criteria);
+		query.with(new Sort(Sort.Direction.DESC, "_id"));
+		page = page < 1 ? 1 : page;
+		query.skip((page -1) * limit);
+		query.limit(limit);
+		return mongoTemplate.find(query, NoteBo.class);
+	}
+
+
+	@Override
+	public List<NoteBo> selectByNoteType(String circleid, String type, int page, int limit) {
+		Query query = new Query();
+		Criteria criteria = new Criteria("circleId").is(circleid).and("deleted").is(Constant.ACTIVITY);
+		criteria.and("type").is(type);
 		query.addCriteria(criteria);
 		query.with(new Sort(Sort.Direction.DESC, "_id"));
 		page = page < 1 ? 1 : page;

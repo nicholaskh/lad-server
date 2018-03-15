@@ -253,15 +253,43 @@ public abstract class BaseContorller {
 	}
 
 	@Async
-	public void addMessage(IMessageService service, String path, String content, String title, String... userids){
+	public void addMessage(IMessageService service, String path, String content, String title,
+						   String createuid, String... userids){
 		for (String userid : userids) {
 			MessageBo messageBo = new MessageBo();
 			messageBo.setContent(content);
 			messageBo.setPath(path);
 			messageBo.setUserid(userid);
+			messageBo.setCreateuid(createuid);
 			messageBo.setTitle(title);
 			service.insert(messageBo);
 		}
 	}
 
+	/**
+	 * 消息添加到列表
+	 * @param service
+	 * @param path
+	 * @param content
+	 * @param title
+	 * @param noteid
+	 * @param type
+	 * @param sourceid
+	 * @param userid
+	 */
+	@Async
+	public void addMessage(IMessageService service, String path, String content, String title, String noteid,
+						   int type, String sourceid, String circleid, String createuid, String userid){
+		MessageBo messageBo = new MessageBo();
+		messageBo.setContent(content);
+		messageBo.setPath(path);
+		messageBo.setUserid(userid);
+		messageBo.setTitle(title);
+		messageBo.setTargetid(noteid);
+		messageBo.setType(type);
+		messageBo.setSourceid(sourceid);
+		messageBo.setCircleid(circleid);
+		messageBo.setCreateuid(createuid);
+		service.insert(messageBo);
+	}
 }

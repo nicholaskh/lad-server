@@ -33,4 +33,46 @@ public interface IMessageDao extends IBaseDao {
 	 * @return
 	 */
 	WriteResult betchUpdateMessage(List<String> ids, int status);
+
+	/**
+	 * 查找当前帖子未读的点赞和评论数据
+	 * @param userId
+	 * @param noteid
+	 * @param status
+	 * @return
+	 */
+	List<MessageBo> findUnReadByNoteId(String noteid, int status);
+
+
+	/**
+	 * 查找被点赞或评论的消息
+	 * @param sourceid
+	 * @param type
+	 * @return
+	 */
+	MessageBo findMessageBySource(String sourceid, int type);
+
+	/**
+	 * 删除消息点赞或评论的消息
+	 * @param sourceid
+	 * @param type
+	 * @return
+	 */
+	WriteResult deleteMessageBySource(String sourceid, int type);
+
+	/**
+	 * 删除指定帖子的所有消息
+	 * @param noteid
+	 * @param type
+	 * @return
+	 */
+	WriteResult deleteMessageByNoteid(String noteid, int type);
+
+	/**
+	 * 查询个人在当前圈子里面的动态信息表
+	 * @param userid
+	 * @return
+	 */
+	List<MessageBo> findUnReadByMyUserid(String userid, String circleid);
+
 }
