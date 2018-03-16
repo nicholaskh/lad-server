@@ -2825,7 +2825,7 @@ public class CircleController extends BaseContorller {
 		if (loginUser != null) {
 			List<MessageBo> messageBos = messageService.findUnReadByMyUserid(loginUserid, circleid);
 			int num = 0;
-			if (messageBos != null) {
+			if (!CommonUtil.isEmpty(messageBos)) {
 				num = messageBos.size();
 				//返回第一条动态评论人的
 				MessageBo first = messageBos.get(0);
@@ -2851,8 +2851,8 @@ public class CircleController extends BaseContorller {
 	 * @return
 	 */
 	@ApiOperation("当前圈子中帖子点赞或评论的最新动态信息")
-	@PostMapping("/new-situation")
-	public String circleNews(String circleid, HttpServletRequest request, HttpServletResponse
+	@PostMapping("/note-dynamic")
+	public String noteDynamic(String circleid, HttpServletRequest request, HttpServletResponse
 			response) {
 		UserBo userBo = getUserLogin(request);
 		if (userBo == null) {
@@ -2865,7 +2865,7 @@ public class CircleController extends BaseContorller {
 		List<MessageBo> messageBos = messageService.findUnReadByMyUserid(userid, circleid);
 		List<UserShowVo> userShowVos = new LinkedList<>();
 		Map<String, NoteBo> noteMap = new HashMap<>();
-		if (messageBos != null) {
+		if (!CommonUtil.isEmpty(messageBos)) {
 			messageBos.forEach( messageBo -> {
 				UserShowVo showVo = new UserShowVo();
 				int type = messageBo.getType();
