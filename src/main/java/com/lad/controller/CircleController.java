@@ -2864,9 +2864,11 @@ public class CircleController extends BaseContorller {
 		map.put("ret", 0);
 		List<MessageBo> messageBos = messageService.findUnReadByMyUserid(userid, circleid);
 		List<UserShowVo> userShowVos = new LinkedList<>();
+		List<String> readids = new LinkedList<>();
 		Map<String, NoteBo> noteMap = new HashMap<>();
 		if (!CommonUtil.isEmpty(messageBos)) {
 			messageBos.forEach( messageBo -> {
+				readids.add(messageBo.getId());
 				UserShowVo showVo = new UserShowVo();
 				int type = messageBo.getType();
 				String noteid = messageBo.getTargetid();
@@ -2935,6 +2937,10 @@ public class CircleController extends BaseContorller {
 				}
 				userShowVos.add(showVo);
 			});
+		}
+
+		if (readids.size() > 0) {
+			messageService.betchUpdateMessage(readids, 1);
 		}
 		map.put("userVoList", userShowVos);
 		return JSONObject.fromObject(map).toString();

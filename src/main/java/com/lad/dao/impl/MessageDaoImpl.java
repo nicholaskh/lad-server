@@ -97,7 +97,7 @@ public class MessageDaoImpl implements IMessageDao {
 	public List<MessageBo> findUnReadByMyUserid(String userid, String circleid) {
 		Query query = new Query();
 		Criteria criteria = new Criteria("deleted").is(0).and("status").is(0).and("userid").is(userid);
-		criteria.and(circleid).is(circleid).and("type").ne(0);
+		criteria.and("circleid").is(circleid).and("type").ne(0);
 		query.addCriteria(criteria);
 		query.with(new Sort(Direction.DESC, "createTime"));
 		return mongoTemplate.find(query, MessageBo.class);
