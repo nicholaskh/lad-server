@@ -22,6 +22,8 @@ public class UserShowVo extends UserBaseVo {
 
     private String noteVideo;
 
+    private String noteid;
+
     public Date getCreateTime() {
         return createTime;
     }
@@ -68,5 +70,13 @@ public class UserShowVo extends UserBaseVo {
 
     public void setNoteVideo(String noteVideo) {
         this.noteVideo = noteVideo;
+    }
+
+    public String getNoteid() {
+        return noteid;
+    }
+
+    public void setNoteid(String noteid) {
+        this.noteid = noteid;
     }
 }

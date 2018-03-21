@@ -118,10 +118,7 @@ public class MessageDaoImpl implements IMessageDao {
 	@Override
 	public WriteResult deleteMessageBySource(String sourceid, int type) {
 		Query query = new Query(new Criteria("sourceid").is(sourceid).and("type").is(type));
-		//-1 表示查询当前帖子的全部内容信息
-		Update update = new Update();
-		update.set("deleted", Constant.DELETED);
-		return mongoTemplate.updateFirst(query, update, MessageBo.class);
+		return mongoTemplate.remove(query, MessageBo.class);
 	}
 
 

@@ -2882,6 +2882,7 @@ public class CircleController extends BaseContorller {
 					}
 					noteMap.put(noteid, noteBo);
 				}
+				showVo.setNoteid(noteid);
 				if (!CommonUtil.isEmpty(noteBo.getPhotos())){
 					if ("video".equals(noteBo.getType())) {
 						showVo.setNotePic(noteBo.getVideoPic());
