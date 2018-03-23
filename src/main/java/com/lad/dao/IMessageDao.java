@@ -75,4 +75,12 @@ public interface IMessageDao extends IBaseDao {
 	 */
 	List<MessageBo> findUnReadByMyUserid(String userid, String circleid);
 
+
+	/**
+	 * 情况指定圈子内帖子信息
+	 * @param userid
+	 * @return
+	 */
+	WriteResult clearUnReadByMyUserid(String userid, String circleid);
+
 }

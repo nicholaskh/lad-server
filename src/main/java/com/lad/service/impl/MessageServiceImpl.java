@@ -73,4 +73,9 @@ public class MessageServiceImpl implements IMessageService {
 	public List<MessageBo> findUnReadByMyUserid(String userid, String circleid) {
 		return messageDao.findUnReadByMyUserid(userid, circleid);
 	}
+
+	@Override
+	public WriteResult clearUnReadByMyUserid(String userid, String circleid) {
+		return messageDao.clearUnReadByMyUserid(userid, circleid);
+	}
 }

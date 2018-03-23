@@ -134,4 +134,15 @@ public class MessageDaoImpl implements IMessageDao {
 		update.set("deleted", Constant.DELETED);
 		return mongoTemplate.updateMulti(query, update, MessageBo.class);
 	}
+
+	@Override
+	public WriteResult clearUnReadByMyUserid(String userid, String circleid) {
+		Query query = new Query();
+		Criteria criteria = new Criteria("deleted").is(0).and("status").is(0).and("userid").is(userid);
+		criteria.and("circleid").is(circleid).and("type").ne(0);
+		query.addCriteria(criteria);
+		Update update = new Update();
+		update.set("status", Constant.DELETED);
+		return mongoTemplate.updateMulti(query, update, MessageBo.class);
+	}
 }

@@ -2948,6 +2948,25 @@ public class CircleController extends BaseContorller {
 	}
 
 
+	/**
+	 * 清空圈子内帖子动态信息
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@ApiOperation("清空圈子内帖子动态信息")
+	@PostMapping("/clear-note-dynamic")
+	public String clearNoteDynamic(String circleid, HttpServletRequest request, HttpServletResponse
+			response) {
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(), ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		messageService.clearUnReadByMyUserid(userBo.getId(), circleid);
+		return Constant.COM_RESP;
+	}
+
+
 	private void addValues(PartyListVo listVo, PartyBo partyBo){
 		LinkedHashSet<String> startTimes = partyBo.getStartTime();
 		BeanUtils.copyProperties(partyBo, listVo);
