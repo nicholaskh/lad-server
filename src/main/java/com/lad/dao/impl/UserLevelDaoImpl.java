@@ -44,18 +44,25 @@ public class UserLevelDaoImpl implements IUserLevelDao{
         switch (type){
             case Constant.LEVEL_HOUR:
                 update.inc("onlineHours", num);
+                break;
             case Constant.LEVEL_PARTY:
                 update.inc("launchPartys", num);
+                break;
             case Constant.LEVEL_NOTE:
                 update.inc("noteNum", num);
+                break;
             case Constant.LEVEL_COMMENT:
                 update.inc("commentNum", num);
+                break;
             case Constant.LEVEL_TRANS:
                 update.inc("transmitNum", num);
+                break;
             case Constant.LEVEL_SHARE:
                 update.inc("shareNum", num);
+                break;
             case Constant.LEVEL_CIRCLE:
                 update.inc("circleNum", num);
+                break;
             default:
                 break;
         }

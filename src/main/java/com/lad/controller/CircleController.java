@@ -286,11 +286,13 @@ public class CircleController extends BaseContorller {
 		}
 		updateHistory(userBo.getId(), circleid, locationService, circleService);
 		HashSet<String> usersApply = circleBo.getUsersApply();
+		if (usersApply == null) {
+			usersApply = new LinkedHashSet<>();
+		}
 		if (usersApply.contains(userBo.getId()) || circleBo.getUsers().contains(userBo.getId())) {
 			return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_USER_EXIST.getIndex(),
 					ERRORCODE.CIRCLE_USER_EXIST.getReason());
 		}
-
 		ReasonBo reasonBo = reasonService.findByUserAdd(userBo.getId(), circleid);
 		if (reasonBo == null) {
 			reasonBo = new ReasonBo();
@@ -315,6 +317,7 @@ public class CircleController extends BaseContorller {
 			reasonService.updateApply(reasonBo.getId(), Constant.ADD_APPLY, reason);
 		}
 		usersApply.add(userBo.getId());
+		circleBo.setUsersApply(usersApply);
 		circleAddUserApply(circleid, usersApply);
 		String content = String.format("“%s”申请加入您的圈子【%s】，快去审核吧", userBo.getUserName(),
 				circleBo.getName());
@@ -398,7 +401,9 @@ public class CircleController extends BaseContorller {
 			CircleVo circleVo = new CircleVo();
 			BeanUtils.copyProperties(circleBo, circleVo);
 			circleVo.setUserAdd(1);
-			circleVo.setNotesSize(circleBo.getNoteSize());
+//			circleVo.setNotesSize(circleBo.getNoteSize());
+			long noteSize = noteService.finyNotesNum(circleBo.getId());
+			circleVo.setNotesSize(noteSize);
 			circleVoList.add(circleVo);
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -1041,7 +1046,8 @@ public class CircleController extends BaseContorller {
 		BeanUtils.copyProperties(circleBo, circleVo);
 		circleVo.setName(circleBo.getName());
 		circleVo.setUsersSize(circleBo.getUsers().size());
-		circleVo.setNotesSize(circleBo.getNoteSize());
+		long noteSize = noteService.finyNotesNum(circleBo.getId());
+		circleVo.setNotesSize(noteSize);
 		circleVo.setUserAdd(userAdd);
 		LinkedHashSet<String> masters = circleBo.getMasters();
 		//管理员
@@ -1275,7 +1281,8 @@ public class CircleController extends BaseContorller {
 			BeanUtils.copyProperties(circleBo, circleVo);
 			circleVo.setId(circleBo.getId());
 			circleVo.setName(circleBo.getName());
-			circleVo.setNotesSize(circleBo.getNoteSize());
+			long noteSize = noteService.finyNotesNum(circleBo.getId());
+			circleVo.setNotesSize(noteSize);
 			circleVo.setUsersSize(circleBo.getUsers().size());
 			if (isLogin) {
 				CircleAddBo addBo = circleService.findHisByUserAndCircle(userBo.getId(), circleBo.getId());
@@ -1474,7 +1481,9 @@ public class CircleController extends BaseContorller {
 			BeanUtils.copyProperties(circleBo, circleVo);
 			circleVo.setId(circleBo.getId());
 			circleVo.setName(circleBo.getName());
-			circleVo.setNotesSize(circleBo.getNoteSize());
+//			circleVo.setNotesSize(circleBo.getNoteSize());
+			long noteSize = noteService.finyNotesNum(circleBo.getId());
+			circleVo.setNotesSize(noteSize);
 			circleVo.setUsersSize(circleBo.getUsers().size());
 			circleVo.setTop(0);
 			if (null != userBo) {
@@ -3010,7 +3019,8 @@ public class CircleController extends BaseContorller {
 		BeanUtils.copyProperties(circleBo, circleVo);
 		circleVo.setId(circleBo.getId());
 		circleVo.setName(circleBo.getName());
-		circleVo.setNotesSize(circleBo.getNoteSize());
+		long noteSize = noteService.finyNotesNum(circleBo.getId());
+		circleVo.setNotesSize(noteSize);
 		circleVo.setUsersSize(circleBo.getUsers().size());
 		circleVo.setTop(top);
 		if (null != userBo) {

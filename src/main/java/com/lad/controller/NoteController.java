@@ -370,6 +370,7 @@ public class NoteController extends BaseContorller {
 			noteVo.setCirName(circleBo.getName());
 			noteVo.setCirHeadPic(circleBo.getHeadPicture());
 		}
+		noteVo.setVisitCount(noteBo.getVisitcount() + 1);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("noteVo", noteVo);
@@ -1539,18 +1540,16 @@ public class NoteController extends BaseContorller {
 					noteVo.setPhotos(sourceNote.getPhotos());
 					noteVo.setVideoPic(sourceNote.getVideoPic());
 					addNoteAtUsers(sourceNote, noteVo, userid);
-					UserBo from = userService.getUser(sourceNote.getCreateuid());
+					creatBo = userService.getUser(sourceNote.getCreateuid());
+					UserBo from = userService.getUser(noteBo.getCreateuid());
 					if (from != null) {
 						noteVo.setFromUserid(from.getId());
+						noteVo.setFromUserName(from.getUserName());
 						if (!StringUtils.isEmpty(userid)) {
 							FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(userid, from.getId());
-							if (friendsBo != null) {
+							if (friendsBo != null && !StringUtils.isEmpty(friendsBo.getBackname())) {
 								noteVo.setFromUserName(friendsBo.getBackname());
-							} else {
-								noteVo.setFromUserName(from.getUserName());
-							}
-						} else {
-							noteVo.setFromUserName(from.getUserName());
+							} 
 						}
 						noteVo.setFromUserPic(from.getHeadPictureName());
 						noteVo.setFromUserSex(from.getSex());
@@ -1564,15 +1563,12 @@ public class NoteController extends BaseContorller {
 			addNoteAtUsers(noteBo, noteVo, userid);
 		}
 		if (creatBo!= null) {
+			noteVo.setUsername(creatBo.getUserName());
 			if (!"".equals(userid) && !userid.equals(creatBo.getId())) {
 				FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(userid, creatBo.getId());
 				if (friendsBo != null && !StringUtils.isEmpty(friendsBo.getBackname())) {
 					noteVo.setUsername(friendsBo.getBackname());
-				} else {
-					noteVo.setUsername(creatBo.getUserName());
-				}
-			} else {
-				noteVo.setUsername(creatBo.getUserName());
+				} 
 			}
 			noteVo.setUserLevel(creatBo.getLevel());
 			noteVo.setSex(creatBo.getSex());

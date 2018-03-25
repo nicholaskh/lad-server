@@ -12,7 +12,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class UserLevelBo extends BaseBo{
 
     private String userid;
-    //在线时间 毫秒
+    //在线时间 小时
     private double onlineHours;
     //发起聚会数
     private int launchPartys;
