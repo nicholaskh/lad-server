@@ -2,6 +2,7 @@ package com.lad.bo;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 
 @Document(collection = "note")
@@ -53,6 +54,13 @@ public class NoteBo extends BaseBo {
 	private int inforType;
 	//来源资讯类型名称
 	private String inforTypeName;
+	
+	private String forwardUsers;
+
+	//转发 时 前面涉及的所有noteid
+	private LinkedHashSet<String> preNoteids;
+	//转发时的评论
+	private String view;
 
 	public String getSubject() {
 		return subject;

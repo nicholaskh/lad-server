@@ -11,6 +11,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.StringUtils;
 
 import java.util.Date;
 import java.util.HashSet;
@@ -328,11 +329,37 @@ public class UserDaoImpl implements IUserDao {
         Query query = new Query();
         if (loginType == 0) {
             query.addCriteria(new Criteria("_id").is(id));
-        } else if (loginType == 1) {
+        } else {
             query.addCriteria(new Criteria("openid").is(id));
         }
         Update update = new Update();
         update.set("lastLoginTime", new Date());
         return mongoTemplate.updateFirst(query, update, UserBo.class);
+    }
+
+    @Override
+    public WriteResult updateQQUserInfor(String id, String accessToken, String nickname, String userPic, String
+            gender) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("_id").is(id));
+        Update update = new Update();
+        update.set("accessToken", accessToken);
+        if (!StringUtils.isEmpty(nickname)) {
+            update.set("userName", nickname);
+        }
+        if (!StringUtils.isEmpty(gender)) {
+            update.set("sex", gender);
+        }
+        if (!StringUtils.isEmpty(userPic)) {
+            update.set("headPictureName", userPic);
+        }
+        return mongoTemplate.updateFirst(query, update, UserBo.class);
+    }
+
+    @Override
+    public WriteResult removeUser(String id) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("_id").is(id));
+        return mongoTemplate.remove(query, UserBo.class);
     }
 }

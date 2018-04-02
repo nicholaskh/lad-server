@@ -10,6 +10,8 @@ import com.lad.service.ILoginService;
 import com.lad.service.IUserService;
 import com.lad.util.*;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import net.sf.json.JSONObject;
 import org.apache.logging.log4j.LogManager;
@@ -30,7 +32,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-@Api("用户登录相关解耦")
+@Api("用户登录相关接口")
 @RestController
 @RequestMapping("login")
 public class LoginController extends BaseContorller {
@@ -52,6 +54,11 @@ public class LoginController extends BaseContorller {
 	private String weixin_ip = "https://api.weixin.qq.com/sns/oauth2/access_token?";
 
 	private String weixin_user = "https://api.weixin.qq.com/sns/userinfo?";
+
+
+	private String qq_ip = "https://graph.z.qq.com/moc2/authorize?";
+
+	private String qq_user = "https://graph.qq.com/user/get_user_info?";
 
 	@ApiOperation("验证码发送")
 	@PostMapping("/verification-send")
@@ -113,6 +120,7 @@ public class LoginController extends BaseContorller {
 				// 在pushd创建用户
 				String res = IMUtil.createUser(userBo.getId());
 				if(!IMUtil.FINISH.equals(res)){
+					userService.removeUser(userBo.getId());
 					return res;
 				}
 				// 从pushd获取连接token
@@ -145,6 +153,7 @@ public class LoginController extends BaseContorller {
 			session.setAttribute("isLogin", true);
 			session.setAttribute("loginTime", System.currentTimeMillis());
 			session.setAttribute("userBo", userBo);
+			userService.updateLastLoginTime(0, userBo.getId());
 			logger.info("quick login ========== {} ; sessionid :{}",phone, session.getId());
 		} else {
 			return CommonUtil.toErrorResult(ERRORCODE.SECURITY_WRONG_VERIFICATION.getIndex(),
@@ -186,6 +195,7 @@ public class LoginController extends BaseContorller {
 			}
 			map.put("token", token);
 			map.put("userid", userBo.getId());
+			userService.updateLastLoginTime(0,userBo.getId());
 			logger.info("login ========== {} ; sessionid :{}", phone, session.getId());
 		} else {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PASSWORD.getIndex(), ERRORCODE.ACCOUNT_PASSWORD.getReason());
@@ -209,14 +219,14 @@ public class LoginController extends BaseContorller {
 		}
 		UserBo userBo = (UserBo) session.getAttribute("userBo");
 		long loginTime = (long)session.getAttribute("loginTime");
-		session.invalidate();
-		//登录时长
 		long time = System.currentTimeMillis() - loginTime;
 		double hours = time/3600000;
 		DecimalFormat df = new DecimalFormat("###.00");
 		double hour = Double.parseDouble(df.format(hours));
 		userService.addUserLevel(userBo.getId(), time, Constant.LEVEL_HOUR, hour);
 		logger.info("logout ========== {} ; sessionid :{}",userBo.getPhone(), session.getId());
+		session.invalidate();
+		//登录时长
 		return Constant.COM_RESP;
 	}
 
@@ -273,6 +283,7 @@ public class LoginController extends BaseContorller {
 				userBo.setOpenid(openid);
 				isNew = true;
 			}
+			userBo.setLoginType(1);
 			userBo.setAccessToken(access_token);
 			userBo.setRefeshToken(refresh_token);
 			userBo.setExpiresTime(expires_in);
@@ -290,6 +301,7 @@ public class LoginController extends BaseContorller {
 				//新用户需要创建IM信息
 				String res = IMUtil.createUser(userBo.getId());
 				if(!IMUtil.FINISH.equals(res)){
+					userService.removeUser(userBo.getId());
 					return res;
 				}
 			}
@@ -298,6 +310,7 @@ public class LoginController extends BaseContorller {
 			if(token == null){
 				return CommonUtil.toErrorResult(ERRORCODE.PUSHED_ERROR.getIndex(), "token produce error");
 			}
+			userService.updateLastLoginTime(1,openid);
 			map.put("token",token);
 			map.put("userid",userBo.getId());
 			session.setAttribute("isLogin", true);
@@ -308,6 +321,55 @@ public class LoginController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OPEN_ERROR.getIndex(),
 					ERRORCODE.ACCOUNT_OPEN_ERROR.getReason());
 		}
+		return JSONObject.fromObject(map).toString();
+	}
+
+
+	@ApiOperation("QQ授权登录")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "accessToken", value = "qq返回token", required = true, dataType = "string",
+					paramType = "query"),
+			@ApiImplicitParam(name = "openid", value = "qq返回openid", required = true, dataType = "string",
+					paramType = "query"),
+			@ApiImplicitParam(name = "nickname", value = "名称",  dataType = "string", paramType = "query"),
+			@ApiImplicitParam(name = "userPic", value = "用户头像", dataType = "string", paramType = "query"),
+			@ApiImplicitParam(name = "gender", value = "性别",  dataType = "string", paramType = "query")})
+	@PostMapping("/qq-open-login")
+	public String qqOpenLogin(String accessToken, String openid, String nickname, String userPic, String gender,
+			HttpServletRequest request, HttpServletResponse
+			response){
+		HttpSession session = request.getSession();
+		UserBo userBo = userService.findByOpenid(openid);
+		if (userBo == null) {
+			userBo = new UserBo();
+			userBo.setOpenid(openid);
+			userBo.setSex(gender);
+			userBo.setHeadPictureName(userPic);
+			userBo.setUserName(nickname);
+			userBo.setAccessToken(accessToken);
+			userBo.setLoginType(2);
+			userService.save(userBo);
+			//新用户需要创建IM信息
+			String res = IMUtil.createUser(userBo.getId());
+			if(!IMUtil.FINISH.equals(res)){
+				userService.removeUser(userBo.getId());
+				return res;
+			}
+		} else {
+		  	userService.updateQQUserInfor(userBo.getId(), accessToken, nickname, userPic, gender);
+		}
+		userService.updateLastLoginTime(1,openid);
+		Map<String, Object> map = new LinkedHashMap<>();
+		// 从pushd获取连接token
+		String token = IMUtil.getToken();
+		if(token == null){
+			return CommonUtil.toErrorResult(ERRORCODE.PUSHED_ERROR.getIndex(), "token produce error");
+		}
+		map.put("token",token);
+		map.put("userid",userBo.getId());
+		session.setAttribute("isLogin", true);
+		session.setAttribute("loginTime", System.currentTimeMillis());
+		session.setAttribute("userBo", userBo);
 		return JSONObject.fromObject(map).toString();
 	}
 }

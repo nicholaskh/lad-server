@@ -374,4 +374,15 @@ public class UserServiceImpl implements IUserService{
 	public WriteResult updateLastLoginTime(int loginType, String id) {
 		return userDao.updateLastLoginTime(loginType, id);
 	}
+
+	@Override
+	public WriteResult updateQQUserInfor(String id, String accessToken, String nickname, String userPic, String
+			gender) {
+		return userDao.updateQQUserInfor(id, accessToken, nickname, userPic, gender);
+	}
+
+	@Override
+	public WriteResult removeUser(String id) {
+		return userDao.removeUser(id);
+	}
 }

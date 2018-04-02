@@ -167,4 +167,20 @@ public interface IUserDao extends IBaseDao {
     WriteResult updateLastLoginTime(int loginType, String id);
 
 
+    /**
+     * 根据openid更新
+     * @param loginType
+     * @param id
+     * @return
+     */
+    WriteResult updateQQUserInfor(String id, String accessToken, String nickname, String userPic, String gender);
+
+
+    /**
+     * 删除user
+     * @param loginType
+     * @param id
+     * @return
+     */
+    WriteResult removeUser(String id);
 }
