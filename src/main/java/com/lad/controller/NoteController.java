@@ -440,9 +440,7 @@ public class NoteController extends BaseContorller {
 	@PostMapping("/top-notes")
 	public String topNotes(String circleid, int page, int limit, HttpServletRequest request,
 						   HttpServletResponse response) {
-		if (limit < 1) {
-			limit = 2;
-		}
+		limit = limit < 1 ? 2 : limit;
 		UserBo loginUser = getUserLogin(request);
 		List<NoteBo> noteBos = noteService.findByTopEssence(circleid, Constant.NOTE_TOP, page, limit);
 		List<NoteVo> noteVoList = new LinkedList<>();
@@ -1277,6 +1275,9 @@ public class NoteController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.NOTE_IS_NULL.getIndex(),
 					ERRORCODE.NOTE_IS_NULL.getReason());
 		}
+		if (!StringUtils.isEmpty(old.getSourceid())) {
+			old = noteService.selectById(old.getSourceid());
+		}
 		NoteBo noteBo = new NoteBo();
 		noteBo.setCircleId(circleid);
 		noteBo.setVideoPic(old.getVideoPic());
@@ -1298,6 +1299,60 @@ public class NoteController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
+
+	/**
+	 * 转发其他圈子
+	 */
+	@ApiOperation("评论帖子并转发到其他圈子")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "noteid", value = "被转发的帖子id", required = true,
+					dataType = "string", paramType = "query"),
+			@ApiImplicitParam(name = "circleid", value = "转发到的圈子", required = true,
+					dataType = "string", paramType = "query"),
+			@ApiImplicitParam(name = "landmark", value = "转发时的地标", dataType = "string", paramType = "query"),
+			@ApiImplicitParam(name = "view", value = "转发时的评语", dataType = "string", paramType = "query"),
+			@ApiImplicitParam(name = "atUserids", value = "转发时@的用户id，多个以逗号隔开", dataType = "string", paramType =
+					"query")})
+	@PostMapping("/forward-circle-view")
+	public String forwardCircleView(String noteid, String circleid, String landmark, String view, String atUserids,
+								HttpServletRequest request, HttpServletResponse response) {
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(), ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		String userid = userBo.getId();
+		NoteBo old = noteService.selectById(noteid);
+		if (null == old) {
+			return CommonUtil.toErrorResult(ERRORCODE.NOTE_IS_NULL.getIndex(),
+					ERRORCODE.NOTE_IS_NULL.getReason());
+		}
+		if (!StringUtils.isEmpty(old.getSourceid())) {
+			old = noteService.selectById(old.getSourceid());
+			if (null == old) {
+				return CommonUtil.toErrorResult(ERRORCODE.NOTE_FIRST_NULL.getIndex(),
+						ERRORCODE.NOTE_FIRST_NULL.getReason());
+			}
+		}
+		NoteBo noteBo = new NoteBo();
+		noteBo.setCircleId(circleid);
+		noteBo.setVideoPic(old.getVideoPic());
+		noteBo.setPhotos(old.getPhotos());
+		noteBo.setType(old.getType());
+		noteBo.setContent(old.getContent());
+		noteBo.setCreateuid(userBo.getId());
+		noteBo.setLandmark(landmark);
+		noteBo.setSourceid(old.getId());
+		noteBo.setForward(1);
+		noteService.insert(noteBo);
+		addCircleShow(noteBo);
+		updateCount(noteid, Constant.SHARE_NUM, 1);
+		NoteVo noteVo = new NoteVo();
+		boToVo(noteBo, noteVo, userBo, userid);
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("noteVo", noteVo);
+		return JSONObject.fromObject(map).toString();
+	}
 
 
 	@ApiOperation("查找圈子中既没有加精也没有置顶的帖子")
