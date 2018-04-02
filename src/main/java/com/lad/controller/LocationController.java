@@ -4,9 +4,12 @@ import com.lad.bo.LocationBo;
 import com.lad.bo.UserBo;
 import com.lad.service.ILocationService;
 import com.lad.service.IUserService;
+import com.lad.util.CommonUtil;
 import com.lad.util.Constant;
+import com.lad.util.ERRORCODE;
 import com.lad.vo.UserBaseVo;
 import com.lad.vo.UserVo;
+import io.swagger.annotations.ApiOperation;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.beanutils.BeanUtils;
@@ -17,9 +20,7 @@ import org.springframework.data.geo.GeoResult;
 import org.springframework.data.geo.GeoResults;
 import org.springframework.data.geo.Point;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -92,6 +93,32 @@ public class LocationController extends BaseContorller {
 				userBo.setLocationid(locationBo.getId());
 				userService.updateLocation(phone, locationBo.getId());
 			}
+		}
+		return Constant.COM_RESP;
+	}
+
+	@ApiOperation("根据用户id更新用户位置")
+	@PostMapping("/update-location")
+	public String updateLocationByUserid(String userid, double px, double py,
+								 HttpServletRequest request, HttpServletResponse response) {
+		UserBo userBo = userService.getUser(userid);
+		if (null != userBo) {
+			LocationBo locationBo  = locationService.getLocationBoByUserid(userid);
+			double[] postion = new double[]{px, py};
+
+			if (null == locationBo) {
+				locationBo = new LocationBo();
+				locationBo.setUserid(userBo.getId());
+				locationBo.setPosition(postion);
+				locationBo = locationService.insertUserPoint(locationBo);
+			} else {
+				locationBo.setPosition(postion);
+				locationBo.setUpdateTime(new Date());
+				locationService.updateUserPoint(locationBo);
+			}
+		} else {
+			return CommonUtil.toErrorResult(ERRORCODE.USER_NULL.getIndex(),
+					ERRORCODE.USER_NULL.getReason());
 		}
 		return Constant.COM_RESP;
 	}
