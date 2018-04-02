@@ -17,8 +17,6 @@ import org.apache.logging.log4j.Logger;
 import org.redisson.api.RLock;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,7 +30,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 @Api(value = "ChatroomController", description = "聊天信息相关接口")
-@EnableAsync
 @RestController
 @RequestMapping("chatroom")
 public class ChatroomController extends BaseContorller {
@@ -176,7 +173,7 @@ public class ChatroomController extends BaseContorller {
 			}
 			UserBo user = userService.getUser(userid);
 			if (null != user) {
-				updateUserChatroom(userid, chatroomid, true);
+				asyncController.updateUserChatroom(userid, chatroomid, true);
 				addChatroomUser(chatroomService, user, chatroomBo.getId(), user.getUserName());
 				set.add(userid);
 				imNames.add(user.getUserName());
@@ -199,7 +196,7 @@ public class ChatroomController extends BaseContorller {
 		} finally {
 			lock.unlock();
 		}
-		addRoomInfo(userBo, chatroomid, imIds, imNames, otherNameAndId);
+		asyncController.addRoomInfo(userBo, chatroomid, imIds, imNames, otherNameAndId);
 
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
@@ -276,7 +273,7 @@ public class ChatroomController extends BaseContorller {
 			set.remove(userid);
 			UserBo user = userService.getUser(userid);
 			if (null != user) {
-				updateUserChatroom(userid, chatroomid, false);
+				asyncController.updateUserChatroom(userid, chatroomid, false);
 				imIds.append(user.getId());
 				imIds.append(",");
 
@@ -327,7 +324,7 @@ public class ChatroomController extends BaseContorller {
 		}
 		ChatroomBo chatroomBo = chatroomService.get(chatroomid);
 		if (null == chatroomBo) {
-			updateUserChatroom(userBo.getId(), chatroomid, false);
+			asyncController.updateUserChatroom(userBo.getId(), chatroomid, false);
 			return Constant.COM_RESP;
 		}
 
@@ -375,8 +372,8 @@ public class ChatroomController extends BaseContorller {
 				}
 			}
 		}
-		updateUserChatroom(userBo.getId(), chatroomid, false);
-		deleteNickname(userid, chatroomid);
+		asyncController.updateUserChatroom(userBo.getId(), chatroomid, false);
+		asyncController.deleteNickname(userid, chatroomid);
 		set.remove(userid);
 
 		String name = chatroomBo.getName();
@@ -411,48 +408,7 @@ public class ChatroomController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	/**
-	 * 更新当前用户的聊天室
-	 * @param userid
-	 * @param chatroomid
-	 */
-	@Async
-	private void updateUserChatroom(String userid, String chatroomid, boolean isAdd){
-		RLock lock = redisServer.getRLock(userid.concat("chatroom"));
-		try {
-			lock.lock(3, TimeUnit.SECONDS);
-			UserBo userBo = userService.getUser(userid);
-			if (userBo == null) {
-				return;
-			}
-			HashSet<String> chatroom = userBo.getChatrooms();
-			LinkedList<String> chatroomTops = userBo.getChatroomsTop();
-			HashSet<String> showRooms = userBo.getShowChatrooms();
-			if (isAdd) {
-				userBo.setChatrooms(chatroom);
-				//个人聊天室中没有当前聊天室，则添加到个人的聊天室
-				if (!chatroom.contains(chatroomid)) {
-					chatroom.add(chatroomid);
-				}
-				showRooms.add(chatroomid);
-			} else {
-				if (chatroom.contains(chatroomid)) {
-					chatroom.remove(chatroomid);
-					userBo.setChatrooms(chatroom);
-				}
-				if (chatroomTops.contains(chatroomid)) {
-					chatroomTops.remove(chatroomid);
-					userBo.setChatroomsTop(chatroomTops);
-				}
-				showRooms.remove(chatroomid);
-			}
-			userBo.setShowChatrooms(showRooms);
-			userService.updateChatrooms(userBo);
-		} finally {
-			lock.unlock();
-		}
-		chatroomService.deleteChatroomUser(userid, chatroomid);
-	}
+
 
 	@ApiOperation("获取所有聊天室信息")
 	@PostMapping("/get-my-chatrooms")
@@ -508,7 +464,7 @@ public class ChatroomController extends BaseContorller {
 				removes.add(id);
 			}
 		}
-		updateUserRoom(userBo, removes, removeTops);
+		asyncController.updateUserRoom(userBo, removes, removeTops);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("ChatroomList", chatroomList);
@@ -570,7 +526,7 @@ public class ChatroomController extends BaseContorller {
 				addName(chatroomBo, vo);
 			}
 			chatroomList.addAll(chats);
-			updateUserRoom(userBo, removes, removeTops);
+			asyncController.updateUserRoom(userBo, removes, removeTops);
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("timestamp", StringUtils.isNotEmpty(timeStr) ? timeStr : timestamp);
@@ -591,17 +547,6 @@ public class ChatroomController extends BaseContorller {
 				chatroomVo.setName(userBo.getUserName());
 			}
 		}
-	}
-
-	@Async
-	private void updateUserRoom(UserBo userBo, HashSet<String> removes, LinkedList<String> removeTops){
-		HashSet<String> chatrooms = userBo.getChatrooms();
-		LinkedList<String> chatroomsTop = userBo.getChatroomsTop();
-		chatroomsTop.removeAll(removeTops);
-		chatrooms.removeAll(removes);
-		userBo.setChatroomsTop(chatroomsTop);
-		userBo.setChatrooms(chatrooms);
-		userService.updateChatrooms(userBo);
 	}
 
 	private void bo2vo(ChatroomBo chatroomBo, ChatroomVo vo){
@@ -793,7 +738,7 @@ public class ChatroomController extends BaseContorller {
 				LinkedHashSet<String> userSet = chatroom.getUsers();
 				userSet.remove(userBo.getId());
 				chatroom.setUsers(userSet);
-				updateChatroomUser(chatroom.getId(), userSet);
+				asyncController.updateChatroomUser(chatroom.getId(), userSet);
 			}
 			return res;
 		}
@@ -1060,7 +1005,7 @@ public class ChatroomController extends BaseContorller {
 			if (!removes.isEmpty()) {
 				set.add(userBo.getId());
 				set.removeAll(removes);
-				updateChatroomUser(chatroomid, set);
+				asyncController.updateChatroomUser(chatroomid, set);
 			}
 		} else {
 			return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_NOT_MASTER.getIndex(),
@@ -1069,21 +1014,7 @@ public class ChatroomController extends BaseContorller {
 		return Constant.COM_RESP;
 	}
 
-	/**
-	 * 删除用户
-	 * @param chatroomid
-	 * @param users
-	 */
-	@Async
-	private void updateChatroomUser(String chatroomid, LinkedHashSet<String> users){
-			RLock lock = redisServer.getRLock(chatroomid.concat("users"));
-			try {
-				lock.lock(2, TimeUnit.SECONDS);
-				chatroomService.updateUsers(chatroomid, users);
-			} finally {
-				lock.unlock();
-			}
-	}
+
 
 
 	@ApiOperation("修改群聊里面的个人昵称")
@@ -1172,7 +1103,7 @@ public class ChatroomController extends BaseContorller {
 		}
 		ChatroomBo chatroomBo = chatroomService.get(chatroomid);
 		if (chatroomBo == null) {
-			deleteNickname(userBo.getId(), chatroomid);
+			asyncController.deleteNickname(userBo.getId(), chatroomid);
 			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(),
 					ERRORCODE.CHATROOM_NULL.getReason());
 		}
@@ -1202,7 +1133,7 @@ public class ChatroomController extends BaseContorller {
 		}
 		ChatroomBo chatroomBo = chatroomService.get(chatroomid);
 		if (chatroomBo == null) {
-			deleteNickname(userBo.getId(), chatroomid);
+			asyncController.deleteNickname(userBo.getId(), chatroomid);
 			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(),
 					ERRORCODE.CHATROOM_NULL.getReason());
 		}
@@ -1296,8 +1227,8 @@ public class ChatroomController extends BaseContorller {
 				String newChatRoomName = ChatRoomUtil.generateChatRoomName(userService, set, chatroomid, logger);
 				name = newChatRoomName != null ? newChatRoomName : name;
 			}
-			updateChatroomNameAndUser(chatroomid, name, chatroomBo.isNameSet(), set);
-			addRoomInfo(userBo, chatroomid, imIds, imNames, otherNameAndId);
+			asyncController.updateChatroomNameAndUser(chatroomid, name, chatroomBo.isNameSet(), set);
+			asyncController.addRoomInfo(userBo, chatroomid, imIds, imNames, otherNameAndId);
 			Map<String, Object> map = new HashMap<String, Object>();
 			map.put("ret", 0);
 			map.put("channelId", chatroomBo.getId());
@@ -1448,8 +1379,8 @@ public class ChatroomController extends BaseContorller {
 				String newChatRoomName = ChatRoomUtil.generateChatRoomName(userService, set, chatroomid, logger);
 				name = newChatRoomName != null ? newChatRoomName : name;
 			}
-			updateChatroomNameAndUser(chatroomid, name, chatroomBo.isNameSet(), set);
-			addRoomInfo(userBo, chatroomid, imIds, imNames, otherNameAndId);
+			asyncController.updateChatroomNameAndUser(chatroomid, name, chatroomBo.isNameSet(), set);
+			asyncController.addRoomInfo(userBo, chatroomid, imIds, imNames, otherNameAndId);
 			reasonService.updateApply(applyid, Constant.ADD_AGREE, "");
 
 			String path = "";
@@ -1645,7 +1576,7 @@ public class ChatroomController extends BaseContorller {
 		if (loginUser != null) {
 			String userid = loginUser.getId();
 			HashSet<String> users = chatroomBo.getUsers();
-			updateNoticeRead(users,noticeid, loginUser.getId());
+			asyncController.updateNoticeRead(users,noticeid, loginUser.getId());
 			readNum = !readUsers.contains(userid) && users.contains(userid) ? readNum+1 : readNum;
 		}
 		UserBo userBo = userService.getUser(noticeBo.getCreateuid());
@@ -1828,135 +1759,12 @@ public class ChatroomController extends BaseContorller {
 		String[] ids = CommonUtil.getIds(noticeids);
 		List<CircleNoticeBo> noticeBos = circleService.findNoticeByIds(ids);
 		for (CircleNoticeBo noticeBo : noticeBos) {
-			updateNoticeRead(noticeBo.getId(), userBo.getId());
+			asyncController.updateNoticeRead(noticeBo.getId(), userBo.getId());
 		}
 		return Constant.COM_RESP;
 	}
 
 
-	/**
-	 * 更新用户阅读数据信息
-	 * @param noticeid
-	 * @param userid
-	 */
-	@Async
-	private void updateNoticeRead(HashSet<String> users, String noticeid, String userid){
-		RLock lock = redisServer.getRLock(noticeid);
-		try {
-			lock.lock(3, TimeUnit.SECONDS);
-			CircleNoticeBo noticeBo = circleService.findNoticeById(noticeid);
-			LinkedHashSet<String> readUser = noticeBo.getReadUsers();
-			LinkedHashSet<String> unReadUser = noticeBo.getUnReadUsers();
-			//若有新圈子成员加入
-			if (users.size() != (readUser.size() + unReadUser.size())) {
-				users.removeAll(readUser);
-				unReadUser.addAll(users);
-			}
-			if (users.contains(userid)) {
-				unReadUser.remove(userid);
-				readUser.add(userid);
-				circleService.updateNoticeRead(noticeid, readUser, unReadUser);
-			}
-		} finally {
-			lock.unlock();
-		}
-	}
-
-	/**
-	 * 批量更新用户阅读数据信息
-	 * @param noticeid
-	 * @param userid
-	 */
-	@Async
-	private void updateNoticeRead(String noticeid, String userid){
-		RLock lock = redisServer.getRLock(noticeid);
-		try {
-			lock.lock(3, TimeUnit.SECONDS);
-			CircleNoticeBo noticeBo = circleService.findNoticeById(noticeid);
-			LinkedHashSet<String> readUser = noticeBo.getReadUsers();
-			LinkedHashSet<String> unReadUser = noticeBo.getUnReadUsers();
-			//若有新圈子成员加入
-			readUser.add(userid);
-			unReadUser.remove(userid);
-			circleService.updateNoticeRead(noticeid, readUser, unReadUser);
-		} finally {
-			lock.unlock();
-		}
-	}
-
-	/**
-	 * 删除群聊中的用户聊天昵称
-	 * @param userid
-	 * @param chatroomid
-	 */
-	@Async
-	private void deleteNickname(String userid, String chatroomid){
-		chatroomService.deleteChatroomUser(userid, chatroomid);
-	}
-
-
-	// 向群中某人被邀请加入群聊通知
-	@Async
-	private void addRoomInfo(UserBo userBo, String chatroomid, List<String> imIds, List<String> imNames,
-							 Object[] otherNameAndId){
-		if(imIds.size() > 0 && otherNameAndId[0] != null){
-			JSONObject json = new JSONObject();
-			json.put("masterId", userBo.getId());
-			json.put("masterName", userBo.getUserName());
-			json.put("hitIds", imIds);
-			json.put("hitNames", imNames);
-			json.put("otherIds", otherNameAndId[1]);
-			json.put("otherNames", otherNameAndId[0]);
-
-			String res = IMUtil.notifyInChatRoom(Constant.SOME_ONE_BE_INVITED_OT_CHAT_ROOM, chatroomid, json.toString());
-			if(!IMUtil.FINISH.equals(res)){
-				logger.error("failed notifyInChatRoom Constant.SOME_ONE_BE_INVITED_OT_CHAT_ROOM, %s",res);
-			}
-		}
-	}
-
-	/**
-	 * 往群聊发提示消息
-	 * @param roomType
-	 * @param chatroomid
-	 * @param pushInfo
-	 */
-	@Async
-	private void pushRoomInfo(int roomType, String chatroomid, String pushInfo){
-		String res = IMUtil.notifyInChatRoom(roomType, chatroomid, pushInfo);
-		if(!IMUtil.FINISH.equals(res)){
-			logger.error("failed notifyInChatRoom chatroomid: %s , pushInfo: %s, res: %s",chatroomid, pushInfo, res);
-		}
-	}
-
-
-	/**
-	 * 往群聊指定用户发提示消息
-	 * @param roomType
-	 * @param chatroomid
-	 * @param pushInfo
-	 */
-	@Async
-	private void pushRoomUsersInfo(int roomType, String chatroomid, String pushInfo, String... userids){
-		String res = IMUtil.notifyInChatRoom(roomType, chatroomid, pushInfo);
-		if(!IMUtil.FINISH.equals(res)){
-			logger.error("failed notifyInChatRoom chatroomid: %s , pushInfo: %s, res: %s",chatroomid, pushInfo, res);
-		}
-	}
-
-
-	@Async
-	private void updateChatroomNameAndUser(String chatroomid, String name, boolean isNameSet,LinkedHashSet<String>
-			set) {
-		// 如果群聊没有修改过名称，自动修改名称
-		RLock lock = redisServer.getRLock(chatroomid.concat("users"));
-		try {
-			lock.lock(2, TimeUnit.SECONDS);
-			chatroomService.updateNameAndUsers(chatroomid, name, isNameSet, set);
-		} finally {
-			lock.unlock();
-		}
-	}
 
 	/**
 	 * 判断退出是不是聚会的群聊
@@ -1974,34 +1782,12 @@ public class ChatroomController extends BaseContorller {
 			//删除最后一人的聊天室
 			if (set.size() == 1) {
 				String friendid = set.iterator().next();
-				updateUserChatroom(friendid, chatroomBo.getId(), false);
+				asyncController.updateUserChatroom(friendid, chatroomBo.getId(), false);
 			}
 			chatroomService.delete(chatroomBo.getId());
 		}
 	}
 
 
-	/**
-	 * 修改用户群聊，保证用户群聊同步
-	 */
-	@Async
-	private void updateUserChatroooms(String userid, String chatroomid){
-		RLock lock = redisServer.getRLock(userid.concat("chatroom"));
-		try {
-			lock.lock(3, TimeUnit.SECONDS);
-			UserBo userBo = userService.getUser(userid);
-			HashSet<String> chatroom = userBo.getChatrooms();
-			HashSet<String> showRooms = userBo.getShowChatrooms();
-			showRooms.add(chatroomid);
-			userBo.setChatrooms(chatroom);
-			//个人聊天室中没有当前聊天室，则添加到个人的聊天室
-			if (!chatroom.contains(chatroomid)) {
-				chatroom.add(chatroomid);
-				userBo.setShowChatrooms(showRooms);
-			}
-			userService.updateChatrooms(userBo);
-		} finally {
-			lock.unlock();
-		}
-	}
+
 }

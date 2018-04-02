@@ -23,8 +23,6 @@ import org.redisson.api.RLock;
 import org.redisson.api.RMapCache;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,7 +39,6 @@ import java.util.concurrent.TimeUnit;
  * Time:2017/7/29
  */
 @Api(value = "InforController", description = "资讯信息相关接口")
-@EnableAsync
 @RestController
 @RequestMapping("infor")
 @CrossOrigin
@@ -80,6 +77,9 @@ public class InforController extends BaseContorller {
 
     @Autowired
     private ISearchService searchService;
+
+    @Autowired
+    private AsyncController asyncController;
 
 
     @ApiOperation("刷新资讯分类缓存信息")
@@ -211,7 +211,7 @@ public class InforController extends BaseContorller {
         }
         UserBo userBo =  getUserLogin(request);
         if (userBo != null) {
-            updateUserReadHis(userBo.getId(), groupName, "", Constant.INFOR_HEALTH);
+            asyncController.updateUserReadHis(userBo.getId(), groupName, "", Constant.INFOR_HEALTH);
         }
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("ret", 0);
@@ -242,7 +242,7 @@ public class InforController extends BaseContorller {
         }
         UserBo userBo =  getUserLogin(request);
         if (userBo != null) {
-            updateUserReadHis(userBo.getId(), module, "", Constant.INFOR_RADIO);
+            asyncController.updateUserReadHis(userBo.getId(), module, "", Constant.INFOR_RADIO);
         }
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("ret", 0);
@@ -305,10 +305,10 @@ public class InforController extends BaseContorller {
             broadcastVo.setThumpsubNum(bo.getThumpsubNum());
             vos.add(broadcastVo);
         }
-        updateGrouopRecom(module, className,Constant.INFOR_RADIO);
+        asyncController.updateGrouopRecom(module, className,Constant.INFOR_RADIO);
         UserBo userBo = getUserLogin(request);
         if (userBo != null) {
-            updateUserReadHis(userBo.getId(), module, className, Constant.INFOR_RADIO);
+            asyncController.updateUserReadHis(userBo.getId(), module, className, Constant.INFOR_RADIO);
         }
         Map<String, Object> map = new LinkedHashMap<>();
         map.put("ret", 0);
@@ -332,10 +332,10 @@ public class InforController extends BaseContorller {
             broadcastVo.setReadNum(broadcastBo.getVisitNum());
             broadcastVo.setCommentNum(broadcastBo.getCommnetNum());
             broadcastVo.setThumpsubNum(broadcastBo.getThumpsubNum());
-            updateGrouprHistroy(radioid, broadcastBo.getModule(), broadcastBo.getClassName(),Constant.INFOR_RADIO);
+            asyncController.updateGrouprHistroy(radioid, broadcastBo.getModule(), broadcastBo.getClassName(),Constant.INFOR_RADIO);
             UserBo userBo = getUserLogin(request);
             String userid = userBo == null ? "" : userBo.getId();
-            addUserReadhis(userid, radioid, Constant.INFOR_RADIO, broadcastBo.getModule(), broadcastBo.getClassName());
+            asyncController.addUserReadhis(userid, radioid, Constant.INFOR_RADIO, broadcastBo.getModule(), broadcastBo.getClassName());
             updateRadioHis(radioid, broadcastBo, userid);
         }
         Map<String, Object> map = new HashMap<String, Object>();
@@ -357,25 +357,24 @@ public class InforController extends BaseContorller {
         UserBo userBo = getUserLogin(request);
         if (userBo != null) {
             updateRadioHis(inforid, broadcastBo, userBo.getId());
-            addUserReadhis(userBo.getId(), inforid, Constant.INFOR_RADIO, broadcastBo.getModule(), broadcastBo
+            asyncController.addUserReadhis(userBo.getId(), inforid, Constant.INFOR_RADIO, broadcastBo.getModule(), broadcastBo
                     .getClassName());
         } else {
             updateRadioHis(inforid, broadcastBo, "");
         }
         return Constant.COM_RESP;
     }
-    //异步执行
-    @Async
+    
     private void updateRadioHis(String radioid, BroadcastBo broadcastBo, String loginUserid){
         if (broadcastBo == null) {
             broadcastBo = inforService.findBroadById(radioid);
             if (broadcastBo == null) {
                 return;
             }
-            updateGrouprHistroy(radioid, broadcastBo.getModule(), broadcastBo.getClassName(),Constant.INFOR_RADIO);
+            asyncController.updateGrouprHistroy(radioid, broadcastBo.getModule(), broadcastBo.getClassName(),Constant.INFOR_RADIO);
         }
         if (!StringUtils.isEmpty(loginUserid)) {
-            updateUserReadHis(loginUserid,broadcastBo.getModule(),
+            asyncController.updateUserReadHis(loginUserid,broadcastBo.getModule(),
                     broadcastBo.getClassName(),Constant.INFOR_RADIO);
         }
     }
@@ -392,10 +391,10 @@ public class InforController extends BaseContorller {
                     ERRORCODE.INFOR_IS_NULL.getReason());
         }
         UserBo userBo = getUserLogin(request);
-        updateGrouprHistroy(inforid, videoBo.getModule(), videoBo.getClassName(),Constant.INFOR_VIDEO);
+        asyncController.updateGrouprHistroy(inforid, videoBo.getModule(), videoBo.getClassName(),Constant.INFOR_VIDEO);
         if (userBo != null) {
-            addUserReadhis(userBo.getId(), inforid, Constant.INFOR_VIDEO, videoBo.getModule(), videoBo.getClassName());
-            updateUserReadHis(userBo.getId(), videoBo.getModule(), videoBo.getClassName(), Constant.INFOR_VIDEO);
+            asyncController.addUserReadhis(userBo.getId(), inforid, Constant.INFOR_VIDEO, videoBo.getModule(), videoBo.getClassName());
+            asyncController.updateUserReadHis(userBo.getId(), videoBo.getModule(), videoBo.getClassName(), Constant.INFOR_VIDEO);
         }
         return Constant.COM_RESP;
     }
@@ -456,10 +455,10 @@ public class InforController extends BaseContorller {
             videoVo.setInforid(bo.getId());
             videoVos.add(videoVo);
         }
-        updateGrouopRecom(module, className,Constant.INFOR_VIDEO);
+        asyncController.updateGrouopRecom(module, className,Constant.INFOR_VIDEO);
         UserBo userBo = getUserLogin(request);
         if (userBo != null) {
-            updateUserReadHis(userBo.getId(), module, className, Constant.INFOR_VIDEO);
+            asyncController.updateUserReadHis(userBo.getId(), module, className, Constant.INFOR_VIDEO);
         }
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("ret", 0);
@@ -500,10 +499,10 @@ public class InforController extends BaseContorller {
         if (userBo != null) {
             ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(videoid, userBo.getId());
             videoVo.setSelfSub(thumbsupBo != null);
-            updateUserReadHis(userBo.getId(),videoBo.getModule(), videoBo.getClassName(), Constant.INFOR_VIDEO);
-            addUserReadhis(userBo.getId(), videoid, Constant.INFOR_VIDEO, videoBo.getModule(), videoBo.getClassName());
+            asyncController.updateUserReadHis(userBo.getId(),videoBo.getModule(), videoBo.getClassName(), Constant.INFOR_VIDEO);
+            asyncController.addUserReadhis(userBo.getId(), videoid, Constant.INFOR_VIDEO, videoBo.getModule(), videoBo.getClassName());
         }
-        updateGrouprHistroy(videoid, videoBo.getModule(), videoBo.getClassName(),Constant.INFOR_VIDEO);
+        asyncController.updateGrouprHistroy(videoid, videoBo.getModule(), videoBo.getClassName(),Constant.INFOR_VIDEO);
         videoVo.setInforid(videoid);
         BeanUtils.copyProperties( videoBo, videoVo);
         videoVo.setThumpsubNum(videoBo.getThumpsubNum());
@@ -653,11 +652,12 @@ public class InforController extends BaseContorller {
         if (userBo != null) {
             ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(inforBo.getId(), userBo.getId());
             inforVo.setSelfSub(thumbsupBo != null);
-            updateUserReadHis(userBo.getId(),inforBo.getClassName(),"", Constant.INFOR_HEALTH);
-            addUserReadhis(userBo.getId(), inforid, Constant.INFOR_HEALTH, inforBo.getModule(), inforBo.getClassName());
+            asyncController.updateUserReadHis(userBo.getId(),inforBo.getClassName(),"", Constant.INFOR_HEALTH);
+            asyncController.addUserReadhis(userBo.getId(), inforid, Constant.INFOR_HEALTH, inforBo.getModule(),
+                    inforBo.getClassName());
         }
         updateInforNum(inforid, Constant.INFOR_HEALTH, 1, Constant.VISIT_NUM);
-        updateInforHistroy(inforid, inforBo.getClassName(), Constant.INFOR_HEALTH);
+        asyncController.updateInforHistroy(inforid, inforBo.getClassName(), Constant.INFOR_HEALTH);
         inforVo.setInforid(inforBo.getId());
         BeanUtils.copyProperties(inforBo, inforVo);
         inforVo.setThumpsubNum(inforBo.getThumpsubNum());
@@ -686,10 +686,10 @@ public class InforController extends BaseContorller {
         if (userBo != null) {
             ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(inforid, userBo.getId());
             securityVo.setSelfSub(thumbsupBo != null);
-            updateUserReadHis(userBo.getId(),securityBo.getNewsType(),"",Constant.INFOR_SECRITY);
-            addUserReadhis(userBo.getId(), inforid, Constant.INFOR_SECRITY, securityBo.getNewsType(), "");
+            asyncController.updateUserReadHis(userBo.getId(),securityBo.getNewsType(),"",Constant.INFOR_SECRITY);
+            asyncController.addUserReadhis(userBo.getId(), inforid, Constant.INFOR_SECRITY, securityBo.getNewsType(), "");
         }
-        updateInforHistroy(inforid, securityBo.getNewsType(), Constant.INFOR_SECRITY);
+        asyncController.updateInforHistroy(inforid, securityBo.getNewsType(), Constant.INFOR_SECRITY);
         securityVo.setInforid(securityBo.getId());
         BeanUtils.copyProperties(securityBo, securityVo);
         securityVo.setThumpsubNum(securityBo.getThumpsubNum());
@@ -730,7 +730,7 @@ public class InforController extends BaseContorller {
         }
         UserBo userBo =  getUserLogin(request);
         if (userBo != null) {
-            updateUserReadHis(userBo.getId(), newsType,"", Constant.INFOR_SECRITY);
+            asyncController.updateUserReadHis(userBo.getId(), newsType,"", Constant.INFOR_SECRITY);
         }
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("ret", 0);
@@ -786,7 +786,6 @@ public class InforController extends BaseContorller {
      * @param num
      * @param numType 更新数据类型， 阅读、点赞等
      */
-    @Async
     private void updateInforNum(String inforid, int inforType, int num, int numType){
         RLock lock = redisServer.getRLock(inforid.concat(String.valueOf(numType)));
         try {
@@ -919,7 +918,6 @@ public class InforController extends BaseContorller {
      * @param inforid
      * @param inforType
      */
-    @Async
     private void infotHostAsync(String inforid, int inforType){
         //根据每条资讯id加锁
         String module = "";
@@ -944,7 +942,7 @@ public class InforController extends BaseContorller {
                 break;
         }
         if (!"".equals(module)){
-            updateInforHistroy(inforid, module, inforType);
+            asyncController.updateInforHistroy(inforid, module, inforType);
         }
     }
 
@@ -1036,10 +1034,8 @@ public class InforController extends BaseContorller {
         return JSONObject.fromObject(map).toString();
     }
 
-    @Async
     private void addTop4(List<InforVo> inforVos){
         RMapCache<String, Object> cache = redisServer.getCacheMap(Constant.TEST_CACHE);
-
         ArrayList<InforVo> top4 = new ArrayList<>();
         int size = 0;
         for (InforVo inforVo : inforVos) {
@@ -1447,239 +1443,6 @@ public class InforController extends BaseContorller {
 
 
 
-    /**
-     * 用户更新自己分类访问记录
-     * @param module
-     * @param type
-     */
-    @Async
-    private void updateUserReadHis(String userid, String module, String className, int type){
-        String currenDate = CommonUtil.getCurrentDate(new Date());
-        InforUserReadHisBo readHisBo = inforRecomService.findByReadHis(userid, type, module, className);
-        if (readHisBo != null) {
-            //当前类的最后一次浏览时间
-            if (!readHisBo.getLastDate().equals(currenDate)) {
-                inforRecomService.updateUserReadHis(readHisBo.getId(), currenDate);
-            }
-        } else {
-            readHisBo = new InforUserReadHisBo();
-            readHisBo.setLastDate(currenDate);
-            readHisBo.setModule(module);
-            readHisBo.setClassName(className);
-            readHisBo.setType(type);
-            readHisBo.setUserid(userid);
-            inforRecomService.addUserReadHis(readHisBo);
-        }
-        boolean isNew = false;
-        InforUserReadBo readBo = inforRecomService.findUserReadByUserid(userid);
-        if (readBo == null) {
-            readBo = new InforUserReadBo();
-            readBo.setUserid(userid);
-            isNew = true;
-        }
-        LinkedHashSet<String> sets = null;
-        if (Constant.INFOR_HEALTH == type) {
-            sets = readBo.getHealths();
-        } else if (Constant.INFOR_SECRITY == type) {
-            sets = readBo.getSecuritys();
-        } else if (Constant.INFOR_RADIO == type) {
-            sets= readBo.getRadios();
-        } else if (Constant.INFOR_VIDEO == type) {
-            sets = readBo.getVideos();
-        } else {
-            sets = new LinkedHashSet<>();
-        }
-        if (isNew) {
-            sets.add(module);
-            inforRecomService.addUserRead(readBo);
-        } else {
-            if (!sets.contains(module)){
-                sets.add(module);
-                inforRecomService.updateUserRead(readBo.getId(), type, sets);
-                //更新其他过时分类
-                updateUserReadAll(userid, readBo);
-            }
-        }
-    }
-
-    /**
-     * 删除180天前的浏览分类
-     * @param readBo
-     */
-    @Async
-    private void updateUserReadAll(String userid, InforUserReadBo readBo){
-        Date currenDate = CommonUtil.getZeroDate(new Date());
-        Date halfTime = CommonUtil.getHalfYearTime(currenDate);
-        String halfStr = CommonUtil.getCurrentDate(halfTime);
-
-        List<InforUserReadHisBo> readHisBos = inforRecomService.findUserReadHisBeforeHalf(userid, halfStr);
-        if (readHisBos == null || readHisBos.isEmpty()){
-            return;
-        }
-        HashSet<String> healths = readBo.getHealths();
-        HashSet<String> securitys = readBo.getSecuritys();
-        HashSet<String> radios = readBo.getRadios();
-        HashSet<String> videos = readBo.getVideos();
-        for (InforUserReadHisBo readHisBo: readHisBos) {
-            int type = readHisBo.getType();
-            if (Constant.INFOR_HEALTH == readHisBo.getType()) {
-                healths.remove(readHisBo.getModule());
-            } else if (Constant.INFOR_SECRITY == type) {
-                securitys.remove(readHisBo.getModule());
-            } else if (Constant.INFOR_RADIO == type) {
-                radios.remove(readHisBo.getModule());
-            } else if (Constant.INFOR_VIDEO == type) {
-                videos.remove(readHisBo.getModule());
-            }
-        }
-        inforRecomService.updateUserReadAll(readBo);
-    }
-
-    /**
-     * 更新单条咨询访问信息记录
-     * @param inforid
-     * @param module
-     * @param type
-     */
-    @Async
-    private void updateInforHistroy(String inforid, String module, int type){
-        Date currenDate = CommonUtil.getZeroDate(new Date());
-        String dateStr = CommonUtil.getCurrentDate(new Date());
-
-        Date halfTime = CommonUtil.getHalfYearTime(currenDate);
-        String halgStr = CommonUtil.getCurrentDate(halfTime);
-
-        RLock lock = redisServer.getRLock(inforid);
-        List<InforHistoryBo> historyBos = null;
-        List<String> ids = new ArrayList<>();
-        try {
-            lock.lock(5, TimeUnit.SECONDS);
-            InforHistoryBo historyBo = inforRecomService.findTodayHis(inforid, dateStr);
-            if (historyBo == null) {
-                historyBo = new InforHistoryBo();
-                historyBo.setDayNum(1);
-                historyBo.setInforid(inforid);
-                historyBo.setModule(module);
-                historyBo.setType(type);
-                historyBo.setReadDate(dateStr);
-                inforRecomService.addInfoHis(historyBo);
-            } else {
-                inforRecomService.updateHisDayNum(historyBo.getId(),1);
-            }
-            InforRecomBo recomBo = inforRecomService.findRecomByInforid(inforid);
-            if (recomBo == null) {
-                recomBo = new InforRecomBo();
-                recomBo.setInforid(inforid);
-                recomBo.setModule(module);
-                recomBo.setType(type);
-                recomBo.setHalfyearNum(1);
-                recomBo.setTotalNum(1);
-                inforRecomService.addInforRecom(recomBo);
-            } else {
-                inforRecomService.updateRecomByInforid(recomBo.getId(), 1, 1);
-                historyBos = inforRecomService.findHalfYearHis(inforid, halgStr);
-                if (historyBos == null || historyBos.isEmpty()){
-                    return;
-                } else {
-                    int disNum = 0;
-                    for (InforHistoryBo history : historyBos) {
-                        disNum += history.getDayNum();
-                        ids.add(history.getId());
-                    }
-                    inforRecomService.updateRecomByInforid(recomBo.getId(), -disNum, 1);
-                }
-            }
-        } finally {
-            lock.unlock();
-        }
-        if (!ids.isEmpty()){
-            inforRecomService.updateZeroHis(ids);
-        }
-    }
-
-
-
-
-    /**
-     * 更新
-     * @param inforid
-     * @param module
-     * @param type
-     */
-    @Async
-    private void updateGrouprHistroy(String inforid, String module, String className, int type){
-        Date currenDate = CommonUtil.getZeroDate(new Date());
-        Date halfTime = CommonUtil.getHalfYearTime(currenDate);
-        String dateStr = CommonUtil.getCurrentDate(new Date());
-        String halfStr = CommonUtil.getCurrentDate(halfTime);
-        List<InforHistoryBo> historyBos = null;
-        List<String> ids = new ArrayList<>();
-        RLock lock = redisServer.getRLock(inforid);
-        try {
-            lock.lock(5, TimeUnit.SECONDS);
-            InforHistoryBo historyBo = inforRecomService.findTodayHis(inforid, dateStr);
-            if (historyBo == null) {
-                historyBo = new InforHistoryBo();
-                historyBo.setDayNum(1);
-                historyBo.setInforid(inforid);
-                historyBo.setModule(module);
-                historyBo.setClassName(className);
-                historyBo.setType(type);
-                historyBo.setReadDate(dateStr);
-                inforRecomService.addInfoHis(historyBo);
-            } else {
-                inforRecomService.updateHisDayNum(historyBo.getId(),1);
-            }
-            InforGroupRecomBo groupRecomBo = inforRecomService.findInforGroup(module,className, type);
-            if (groupRecomBo == null) {
-                groupRecomBo = new InforGroupRecomBo();
-                groupRecomBo.setModule(module);
-                groupRecomBo.setType(type);
-                groupRecomBo.setHalfyearNum(1);
-                groupRecomBo.setTotalNum(1);
-                groupRecomBo.setClassName(className);
-                inforRecomService.addInforGroup(groupRecomBo);
-            } else {
-                inforRecomService.updateInforGroup(groupRecomBo.getId(), 1, 1);
-                historyBos = inforRecomService.findHalfYearHis(inforid, halfStr);
-                if (historyBos == null || historyBos.isEmpty()){
-                    return;
-                } else {
-                    int disNum = 0;
-                    for (InforHistoryBo history : historyBos) {
-                        disNum += history.getDayNum();
-                        ids.add(history.getId());
-                    }
-                    inforRecomService.updateInforGroup(groupRecomBo.getId(), -disNum, 1);
-                }
-            }
-        } finally {
-            lock.unlock();
-        }
-        if (!ids.isEmpty()){
-            inforRecomService.updateZeroHis(ids);
-        }
-
-    }
-
-
-    @Async
-    private void updateGrouopRecom(String module, String className, int type){
-        InforGroupRecomBo groupRecomBo = inforRecomService.findInforGroup(module,className, type);
-        if (groupRecomBo == null) {
-            groupRecomBo = new InforGroupRecomBo();
-            groupRecomBo.setModule(module);
-            groupRecomBo.setType(type);
-            groupRecomBo.setHalfyearNum(1);
-            groupRecomBo.setTotalNum(1);
-            groupRecomBo.setClassName(className);
-            inforRecomService.addInforGroup(groupRecomBo);
-        } else {
-            inforRecomService.updateInforGroup(groupRecomBo.getId(), 1, 1);
-        }
-    }
-
-
     @ApiOperation("收藏单条咨询信息")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "inforid", value = "资讯id", required = true, paramType = "query", dataType =
@@ -1943,7 +1706,7 @@ public class InforController extends BaseContorller {
                     BeanUtils.copyProperties(securityBo, inforVo);
                     thumbsupBo = thumbsupService.getByVidAndVisitorid(inforid, userid);
                     inforVo.setSelfSub(thumbsupBo != null);
-                    updateUserReadHis(userid,securityBo.getNewsType(),"",Constant.INFOR_SECRITY);
+                    asyncController.updateUserReadHis(userid,securityBo.getNewsType(),"",Constant.INFOR_SECRITY);
                     inforVo.setInforid(hisBo.getInforid());
                     inforVo.setThumpsubNum(securityBo.getThumpsubNum());
                     inforVo.setCommentNum(securityBo.getCommnetNum());
@@ -1972,7 +1735,7 @@ public class InforController extends BaseContorller {
                         BeanUtils.copyProperties(videoBo, inforVo);
                         thumbsupBo = thumbsupService.getByVidAndVisitorid(inforid, userid);
                         inforVo.setSelfSub(thumbsupBo != null);
-                        updateUserReadHis(userid,videoBo.getModule(), videoBo.getClassName(), Constant.INFOR_VIDEO);
+                        asyncController.updateUserReadHis(userid,videoBo.getModule(), videoBo.getClassName(), Constant.INFOR_VIDEO);
                         inforVo.setInforid(hisBo.getInforid());
                         inforVo.setThumpsubNum(videoBo.getThumpsubNum());
                         inforVo.setCommentNum(videoBo.getCommnetNum());
@@ -2005,7 +1768,7 @@ public class InforController extends BaseContorller {
         Map<String, Object> map = new LinkedHashMap<>();
         map.put("ret", 0);
         map.put("inforType", inforType);
-        saveKeyword(keyword, inforType);
+        asyncController.saveKeyword(keyword, inforType);
         switch (inforType){
             case Constant.INFOR_HEALTH:
                 List<InforBo> inforBos = inforService.findInforByTitleRegex(keyword,page, limit);
@@ -2240,73 +2003,5 @@ public class InforController extends BaseContorller {
         return JSONObject.fromObject(map).toString();
     }
 
-    /**
-     * 需要和聚会展示最新信息
-     * @param noteBo
-     */
-    @Async
-    private void addCircleShow(NoteBo noteBo){
 
-    }
-
-
-    /**
-     * 更新个人阅读记录
-     * @param userid
-     * @param inforid
-     * @param inforType
-     * @param module
-     * @param className
-     */
-    @Async
-    private void addUserReadhis(String userid, String inforid, int inforType, String module, String className){
-        UserReadHisBo hisBo = inforService.findByInforid(userid, inforid);
-        if (hisBo == null) {
-            hisBo = new UserReadHisBo();
-            hisBo.setUserid(userid);
-            hisBo.setInforid(inforid);
-            hisBo.setInforType(inforType);
-            hisBo.setModule(module);
-            hisBo.setClassName(className);
-            hisBo.setLastTime(new Date());
-            inforService.addUserReadHis(hisBo);
-        } else {
-            inforService.updateUserReadHis(hisBo.getId());
-        }
-        List<UserReadHisBo> userReadHisBos = inforService.findByUserAndInfor(userid, inforType);
-        int size = userReadHisBos.size();
-        if (size > 5) {
-            List<String> removeids = new LinkedList<>();
-             for (int i = 5; i < size; i++) {
-                 removeids.add(userReadHisBos.get(i).getId());
-             }
-             inforService.deleteUserReadHis(removeids);
-        }
-    }
-
-
-    /**
-     * 搜索记录添加
-     * @param keyword
-     */
-    @Async
-    private void saveKeyword(String keyword, int inforType) {
-        RLock lock = redisServer.getRLock("inforkeyword" + inforType);
-        try {
-            lock.lock(2, TimeUnit.SECONDS);
-            SearchBo searchBo = searchService.findInforByKeyword(keyword, 2, inforType);
-            if (searchBo == null) {
-                searchBo = new SearchBo();
-                searchBo.setKeyword(keyword);
-                searchBo.setType(2);
-                searchBo.setTimes(1);
-                searchBo.setInforType(inforType);
-                searchService.insert(searchBo);
-            } else {
-                searchService.update(searchBo.getId());
-            }
-        } finally {
-            lock.unlock();
-        }
-    }
 }
