@@ -21,6 +21,7 @@ import org.redisson.api.RLock;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,6 +37,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Api(value = "NoteController", description = "帖子相关接口")
+@EnableAsync
 @RestController
 @RequestMapping("note")
 public class NoteController extends BaseContorller {

@@ -24,6 +24,7 @@ import org.redisson.api.RMapCache;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,6 +41,7 @@ import java.util.concurrent.TimeUnit;
  * Time:2017/7/29
  */
 @Api(value = "InforController", description = "资讯信息相关接口")
+@EnableAsync
 @RestController
 @RequestMapping("infor")
 @CrossOrigin

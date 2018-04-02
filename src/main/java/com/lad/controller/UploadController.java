@@ -10,7 +10,6 @@ import net.sf.json.JSONObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -55,16 +54,11 @@ public class UploadController extends BaseContorller {
 		String path = CommonUtil.upload(file, Constant.HEAD_PICTURE_PATH, fileName, 0);
 		userBo.setHeadPictureName(path);
 		userService.updateHeadPictureName(userBo);
-		updateUserHeadPic(userId, path);
+		friendsService.updateUsernameByFriend(userId, "", path);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("path", path);
 		return JSONObject.fromObject(map).toString();
-	}
-
-	@Async
-	private void updateUserHeadPic(String userid, String headPic){
-		friendsService.updateUsernameByFriend(userid, "", headPic);
 	}
 
 	@PostMapping("/feedback-picture")

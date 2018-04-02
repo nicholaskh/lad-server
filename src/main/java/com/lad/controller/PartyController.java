@@ -17,6 +17,7 @@ import org.redisson.api.RLock;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -35,6 +36,7 @@ import java.util.concurrent.TimeUnit;
  * Time:2017/9/7
  */
 @Api(value = "PartyController", description = "圈子聚会相关接口")
+@EnableAsync
 @RestController
 @RequestMapping("/party")
 public class PartyController extends BaseContorller {

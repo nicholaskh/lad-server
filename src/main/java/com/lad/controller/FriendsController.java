@@ -19,6 +19,7 @@ import org.springframework.data.geo.GeoResult;
 import org.springframework.data.geo.GeoResults;
 import org.springframework.data.geo.Point;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,6 +29,7 @@ import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.*;
 
+@EnableAsync
 @RestController
 @RequestMapping("friends")
 public class FriendsController extends BaseContorller {

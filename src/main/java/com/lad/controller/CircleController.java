@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.geo.GeoResult;
 import org.springframework.data.geo.GeoResults;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -36,6 +37,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Api(value = "CircleController", description = "圈子相关接口")
+@EnableAsync
 @RestController
 @RequestMapping("circle")
 public class CircleController extends BaseContorller {

@@ -13,7 +13,6 @@ import net.sf.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -51,7 +50,7 @@ public class PersonSet extends BaseContorller {
 		}
 		userBo.setUserName(username);
 		userService.updateUserName(userBo);
-		updateUserName(userBo.getId(), username);
+		friendsService.updateUsernameByFriend(userBo.getId(), username, "");
 		updateUserSession(request, userService);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
@@ -274,10 +273,7 @@ public class PersonSet extends BaseContorller {
 
 
 
-	@Async
-	private void updateUserName(String userid, String username){
-		friendsService.updateUsernameByFriend(userid, username, "");
-	}
+
 
 
 	private void bo2vo(UserBo userBo, UserInfoVo infoVo){

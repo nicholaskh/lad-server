@@ -33,7 +33,13 @@
     </context:component-scan>
 
     <!--  异步方法支持  -->
-    <task:annotation-driven />
+    <task:annotation-driven executor="xmlExecutor"/>
+    <task:executor
+            id="xmlExecutor"
+            pool-size="5-25"
+            queue-capacity="50"
+            keep-alive="120"
+            rejection-policy="CALLER_RUNS"/>
 
     <!-- 避免IE执行AJAX时,返回JSON出现下载文件 -->
     <bean id="mappingJacksonHttpMessageConverter"
