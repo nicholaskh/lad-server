@@ -445,4 +445,14 @@ public class InforSerivceImpl implements IInforService {
     public WriteResult updateYanglaoByType(String id, int type, int num) {
         return yanglaoDao.updateByType(id, type, num);
     }
+
+    @Override
+    public List<DailynewsBo> findDailynewsKeyword(String keywrod, int page, int limit) {
+        return dailynewsDao.findByTitleKeyword(keywrod, page, limit);
+    }
+
+    @Override
+    public List<YanglaoBo> findYanglaosKeyword(String keywrod, int page, int limit) {
+        return yanglaoDao.findByTitleKeyword(keywrod, page, limit);
+    }
 }

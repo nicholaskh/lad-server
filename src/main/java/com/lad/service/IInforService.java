@@ -450,6 +450,15 @@ public interface IInforService {
      */
     WriteResult updateDailynewsByType(String id, int type, int num);
 
+    /**
+     *
+     * @param keywrod
+     * @param page
+     * @param limit
+     * @return
+     */
+    List<DailynewsBo> findDailynewsKeyword(String keywrod, int page, int limit);
+
 
     YanglaoBo findByYanglaoId(String id);
 
@@ -477,5 +486,14 @@ public interface IInforService {
      * @return
      */
     WriteResult updateYanglaoByType(String id, int type, int num);
+
+    /**
+     *
+     * @param keywrod
+     * @param page
+     * @param limit
+     * @return
+     */
+    List<YanglaoBo> findYanglaosKeyword(String keywrod, int page, int limit);
 
 }

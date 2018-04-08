@@ -133,7 +133,7 @@ public class InforDaoImpl implements IInforDao {
     public List<InforBo> findByTitleRegex(String title, int page, int limit) {
         Pattern pattern = Pattern.compile("^.*"+title+".*$", Pattern.CASE_INSENSITIVE);
         Query query = new Query(new Criteria("title").regex(pattern));
-        query.with(new Sort(Sort.Direction.ASC,"num", "title"));
+        query.with(new Sort(Sort.Direction.DESC,"time", "num"));
         page = page < 1 ? 1 : page;
         query.skip((page-1)*limit);
         query.limit(limit);

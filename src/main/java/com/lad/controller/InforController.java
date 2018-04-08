@@ -537,8 +537,8 @@ public class InforController extends BaseContorller {
 
 
     @ApiOperation("获取资讯订阅和未订阅分类信息，需要登录")
-    @ApiImplicitParam(name = "type", value = "资讯分类，1健康，2 安防，3广播，4视频", required = true, paramType = "query",dataType =
-            "int")
+    @ApiImplicitParam(name = "type", value = "资讯分类，1健康，2 安防，3广播，4视频，5时政，6养老", required = true, paramType = "query",
+            dataType = "int")
     @RequestMapping(value = "/recommend-groups",method = {RequestMethod.GET, RequestMethod.POST})
     public String recommendGroups(int type, HttpServletRequest request, HttpServletResponse response){
         UserBo userBo;
@@ -576,6 +576,14 @@ public class InforController extends BaseContorller {
                 keys = Constant.VIDEO_NAME;
                 mySubs = mySub.getVideos();
                 break;
+            case Constant.INFOR_DAILY:
+                keys = Constant.DAILY_NAME;
+                mySubs = mySub.getDailys();
+                break;
+            case Constant.INFOR_YANGLAO:
+                keys = Constant.YANGLAO_NAME;
+                mySubs = mySub.getYanglaos();
+                break;
             default:
                 mySubs = new LinkedHashSet<>();
                 break;
@@ -592,7 +600,7 @@ public class InforController extends BaseContorller {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "groupNames", value = "资讯分类，多个以逗号隔开", required = true, paramType = "query",
                     dataType = "string"),
-            @ApiImplicitParam(name = "type", value = "资讯分类，1健康，2 安防，3广播，4视频", required = true, paramType = "query",
+            @ApiImplicitParam(name = "type", value = "资讯分类，1健康，2 安防，3广播，4视频，5时政，6养老", required = true, paramType = "query",
                     dataType = "int")})
     @RequestMapping(value = "/update-groups", method = {RequestMethod.GET, RequestMethod.POST})
     public String updateGroups(@RequestParam String groupNames,
@@ -631,6 +639,14 @@ public class InforController extends BaseContorller {
             case Constant.INFOR_VIDEO:
                 mySub.setVideos(mySubs);
                 keys = Constant.VIDEO_NAME;
+                break;
+            case Constant.INFOR_DAILY:
+                keys = Constant.DAILY_NAME;
+                mySub.setDailys(mySubs);
+                break;
+            case Constant.INFOR_YANGLAO:
+                keys = Constant.YANGLAO_NAME;
+                mySub.setYanglaos(mySubs);
                 break;
             default:
                 break;
@@ -766,8 +782,8 @@ public class InforController extends BaseContorller {
                     "string"),
             @ApiImplicitParam(name = "countent", value = "评论内容",paramType = "query",dataType = "string"),
             @ApiImplicitParam(name = "parentid", value = "父评论id,为空表示评资讯", paramType = "query", dataType = "string"),
-            @ApiImplicitParam(name = "inforType", value = "1健康，2 安防，3广播，4视频", required = true,paramType = "query", dataType =
-                    "int")})
+            @ApiImplicitParam(name = "inforType", value = "1健康，2 安防，3广播，4视频, 5时政，6养老", required = true,paramType =
+                    "query", dataType = "int")})
     @RequestMapping(value = "/add-comment", method = {RequestMethod.GET, RequestMethod.POST})
     public String addComment(@RequestParam String inforid, @RequestParam String countent,
                              String parentid, int inforType,
@@ -890,7 +906,7 @@ public class InforController extends BaseContorller {
             @ApiImplicitParam(name = "targetid", value = "资讯或评论id", required = true, paramType = "query", dataType =
                     "string"),
             @ApiImplicitParam(name = "type", value = "0 资讯点赞，1评论点赞", paramType = "query", dataType = "int"),
-            @ApiImplicitParam(name = "inforType", value = "1健康，2 安防，3广播，4视频", required = true,paramType = "query", dataType =
+            @ApiImplicitParam(name = "inforType", value = "1健康，2 安防，3广播，4视频，5时政，6养老", required = true,paramType = "query", dataType =
                     "int")})
     @RequestMapping(value = "/thumbsup",  method = {RequestMethod.GET, RequestMethod.POST})
     public String inforThumbsup(@RequestParam String targetid, @RequestParam int type, int inforType,
@@ -965,6 +981,14 @@ public class InforController extends BaseContorller {
                 VideoBo videoBo = inforService.findVideoById(inforid);
                 module = videoBo != null ? videoBo.getModule() : "";
                 break;
+            case Constant.INFOR_DAILY:
+                DailynewsBo dailynewsBo = inforService.findByDailynewsId(inforid);
+                module = dailynewsBo != null ? dailynewsBo.getClassName() : "";
+                break;
+            case Constant.INFOR_YANGLAO:
+                YanglaoBo yanglaoBo = inforService.findByYanglaoId(inforid);
+                module = yanglaoBo != null ? yanglaoBo.getClassName() : "";
+                break;
             default:
                 break;
         }
@@ -978,7 +1002,7 @@ public class InforController extends BaseContorller {
             @ApiImplicitParam(name = "targetid", value = "资讯或评论id", required = true, paramType = "query", dataType =
                     "string"),
             @ApiImplicitParam(name = "type", value = "0 资讯，1评论", paramType = "query", dataType = "int"),
-            @ApiImplicitParam(name = "inforType", value = "1健康，2 安防，3广播，4视频", required = true,paramType = "query", dataType =
+            @ApiImplicitParam(name = "inforType", value = "1健康，2 安防，3广播，4视频，5时政，6养老", required = true,paramType = "query", dataType =
                     "int")})
     @RequestMapping(value = "/cancal-thumbsup", method = {RequestMethod.GET, RequestMethod.POST})
     public String cancelThumbsup(@RequestParam String targetid, @RequestParam int type, int inforType,
@@ -1486,7 +1510,7 @@ public class InforController extends BaseContorller {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "inforid", value = "资讯id", required = true, paramType = "query", dataType =
                     "string"),
-            @ApiImplicitParam(name = "inforType", value = "1健康，2 安防，3广播，4视频", required = true,paramType = "query", dataType =
+            @ApiImplicitParam(name = "inforType", value = "1健康，2 安防，3广播，4视频，5时政，6养老", required = true,paramType = "query", dataType =
                     "int")})
     @RequestMapping(value = "/collect-infor", method = {RequestMethod.GET, RequestMethod.POST})
     public String collectInfor(@RequestParam String inforid, @RequestParam int inforType,
@@ -1535,6 +1559,22 @@ public class InforController extends BaseContorller {
                 collectBo.setVideo(videoBo.getUrl());
                 collectBo.setTargetPic(videoBo.getPoster());
                 break;
+            case Constant.INFOR_DAILY:
+                DailynewsBo dailynewsBo = inforService.findByDailynewsId(inforid);
+                collectBo.setTitle(dailynewsBo.getTitle());
+                collectBo.setSource(dailynewsBo.getClassName());
+                if (!CommonUtil.isEmpty(dailynewsBo.getImageUrls())) {
+                    collectBo.setTargetPic(dailynewsBo.getImageUrls().getFirst());
+                }
+                break;
+            case Constant.INFOR_YANGLAO:
+                YanglaoBo yanglaoBo = inforService.findByYanglaoId(inforid);
+                collectBo.setTitle(yanglaoBo.getTitle());
+                collectBo.setSource(yanglaoBo.getClassName());
+                if (!CommonUtil.isEmpty(yanglaoBo.getImageUrls())) {
+                    collectBo.setTargetPic(yanglaoBo.getImageUrls().getFirst());
+                }
+                break;
             default:
                 break;
         }
@@ -1555,7 +1595,7 @@ public class InforController extends BaseContorller {
                     dataType = "string"),
             @ApiImplicitParam(name = "inforid", value = "合集首条资讯id", required = true, paramType = "query", dataType =
                     "string"),
-            @ApiImplicitParam(name = "inforType", value = "1健康，2 安防，3广播，4视频", required = true,paramType = "query", dataType =
+            @ApiImplicitParam(name = "inforType", value = "1健康，2 安防，3广播，4视频，5时政，6养老", required = true,paramType = "query", dataType =
                     "int")})
     @RequestMapping(value = "/collect-classes", method = {RequestMethod.GET, RequestMethod.POST})
     public String collectClasses(String module, String className, String inforid, int inforType,
@@ -1600,7 +1640,7 @@ public class InforController extends BaseContorller {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "inforid", value = "资讯id", required = true, paramType = "query", dataType =
                     "string"),
-            @ApiImplicitParam(name = "inforType", value = "1健康，2 安防，3广播，4视频", required = true,paramType = "query", dataType =
+            @ApiImplicitParam(name = "inforType", value = "1健康，2 安防，3广播，4视频，5时政，6养老", required = true,paramType = "query", dataType =
                     "int"),
             @ApiImplicitParam(name = "view", value = "转发评论", required = true, paramType = "query", dataType =
                     "string"),
@@ -1645,6 +1685,22 @@ public class InforController extends BaseContorller {
                 dynamicBo.setPicType("video");
                 dynamicBo.setVideo(videoBo.getUrl());
                 break;
+            case Constant.INFOR_DAILY:
+                DailynewsBo dailynewsBo = inforService.findByDailynewsId(inforid);
+                dynamicBo.setTitle(dailynewsBo.getTitle());
+                dynamicBo.setSourceName(dailynewsBo.getClassName());
+                if (dailynewsBo.getImageUrls() != null) {
+                    dynamicBo.setPhotos(new LinkedHashSet<>(dailynewsBo.getImageUrls()));
+                }
+                break;
+            case Constant.INFOR_YANGLAO:
+                YanglaoBo yanglaoBo = inforService.findByYanglaoId(inforid);
+                dynamicBo.setTitle(yanglaoBo.getTitle());
+                dynamicBo.setSourceName(yanglaoBo.getClassName());
+                if (yanglaoBo.getImageUrls() != null) {
+                    dynamicBo.setPhotos(new LinkedHashSet<>(yanglaoBo.getImageUrls()));
+                }
+                break;
             default:
                 break;
         }
@@ -1672,7 +1728,7 @@ public class InforController extends BaseContorller {
                     "string"),
             @ApiImplicitParam(name = "inforid", value = "资讯id", required = true, paramType = "query", dataType =
                     "string"),
-            @ApiImplicitParam(name = "inforType", value = "1健康，2 安防，3广播，4视频", required = true,paramType = "query", dataType =
+            @ApiImplicitParam(name = "inforType", value = "1健康，2 安防，3广播，4视频，5时政，6养老", required = true,paramType = "query", dataType =
                     "int")})
     @RequestMapping(value = "/forward-circle", method = {RequestMethod.GET, RequestMethod.POST})
     public String forwardCircle(String circleid, String inforid, int inforType,
@@ -1701,7 +1757,7 @@ public class InforController extends BaseContorller {
 
 
     @ApiOperation("根据类型获取最后5条历史阅读信息")
-    @ApiImplicitParam(name = "inforType", value = "1健康，2 安防，3广播，4视频, 0查询所有数据", required = true, paramType =
+    @ApiImplicitParam(name = "inforType", value = "1健康，2 安防，3广播，4视频,5时政，6养老, 0查询所有数据", required = true, paramType =
             "query", dataType = "int")
     @RequestMapping(value = "/last-read", method = {RequestMethod.GET, RequestMethod.POST})
     public String lastReadByType(int inforType,
@@ -1783,6 +1839,38 @@ public class InforController extends BaseContorller {
                         inforVos.add(inforVo);
                     }
                     break;
+                case Constant.INFOR_DAILY:
+                    DailynewsBo dailynewsBo = inforService.findByDailynewsId(inforid);
+                    if (dailynewsBo == null) {
+                        continue;
+                    }
+                    BeanUtils.copyProperties(dailynewsBo, inforVo);
+                    thumbsupBo = thumbsupService.getByVidAndVisitorid(inforid, userid);
+                    inforVo.setSelfSub(thumbsupBo != null);
+                    inforVo.setInforid(inforid);
+                    inforVo.setThumpsubNum(dailynewsBo.getThumpsubNum());
+                    inforVo.setCommentNum(dailynewsBo.getCommnetNum());
+                    inforVo.setReadNum(dailynewsBo.getVisitNum());
+                    inforVo.setText("");
+                    inforVo.setInforType(type);
+                    inforVos.add(inforVo);
+                    break;
+                case Constant.INFOR_YANGLAO:
+                    YanglaoBo yanglaoBo = inforService.findByYanglaoId(inforid);
+                    if (yanglaoBo == null) {
+                        continue;
+                    }
+                    BeanUtils.copyProperties(yanglaoBo, inforVo);
+                    thumbsupBo = thumbsupService.getByVidAndVisitorid(inforid, userid);
+                    inforVo.setSelfSub(thumbsupBo != null);
+                    inforVo.setInforid(inforid);
+                    inforVo.setThumpsubNum(yanglaoBo.getThumpsubNum());
+                    inforVo.setCommentNum(yanglaoBo.getCommnetNum());
+                    inforVo.setReadNum(yanglaoBo.getVisitNum());
+                    inforVo.setText("");
+                    inforVo.setInforType(type);
+                    inforVos.add(inforVo);
+                    break;
                 default:
                     break;
             }
@@ -1795,7 +1883,7 @@ public class InforController extends BaseContorller {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "keyword", value = "关键字",  paramType = "query", dataType =
                     "string"),
-            @ApiImplicitParam(name = "inforType", value = "1健康，2 安防，3广播，4视频",  paramType = "query", dataType =
+            @ApiImplicitParam(name = "inforType", value = "1健康，2 安防，3广播，4视频，5时政，6养老",  paramType = "query", dataType =
                     "int"),
             @ApiImplicitParam(name = "page", value = "分页页码", paramType = "query", dataType = "int"),
             @ApiImplicitParam(name = "limit", value = "分页条数", paramType = "query", dataType = "int")})
@@ -1810,7 +1898,7 @@ public class InforController extends BaseContorller {
         asyncController.saveKeyword(keyword, inforType);
         switch (inforType){
             case Constant.INFOR_HEALTH:
-                List<InforBo> inforBos = inforService.findInforByTitleRegex(keyword,page, limit);
+                List<InforBo> inforBos = inforService.findInforByTitleRegex(keyword, page, limit);
                 List<InforVo> inforVos = new ArrayList<>();
                 for (InforBo inforBo : inforBos) {
                     InforVo inforVo = new InforVo();
@@ -1855,6 +1943,7 @@ public class InforController extends BaseContorller {
                     BeanUtils.copyProperties(bo, broadcastVo);
                     if (!"".equals(userid)) {
                         ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(bo.getId(), userid);
+                        broadcastVo.setSelfSub(thumbsupBo != null);
                     }
                     broadcastVo.setInforid(bo.getId());
                     broadcastVo.setReadNum(bo.getVisitNum());
@@ -1911,6 +2000,44 @@ public class InforController extends BaseContorller {
                 }
                 map.put("videoVos", videoVos);
                 break;
+            case Constant.INFOR_DAILY:
+                List<DailynewsBo> dailynewsBos = inforService.findDailynewsKeyword(keyword, page, limit);
+                inforVos = new ArrayList<>();
+                for (DailynewsBo inforBo : dailynewsBos) {
+                    InforVo inforVo = new InforVo();
+                    BeanUtils.copyProperties(inforBo, inforVo);
+                    if (!"".equals(userid)) {
+                        ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(inforBo.getId(), userid);
+                        inforVo.setSelfSub(thumbsupBo != null);
+                    }
+                    inforVo.setInforid(inforBo.getId());
+                    inforVo.setText("");
+                    inforVo.setThumpsubNum(inforBo.getThumpsubNum());
+                    inforVo.setCommentNum(inforBo.getCommnetNum());
+                    inforVo.setReadNum(inforBo.getVisitNum());
+                    inforVos.add(inforVo);
+                }
+                map.put("inforVos", inforVos);
+                break;
+            case Constant.INFOR_YANGLAO:
+                List<YanglaoBo> yanglaoBos = inforService.findYanglaosKeyword(keyword, page, limit);
+                inforVos = new ArrayList<>();
+                for (YanglaoBo inforBo : yanglaoBos) {
+                    InforVo inforVo = new InforVo();
+                    BeanUtils.copyProperties(inforBo, inforVo);
+                    if (!"".equals(userid)) {
+                        ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(inforBo.getId(), userid);
+                        inforVo.setSelfSub(thumbsupBo != null);
+                    }
+                    inforVo.setInforid(inforBo.getId());
+                    inforVo.setText("");
+                    inforVo.setThumpsubNum(inforBo.getThumpsubNum());
+                    inforVo.setCommentNum(inforBo.getCommnetNum());
+                    inforVo.setReadNum(inforBo.getVisitNum());
+                    inforVos.add(inforVo);
+                }
+                map.put("inforVos", inforVos);
+                break;
             default:
                 break;
         }
@@ -1922,7 +2049,7 @@ public class InforController extends BaseContorller {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "inforid", value = "资讯id",  paramType = "query", dataType =
                     "string"),
-            @ApiImplicitParam(name = "inforType", value = "1健康，2 安防，3广播，4视频",  paramType = "query", dataType =
+            @ApiImplicitParam(name = "inforType", value = "3广播，4视频",  paramType = "query", dataType =
                     "int")})
     @RequestMapping(value = "/get-list", method = {RequestMethod.GET, RequestMethod.POST})
     public String search(String inforid,  int inforType, HttpServletRequest request,
@@ -1940,11 +2067,15 @@ public class InforController extends BaseContorller {
             boolean isGet = false;
             int i = 0;
             for (BroadcastBo bo : broadcastBos) {
+                if (bo.getId().equals(inforid)) {
+                    isGet = true;
+                }
                 i++;
                 BroadcastVo broadcastVo = new BroadcastVo();
                 BeanUtils.copyProperties(bo, broadcastVo);
                 if (!"".equals(userid)) {
                     ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(bo.getId(), userid);
+                    broadcastVo.setSelfSub(thumbsupBo != null);
                 }
                 broadcastVo.setInforid(bo.getId());
                 broadcastVo.setReadNum(bo.getVisitNum());
@@ -2026,7 +2157,7 @@ public class InforController extends BaseContorller {
 
     @ApiOperation("资讯热门搜索关键词")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "inforType", value = "1健康，2 安防，3广播，4视频, 5时政， 6养老",  paramType = "query",
+            @ApiImplicitParam(name = "inforType", value = "1健康，2 安防，3广播，4视频, 5时政，6养老",  paramType = "query",
                     dataType = "int"),
             @ApiImplicitParam(name = "limit", value = "显示关键词数量", paramType = "query", dataType = "int")})
     @RequestMapping(value = "/hot-search-words", method = {RequestMethod.GET, RequestMethod.POST})

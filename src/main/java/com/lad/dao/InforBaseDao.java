@@ -20,6 +20,7 @@ import java.lang.reflect.ParameterizedType;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * 功能描述：
@@ -212,5 +213,26 @@ public class InforBaseDao<T extends Serializable> {
     }
 
 
+    /**
+     * 关键字查找
+     * @param keywrod
+     * @param page
+     * @param limit
+     * @return
+     */
+    public List<T> findByTitleKeyword(String keywrod, int page, int limit){
+        Pattern pattern = Pattern.compile("^.*"+keywrod+".*$", Pattern.CASE_INSENSITIVE);
+        Criteria title = new Criteria("title").regex(pattern);
+        Criteria text = new Criteria("text").regex(pattern);
+        Query query = new Query();
+        Criteria criteria = new Criteria();
+        criteria.orOperator(title, text);
+        query.addCriteria(criteria);
+        query.with(new Sort(Sort.Direction.DESC,"time", "_id"));
+        page = page < 1 ? 1 : page;
+        query.skip((page-1)*limit);
+        query.limit(limit);
+        return getMongoTemplateTwo().find(query, getClz());
+    }
 
 }
