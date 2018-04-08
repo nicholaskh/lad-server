@@ -307,6 +307,8 @@ public class Constant {
 	 * 视频
 	 */
 	public static final int INFOR_VIDEO = 4;
+	public static final int INFOR_DAILY =5;
+	public static final int INFOR_YANGLAO = 6;
 
 	public static final int VISIT_NUM = 1;
 	public static final int COMMENT_NUM = 2;
@@ -330,6 +332,14 @@ public class Constant {
 	 * 视频
 	 */
 	public static final String VIDEO_NAME = "videoTypes";
+	/**
+	 * 时政
+	 */
+	public static final String DAILY_NAME = "dailyTypes";
+	/**
+	 * 视频
+	 */
+	public static final String YANGLAO_NAME = "yanglaoTypes";
 
 
 

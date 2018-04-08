@@ -9,17 +9,15 @@ import java.io.Serializable;
 import java.util.LinkedList;
 
 /**
- * 功能描述： 咨询
- * Copyright: Copyright (c) 2017
+ * 功能描述：
+ * Copyright: Copyright (c) 2018
  * Version: 1.0
- * Time:2017/7/31
+ * Time:2018/4/5
  */
-@Setter
 @Getter
-@Document(collection = "health")
-public class InforBo extends BaseInforBo {
-
-    private int classNum;
+@Setter
+@Document(collection = "yanglao")
+public class YanglaoBo extends BaseInforBo {
 
     private LinkedList<String> imageUrls;
 
@@ -28,4 +26,5 @@ public class InforBo extends BaseInforBo {
     private String text;
 
     private int num;
+
 }

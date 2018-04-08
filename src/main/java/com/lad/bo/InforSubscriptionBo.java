@@ -1,5 +1,7 @@
 package com.lad.bo;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.LinkedHashSet;
@@ -9,6 +11,8 @@ import java.util.LinkedHashSet;
  * Version: 1.0
  * Time:2017/8/1
  */
+@Getter
+@Setter
 @Document(collection = "subscription")
 public class InforSubscriptionBo extends BaseBo {
 
@@ -23,62 +27,11 @@ public class InforSubscriptionBo extends BaseBo {
     private LinkedHashSet<String> radios = new LinkedHashSet<>();
     //视频订阅
     private LinkedHashSet<String> videos = new LinkedHashSet<>();
+    //时政订阅
+    private LinkedHashSet<String> dailys = new LinkedHashSet<>();
+    //养老订阅
+    private LinkedHashSet<String> yanglaos = new LinkedHashSet<>();
 
     private int type;
 
-    public String getUserid() {
-        return userid;
-    }
-
-    public void setUserid(String userid) {
-        this.userid = userid;
-    }
-
-    public LinkedHashSet<String> getSubscriptions() {
-        return subscriptions;
-    }
-
-    public void setSubscriptions(LinkedHashSet<String> subscriptions) {
-        this.subscriptions = subscriptions;
-    }
-
-    public LinkedHashSet<String> getSecuritys() {
-        return securitys;
-    }
-
-    public void setSecuritys(LinkedHashSet<String> securitys) {
-        this.securitys = securitys;
-    }
-
-    public LinkedHashSet<String> getCollects() {
-        return collects;
-    }
-
-    public void setCollects(LinkedHashSet<String> collects) {
-        this.collects = collects;
-    }
-
-    public LinkedHashSet<String> getRadios() {
-        return radios;
-    }
-
-    public void setRadios(LinkedHashSet<String> radios) {
-        this.radios = radios;
-    }
-
-    public LinkedHashSet<String> getVideos() {
-        return videos;
-    }
-
-    public void setVideos(LinkedHashSet<String> videos) {
-        this.videos = videos;
-    }
-
-    public int getType() {
-        return type;
-    }
-
-    public void setType(int type) {
-        this.type = type;
-    }
 }

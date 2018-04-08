@@ -3,10 +3,7 @@ package com.lad.controller;
 import com.alibaba.fastjson.JSON;
 import com.lad.bo.*;
 import com.lad.redis.RedisServer;
-import com.lad.scrapybo.BroadcastBo;
-import com.lad.scrapybo.InforBo;
-import com.lad.scrapybo.SecurityBo;
-import com.lad.scrapybo.VideoBo;
+import com.lad.scrapybo.*;
 import com.lad.service.*;
 import com.lad.util.*;
 import com.lad.vo.*;
@@ -129,6 +126,16 @@ public class InforController extends BaseContorller {
                 } else {
                     map.put(Constant.VIDEO_NAME, mySub.getVideos());
                 }
+                if (CommonUtil.isEmpty(mySub.getDailys())) {
+                    map.put(Constant.DAILY_NAME, cache.get(Constant.DAILY_NAME));
+                } else {
+                    map.put(Constant.DAILY_NAME, mySub.getDailys());
+                }
+                if (CommonUtil.isEmpty(mySub.getYanglaos())) {
+                    map.put(Constant.YANGLAO_NAME, cache.get(Constant.YANGLAO_NAME));
+                } else {
+                    map.put(Constant.YANGLAO_NAME, mySub.getYanglaos());
+                }
                 isGetType  = true;
                 logger.info("============== userid {}, inforSub {}", userBo.getId(),
                         JSON.toJSONString(map));
@@ -173,14 +180,28 @@ public class InforController extends BaseContorller {
                 for (VideoBo videoBo : videoBos) {
                     videoTypes.add(videoBo.getId());
                 }
+                HashSet<String> dailyTypes = new LinkedHashSet<>();
+                List<DailynewsBo> dailynewsBos =  inforService.selectDailynewsGroups();
+                for (DailynewsBo videoBo : dailynewsBos) {
+                    dailyTypes.add(videoBo.getId());
+                }
+                HashSet<String> yanglaoTypes = new LinkedHashSet<>();
+                List<YanglaoBo> yanglaoBos =  inforService.selectYanglaoGroups();
+                for (YanglaoBo videoBo : yanglaoBos) {
+                    yanglaoTypes.add(videoBo.getId());
+                }
                 cache.put(Constant.SECRITY_NAME, securityTypes, 0, TimeUnit.MINUTES);
                 cache.put(Constant.HEALTH_NAME, groupTypes, 0, TimeUnit.MINUTES);
                 cache.put(Constant.RADIO_NAME, broadTypes, 0, TimeUnit.MINUTES);
                 cache.put(Constant.VIDEO_NAME, videoTypes, 0, TimeUnit.MINUTES);
+                cache.put(Constant.DAILY_NAME, dailyTypes, 0, TimeUnit.MINUTES);
+                cache.put(Constant.YANGLAO_NAME, yanglaoTypes, 0, TimeUnit.MINUTES);
                 map.put(Constant.HEALTH_NAME, groupTypes);
                 map.put(Constant.SECRITY_NAME, securityTypes);
                 map.put(Constant.VIDEO_NAME, videoTypes);
                 map.put(Constant.RADIO_NAME, broadTypes);
+                map.put(Constant.DAILY_NAME, dailyTypes);
+                map.put(Constant.YANGLAO_NAME, yanglaoTypes);
             }
         }
         return JSONObject.fromObject(map).toString();
@@ -803,6 +824,12 @@ public class InforController extends BaseContorller {
                 case Constant.INFOR_VIDEO:
                     inforService.updateVideoNum(inforid, numType, num);
                     break;
+                case Constant.INFOR_DAILY:
+                    inforService.updateDailynewsByType(inforid, numType, num);
+                    break;
+                case Constant.INFOR_YANGLAO:
+                    inforService.updateYanglaoByType(inforid, numType, num);
+                    break;
                 default:
                     break;
             }
@@ -1404,6 +1431,8 @@ public class InforController extends BaseContorller {
         subBo.setSecuritys((LinkedHashSet<String>) cache.get(Constant.SECRITY_NAME));
         subBo.setRadios((LinkedHashSet<String>) cache.get(Constant.RADIO_NAME));
         subBo.setVideos((LinkedHashSet<String>) cache.get(Constant.VIDEO_NAME));
+        subBo.setDailys((LinkedHashSet<String>) cache.get(Constant.DAILY_NAME));
+        subBo.setYanglaos((LinkedHashSet<String>) cache.get(Constant.YANGLAO_NAME));
     }
 
 
@@ -1420,23 +1449,33 @@ public class InforController extends BaseContorller {
         for (SecurityBo securityBo : securityBos) {
             securityTypes.add(securityBo.getId());
         }
-
         List<BroadcastBo> broadcastBos = inforService.selectBroadGroups();
         HashSet<String> broadTypes = new LinkedHashSet<>();
         for (BroadcastBo broadcastBo : broadcastBos) {
             broadTypes.add(broadcastBo.getId());
         }
-
         List<VideoBo> videoBos = inforService.selectVdeoGroups();
         HashSet<String> videoTypes = new LinkedHashSet<>();
         for (VideoBo videoBo : videoBos) {
             videoTypes.add(videoBo.getId());
+        }
+        HashSet<String> dailyTypes = new LinkedHashSet<>();
+        List<DailynewsBo> dailynewsBos =  inforService.selectDailynewsGroups();
+        for (DailynewsBo videoBo : dailynewsBos) {
+            dailyTypes.add(videoBo.getId());
+        }
+        HashSet<String> yanglaoTypes = new LinkedHashSet<>();
+        List<YanglaoBo> yanglaoBos =  inforService.selectYanglaoGroups();
+        for (YanglaoBo videoBo : yanglaoBos) {
+            yanglaoTypes.add(videoBo.getId());
         }
         cache.clear();
         cache.put(Constant.SECRITY_NAME, securityTypes, 0, TimeUnit.MINUTES);
         cache.put(Constant.HEALTH_NAME, groupTypes, 0, TimeUnit.MINUTES);
         cache.put(Constant.RADIO_NAME, broadTypes, 0, TimeUnit.MINUTES);
         cache.put(Constant.VIDEO_NAME, videoTypes, 0, TimeUnit.MINUTES);
+        cache.put(Constant.DAILY_NAME, dailyTypes, 0, TimeUnit.MINUTES);
+        cache.put(Constant.YANGLAO_NAME, yanglaoTypes, 0, TimeUnit.MINUTES);
     }
 
 
@@ -1987,8 +2026,8 @@ public class InforController extends BaseContorller {
 
     @ApiOperation("资讯热门搜索关键词")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "inforType", value = "1健康，2 安防，3广播，4视频",  paramType = "query", dataType =
-                    "int"),
+            @ApiImplicitParam(name = "inforType", value = "1健康，2 安防，3广播，4视频, 5时政， 6养老",  paramType = "query",
+                    dataType = "int"),
             @ApiImplicitParam(name = "limit", value = "显示关键词数量", paramType = "query", dataType = "int")})
     @RequestMapping(value = "/hot-search-words", method = {RequestMethod.GET, RequestMethod.POST})
     public String searchHotHis(int inforType, int limit, HttpServletRequest request,
@@ -2000,6 +2039,136 @@ public class InforController extends BaseContorller {
         Map<String, Object> map = new HashMap<>();
         map.put("ret", 0);
         map.put("hotWords", words);
+        return JSONObject.fromObject(map).toString();
+    }
+
+
+    @ApiOperation("时政资讯信息详情")
+    @ApiImplicitParam(name = "inforid", value = "资讯id", required = true, paramType = "query",dataType = "string")
+    @RequestMapping(value = "/daily-infor", method = {RequestMethod.GET, RequestMethod.POST})
+    public String dailyNews(String inforid, HttpServletRequest request, HttpServletResponse response){
+
+        DailynewsBo inforBo = inforService.findByDailynewsId(inforid);
+        if (inforBo == null) {
+            return CommonUtil.toErrorResult(ERRORCODE.INFOR_IS_NULL.getIndex(),
+                    ERRORCODE.INFOR_IS_NULL.getReason());
+        }
+        InforVo inforVo = new InforVo();
+        UserBo userBo = getUserLogin(request);
+        if (userBo != null) {
+            ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(inforBo.getId(), userBo.getId());
+            inforVo.setSelfSub(thumbsupBo != null);
+            asyncController.updateUserReadHis(userBo.getId(),inforBo.getClassName(),"", Constant.INFOR_DAILY);
+            asyncController.addUserReadhis(userBo.getId(), inforid, Constant.INFOR_DAILY, inforBo.getModule(),
+                    inforBo.getClassName());
+        }
+        updateInforNum(inforid, Constant.INFOR_DAILY, 1, Constant.VISIT_NUM);
+        asyncController.updateInforHistroy(inforid, inforBo.getClassName(), Constant.INFOR_DAILY);
+        BeanUtils.copyProperties(inforBo, inforVo);
+        inforVo.setInforid(inforBo.getId());
+        inforVo.setThumpsubNum(inforBo.getThumpsubNum());
+        inforVo.setCommentNum(inforBo.getCommnetNum());
+        inforVo.setReadNum(inforBo.getVisitNum());
+        inforVo.setImageUrls(inforBo.getImageUrls());
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("ret", 0);
+        map.put("inforVo", inforVo);
+        return JSONObject.fromObject(map).toString();
+    }
+
+    @ApiOperation("获取时政指定分类下列表信息")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "className", value = "时政资讯分类", required = true, dataType =
+                    "string", paramType = "query"),
+            @ApiImplicitParam(name = "page", value = "分页页码", required = true, dataType = "int", paramType = "query"),
+            @ApiImplicitParam(name = "limit", value = "分页条数", required = true, dataType = "int", paramType = "query")})
+    @RequestMapping(value = "/daily-list", method = {RequestMethod.GET, RequestMethod.POST})
+    public String dailyList(String className, int page,  int limit,
+                            HttpServletRequest request, HttpServletResponse response){
+        List<DailynewsBo> dailynewsBos = inforService.findDailynewsByClassName(className, page, limit);
+        List<InforVo> vos = new ArrayList<>();
+        for (DailynewsBo bo : dailynewsBos) {
+            InforVo broadcastVo = new InforVo();
+            BeanUtils.copyProperties(bo, broadcastVo);
+            broadcastVo.setInforid(bo.getId());
+            broadcastVo.setReadNum(bo.getVisitNum());
+            broadcastVo.setCommentNum(bo.getCommnetNum());
+            broadcastVo.setThumpsubNum(bo.getThumpsubNum());
+            vos.add(broadcastVo);
+        }
+        UserBo userBo =  getUserLogin(request);
+        if (userBo != null) {
+            asyncController.updateUserReadHis(userBo.getId(), className, "", Constant.INFOR_DAILY);
+        }
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("ret", 0);
+        map.put("inforVoList", vos);
+        return JSONObject.fromObject(map).toString();
+    }
+
+
+    @ApiOperation("养老资讯信息详情")
+    @ApiImplicitParam(name = "inforid", value = "资讯id", required = true, paramType = "query",dataType = "string")
+    @RequestMapping(value = "/yanglao-infor", method = {RequestMethod.GET, RequestMethod.POST})
+    public String dayanglaoNews(String inforid, HttpServletRequest request, HttpServletResponse response){
+
+        YanglaoBo inforBo = inforService.findByYanglaoId(inforid);
+        if (inforBo == null) {
+            return CommonUtil.toErrorResult(ERRORCODE.INFOR_IS_NULL.getIndex(),
+                    ERRORCODE.INFOR_IS_NULL.getReason());
+        }
+
+        InforVo inforVo = new InforVo();
+        UserBo userBo = getUserLogin(request);
+        if (userBo != null) {
+            ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(inforBo.getId(), userBo.getId());
+            inforVo.setSelfSub(thumbsupBo != null);
+            asyncController.updateUserReadHis(userBo.getId(),inforBo.getClassName(),"", Constant.INFOR_DAILY);
+            asyncController.addUserReadhis(userBo.getId(), inforid, Constant.INFOR_DAILY, inforBo.getModule(),
+                    inforBo.getClassName());
+        }
+        updateInforNum(inforid, Constant.INFOR_DAILY, 1, Constant.VISIT_NUM);
+        asyncController.updateInforHistroy(inforid, inforBo.getClassName(), Constant.INFOR_DAILY);
+        BeanUtils.copyProperties(inforBo, inforVo);
+        inforVo.setInforid(inforBo.getId());
+        inforVo.setThumpsubNum(inforBo.getThumpsubNum());
+        inforVo.setCommentNum(inforBo.getCommnetNum());
+        inforVo.setReadNum(inforBo.getVisitNum());
+        inforVo.setImageUrls(inforBo.getImageUrls());
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("ret", 0);
+        map.put("inforVo", inforVo);
+        return JSONObject.fromObject(map).toString();
+    }
+
+
+    @ApiOperation("获取养老指定分类下列表信息")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "className", value = "养老资讯分类", required = true, dataType =
+                    "string", paramType = "query"),
+            @ApiImplicitParam(name = "page", value = "分页页码", required = true, dataType = "int", paramType = "query"),
+            @ApiImplicitParam(name = "limit", value = "分页条数", required = true, dataType = "int", paramType = "query")})
+    @RequestMapping(value = "/yanglao-list", method = {RequestMethod.GET, RequestMethod.POST})
+    public String yanglaoList(String className, int page,  int limit,
+                            HttpServletRequest request, HttpServletResponse response){
+        List<YanglaoBo> dailynewsBos = inforService.findYanglaoByClassName(className, page, limit);
+        List<InforVo> vos = new ArrayList<>();
+        for (YanglaoBo bo : dailynewsBos) {
+            InforVo broadcastVo = new InforVo();
+            BeanUtils.copyProperties(bo, broadcastVo);
+            broadcastVo.setInforid(bo.getId());
+            broadcastVo.setReadNum(bo.getVisitNum());
+            broadcastVo.setCommentNum(bo.getCommnetNum());
+            broadcastVo.setThumpsubNum(bo.getThumpsubNum());
+            vos.add(broadcastVo);
+        }
+        UserBo userBo =  getUserLogin(request);
+        if (userBo != null) {
+            asyncController.updateUserReadHis(userBo.getId(), className, "", Constant.INFOR_DAILY);
+        }
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("ret", 0);
+        map.put("inforVoList", vos);
         return JSONObject.fromObject(map).toString();
     }
 

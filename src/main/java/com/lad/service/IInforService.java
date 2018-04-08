@@ -3,10 +3,7 @@ package com.lad.service;
 import com.lad.bo.InforReadNumBo;
 import com.lad.bo.InforSubscriptionBo;
 import com.lad.bo.UserReadHisBo;
-import com.lad.scrapybo.BroadcastBo;
-import com.lad.scrapybo.InforBo;
-import com.lad.scrapybo.SecurityBo;
-import com.lad.scrapybo.VideoBo;
+import com.lad.scrapybo.*;
 import com.mongodb.WriteResult;
 
 import java.util.HashSet;
@@ -423,5 +420,62 @@ public interface IInforService {
      * @return
      */
     WriteResult deleteUserReadHis(List<String> removeIds);
+
+
+
+    DailynewsBo findByDailynewsId(String id);
+
+    /**
+     * 查找所有分类信息
+     * @return
+     */
+    List<DailynewsBo> selectDailynewsGroups();
+
+
+    /**
+     * 查找指定分类下资讯
+     * @param className
+     * @param page
+     * @param limit
+     * @return
+     */
+    List<DailynewsBo> findDailynewsByClassName(String className, int page, int limit);
+
+    /**
+     * 更新阅读信息
+     * @param id
+     * @param type
+     * @param num
+     * @return
+     */
+    WriteResult updateDailynewsByType(String id, int type, int num);
+
+
+    YanglaoBo findByYanglaoId(String id);
+
+    /**
+     * 查找所有分类信息
+     * @return
+     */
+    List<YanglaoBo> selectYanglaoGroups();
+
+
+    /**
+     * 查找指定分类下资讯
+     * @param className
+     * @param page
+     * @param limit
+     * @return
+     */
+    List<YanglaoBo> findYanglaoByClassName(String className, int page, int limit);
+
+    /**
+     * 更新阅读信息
+     * @param id
+     * @param type
+     * @param num
+     * @return
+     */
+    WriteResult updateYanglaoByType(String id, int type, int num);
 
 }

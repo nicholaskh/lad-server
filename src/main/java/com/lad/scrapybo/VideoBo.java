@@ -1,5 +1,7 @@
 package com.lad.scrapybo;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -11,37 +13,16 @@ import java.io.Serializable;
  * Version: 1.0
  * Time:2017/9/27
  */
+@Getter
+@Setter
 @Document(collection = "video")
-public class VideoBo implements Serializable {
-
-    @Id
-    private String id;
-
-    private String sourceUrl;
-
-    private String title;
-
-    private String source;
+public class VideoBo extends BaseInforBo {
 
     private String url;
 
     private String poster;
 
-    private String module;
-
-    private String className;
-
     private int num;
-
-    private int visitNum;
-
-    private int shareNum;
-
-    private int commnetNum;
-
-    private int thumpsubNum;
-
-    private int collectNum;
 
     //合集第一条信息展示
     private String firstUrl;
@@ -54,155 +35,4 @@ public class VideoBo implements Serializable {
 
     private int firstThump;
 
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getSourceUrl() {
-        return sourceUrl;
-    }
-
-    public void setSourceUrl(String sourceUrl) {
-        this.sourceUrl = sourceUrl;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getSource() {
-        return source;
-    }
-
-    public void setSource(String source) {
-        this.source = source;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
-    }
-
-    public String getPoster() {
-        return poster;
-    }
-
-    public void setPoster(String poster) {
-        this.poster = poster;
-    }
-
-    public String getModule() {
-        return module;
-    }
-
-    public void setModule(String module) {
-        this.module = module;
-    }
-
-    public String getClassName() {
-        return className;
-    }
-
-    public void setClassName(String className) {
-        this.className = className;
-    }
-
-    public int getVisitNum() {
-        return visitNum;
-    }
-
-    public void setVisitNum(int visitNum) {
-        this.visitNum = visitNum;
-    }
-
-    public int getShareNum() {
-        return shareNum;
-    }
-
-    public void setShareNum(int shareNum) {
-        this.shareNum = shareNum;
-    }
-
-    public int getCommnetNum() {
-        return commnetNum;
-    }
-
-    public void setCommnetNum(int commnetNum) {
-        this.commnetNum = commnetNum;
-    }
-
-    public int getThumpsubNum() {
-        return thumpsubNum;
-    }
-
-    public void setThumpsubNum(int thumpsubNum) {
-        this.thumpsubNum = thumpsubNum;
-    }
-
-    public int getCollectNum() {
-        return collectNum;
-    }
-
-    public void setCollectNum(int collectNum) {
-        this.collectNum = collectNum;
-    }
-
-    public int getNum() {
-        return num;
-    }
-
-    public void setNum(int num) {
-        this.num = num;
-    }
-
-    public String getFirstUrl() {
-        return firstUrl;
-    }
-
-    public void setFirstUrl(String firstUrl) {
-        this.firstUrl = firstUrl;
-    }
-
-    public String getFirstId() {
-        return firstId;
-    }
-
-    public void setFirstId(String firstId) {
-        this.firstId = firstId;
-    }
-
-    public int getFirstShare() {
-        return firstShare;
-    }
-
-    public void setFirstShare(int firstShare) {
-        this.firstShare = firstShare;
-    }
-
-    public int getFirstComment() {
-        return firstComment;
-    }
-
-    public void setFirstComment(int firstComment) {
-        this.firstComment = firstComment;
-    }
-
-    public int getFirstThump() {
-        return firstThump;
-    }
-
-    public void setFirstThump(int firstThump) {
-        this.firstThump = firstThump;
-    }
 }

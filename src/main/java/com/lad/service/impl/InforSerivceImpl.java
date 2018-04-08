@@ -4,10 +4,7 @@ import com.lad.bo.InforReadNumBo;
 import com.lad.bo.InforSubscriptionBo;
 import com.lad.bo.UserReadHisBo;
 import com.lad.dao.*;
-import com.lad.scrapybo.BroadcastBo;
-import com.lad.scrapybo.InforBo;
-import com.lad.scrapybo.SecurityBo;
-import com.lad.scrapybo.VideoBo;
+import com.lad.scrapybo.*;
 import com.lad.service.IInforService;
 import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +44,12 @@ public class InforSerivceImpl implements IInforService {
 
     @Autowired
     private IUserReadHisDao userReadHisDao;
+
+    @Autowired
+    private DailynewsDao dailynewsDao;
+
+    @Autowired
+    private YanglaoDao yanglaoDao;
 
     @Override
     public List<InforBo> findAllGroups() {
@@ -401,5 +404,45 @@ public class InforSerivceImpl implements IInforService {
     @Override
     public List<VideoBo> selectClassNamePage(String module, String className) {
         return videoDao.findByClassNamePage(module, className);
+    }
+
+    @Override
+    public DailynewsBo findByDailynewsId(String id) {
+        return dailynewsDao.findById(id);
+    }
+
+    @Override
+    public List<DailynewsBo> selectDailynewsGroups() {
+        return dailynewsDao.selectGroups();
+    }
+
+    @Override
+    public List<DailynewsBo> findDailynewsByClassName(String className, int page, int limit) {
+        return dailynewsDao.findByClassName(className, page, limit);
+    }
+
+    @Override
+    public WriteResult updateDailynewsByType(String id, int type, int num) {
+        return dailynewsDao.updateByType(id, type, num);
+    }
+
+    @Override
+    public YanglaoBo findByYanglaoId(String id) {
+        return yanglaoDao.findById(id);
+    }
+
+    @Override
+    public List<YanglaoBo> selectYanglaoGroups() {
+        return yanglaoDao.selectGroups();
+    }
+
+    @Override
+    public List<YanglaoBo> findYanglaoByClassName(String className, int page, int limit) {
+        return yanglaoDao.findByClassName(className, page, limit);
+    }
+
+    @Override
+    public WriteResult updateYanglaoByType(String id, int type, int num) {
+        return yanglaoDao.updateByType(id, type, num);
     }
 }
