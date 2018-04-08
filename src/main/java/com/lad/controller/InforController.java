@@ -91,6 +91,8 @@ public class InforController extends BaseContorller {
         map.put(Constant.SECRITY_NAME, cache.get(Constant.SECRITY_NAME));
         map.put(Constant.RADIO_NAME, cache.get(Constant.RADIO_NAME));
         map.put(Constant.VIDEO_NAME, cache.get(Constant.VIDEO_NAME));
+        map.put(Constant.DAILY_NAME, cache.get(Constant.DAILY_NAME));
+        map.put(Constant.YANGLAO_NAME, cache.get(Constant.YANGLAO_NAME));
         return JSONObject.fromObject(map).toString();
     }
 
@@ -157,6 +159,8 @@ public class InforController extends BaseContorller {
                 map.put(Constant.SECRITY_NAME, cache.get(Constant.SECRITY_NAME));
                 map.put(Constant.RADIO_NAME, cache.get(Constant.RADIO_NAME));
                 map.put(Constant.VIDEO_NAME, cache.get(Constant.VIDEO_NAME));
+                map.put(Constant.DAILY_NAME, cache.get(Constant.DAILY_NAME));
+                map.put(Constant.YANGLAO_NAME, cache.get(Constant.YANGLAO_NAME));
             } else {
                 List<InforBo> inforBos = inforService.findAllGroups();
                 int size =  inforBos.size();
@@ -2219,13 +2223,13 @@ public class InforController extends BaseContorller {
         List<DailynewsBo> dailynewsBos = inforService.findDailynewsByClassName(className, page, limit);
         List<InforVo> vos = new ArrayList<>();
         for (DailynewsBo bo : dailynewsBos) {
-            InforVo broadcastVo = new InforVo();
-            BeanUtils.copyProperties(bo, broadcastVo);
-            broadcastVo.setInforid(bo.getId());
-            broadcastVo.setReadNum(bo.getVisitNum());
-            broadcastVo.setCommentNum(bo.getCommnetNum());
-            broadcastVo.setThumpsubNum(bo.getThumpsubNum());
-            vos.add(broadcastVo);
+            InforVo inforVo = new InforVo();
+            BeanUtils.copyProperties(bo, inforVo);
+            inforVo.setInforid(bo.getId());
+            inforVo.setReadNum(bo.getVisitNum());
+            inforVo.setCommentNum(bo.getCommnetNum());
+            inforVo.setThumpsubNum(bo.getThumpsubNum());
+            inforVo.setText("");
         }
         UserBo userBo =  getUserLogin(request);
         if (userBo != null) {
@@ -2285,13 +2289,14 @@ public class InforController extends BaseContorller {
         List<YanglaoBo> dailynewsBos = inforService.findYanglaoByClassName(className, page, limit);
         List<InforVo> vos = new ArrayList<>();
         for (YanglaoBo bo : dailynewsBos) {
-            InforVo broadcastVo = new InforVo();
-            BeanUtils.copyProperties(bo, broadcastVo);
-            broadcastVo.setInforid(bo.getId());
-            broadcastVo.setReadNum(bo.getVisitNum());
-            broadcastVo.setCommentNum(bo.getCommnetNum());
-            broadcastVo.setThumpsubNum(bo.getThumpsubNum());
-            vos.add(broadcastVo);
+            InforVo inforVo = new InforVo();
+            BeanUtils.copyProperties(bo, inforVo);
+            inforVo.setInforid(bo.getId());
+            inforVo.setReadNum(bo.getVisitNum());
+            inforVo.setCommentNum(bo.getCommnetNum());
+            inforVo.setThumpsubNum(bo.getThumpsubNum());
+            inforVo.setText("");
+            vos.add(inforVo);
         }
         UserBo userBo =  getUserLogin(request);
         if (userBo != null) {
