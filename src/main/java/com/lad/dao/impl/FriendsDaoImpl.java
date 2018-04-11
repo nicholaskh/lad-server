@@ -243,7 +243,7 @@ public class FriendsDaoImpl implements IFriendsDao {
 	@Override
 	public List<FriendsBo> findAllApplyList(String userid, int page , int limit) {
 		Query query = new Query();
-		Criteria criteria = new Criteria("userid").is(userid).and("deleted").is(Constant.ACTIVITY);
+		Criteria criteria = new Criteria("friendid").is(userid).and("deleted").is(Constant.ACTIVITY);
 		query.addCriteria(criteria);
 		query.with(new Sort(Sort.Direction.DESC,"updateTime", "_id"));
 		page = page < 1 ? 1 : page;

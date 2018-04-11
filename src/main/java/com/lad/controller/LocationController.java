@@ -7,25 +7,23 @@ import com.lad.service.IUserService;
 import com.lad.util.CommonUtil;
 import com.lad.util.Constant;
 import com.lad.util.ERRORCODE;
-import com.lad.vo.UserBaseVo;
-import com.lad.vo.UserVo;
 import io.swagger.annotations.ApiOperation;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.apache.commons.beanutils.BeanUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.geo.GeoResult;
 import org.springframework.data.geo.GeoResults;
 import org.springframework.data.geo.Point;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("location")
@@ -38,8 +36,7 @@ public class LocationController extends BaseContorller {
 
 	private final static Logger log = LogManager.getLogger(LocationController.class);
 
-	@RequestMapping("/near")
-	@ResponseBody
+	@RequestMapping(value = "/near",method = {RequestMethod.GET, RequestMethod.POST})
 	public String near(double px, double py, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		Point point = new Point(px, py);
 		GeoResults<LocationBo> locationBoList = locationService.findUserNear(point, 10000);
@@ -70,8 +67,7 @@ public class LocationController extends BaseContorller {
 	}
 
 
-	@RequestMapping("/update")
-	@ResponseBody
+	@RequestMapping(value = "/update", method = {RequestMethod.GET, RequestMethod.POST})
 	public String updateLocation(double px, double py, String phone,
 								 HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo = userService.getUserByPhone(phone);
@@ -110,7 +106,7 @@ public class LocationController extends BaseContorller {
 				locationBo = new LocationBo();
 				locationBo.setUserid(userBo.getId());
 				locationBo.setPosition(postion);
-				locationBo = locationService.insertUserPoint(locationBo);
+				locationService.insertUserPoint(locationBo);
 			} else {
 				locationBo.setPosition(postion);
 				locationBo.setUpdateTime(new Date());
