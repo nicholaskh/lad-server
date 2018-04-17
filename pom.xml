@@ -15,7 +15,7 @@
 		<spring.data.mongodb>1.10.1.RELEASE</spring.data.mongodb>
 		<mongodb.java.driver>3.2.2</mongodb.java.driver>
 		<fastjson.version>1.2.3</fastjson.version>
-		<spring.version>4.3.7.RELEASE</spring.version>
+		<spring.version>4.3.16.RELEASE</spring.version>
 		<jackson.version>2.8.7</jackson.version>
 		<java.version>1.8</java.version>
 		<junit>4.12</junit>
@@ -179,7 +179,7 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-test</artifactId>
-			<version>4.3.3.RELEASE</version>
+			<version>${spring.version}</version>
 			<scope>test</scope>
 		</dependency>
 

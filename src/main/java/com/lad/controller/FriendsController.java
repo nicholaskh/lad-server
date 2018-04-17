@@ -20,8 +20,10 @@ import org.springframework.data.geo.GeoResults;
 import org.springframework.data.geo.Point;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -965,7 +967,7 @@ public class FriendsController extends BaseContorller {
 					ERRORCODE.FRIEND_NOT_EXIST.getReason());
 		}
 		FriendsBo friend = friendsService.getFriendByIdAndVisitorIdAgree(friendsBo.getFriendid(), userBo.getId());
-		if (friendsBo == null) {
+		if (friend == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NOT_HAS_YOU.getIndex(),
 					ERRORCODE.FRIEND_NOT_HAS_YOU.getReason());
 		}
@@ -997,17 +999,14 @@ public class FriendsController extends BaseContorller {
 		List<FriendsBo> friendsBoList = friendsService.findAllApplyList(userBo.getId(), page, limit);
 		List<FriendsVo> userVoList = new LinkedList<FriendsVo>();
 		for (FriendsBo friendsBo : friendsBoList) {
-			UserBo userBoTemp = userService.getUser(friendsBo.getFriendid());
-			if (null == userBoTemp) {
-				continue;
-			}
-			FriendsVo user = new FriendsVo();
-			BeanUtils.copyProperties(friendsBo, user);
-			String friendid = friendsBo.getFriendid();
+			//当前的用户属于被申请的角色，所以查找的好友是申请的用户
+			String friendid = friendsBo.getUserid();
 			UserBo friend = userService.getUser(friendid);
 			if (friend == null) {
 				continue;
 			}
+			FriendsVo user = new FriendsVo();
+			BeanUtils.copyProperties(friendsBo, user);
 			List<TagBo> tagBos = tagService.getTagBoListByUseridAndFrinedid(userBo.getId(), friendid);
 			List<String> tagList = new ArrayList<>();
 			for (TagBo tagBo : tagBos) {
@@ -1018,9 +1017,7 @@ public class FriendsController extends BaseContorller {
 			user.setUsername(friend.getUserName());
 			user.setPicture(friend.getHeadPictureName());
 			user.setChannelId(friendsBo.getChatroomid());
-			if (StringUtils.isEmpty(friendsBo.getBackname())) {
-				user.setBackname(friend.getUserName());
-			} else {
+			if (!StringUtils.isEmpty(friendsBo.getBackname())) {
 				user.setBackname(friendsBo.getBackname());
 			}
 			userVoList.add(user);
