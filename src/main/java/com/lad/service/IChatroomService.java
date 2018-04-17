@@ -4,10 +4,7 @@ import com.lad.bo.ChatroomBo;
 import com.lad.bo.ChatroomUserBo;
 import com.mongodb.WriteResult;
 
-import java.util.Date;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.*;
 
 public interface IChatroomService extends IBaseService {
 	
@@ -244,5 +241,12 @@ public interface IChatroomService extends IBaseService {
 	 */
 	List<ChatroomBo> haveSameChatroom(String userid, String friendid);
 
-	
+
+	/**
+	 * 更新聊天室参数
+	 * @param chatRoomId
+	 * @param params
+	 * @return
+	 */
+	WriteResult updateRoomByParams(String chatRoomId, Map<String, Object> params);
 }

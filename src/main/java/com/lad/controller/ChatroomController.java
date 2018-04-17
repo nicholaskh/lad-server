@@ -4,7 +4,10 @@ import com.lad.bo.*;
 import com.lad.redis.RedisServer;
 import com.lad.service.*;
 import com.lad.util.*;
-import com.lad.vo.*;
+import com.lad.vo.ChatroomUserVo;
+import com.lad.vo.ChatroomVo;
+import com.lad.vo.ReasonVo;
+import com.lad.vo.UserBaseVo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -23,7 +26,6 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import java.lang.reflect.InvocationTargetException;
 import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -96,7 +98,7 @@ public class ChatroomController extends BaseContorller {
 	}
 
 
-	@ApiOperation("添加好友")
+	@ApiOperation("群聊添加好友")
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "userids", value = "好友userid,多个以逗号隔开", required = true, paramType = "query",
 					dataType = "string"),
@@ -1764,6 +1766,83 @@ public class ChatroomController extends BaseContorller {
 		return Constant.COM_RESP;
 	}
 
+
+
+	/**
+	 * 添加或修改公告
+	 */
+	@ApiOperation("创建临时聊天室")
+	@ApiImplicitParam(name = "tempUserid", value = "临时聊天的用户", required = true, paramType = "query",
+			dataType = "string")
+	@PostMapping("/temp-chatroom")
+	public String tempChatroom(@RequestParam String tempUserid, HttpServletRequest request, HttpServletResponse
+			response) {
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		UserBo tempUser = userService.getUser(tempUserid);
+		if (tempUser == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.USER_NULL.getIndex(),
+					ERRORCODE.USER_NULL.getReason());
+		}
+		ChatroomBo chatroomBo = chatroomService.selectByUserIdAndFriendid(userBo.getId(), tempUserid);
+		if (chatroomBo == null) {
+			chatroomBo = chatroomService.selectByUserIdAndFriendid(tempUserid, userBo.getId());
+			if (chatroomBo == null) {
+				chatroomBo = new ChatroomBo();
+				chatroomBo.setType(5);
+				chatroomBo.setName(tempUser.getUserName());
+				chatroomBo.setUserid(userBo.getId());
+				chatroomBo.setFriendid(tempUserid);
+				chatroomService.insert(chatroomBo);
+				String res = IMUtil.subscribe(0 ,chatroomBo.getId(), userBo.getId(), tempUserid);
+				if (!res.equals(IMUtil.FINISH)) {
+					chatroomService.remove(chatroomBo.getId());
+					return res;
+				}
+				HashSet<String> userChatrooms = userBo.getChatrooms();
+				HashSet<String> friendChatrooms = tempUser.getChatrooms();
+				userChatrooms.add(chatroomBo.getId());
+				friendChatrooms.add(chatroomBo.getId());
+				userService.updateChatrooms(userBo);
+				userService.updateChatrooms(tempUser);
+			}
+		}
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		map.put("channelId", chatroomBo.getId());
+		return JSONObject.fromObject(map).toString();
+	}
+
+	@ApiOperation("删除临时聊天室")
+	@ApiImplicitParam(name = "charroomid", value = "临时聊天室id", required = true, paramType = "query",
+			dataType = "string")
+	@PostMapping("/delete-temp-chatroom")
+	public String deleteTempChatroom(@RequestParam String charroomid, HttpServletRequest request, HttpServletResponse
+			response) {
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		ChatroomBo chatroomBo = chatroomService.get(charroomid);
+		if (chatroomBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(),
+					ERRORCODE.CHATROOM_NULL.getReason());
+		}
+		//4 和 5表示临时聊天室
+		if (chatroomBo.getType() == 4 || chatroomBo.getType() == 5) {
+			String result = IMUtil.disolveRoom(charroomid);
+			if (!result.equals(IMUtil.FINISH) && !result.contains("not found")) {
+				return result;
+			}
+			chatroomService.delete(charroomid);
+			//删除好友互相设置信息user
+		}
+		return Constant.COM_RESP;
+	}
 
 
 	/**

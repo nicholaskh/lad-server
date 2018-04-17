@@ -6,6 +6,7 @@ import com.mongodb.WriteResult;
 import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 
 public interface IChatroomDao extends IBaseDao {
 
@@ -155,4 +156,12 @@ public interface IChatroomDao extends IBaseDao {
 	 * @return
 	 */
 	List<ChatroomBo> haveSameChatroom(String userid, String friendid);
+
+	/**
+	 * 更新聊天室参数
+	 * @param chatRoomId
+	 * @param params
+	 * @return
+	 */
+	WriteResult updateRoomByParams(String chatRoomId, Map<String, Object> params);
 }

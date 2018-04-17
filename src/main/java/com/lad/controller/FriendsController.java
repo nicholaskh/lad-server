@@ -193,6 +193,13 @@ public class FriendsController extends BaseContorller {
 			chatroomBo.setUserid(user.getId());
 			chatroomBo.setFriendid(friend.getId());
 			chatroomService.insert(chatroomBo);
+		} else {
+			//有可能之前创建了临时的聊天室
+			if(chatroomBo.getType() != Constant.ROOM_SINGLE) {
+			  	Map<String, Object> params = new HashMap<>();
+			  	params.put("type", 1);
+			  	chatroomService.updateRoomByParams(chatroomBo.getId(), params);
+			}
 		}
 		HashSet<String> userChatrooms = user.getChatrooms();
 		HashSet<String> friendChatrooms = friend.getChatrooms();

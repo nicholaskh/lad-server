@@ -9,10 +9,7 @@ import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.*;
 
 @Service("chatroomService")
 public class ChatroomServiceImpl implements IChatroomService {
@@ -198,5 +195,8 @@ public class ChatroomServiceImpl implements IChatroomService {
 	}
 
 
-
+	@Override
+	public WriteResult updateRoomByParams(String chatRoomId, Map<String, Object> params) {
+		return chatroomDao.updateRoomByParams(chatRoomId, params);
+	}
 }

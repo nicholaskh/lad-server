@@ -22,10 +22,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
-import java.util.Date;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.*;
 
 @Repository("chatroomDao")
 public class ChatroomDaoImpl implements IChatroomDao {
@@ -317,5 +314,16 @@ public class ChatroomDaoImpl implements IChatroomDao {
 		query.addCriteria(new Criteria("users").all(users).and("type").ne(Constant.ROOM_SINGLE).and("deleted").is
 				(Constant.ACTIVITY));
 		return mongoTemplate.find(query, ChatroomBo.class);
+	}
+
+	public WriteResult updateRoomByParams(String chatRoomId, Map<String, Object> params){
+		Query query = new Query();
+		query.addCriteria(new Criteria("_id").is(chatRoomId).and("deleted").is(0));
+		if (params != null) {
+			Update update = new Update();
+			params.forEach((key, value) -> update.set(key, value));
+			return mongoTemplate.updateFirst(query, update, ChatroomBo.class);
+		}
+		return null;
 	}
 }
