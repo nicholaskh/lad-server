@@ -7,11 +7,14 @@ import lombok.Setter;
  * 功能描述：
  * Copyright: Copyright (c) 2018
  * Version: 1.0
- * Time:2018/1/16
+ * Time:2018/4/18
  */
 @Getter
 @Setter
-public class FriendDisVo extends FriendsVo {
+public class FriendApplyVo extends FriendsVo {
+    private String phone;
 
-    private double distance;
+    private String birthDay;
+
+    private int level;
 }

@@ -3,10 +3,7 @@ package com.lad.controller;
 import com.lad.bo.*;
 import com.lad.service.*;
 import com.lad.util.*;
-import com.lad.vo.FriendDisVo;
-import com.lad.vo.FriendsVo;
-import com.lad.vo.UserBaseVo;
-import com.lad.vo.UserVoFriends;
+import com.lad.vo.*;
 import com.pushd.ImAssistant;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -1004,7 +1001,7 @@ public class FriendsController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		List<FriendsBo> friendsBoList = friendsService.findAllApplyList(userBo.getId(), page, limit);
-		List<FriendsVo> userVoList = new LinkedList<FriendsVo>();
+		List<FriendApplyVo> userVoList = new LinkedList<>();
 		for (FriendsBo friendsBo : friendsBoList) {
 			//当前的用户属于被申请的角色，所以查找的好友是申请的用户
 			String friendid = friendsBo.getUserid();
@@ -1012,7 +1009,7 @@ public class FriendsController extends BaseContorller {
 			if (friend == null) {
 				continue;
 			}
-			FriendsVo user = new FriendsVo();
+			FriendApplyVo user = new FriendApplyVo();
 			BeanUtils.copyProperties(friendsBo, user);
 			List<TagBo> tagBos = tagService.getTagBoListByUseridAndFrinedid(userBo.getId(), friendid);
 			List<String> tagList = new ArrayList<>();
@@ -1024,6 +1021,9 @@ public class FriendsController extends BaseContorller {
 			user.setUsername(friend.getUserName());
 			user.setPicture(friend.getHeadPictureName());
 			user.setChannelId(friendsBo.getChatroomid());
+			user.setLevel(friend.getLevel());
+			user.setBirthDay(friend.getBirthDay());
+			user.setPhone(friend.getPhone());
 			if (!StringUtils.isEmpty(friendsBo.getBackname())) {
 				user.setBackname(friendsBo.getBackname());
 			}
