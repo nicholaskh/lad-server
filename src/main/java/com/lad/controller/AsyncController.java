@@ -6,12 +6,13 @@ import com.lad.service.*;
 import com.lad.util.CommonUtil;
 import com.lad.util.Constant;
 import com.lad.util.IMUtil;
+import com.lad.util.JPushUtil;
 import net.sf.json.JSONObject;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.redisson.api.RLock;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Component;
@@ -27,7 +28,7 @@ import java.util.concurrent.TimeUnit;
  */
 @EnableAsync
 @Component
-public class AsyncController {
+public class AsyncController extends BaseContorller {
 
     private static Logger logger = LogManager.getLogger(ChatroomController.class);
 
@@ -75,6 +76,7 @@ public class AsyncController {
 
     @Autowired
     public IChatroomService chatroomService;
+
     @Autowired
     public IInforService inforService;
 
@@ -87,6 +89,7 @@ public class AsyncController {
 
 
     /**
+     * 聊天室
      * 更新用户的聊天室的方法
      * @param userid
      * @param chatroomid
@@ -131,6 +134,7 @@ public class AsyncController {
 
 
     /**
+     * 圈子
      * 更新用户阅读数据信息
      * @param noticeid
      * @param userid
@@ -159,6 +163,7 @@ public class AsyncController {
     }
 
     /**
+     * 圈子帖子
      * 批量更新用户阅读数据信息
      * @param noticeid
      * @param userid
@@ -316,6 +321,7 @@ public class AsyncController {
 
 
     /**
+     * 资讯
      * 用户更新自己分类访问记录
      * @param module
      * @param type
@@ -371,6 +377,7 @@ public class AsyncController {
     }
 
     /**
+     * 资讯
      * 删除180天前的浏览分类
      * @param readBo
      */
@@ -404,6 +411,7 @@ public class AsyncController {
     }
 
     /**
+     * 资讯
      * 更新单条咨询访问信息记录
      * @param inforid
      * @param module
@@ -469,7 +477,7 @@ public class AsyncController {
 
 
     /**
-     * 更新
+     * 资讯
      * @param inforid
      * @param module
      * @param type
@@ -531,6 +539,7 @@ public class AsyncController {
     }
 
     /**
+     * 资讯
      * 更新资讯集合访问
      * @param module
      * @param className
@@ -553,6 +562,7 @@ public class AsyncController {
     }
 
     /**
+     * 资讯
      * 更新个人阅读记录
      * @param userid
      * @param inforid
@@ -588,6 +598,7 @@ public class AsyncController {
 
 
     /**
+     * 搜索
      * 搜索记录添加
      * @param keyword
      */
@@ -611,4 +622,318 @@ public class AsyncController {
             lock.unlock();
         }
     }
+
+
+
+    /**
+     * 圈子信息推送
+     * 推送给好友
+     * @param path
+     * @param accepts
+     */
+    @Async
+    public void pushToFriends(String circleName, String path, List<String> accepts){
+        for (String userid : accepts) {
+            UserBo userBo = userService.getUser(userid);
+            if (userBo == null) {
+                continue;
+            }
+            List<FriendsBo> friendsBos = friendsService.getFriendByUserid(userid);
+            for (FriendsBo friendsBo : friendsBos) {
+                UserBo friend = userService.getUser(friendsBo.getFriendid());
+                if (friend == null) {
+                    continue;
+                }
+                String name = "";
+                FriendsBo bo = friendsService.getFriendByIdAndVisitorIdAgree(friendsBo.getFriendid(), userid);
+                if (bo != null) {
+                    name = bo.getBackname();
+                }
+                if  (StringUtils.isEmpty(name)) {
+                    name = userBo.getUserName();
+                }
+                String content = String.format("“%s”已申请加入圈子【%s】，你也快去看看吧",name, circleName);
+                JPushUtil.push("圈子通知", content, path, friend.getId());
+                addMessage(messageService, path, content, "圈子通知", friend.getId());
+            }
+        }
+    }
+
+
+    /**
+     * 帖子更新阅读信息
+     * @param circleid
+     * @param num
+     */
+    @Async
+    public void updateCircieNoteSize(String circleid, int num){
+        RLock lock = redisServer.getRLock(circleid + "noteSize");
+        try {
+            lock.lock(2,TimeUnit.SECONDS);
+            circleService.updateNotes(circleid, num);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    /**
+     * 帖子阅读
+     * 更新红人信息
+     * @param userBo
+     * @param noteBo
+     * @param circleid
+     * @param currentDate
+     */
+    @Async
+    public void updateRedStar(UserBo userBo, NoteBo noteBo, String circleid, Date currentDate){
+        RedstarBo redstarBo = commentService.findRedstarBo(userBo.getId(), circleid);
+        int curretWeekNo = CommonUtil.getWeekOfYear(currentDate);
+        int year = CommonUtil.getYear(currentDate);
+        if (redstarBo == null) {
+            redstarBo = setRedstarBo(userBo.getId(), circleid, curretWeekNo, year);
+            commentService.insertRedstar(redstarBo);
+        }
+        //判断贴的作者是不是自己
+        boolean isNotSelf = !userBo.getId().equals(noteBo.getCreateuid());
+        boolean isNoteUserCurrWeek = true;
+        //如果帖子作者不是自己
+        if (isNotSelf) {
+            //帖子作者没有红人数据信息，则添加
+            RedstarBo noteRedstarBo = commentService.findRedstarBo(noteBo.getCreateuid(), circleid);
+            if (noteRedstarBo == null) {
+                noteRedstarBo = setRedstarBo(noteBo.getCreateuid(), circleid, curretWeekNo, year);
+                commentService.insertRedstar(noteRedstarBo);
+            } else {
+                //判断帖子作者周榜是不是当前周，是则添加数据，不是则更新周榜数据
+                isNoteUserCurrWeek = (year == noteRedstarBo.getYear() && curretWeekNo == noteRedstarBo.getWeekNo());
+            }
+        }
+        //判断自己周榜是不是同一周，是则添加数据，不是则更新周榜数据
+        boolean isCurrentWeek = (year == redstarBo.getYear() && curretWeekNo == redstarBo.getWeekNo());
+        //更新自己或他人红人评论数量，需要加锁，保证数据准确
+        RLock lock = redisServer.getRLock(Constant.COMOMENT_LOCK);
+        try {
+            lock.lock(5, TimeUnit.SECONDS);
+            //更新自己的红人信息
+            if (isCurrentWeek) {
+                commentService.addRadstarCount(userBo.getId(), circleid);
+            } else {
+                commentService.updateRedWeekByUser(userBo.getId(), curretWeekNo, year);
+            }
+            if (isNotSelf) {
+                //更新帖子作者的红人信息
+                if (isNoteUserCurrWeek) {
+                    commentService.addRadstarCount(noteBo.getCreateuid(), circleid);
+                } else {
+                    commentService.updateRedWeekByUser(noteBo.getCreateuid(), curretWeekNo, year);
+                }
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    private RedstarBo setRedstarBo(String userid, String circleid, int weekNo, int year){
+        RedstarBo redstarBo = new RedstarBo();
+        redstarBo.setUserid(userid);
+        redstarBo.setCommentTotal((long) 1);
+        redstarBo.setCommentWeek((long) 1);
+        redstarBo.setWeekNo(weekNo);
+        redstarBo.setCircleid(circleid);
+        redstarBo.setYear(year);
+        return redstarBo;
+    }
+
+    /**
+     * 帖子点赞
+     * @param commentid
+     * @param num
+     */
+    @Async
+    public void updateCommentThumbsup(String commentid, int num){
+        if (num != 0){
+            RLock lock = redisServer.getRLock(commentid);
+            try {
+                lock.lock(1, TimeUnit.SECONDS);
+                commentService.updateThumpsubNum(commentid, num);
+            } finally {
+                lock.unlock();
+            }
+        }
+        if (num > 0) {
+            CommentBo commentBo = commentService.findById(commentid);
+            if (commentBo != null &&  commentBo.getType() == Constant.NOTE_TYPE) {
+                NoteBo noteBo = noteService.selectById(commentBo.getNoteid());
+                if (noteBo != null) {
+                    updateCircieUnReadNum(commentBo.getCreateuid(), noteBo.getCircleId());
+                }
+            }
+        }
+    }
+
+    /**
+     * 帖子 未读信息
+     * @param userid
+     * @param cirlceid
+     */
+    @Async
+    public void updateCircieUnReadNum(String userid, String cirlceid){
+        RLock lock = redisServer.getRLock(userid + "UnReadNumLock");
+        try{
+            lock.lock(2, TimeUnit.SECONDS);
+            ReasonBo reasonBo = reasonService.findByUserAndCircle(userid, cirlceid, Constant.ADD_AGREE);
+            if (reasonBo == null) {
+                reasonBo = new ReasonBo();
+                reasonBo.setCircleid(cirlceid);
+                reasonBo.setCreateuid(userid);
+                reasonBo.setStatus(Constant.ADD_AGREE);
+                reasonBo.setUnReadNum(1);
+                reasonService.insert(reasonBo);
+            } else {
+                reasonService.updateUnReadNum(userid, cirlceid, 1);
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
+
+
+    /**
+     * 圈子未读信息数量添加
+     * @param pushUserid
+     * @param circleid
+     */
+    @Async
+    public void updateCircieNoteUnReadNum(String pushUserid, String circleid){
+        CircleBo circleBo = circleService.selectById(circleid);
+        if (circleBo == null) {
+            return;
+        }
+        HashSet<String> users = circleBo.getUsers();
+        if (users.contains(pushUserid)) {
+            users.remove(pushUserid);
+        }
+        logger.info(" circle {} note unRead update, users {}", circleid, users);
+        RLock lock = redisServer.getRLock(circleid + "UnReadNumLock");
+        try{
+            lock.lock(3, TimeUnit.SECONDS);
+            reasonService.updateUnReadNum(users, circleBo.getId());
+        } finally {
+            lock.unlock();
+        }
+    }
+
+
+    /**
+     * 聚会
+     * 推送给好友
+     * @param userid
+     * @param content
+     * @param path
+     */
+    @Async
+    public void pushFriends(String userid, String content, String path, HashSet<String> circleUsers){
+        List<FriendsBo> friendsBos = friendsService.getFriendByUserid(userid);
+        if (!CommonUtil.isEmpty(friendsBos)) {
+            String[] friendids = new String[friendsBos.size()];
+            int i = 0;
+            for (FriendsBo friendsBo : friendsBos) {
+                //如果好友同时是圈友，则不在推送
+                if (circleUsers.contains(friendsBo.getId())) {
+                    continue;
+                }
+                friendids[i++] = friendsBo.getId();
+            }
+            if (i > 0) {
+                JPushUtil.push("聚会通知", content, path, friendids);
+                addMessage(messageService, path, content, "聚会通知", userid, friendids);
+            }
+        }
+    }
+
+    /**
+     * 聚会数据更新
+     * @param partyid
+     * @param num
+     */
+    @Async
+    public void updatePartyCollectNum(String partyid, int num){
+        RLock lock = redisServer.getRLock(partyid + "partyCollect");
+        try {
+            lock.lock(2, TimeUnit.SECONDS);
+            partyService.updateCollect(partyid, num);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+
+    /**
+     * 聚会
+     * 更新红人信息
+     * @param userBo
+     * @param partyBo
+     * @param currentDate
+     */
+    @Async
+    public void updateRedStar(UserBo userBo, PartyBo partyBo, Date currentDate){
+        String circleid = partyBo.getCircleid();
+        RedstarBo redstarBo = commentService.findRedstarBo(userBo.getId(), circleid);
+        int curretWeekNo = CommonUtil.getWeekOfYear(currentDate);
+        int year = CommonUtil.getYear(currentDate);
+        if (redstarBo == null) {
+            redstarBo = new RedstarBo();
+            redstarBo.setUserid(userBo.getId());
+            redstarBo.setCommentTotal((long) 1);
+            redstarBo.setCommentWeek((long) 1);
+            redstarBo.setWeekNo(curretWeekNo);
+            redstarBo.setCircleid(circleid);
+            redstarBo.setYear(year);
+            commentService.insertRedstar(redstarBo);
+        }
+        boolean isNotSelf = !userBo.getId().equals(partyBo.getCreateuid());
+        boolean isNoteUserCurrWeek = true;
+        //如果帖子作者不是自己
+        if (isNotSelf) {
+            //帖子作者没有红人数据信息，则添加
+            RedstarBo noteRedstarBo = commentService.findRedstarBo(partyBo.getCreateuid(), circleid);
+            if (noteRedstarBo == null) {
+                noteRedstarBo = new RedstarBo();
+                noteRedstarBo.setUserid(userBo.getId());
+                noteRedstarBo.setCommentTotal((long) 1);
+                noteRedstarBo.setCommentWeek((long) 1);
+                noteRedstarBo.setWeekNo(curretWeekNo);
+                noteRedstarBo.setCircleid(partyBo.getCircleid());
+                noteRedstarBo.setYear(year);
+                commentService.insertRedstar(noteRedstarBo);
+            } else {
+                //判断帖子作者周榜是不是当前周，是则添加数据，不是则更新周榜数据
+                isNoteUserCurrWeek = (year == noteRedstarBo.getYear() && curretWeekNo == noteRedstarBo.getWeekNo());
+            }
+        }
+        //判断自己周榜是不是同一周，是则添加数据，不是则更新周榜数据
+        boolean isCurrentWeek = (year == redstarBo.getYear() && curretWeekNo == redstarBo.getWeekNo());
+        //更新自己或他人红人评论数量，需要加锁，保证数据准确
+        RLock lock = redisServer.getRLock(Constant.COMOMENT_LOCK);
+        try {
+            lock.lock(5, TimeUnit.SECONDS);
+            //更新自己的红人信息
+            if (isCurrentWeek) {
+                commentService.addRadstarCount(userBo.getId(), circleid);
+            } else {
+                commentService.updateRedWeekByUser(userBo.getId(), curretWeekNo, year);
+            }
+            if (isNotSelf) {
+                //更新聚会作者的红人信息
+                if (isNoteUserCurrWeek) {
+                    commentService.addRadstarCount(partyBo.getCreateuid(), circleid);
+                } else {
+                    commentService.updateRedWeekByUser(partyBo.getCreateuid(), curretWeekNo, year);
+                }
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
+
 }

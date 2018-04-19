@@ -16,9 +16,10 @@ import org.apache.logging.log4j.Logger;
 import org.redisson.api.RLock;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.EnableAsync;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
@@ -36,7 +37,6 @@ import java.util.concurrent.TimeUnit;
  * Time:2017/9/7
  */
 @Api(value = "PartyController", description = "圈子聚会相关接口")
-@EnableAsync
 @RestController
 @RequestMapping("/party")
 public class PartyController extends BaseContorller {
@@ -71,13 +71,13 @@ public class PartyController extends BaseContorller {
     private ICollectService collectService;
 
     @Autowired
-    private IFeedbackService feedbackService;
-
-    @Autowired
     private IFriendsService friendsService;
 
     @Autowired
     private IMessageService messageService;
+
+    @Autowired
+    private AsyncController asyncController;
 
     private String titlePush = "聚会通知";
 
@@ -151,7 +151,7 @@ public class PartyController extends BaseContorller {
             addMessage(messageService, path, content, titlePush, userId, userids);
         }
         if (circleBo.isOpen()) {
-            pushFriends(userId, content, path, circleUsers);
+           asyncController.pushFriends(userId, content, path, circleUsers);
         }
         //用户等级
         userService.addUserLevel(userBo.getId(), 1, Constant.PARTY_TYPE, 0);
@@ -165,31 +165,7 @@ public class PartyController extends BaseContorller {
         return JSONObject.fromObject(map).toString();
     }
 
-    /**
-     * 推送给好友
-     * @param userid
-     * @param content
-     * @param path
-     */
-    @Async
-    private void pushFriends(String userid, String content, String path, HashSet<String> circleUsers){
-        List<FriendsBo> friendsBos = friendsService.getFriendByUserid(userid);
-        if (!CommonUtil.isEmpty(friendsBos)) {
-            String[] friendids = new String[friendsBos.size()];
-            int i = 0;
-            for (FriendsBo friendsBo : friendsBos) {
-                //如果好友同时是圈友，则不在推送
-                if (circleUsers.contains(friendsBo.getId())) {
-                    continue;
-                }
-                friendids[i++] = friendsBo.getId();
-            }
-            if (i > 0) {
-                JPushUtil.push(titlePush, content, path, friendids);
-                addMessage(messageService, path, content, titlePush, userid, friendids);
-            }
-        }
-    }
+
 
 
     /**
@@ -726,7 +702,6 @@ public class PartyController extends BaseContorller {
     }
 
 
-    @Async
     private void updatePartyStatus(String partyid, int status){
         partyService.updatePartyStatus(partyid, status);
         //聚会结束,删除所有临时聊天
@@ -791,9 +766,7 @@ public class PartyController extends BaseContorller {
     /**
      * 更新用户聊天室列表
      */
-    @Async
     private void updateUserChatroom(ChatroomBo chatroomBo, String[] useridArr){
-
         LinkedHashSet<String> users = chatroomBo.getUsers();
         for (String userid : useridArr) {
             UserBo user = userService.getUser(userid);
@@ -812,7 +785,6 @@ public class PartyController extends BaseContorller {
         }
         chatroomBo.setUsers(users);
         chatroomService.updateUsers(chatroomBo);
-
     }
 
 
@@ -886,7 +858,7 @@ public class PartyController extends BaseContorller {
         } else {
             partyService.collectParty(partyid, userBo.getId(), true);
         }
-        updatePartyCollectNum(partyid, 1);
+        asyncController.updatePartyCollectNum(partyid, 1);
         Map<String, Object> map = new HashMap<>();
         map.put("ret", 0);
         map.put("col-time", CommonUtil.time2str(collectBo.getCreateTime()));
@@ -920,7 +892,7 @@ public class PartyController extends BaseContorller {
         } else {
             if(collectBo.getDeleted() == 0) {
                 collectService.updateCollectDelete(collectBo.getId(), Constant.DELETED);
-                updatePartyCollectNum(partyid, -1);
+                asyncController.updatePartyCollectNum(partyid, -1);
             }
             partyService.collectParty(partyid, userBo.getId(), false);
         }
@@ -1062,76 +1034,11 @@ public class PartyController extends BaseContorller {
             partyService.updateShare(partyBo.getId(), 1);
             updateDynamicNums(userId, 1, dynamicService, redisServer);
         }
-        updateRedStar(userBo, partyBo, new Date());
+        asyncController.updateRedStar(userBo, partyBo, new Date());
         return Constant.COM_RESP;
     }
 
-    /**
-     * 更新红人信息
-     * @param userBo
-     * @param partyBo
-     * @param currentDate
-     */
-    @Async
-    private void updateRedStar(UserBo userBo, PartyBo partyBo, Date currentDate){
-        String circleid = partyBo.getCircleid();
-        RedstarBo redstarBo = commentService.findRedstarBo(userBo.getId(), circleid);
-        int curretWeekNo = CommonUtil.getWeekOfYear(currentDate);
-        int year = CommonUtil.getYear(currentDate);
-        if (redstarBo == null) {
-            redstarBo = new RedstarBo();
-            redstarBo.setUserid(userBo.getId());
-            redstarBo.setCommentTotal((long) 1);
-            redstarBo.setCommentWeek((long) 1);
-            redstarBo.setWeekNo(curretWeekNo);
-            redstarBo.setCircleid(circleid);
-            redstarBo.setYear(year);
-            commentService.insertRedstar(redstarBo);
-        }
-        boolean isNotSelf = !userBo.getId().equals(partyBo.getCreateuid());
-        boolean isNoteUserCurrWeek = true;
-        //如果帖子作者不是自己
-        if (isNotSelf) {
-            //帖子作者没有红人数据信息，则添加
-            RedstarBo noteRedstarBo = commentService.findRedstarBo(partyBo.getCreateuid(), circleid);
-            if (noteRedstarBo == null) {
-                noteRedstarBo = new RedstarBo();
-                noteRedstarBo.setUserid(userBo.getId());
-                noteRedstarBo.setCommentTotal((long) 1);
-                noteRedstarBo.setCommentWeek((long) 1);
-                noteRedstarBo.setWeekNo(curretWeekNo);
-                noteRedstarBo.setCircleid(partyBo.getCircleid());
-                noteRedstarBo.setYear(year);
-                commentService.insertRedstar(noteRedstarBo);
-            } else {
-                //判断帖子作者周榜是不是当前周，是则添加数据，不是则更新周榜数据
-                isNoteUserCurrWeek = (year == noteRedstarBo.getYear() && curretWeekNo == noteRedstarBo.getWeekNo());
-            }
-        }
-        //判断自己周榜是不是同一周，是则添加数据，不是则更新周榜数据
-        boolean isCurrentWeek = (year == redstarBo.getYear() && curretWeekNo == redstarBo.getWeekNo());
-        //更新自己或他人红人评论数量，需要加锁，保证数据准确
-        RLock lock = redisServer.getRLock(Constant.COMOMENT_LOCK);
-        try {
-            lock.lock(5, TimeUnit.SECONDS);
-            //更新自己的红人信息
-            if (isCurrentWeek) {
-                commentService.addRadstarCount(userBo.getId(), circleid);
-            } else {
-                commentService.updateRedWeekByUser(userBo.getId(), curretWeekNo, year);
-            }
-            if (isNotSelf) {
-                //更新聚会作者的红人信息
-                if (isNoteUserCurrWeek) {
-                    commentService.addRadstarCount(partyBo.getCreateuid(), circleid);
-                } else {
-                    commentService.updateRedWeekByUser(partyBo.getCreateuid(), curretWeekNo, year);
-                }
-            }
-        } finally {
-            lock.unlock();
-        }
-    }
+
 
     /**
      * 获取评论
@@ -1404,16 +1311,7 @@ public class PartyController extends BaseContorller {
         return "";
     }
 
-    @Async
-    private void updatePartyCollectNum(String partyid, int num){
-        RLock lock = redisServer.getRLock(partyid + "partyCollect");
-        try {
-            lock.lock(2, TimeUnit.SECONDS);
-            partyService.updateCollect(partyid, num);
-        } finally {
-            lock.unlock();
-        }
-    }
+
 
     /**
      * 复制参数 ,将old参数都复制到new上，如果new不存在，则复制
@@ -1705,7 +1603,6 @@ public class PartyController extends BaseContorller {
      * 需要和聚会展示最新信息
      * @param partyBo
      */
-    @Async
     private void addCircleShow(PartyBo partyBo){
         CircleShowBo circleShowBo = new CircleShowBo();
         circleShowBo.setCircleid(partyBo.getCircleid());
@@ -1719,7 +1616,6 @@ public class PartyController extends BaseContorller {
      * 删除展示信息
      * @param partyid
      */
-    @Async
     private void deleteShouw(String partyid){
         circleService.deleteShow(partyid);
     }

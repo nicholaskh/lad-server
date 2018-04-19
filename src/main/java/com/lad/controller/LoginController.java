@@ -1,6 +1,5 @@
 package com.lad.controller;
 
-import com.alibaba.fastjson.JSON;
 import com.lad.bo.HomepageBo;
 import com.lad.bo.UserBo;
 import com.lad.redis.RedisServer;
@@ -17,15 +16,12 @@ import net.sf.json.JSONObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import java.io.IOException;
-import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.HashMap;

@@ -14,13 +14,9 @@ import io.swagger.annotations.ApiOperation;
 import net.sf.json.JSONObject;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.EnableAsync;
-import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -35,7 +31,6 @@ import java.util.*;
  * Time:2017/9/23
  */
 @Api("动态信息相关接口")
-@EnableAsync
 @RestController
 @RequestMapping("/dynamic")
 public class DynamicController extends BaseContorller {
@@ -427,7 +422,6 @@ public class DynamicController extends BaseContorller {
      * @param userid
      * @param friendid
      */
-    @Async
     private void addVisitHis(String userid, String friendid){
         UserVisitBo visitBo = new UserVisitBo();
         visitBo.setVisitTime(new Date());

@@ -15,8 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.geo.GeoResult;
 import org.springframework.data.geo.GeoResults;
 import org.springframework.data.geo.Point;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -28,7 +26,6 @@ import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.*;
 
-@EnableAsync
 @RestController
 @RequestMapping("friends")
 public class FriendsController extends BaseContorller {
@@ -667,7 +664,6 @@ public class FriendsController extends BaseContorller {
 	 * 添加聊天室用户
 	 * @param chatroomid
 	 */
-	@Async
 	private void addChatroomUser(UserBo userBo, String chatroomid){
 		ChatroomUserBo chatroomUserBo = chatroomService.findChatUserByUserAndRoomid(userBo.getId(), chatroomid);
 		if (chatroomUserBo == null) {
@@ -1016,6 +1012,8 @@ public class FriendsController extends BaseContorller {
 			for (TagBo tagBo : tagBos) {
 				tagList.add(tagBo.getName());
 			}
+			user.setFriendid(friendid);
+			user.setUserid(userBo.getId());
 			user.setSex(friend.getSex());
 			user.setTag(tagList);
 			user.setUsername(friend.getUserName());
@@ -1023,7 +1021,6 @@ public class FriendsController extends BaseContorller {
 			user.setChannelId(friendsBo.getChatroomid());
 			user.setLevel(friend.getLevel());
 			user.setBirthDay(friend.getBirthDay());
-			user.setPhone(friend.getPhone());
 			if (!StringUtils.isEmpty(friendsBo.getBackname())) {
 				user.setBackname(friendsBo.getBackname());
 			}

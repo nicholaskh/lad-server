@@ -20,8 +20,6 @@ import org.apache.logging.log4j.Logger;
 import org.redisson.api.RLock;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,7 +35,6 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Api(value = "NoteController", description = "帖子相关接口")
-@EnableAsync
 @RestController
 @RequestMapping("note")
 public class NoteController extends BaseContorller {
@@ -79,6 +76,9 @@ public class NoteController extends BaseContorller {
 
 	@Autowired
 	private IMessageService messageService;
+
+	@Autowired
+	private AsyncController asyncController;
 
 
 	private String pushTitle = "互动通知";
@@ -150,7 +150,7 @@ public class NoteController extends BaseContorller {
 			addMessage(messageService, path, content, pushTitle, noteBo.getId(), useridArr);
 		}
 		addCircleShow(noteBo);
-		updateCircieNoteSize(circleid, 1);
+		asyncController.updateCircieNoteSize(circleid, 1);
 		if (noteBo.isAsync()) {
 			DynamicBo dynamicBo = new DynamicBo();
 			dynamicBo.setTitle(noteBo.getSubject());
@@ -179,7 +179,7 @@ public class NoteController extends BaseContorller {
 		userService.addUserLevel(userBo.getId(), 1, Constant.LEVEL_NOTE, 0);
 		updateCircleHot(circleService, redisServer, circleid, 1, Constant.CIRCLE_NOTE);
 		updateCircleHot(circleService, redisServer, circleid, 1, Constant.CIRCLE_NOTE_VISIT);
-		updateCircieNoteUnReadNum(userId, circleid);
+		asyncController.updateCircieNoteUnReadNum(userId, circleid);
 		NoteVo noteVo = new NoteVo();
 		boToVo(noteBo, noteVo, userBo, userId);
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -188,16 +188,7 @@ public class NoteController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	@Async
-	private void updateCircieNoteSize(String circleid, int num){
-		RLock lock = redisServer.getRLock(circleid + "noteSize");
-		try {
-			lock.lock(2,TimeUnit.SECONDS);
-			circleService.updateNotes(circleid, num);
-		} finally {
-			lock.unlock();
-		}
-	}
+
 
 	@ApiOperation("更新帖子图片")
 	@ApiImplicitParams({
@@ -275,7 +266,7 @@ public class NoteController extends BaseContorller {
 			updateCount(noteid, Constant.THUMPSUB_NUM, 1);
 		}
 		String content = "有人刚刚赞了你的帖子，快去看看吧!";
-		updateCircieUnReadNum(noteBo.getCreateuid(), noteBo.getCircleId());
+		asyncController.updateCircieUnReadNum(noteBo.getCreateuid(), noteBo.getCircleId());
 		String path = "/note/note-info.do?noteid=" + noteid;
 		JPushUtil.pushMessage(pushTitle, content, path,  noteBo.getCreateuid());
 		addMessage(messageService, path, content, pushTitle, noteid, 2, thumbsupBo.getId(),
@@ -520,8 +511,8 @@ public class NoteController extends BaseContorller {
 		updateCount(noteid, Constant.COMMENT_NUM, 1);
 		userService.addUserLevel(userBo.getId(),1, Constant.LEVEL_COMMENT, 0);
 		updateCircleHot(circleService, redisServer, noteBo.getCircleId(), 1, Constant.CIRCLE_COMMENT);
-		updateRedStar(userBo, noteBo, noteBo.getCircleId(), currentDate);
-		updateCircieUnReadNum(noteBo.getCreateuid(), noteBo.getCircleId());
+		asyncController.updateRedStar(userBo, noteBo, noteBo.getCircleId(), currentDate);
+		asyncController.updateCircieUnReadNum(noteBo.getCreateuid(), noteBo.getCircleId());
 		String path = "/note/note-info.do?noteid=" + noteid;
 		String content = "有人刚刚评论了你的帖子，快去看看吧!";
 		JPushUtil.pushMessage(pushTitle, content, path,  noteBo.getCreateuid());
@@ -530,7 +521,7 @@ public class NoteController extends BaseContorller {
 		if (!StringUtils.isEmpty(parentid)) {
 			CommentBo comment = commentService.findById(parentid);
 			if (comment != null) {
-				updateCircieUnReadNum(comment.getCreateuid(), noteBo.getCircleId());
+				asyncController.updateCircieUnReadNum(comment.getCreateuid(), noteBo.getCircleId());
 				content = "有人刚刚回复了你的评论，快去看看吧!";
 				JPushUtil.pushMessage(pushTitle, content, path,  comment.getCreateuid());
 				addMessage(messageService, path, content, pushTitle, noteid, 1, comment.getId(),
@@ -543,61 +534,7 @@ public class NoteController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	/**
-	 * 更新红人信息
-	 * @param userBo
-	 * @param noteBo
-	 * @param circleid
-	 * @param currentDate
-	 */
-	@Async
-	private void updateRedStar(UserBo userBo, NoteBo noteBo, String circleid, Date currentDate){
-		RedstarBo redstarBo = commentService.findRedstarBo(userBo.getId(), circleid);
-		int curretWeekNo = CommonUtil.getWeekOfYear(currentDate);
-		int year = CommonUtil.getYear(currentDate);
-		if (redstarBo == null) {
-			redstarBo = setRedstarBo(userBo.getId(), circleid, curretWeekNo, year);
-			commentService.insertRedstar(redstarBo);
-		}
-		//判断贴的作者是不是自己
-		boolean isNotSelf = !userBo.getId().equals(noteBo.getCreateuid());
-		boolean isNoteUserCurrWeek = true;
-		//如果帖子作者不是自己
-		if (isNotSelf) {
-			//帖子作者没有红人数据信息，则添加
-			RedstarBo noteRedstarBo = commentService.findRedstarBo(noteBo.getCreateuid(), circleid);
-			if (noteRedstarBo == null) {
-				noteRedstarBo = setRedstarBo(noteBo.getCreateuid(), circleid, curretWeekNo, year);
-				commentService.insertRedstar(noteRedstarBo);
-			} else {
-				//判断帖子作者周榜是不是当前周，是则添加数据，不是则更新周榜数据
-				isNoteUserCurrWeek = (year == noteRedstarBo.getYear() && curretWeekNo == noteRedstarBo.getWeekNo());
-			}
-		}
-		//判断自己周榜是不是同一周，是则添加数据，不是则更新周榜数据
-		boolean isCurrentWeek = (year == redstarBo.getYear() && curretWeekNo == redstarBo.getWeekNo());
-		//更新自己或他人红人评论数量，需要加锁，保证数据准确
-		RLock lock = redisServer.getRLock(Constant.COMOMENT_LOCK);
-		try {
-			lock.lock(5, TimeUnit.SECONDS);
-			//更新自己的红人信息
-			if (isCurrentWeek) {
-				commentService.addRadstarCount(userBo.getId(), circleid);
-			} else {
-				commentService.updateRedWeekByUser(userBo.getId(), curretWeekNo, year);
-			}
-			if (isNotSelf) {
-				//更新帖子作者的红人信息
-				if (isNoteUserCurrWeek) {
-					commentService.addRadstarCount(noteBo.getCreateuid(), circleid);
-				} else {
-					commentService.updateRedWeekByUser(noteBo.getCreateuid(), curretWeekNo, year);
-				}
-			}
-		} finally {
-			lock.unlock();
-		}
-	}
+
 
 
 	/**
@@ -815,36 +752,10 @@ public class NoteController extends BaseContorller {
 				num--;
 			}
 		}
-		updateCommentThumbsup(commentid, num);
+		asyncController.updateCommentThumbsup(commentid, num);
 		return Constant.COM_RESP;
 	}
 
-	/**
-	 * 点赞
-	 * @param commentid
-	 * @param num
-	 */
-	@Async
-	private void updateCommentThumbsup(String commentid, int num){
-		if (num != 0){
-			RLock lock = redisServer.getRLock(commentid);
-			try {
-				lock.lock(1, TimeUnit.SECONDS);
-				commentService.updateThumpsubNum(commentid, num);
-			} finally {
-				lock.unlock();
-			}
-		}
-		if (num > 0) {
-			CommentBo commentBo = commentService.findById(commentid);
-			if (commentBo != null &&  commentBo.getType() == Constant.NOTE_TYPE) {
-				NoteBo noteBo = noteService.selectById(commentBo.getNoteid());
-				if (noteBo != null) {
-					updateCircieUnReadNum(commentBo.getCreateuid(), noteBo.getCircleId());
-				}
-			}
-		}
-	}
 
 
 	/**
@@ -971,7 +882,7 @@ public class NoteController extends BaseContorller {
 				}
 			}
 			if (notes != 0) {
-				updateCircieNoteSize(circleid, -notes);
+				asyncController.updateCircieNoteSize(circleid, -notes);
 			}
 		}  else {
 			return CommonUtil.toErrorResult(
@@ -1007,7 +918,7 @@ public class NoteController extends BaseContorller {
 					noteService.deleteNote(id,userBo.getId());
 					commentService.deleteByNote(id);
 					messageService.deleteMessageByNoteid(id, -1);
-					updateCircieNoteSize(noteBo.getCircleId(), -1);
+					asyncController.updateCircieNoteSize(noteBo.getCircleId(), -1);
 					deleteShouw(id);
 				}
 			}
@@ -1498,16 +1409,6 @@ public class NoteController extends BaseContorller {
 
 
 
-	private RedstarBo setRedstarBo(String userid, String circleid, int weekNo, int year){
-		RedstarBo redstarBo = new RedstarBo();
-		redstarBo.setUserid(userid);
-		redstarBo.setCommentTotal((long) 1);
-		redstarBo.setCommentWeek((long) 1);
-		redstarBo.setWeekNo(weekNo);
-		redstarBo.setCircleid(circleid);
-		redstarBo.setYear(year);
-		return redstarBo;
-	}
 
 
 	/**
@@ -1686,60 +1587,6 @@ public class NoteController extends BaseContorller {
 	}
 
 
-	/**
-	 *
-	 * @param userid
-	 * @param cirlceid
-	 */
-	@Async
-	private void updateCircieUnReadNum(String userid, String cirlceid){
-
-		RLock lock = redisServer.getRLock(userid + "UnReadNumLock");
-		try{
-			lock.lock(2, TimeUnit.SECONDS);
-			ReasonBo reasonBo = reasonService.findByUserAndCircle(userid, cirlceid, Constant.ADD_AGREE);
-			if (reasonBo == null) {
-				reasonBo = new ReasonBo();
-				reasonBo.setCircleid(cirlceid);
-				reasonBo.setCreateuid(userid);
-				reasonBo.setStatus(Constant.ADD_AGREE);
-				reasonBo.setUnReadNum(1);
-				reasonService.insert(reasonBo);
-			} else {
-				reasonService.updateUnReadNum(userid, cirlceid, 1);
-			}
-		} finally {
-			lock.unlock();
-		}
-	}
-
-
-	/**
-	 * 圈子未读信息数量添加
-	 * @param pushUserid
-	 * @param circleid
-	 */
-	@Async
-	private void updateCircieNoteUnReadNum(String pushUserid, String circleid){
-		CircleBo circleBo = circleService.selectById(circleid);
-		if (circleBo == null) {
-			return;
-		}
-		HashSet<String> users = circleBo.getUsers();
-		if (users.contains(pushUserid)) {
-			users.remove(pushUserid);
-		}
-		logger.info(" circle {} note unRead update, users {}", circleid, users);
-		RLock lock = redisServer.getRLock(circleid + "UnReadNumLock");
-		try{
-			lock.lock(3, TimeUnit.SECONDS);
-			reasonService.updateUnReadNum(users, circleBo.getId());
-		} finally {
-			lock.unlock();
-		}
-	}
-
-	@Async
 	private void updateCount(String noteid, int type, int num){
 		RLock lock = redisServer.getRLock(noteid.concat(String.valueOf(type)));
 		try {
@@ -1772,7 +1619,6 @@ public class NoteController extends BaseContorller {
 	 * 需要和聚会展示最新信息
 	 * @param noteBo
 	 */
-	@Async
 	private void addCircleShow(NoteBo noteBo){
 		CircleShowBo circleShowBo = new CircleShowBo();
 		circleShowBo.setCircleid(noteBo.getCircleId());
@@ -1786,7 +1632,6 @@ public class NoteController extends BaseContorller {
 	 * 删除展示信息
 	 * @param noteid
 	 */
-	@Async
 	private void deleteShouw(String noteid){
 		circleService.deleteShow(noteid);
 	}

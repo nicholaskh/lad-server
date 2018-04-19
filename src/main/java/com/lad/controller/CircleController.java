@@ -24,8 +24,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.geo.GeoResult;
 import org.springframework.data.geo.GeoResults;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -37,7 +35,6 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Api(value = "CircleController", description = "圈子相关接口")
-@EnableAsync
 @RestController
 @RequestMapping("circle")
 public class CircleController extends BaseContorller {
@@ -94,6 +91,9 @@ public class CircleController extends BaseContorller {
 
 	@Autowired
 	private IMessageService messageService;
+
+	@Autowired
+	private AsyncController asyncController;
 
 	private String titlePush = "圈子通知";
 
@@ -561,42 +561,11 @@ public class CircleController extends BaseContorller {
 			JPushUtil.push(titlePush, content, path,  userArr);
 			addMessage(messageService, path, content, titlePush, userBo.getId(), userArr);
 		}
-		pushToFriends(circleBo.getName(), path, pushFriends);
+		asyncController.pushToFriends(circleBo.getName(), path, pushFriends);
 		return Constant.COM_RESP;
 	}
 
-	/**
-	 * 推送给好友
-	 * @param path
-	 * @param accepts
-	 */
-	@Async
-	private void pushToFriends(String circleName, String path, List<String> accepts){
-		for (String userid : accepts) {
-			UserBo userBo = userService.getUser(userid);
-			if (userBo == null) {
-				continue;
-			}
-			List<FriendsBo> friendsBos = friendsService.getFriendByUserid(userid);
-			for (FriendsBo friendsBo : friendsBos) {
-				UserBo friend = userService.getUser(friendsBo.getFriendid());
-				if (friend == null) {
-					continue;
-				}
-				String name = "";
-				FriendsBo bo = friendsService.getFriendByIdAndVisitorIdAgree(friendsBo.getFriendid(), userid);
-				if (bo != null) {
-					name = bo.getBackname();
-				}
-				if  (StringUtils.isEmpty(name)) {
-					name = userBo.getUserName();
-				}
-				String content = String.format("“%s”已申请加入圈子【%s】，你也快去看看吧",name, circleName);
-				JPushUtil.push(titlePush, content, path, friend.getId());
-				addMessage(messageService, path, content, titlePush, friend.getId());
-			}
-		}
-	}
+
 
 	/**
 	 * 用户加入圈子记录
@@ -604,7 +573,6 @@ public class CircleController extends BaseContorller {
 	 * @param circleid
 	 * @param status
 	 */
-	@Async
 	private void userAddHis(String userid, String circleid, int status){
 		CircleAddBo addBo = circleService.findHisByUserAndCircle(userid, circleid);
 		if (addBo == null) {
@@ -745,15 +713,11 @@ public class CircleController extends BaseContorller {
 		}
 		if (removeUser > 0) {
 			circleAddUsers(circleid, users);
-			this.removeUsers(removes, circleid);
+			reasonService.removeUser(userids, circleid);
 		}
 		return Constant.COM_RESP;
 	}
 
-	@Async
-	private void removeUsers(HashSet<String> userids, String circleid){
-		reasonService.removeUser(userids, circleid);
-	}
 
 	@ApiOperation("圈子转让")
 	@PostMapping("/transfer")
@@ -1233,7 +1197,6 @@ public class CircleController extends BaseContorller {
 		return Constant.COM_RESP;
 	}
 
-	@Async
 	private void saveKeyword(String keyword){
 		CircleTypeBo typeBo = circleService.findByName(keyword, 2);
 		if (typeBo != null){
@@ -1821,55 +1784,6 @@ public class CircleController extends BaseContorller {
 		return Constant.COM_RESP;
 	}
 
-	/**
-	 * 更新用户阅读数据信息
-	 * @param noticeid
-	 * @param userid
-	 */
-	@Async
-	private void updateNoticeRead(HashSet<String> users, String noticeid, String userid){
-		RLock lock = redisServer.getRLock(noticeid);
-		try {
-			lock.lock(3, TimeUnit.SECONDS);
-			CircleNoticeBo noticeBo = circleService.findNoticeById(noticeid);
-			LinkedHashSet<String> readUser = noticeBo.getReadUsers();
-			LinkedHashSet<String> unReadUser = noticeBo.getUnReadUsers();
-			//若有新圈子成员加入
-			if (users.size() != (readUser.size() + unReadUser.size())) {
-				users.removeAll(readUser);
-				unReadUser.addAll(users);
-			}
-			if (users.contains(userid)) {
-				unReadUser.remove(userid);
-				readUser.add(userid);
-				circleService.updateNoticeRead(noticeid, readUser, unReadUser);
-			}
-		} finally {
-			lock.unlock();
-		}
-	}
-
-	/**
-	 * 批量更新用户阅读数据信息
-	 * @param noticeid
-	 * @param userid
-	 */
-	@Async
-	private void updateNoticeRead(String noticeid, String userid){
-		RLock lock = redisServer.getRLock(noticeid);
-		try {
-			lock.lock(3, TimeUnit.SECONDS);
-			CircleNoticeBo noticeBo = circleService.findNoticeById(noticeid);
-			LinkedHashSet<String> readUser = noticeBo.getReadUsers();
-			LinkedHashSet<String> unReadUser = noticeBo.getUnReadUsers();
-			//若有新圈子成员加入
-			readUser.add(userid);
-			unReadUser.remove(userid);
-			circleService.updateNoticeRead(noticeid, readUser, unReadUser);
-		} finally {
-			lock.unlock();
-		}
-	}
 
 	/**
 	 * 添加或修改公告
@@ -1895,7 +1809,7 @@ public class CircleController extends BaseContorller {
 		if (loginUser != null) {
 			String userid = loginUser.getId();
 			HashSet<String> users = circleBo.getUsers();
-			updateNoticeRead(users,noticeid, loginUser.getId());
+			asyncController.updateNoticeRead(users,noticeid, loginUser.getId());
 			readNum = !readUsers.contains(userid) && users.contains(userid) ? readNum+1 : readNum;
 			role = getUserCircleRole(circleBo, userid);
 		}
@@ -2093,7 +2007,7 @@ public class CircleController extends BaseContorller {
 		String[] ids = CommonUtil.getIds(noticeids);
 		List<CircleNoticeBo> noticeBos = circleService.findNoticeByIds(ids);
 		for (CircleNoticeBo noticeBo : noticeBos) {
-			updateNoticeRead(noticeBo.getId(), userBo.getId());
+			asyncController.updateNoticeRead(noticeBo.getId(), userBo.getId());
 		}
 		return Constant.COM_RESP;
 	}
@@ -3048,7 +2962,6 @@ public class CircleController extends BaseContorller {
 	 * @param userid
 	 * @param circleid
 	 */
-	@Async
 	private void updateCircieUnReadZero(String userid, String circleid){
 		RLock lock = redisServer.getRLock(userid + "UnReadNumLock");
 		try{
@@ -3267,7 +3180,6 @@ public class CircleController extends BaseContorller {
 	}
 
 
-	@Async
 	private void updatePartyStatus(String partyid, int status){
 		partyService.updatePartyStatus(partyid, status);
 		//聚会结束,删除所有临时聊天
