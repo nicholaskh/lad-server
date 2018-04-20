@@ -14,7 +14,6 @@ import org.apache.logging.log4j.Logger;
 import org.redisson.api.RLock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -26,65 +25,49 @@ import java.util.concurrent.TimeUnit;
  * Version: 1.0
  * Time:2018/4/2
  */
-@EnableAsync
 @Component
 public class AsyncController extends BaseContorller {
 
     private static Logger logger = LogManager.getLogger(ChatroomController.class);
 
     @Autowired
-    public ICircleService circleService;
+    private ICircleService circleService;
 
     @Autowired
-    public IUserService userService;
+    private IUserService userService;
 
     @Autowired
-    public ILocationService locationService;
+    private INoteService noteService;
 
     @Autowired
-    public INoteService noteService;
+    private ISearchService searchService;
 
     @Autowired
-    public IFeedbackService feedbackService;
+    private RedisServer redisServer;
 
     @Autowired
-    public ISearchService searchService;
+    private IFriendsService friendsService;
 
     @Autowired
-    public RedisServer redisServer;
+    private IReasonService reasonService;
 
     @Autowired
-    public IFriendsService friendsService;
+    private IPartyService partyService;
 
     @Autowired
-    public IReasonService reasonService;
+    private ICommentService commentService;
 
     @Autowired
-    public IPartyService partyService;
+    private IChatroomService chatroomService;
 
     @Autowired
-    public IDynamicService dynamicService;
+    private IInforService inforService;
 
     @Autowired
-    public ICollectService collectService;
+    private IMessageService messageService;
 
     @Autowired
-    public IThumbsupService thumbsupService;
-
-    @Autowired
-    public ICommentService commentService;
-
-    @Autowired
-    public IChatroomService chatroomService;
-
-    @Autowired
-    public IInforService inforService;
-
-    @Autowired
-    public IMessageService messageService;
-
-    @Autowired
-    public IInforRecomService inforRecomService;
+    private IInforRecomService inforRecomService;
 
 
 
@@ -94,6 +77,7 @@ public class AsyncController extends BaseContorller {
      * @param userid
      * @param chatroomid
      */
+    @Async
     public void updateUserChatroom(String userid, String chatroomid, boolean isAdd){
         RLock lock = redisServer.getRLock(userid.concat("chatroom"));
         try {

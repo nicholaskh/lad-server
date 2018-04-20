@@ -12,7 +12,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class FriendApplyVo extends FriendsVo {
-    private String phone;
 
     private String birthDay;
 

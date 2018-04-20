@@ -61,6 +61,9 @@ public class ChatroomController extends BaseContorller {
 	@Autowired
 	private IMessageService messageService;
 
+	@Autowired
+	private AsyncController asyncController;
+
 
 	private String titlePush = "互动通知";
 

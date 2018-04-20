@@ -9,7 +9,6 @@ import com.lad.util.Constant;
 import com.lad.util.ERRORCODE;
 import com.lad.util.MyException;
 import org.redisson.api.RLock;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.ui.ModelMap;
 
@@ -21,9 +20,6 @@ import java.util.LinkedHashSet;
 import java.util.concurrent.TimeUnit;
 
 public abstract class BaseContorller {
-
-	@Autowired
-	public AsyncController asyncController;
 
 	protected int dayTimeMins = 24 * 60 * 60 * 1000;
 

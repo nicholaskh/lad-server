@@ -91,7 +91,6 @@ public class ChatroomDaoImpl implements IChatroomDao {
 		query.addCriteria(new Criteria("userid").is(userid));
 		query.addCriteria(new Criteria("friendid").is(friendid));
 		query.addCriteria(new Criteria("deleted").is(0));
-		query.addCriteria(new Criteria("type").is(1));
 		return mongoTemplate.findOne(query, ChatroomBo.class);
 	}
 

@@ -2228,6 +2228,7 @@ public class InforController extends BaseContorller {
             inforVo.setCommentNum(bo.getCommnetNum());
             inforVo.setThumpsubNum(bo.getThumpsubNum());
             inforVo.setText("");
+            vos.add(inforVo);
         }
         UserBo userBo =  getUserLogin(request);
         if (userBo != null) {
