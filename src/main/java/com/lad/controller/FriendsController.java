@@ -920,7 +920,7 @@ public class FriendsController extends BaseContorller {
 					ERRORCODE.FRIEND_NOT_EXIST.getReason());
 		}
 		FriendsBo friend = friendsService.getFriendByIdAndVisitorIdAgree(friendid, userBo.getId());
-		if (friendsBo == null) {
+		if (friend == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NOT_HAS_YOU.getIndex(),
 					ERRORCODE.FRIEND_NOT_HAS_YOU.getReason());
 		}
@@ -1084,7 +1084,7 @@ public class FriendsController extends BaseContorller {
 					ERRORCODE.FRIEND_NOT_EXIST.getReason());
 		}
 		FriendsBo friend = friendsService.getFriendByIdAndVisitorIdAgree(friendsBo.getFriendid(), friendsBo.getUserid());
-		if (friendsBo == null) {
+		if (friend == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NOT_HAS_YOU.getIndex(),
 					ERRORCODE.FRIEND_NOT_HAS_YOU.getReason());
 		}

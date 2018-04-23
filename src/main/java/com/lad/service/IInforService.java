@@ -416,7 +416,7 @@ public interface IInforService {
 
     /**
      * 删除多余的阅读历史信息
-     * @param userid
+     * @param removeIds
      * @return
      */
     WriteResult deleteUserReadHis(List<String> removeIds);
@@ -430,6 +430,13 @@ public interface IInforService {
      * @return
      */
     List<DailynewsBo> selectDailynewsGroups();
+
+    /**
+     * 
+     * @param module
+     * @return
+     */
+    List<DailynewsBo> findDailyByModule(String module);
 
 
     /**
@@ -467,6 +474,13 @@ public interface IInforService {
      * @return
      */
     List<YanglaoBo> selectYanglaoGroups();
+
+    /**
+     *
+     * @param module
+     * @return
+     */
+    List<YanglaoBo> findYanglaoByModule(String module);
 
 
     /**

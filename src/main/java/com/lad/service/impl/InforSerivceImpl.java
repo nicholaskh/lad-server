@@ -58,7 +58,7 @@ public class InforSerivceImpl implements IInforService {
 
     @Override
     public List<InforBo> findGroupInfos(String module) {
-        return null;
+        return inforDao.findGroups(module);
     }
 
     @Override
@@ -454,5 +454,15 @@ public class InforSerivceImpl implements IInforService {
     @Override
     public List<YanglaoBo> findYanglaosKeyword(String keywrod, int page, int limit) {
         return yanglaoDao.findByTitleKeyword(keywrod, page, limit);
+    }
+
+    @Override
+    public List<DailynewsBo> findDailyByModule(String module) {
+        return dailynewsDao.findByModule(module, "dailynews");
+    }
+
+    @Override
+    public List<YanglaoBo> findYanglaoByModule(String module) {
+        return yanglaoDao.findByModule(module, "yanglao");
     }
 }

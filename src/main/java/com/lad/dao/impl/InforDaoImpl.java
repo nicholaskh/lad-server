@@ -1,7 +1,6 @@
 package com.lad.dao.impl;
 
 import com.lad.dao.IInforDao;
-import com.lad.scrapybo.BroadcastBo;
 import com.lad.scrapybo.InforBo;
 import com.lad.util.Constant;
 import com.mongodb.WriteResult;
@@ -9,10 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.Aggregation;
-import org.springframework.data.mongodb.core.aggregation.AggregationResults;
-import org.springframework.data.mongodb.core.aggregation.GroupOperation;
-import org.springframework.data.mongodb.core.aggregation.ProjectionOperation;
+import org.springframework.data.mongodb.core.aggregation.*;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
@@ -55,7 +51,14 @@ public class InforDaoImpl implements IInforDao {
     }
 
     public List<InforBo> findGroups(String module){
-        return null;
+        Criteria criteria = new Criteria("module").is(module);
+        MatchOperation match = Aggregation.match(criteria);
+        ProjectionOperation project = Aggregation.project("_id","className");
+        GroupOperation groupOperation = Aggregation.group("className");
+        Aggregation aggregation = Aggregation.newAggregation(match, project, groupOperation,
+                Aggregation.sort(Sort.Direction.ASC, "className"));
+        AggregationResults<InforBo> results = mongoTemplateTwo.aggregate(aggregation, "health", InforBo.class);
+        return results != null ? results.getMappedResults() : null;
     }
 
     public List<InforBo> findByList(String className, String createTime, int limit){

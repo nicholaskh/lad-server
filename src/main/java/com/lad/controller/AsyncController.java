@@ -920,4 +920,23 @@ public class AsyncController extends BaseContorller {
         }
     }
 
+
+    /**
+     * 异步更新阅读点赞等数据
+     * @param id
+     * @param numType
+     * @param num
+     * @return
+     */
+    @Async
+    public void updateExposeCounts(IExposeService service, String id, int numType, int num){
+        RLock lock = redisServer.getRLock(id.concat(String.valueOf(numType)));
+        try {
+            lock.lock(2, TimeUnit.SECONDS);
+            service.updateCounts(id, numType, num);
+        } finally {
+            lock.unlock();
+        }
+    }
+
 }

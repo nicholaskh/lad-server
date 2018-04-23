@@ -1,16 +1,12 @@
 package com.lad.dao;
 
-import com.lad.scrapybo.DailynewsBo;
 import com.lad.util.Constant;
 import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.Aggregation;
-import org.springframework.data.mongodb.core.aggregation.AggregationResults;
-import org.springframework.data.mongodb.core.aggregation.GroupOperation;
-import org.springframework.data.mongodb.core.aggregation.ProjectionOperation;
+import org.springframework.data.mongodb.core.aggregation.*;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
@@ -105,14 +101,15 @@ public class InforBaseDao<T extends Serializable> {
     public WriteResult update(String id, Map<String, Object> params) {
         Query query = new Query();
         query.addCriteria(new Criteria("_id").is(id));
-        Update update = new Update();
         if (params != null) {
+            Update update = new Update();
             Set<Map.Entry<String, Object>> entrys = params.entrySet();
             for (Map.Entry<String, Object> entry : entrys) {
                 update.set(entry.getKey(), entry.getValue());
             }
+            return mongoTemplateTwo.updateFirst(query, update, getClz());
         }
-        return mongoTemplateTwo.updateFirst(query, update, getClz());
+        return null;
     }
 
     /**
@@ -125,7 +122,7 @@ public class InforBaseDao<T extends Serializable> {
 
     /**
      * 删除数据
-     * @param id
+     * @param ids
      */
     public WriteResult batchDeleteByIds(String... ids) {
         return mongoTemplateTwo.remove(new Query(new Criteria("_id").in(ids)), getClz());
@@ -159,6 +156,24 @@ public class InforBaseDao<T extends Serializable> {
         }
         query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
         return mongoTemplateTwo.find(query, getClz());
+    }
+
+
+    /**
+     * 查找指定分类下资讯
+     * @param module
+     * @param collectionName
+     * @return
+     */
+    public List<T> findByModule(String module, String collectionName){
+        Criteria criteria = new Criteria("module").is(module);
+        MatchOperation match = Aggregation.match(criteria);
+        ProjectionOperation project = Aggregation.project("_id","className");
+        GroupOperation groupOperation = Aggregation.group("className").count().as("nums");
+        Aggregation aggregation = Aggregation.newAggregation(match, project, groupOperation,
+                Aggregation.sort(Sort.Direction.DESC, "_id"));
+        AggregationResults<T> results = mongoTemplateTwo.aggregate(aggregation, collectionName, getClz());
+        return results != null ? results.getMappedResults() : null;
     }
 
     /**

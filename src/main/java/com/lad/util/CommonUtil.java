@@ -18,10 +18,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -441,8 +438,22 @@ public class CommonUtil {
 		return collection == null || collection.isEmpty();
 	}
 
-
-
+	/**
+	 * 目前每次启动时加载
+	 */
+	private static HashSet<String> adminUserids;
+	static {
+		adminUserids = new LinkedHashSet<>();
+		// to add
+		adminUserids.add("");
+	}
+	/**
+	 * 获取管理员id信息
+	 * @return
+	 */
+	public static HashSet<String> getAdminUserids() {
+		return adminUserids;
+	}
 
 	public static String ff(String inFile, String outFile){
 
