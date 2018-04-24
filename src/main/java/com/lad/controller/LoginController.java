@@ -175,6 +175,8 @@ public class LoginController extends BaseContorller {
 		if (!StringUtils.hasLength(password)) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PASSWORD.getIndex(), ERRORCODE.ACCOUNT_PASSWORD.getReason());
 		}
+		System.out.println(phone);
+		System.out.println(password);
 		password = CommonUtil.getSHA256(password);
 		Map<String, Object> map = new HashMap<String, Object>();
 		userBo = loginService.getUser(phone, password);

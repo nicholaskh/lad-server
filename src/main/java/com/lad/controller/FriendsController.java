@@ -949,18 +949,17 @@ public class FriendsController extends BaseContorller {
 
 
 	@ApiOperation("同意或拒绝账号关联")
-	@ApiImplicitParams({ @ApiImplicitParam(name = "id", value = "当前好友关系的id", required = true,
-			paramType = "query",  dataType = "string"),
-			@ApiImplicitParam(name = "isAgree", value = "是否同意", paramType = "query",
-					dataType = "boolean")})
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "id", value = "当前好友关系的id", required = true,paramType = "query",  dataType = "string"),
+			@ApiImplicitParam(name = "isAgree", value = "是否同意", paramType = "query",dataType = "boolean")})
 	@PostMapping("/operate-relate-account")
-	public String updateRelateAccount(String id, boolean isAgree, HttpServletRequest request,
-								HttpServletResponse response) {
+	public String updateRelateAccount(String id, boolean isAgree, HttpServletRequest request,HttpServletResponse response) {
 		UserBo userBo = getUserLogin(request);
 		if (userBo ==null) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		System.out.println(userBo.getUserName());
 		FriendsBo friendsBo = friendsService.get(id);
 		if (friendsBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NOT_EXIST.getIndex(),
