@@ -40,5 +40,6 @@ public class ExposeBo extends BaseBo {
     private int thumpsubNum;
     //收藏
     private int collectNum;
-
+    //状态， 后续使用到审核需要
+    private int status;
 }

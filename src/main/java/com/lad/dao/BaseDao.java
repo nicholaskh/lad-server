@@ -99,7 +99,7 @@ public class BaseDao<T extends Serializable> {
         query.addCriteria(new Criteria("_id").is(id));
         if (params != null) {
             Update update = new Update();
-            params.forEach((key, value) -> update.set(key, value));
+            params.forEach(update :: set);
             return mongoTemplate.updateFirst(query, update, getClz());
         }
         return null;

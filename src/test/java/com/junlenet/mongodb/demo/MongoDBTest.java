@@ -3,20 +3,16 @@ package com.junlenet.mongodb.demo;
 import com.alibaba.fastjson.JSON;
 import com.lad.bo.*;
 import com.lad.dao.*;
-import com.lad.scrapybo.InforBo;
-import com.lad.scrapybo.SecurityBo;
+import com.lad.scrapybo.*;
 import com.lad.service.*;
+import com.lad.util.CommonUtil;
 import com.lad.util.Constant;
 import com.lad.util.IMUtil;
-import com.lad.vo.ChatroomUserVo;
-import com.lad.vo.ChatroomVo;
-import com.lad.vo.CircleVo;
-import com.lad.vo.NoteVo;
+import com.lad.vo.*;
 import com.mongodb.BasicDBObject;
-import com.pushd.ImAssistant;
-import com.pushd.Message;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,15 +20,21 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.geo.*;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.*;
 import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.NearQuery;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
 
+import java.text.ParseException;
 import java.util.*;
 
+@WebAppConfiguration
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "classpath:spring.xml",
 		"classpath:spring-mvc.xml" })
@@ -101,11 +103,17 @@ public class MongoDBTest {
 	private IDynamicService dynamicService;
 
 	@Autowired
-	private IIMTermService iMTermService;
+	private IPartyService partyService;
 
 
 	@Autowired
 	private ITagService tagService;
+
+	@Autowired
+	private IReasonService reasonService;
+
+	@Autowired
+	private IInforRecomService inforRecomService;
 
 
 
@@ -116,11 +124,7 @@ public class MongoDBTest {
 
 	@Test
 	public void getUsers() {
-		List<UserBo> userBos = userDao.getAllUser();
 
-		for (UserBo userBo : userBos) {
-			System.out.println(JSON.toJSONString(userBo));
-		}
 
 	}
 
@@ -146,46 +150,64 @@ public class MongoDBTest {
 
 	@Test
 	public void addNote() {
-		NoteBo noteBo = new NoteBo();
-		noteBo.setCircleId("599314b131f0a579c692e5cf");
-		noteBo.setCreateuid("5989cb6231f0a569e1dbfee3");
-		noteBo.setSubject("redis user and hahah");
-		noteBo.setContent("BSON documents may have more than one field with the same name. Most MongoDB interfaces, " + "however, represent MongoDB with a structure (e.g. a hash table) that does not support duplicate field " + "names. If you need to manipulate documents that have more than one field with the same name, see the driver documentation for your driver.\n" + "\n" + "Some documents created by internal MongoDB processes may have duplicate fields, but no MongoDB process will ever add duplicate fields to an existing user document.");
-		noteBo.setVisitcount(20);
-		noteBo.setCommentcount(10);
-		noteBo.setThumpsubcount(12);
 
-		LinkedList<String> photos = new LinkedList<>();
-		photos.add("picture1.jsp");
-		photos.add("picture2.jsp");
-
-		noteBo.setPhotos(photos);
-		noteBo.setTemp(0);
-		noteDao.insert(noteBo);
+		LinkedHashSet<String> dailyTypes = new LinkedHashSet<>();
+		List<DailynewsBo> dailynewsBos =  inforService.selectDailynewsGroups();
+		for (DailynewsBo videoBo : dailynewsBos) {
+			dailyTypes.add(videoBo.getId());
+		}
+		LinkedHashSet<String> yanglaoTypes = new LinkedHashSet<>();
+		List<YanglaoBo> yanglaoBos =  inforService.selectYanglaoGroups();
+		for (YanglaoBo videoBo : yanglaoBos) {
+			yanglaoTypes.add(videoBo.getId());
+		}
+		List<InforSubscriptionBo> subscriptionBos =  mongoTemplate.findAll(InforSubscriptionBo.class);
+		for (InforSubscriptionBo videoBo : subscriptionBos) {
+			videoBo.setDailys(dailyTypes);
+			videoBo.setYanglaos(yanglaoTypes);
+			mongoTemplate.save(videoBo);
+		}
 	}
 
 
 	@Test
 	public void getNote() {
+		List<InforGroupRecomBo> myRecomBos = inforRecomService.findInforGroupWithoutModule(Constant.INFOR_RADIO,
+				null, 50);
 
-
-//		List<CommentBo> commentBos = commentService.selectByNoteid("5989cc2e31f0a569e1dbfee7", "", true, 10);
-//
-//		for (CommentBo commentBo : commentBos) {
-//			System.out.println(JSON.toJSONString(commentBo));
-//
-//		}
-
-//		List<NoteBo> noteBoss = noteService.finyMyNoteByComment("5989cb6231f0a569e1dbfee3","",false, 10);
-
-
-//		List<NoteBo> noteBoss = noteDao.selectByVisit("594d364f31f0a560fb6a4b5f");
-
-		List<NoteBo> noteBos = noteService.selectHotNotes("599314b131f0a579c692e5cf");
-		for (NoteBo noteBo : noteBos) {
-			System.out.println(JSON.toJSONString(noteBo));
+		LinkedHashSet<String> modules = new LinkedHashSet<>();
+		LinkedHashSet<String> classNames = new LinkedHashSet<>();
+		JSONArray array = new JSONArray();
+		int num = 0;
+		for (InforGroupRecomBo recomBo : myRecomBos) {
+			modules.add(recomBo.getModule());
+			classNames.add(recomBo.getClassName());
+			System.out.println(JSON.toJSONString(recomBo));
+			num ++;
 		}
+		List<BroadcastBo> radioBos = inforService.selectRadioClassByGroups(modules, classNames);
+		addRadios(radioBos, array);
 
+		JSONObject jsonObject = new JSONObject();
+		jsonObject.put("ret", 0);
+		jsonObject.put("radioClasses", array);
+		System.out.println(jsonObject.toString());
+
+	}
+
+	private void addRadios(List<BroadcastBo> broadcastBos, JSONArray array){
+		if (broadcastBos == null) {
+			return;
+		}
+		for (BroadcastBo bo : broadcastBos) {
+			JSONObject object = new JSONObject();
+			object.put("module", bo.getModule());
+			object.put("title", bo.getClassName());
+			object.put("source", bo.getSource());
+			object.put("intro", bo.getIntro());
+			object.put("totalVisit", bo.getVisitNum());
+			array.add(object);
+		}
 	}
 
 
@@ -194,25 +216,81 @@ public class MongoDBTest {
 	 */
 	@Test
 	public void save() {
-		ChatroomBo chatroomBo = new ChatroomBo();
-		chatroomBo.setName("face4");
-		chatroomBo.setSeq(0);
-		chatroomBo.setType(3);
-		chatroomBo.setPosition(new double[]{118.639523, 32.070078});
-		chatroomDao.insert(chatroomBo);
-		System.out.println(chatroomBo.getId());
+//
+//		List<ReasonBo> reasonBos = mongoTemplate.findAll(ReasonBo.class);
+//		List<String> lists = new ArrayList<>();
+//		for (ReasonBo reasonBo : reasonBos) {
+//			String res = reasonBo.getCircleid() + reasonBo.getCreateuid();
+//			if (lists.contains(res)) {
+//				Query query = new Query();
+//				query.addCriteria(new Criteria("_id").is(reasonBo.getId()));
+//				mongoTemplate.remove(query, ReasonBo.class);
+//				continue;
+//			}
+//			lists.add(res);
+//		}
 
-		chatroomBo = new ChatroomBo();
-		chatroomBo.setName("talk3");
-		chatroomBo.setSeq(0);
-		chatroomBo.setType(2);
-
-		chatroomDao.insert(chatroomBo);
-
-		System.out.println(chatroomBo.getId());
-
-		System.out.println("-----------------------");
+//
+		List<CircleBo> circleBos = mongoTemplate.findAll(CircleBo.class);
+		for (CircleBo circleBo : circleBos) {
+			if (circleBo.getDeleted() == 1) {
+				continue;
+			}
+			String id = circleBo.getId();
+			HashSet<String> users = circleBo.getUsers();
+			for (String userid : users) {
+				ReasonBo reasonBo = reasonService.findByUserAdd(userid, id);
+				if (reasonBo != null) {
+					if (reasonBo.getStatus() != 1) {
+						System.out.println("========== userid " + userid + ", cirlceid " +id);
+						reasonService.updateApply(reasonBo.getId(), 1, "");
+					}
+				} else {
+					reasonBo = new ReasonBo();
+					reasonBo.setCreateuid(userid);
+					reasonBo.setStatus(1);
+					reasonBo.setCircleid(id);
+					reasonBo.setAddType(0);
+					reasonBo.setUnReadNum(1);
+					reasonService.insert(reasonBo);
+					System.out.println("************** userid " + userid + ", cirlceid " +id);
+				}
+			}
+		}
 	}
+
+
+
+	@Test
+	public void circleTest() {
+
+//		List<InforReadNumBo> readNumBos = mongoTemplate.findAll(InforReadNumBo.class);
+//		for (InforReadNumBo readNumBo : readNumBos){
+//			String inforid = readNumBo.getInforid();
+//			inforService.updateInforNum(inforid, Constant.COMMENT_NUM, (int)readNumBo.getVisitNum());
+//		}
+
+		List<ThumbsupBo> thumbsupBos = mongoTemplate.findAll(ThumbsupBo.class);
+		for (ThumbsupBo thumbsupBo : thumbsupBos) {
+			if (thumbsupBo.getDeleted() == 1) {
+				continue;
+			}
+			if (thumbsupBo.getType() == Constant.INFOR_TYPE) {
+				String inforid = thumbsupBo.getOwner_id();
+				if (null != inforService.findById(inforid)) {
+					inforService.updateInforNum(thumbsupBo.getOwner_id(), Constant.THUMPSUB_NUM, 1);
+				} else if (null != inforService.findSecurityById(inforid)) {
+					inforService.updateSecurityNum(thumbsupBo.getOwner_id(), Constant.THUMPSUB_NUM, 1);
+				} else if (null != inforService.findBroadById(inforid)) {
+					inforService.updateRadioNum(thumbsupBo.getOwner_id(), Constant.THUMPSUB_NUM, 1);
+				} else {
+					inforService.updateVideoNum(thumbsupBo.getOwner_id(), Constant.THUMPSUB_NUM, 1);
+				}
+			}
+		}
+
+	}
+
 
 	@Test
 	public void findRangeTest() {
@@ -260,42 +338,38 @@ public class MongoDBTest {
 		System.out.println(res);
 	}
 
-	@Test
-	public void circleTest() {
-		List<CircleBo> circleBos = circleDao.selectUsersPre("");
-		System.out.println(circleBos.size());
-		for (CircleBo circleBo : circleBos) {
-			System.out.println(JSON.toJSONString(circleBo));
-		}
-	}
 
 	@Test
 	public void myCircleTest() {
-		List<CircleBo> circleBos = circleDao.findMyCircles("595514db31f0a503a5a4225d", "", false, 10);
-		System.out.println(circleBos.size());
-		for (CircleBo circleBo : circleBos) {
-			System.out.println(JSON.toJSONString(circleBo));
 
-//            if (!circleBo.getId().equals("594f765a31f0a567340921f3")) {
-//				Query query = new Query();
-//				query.addCriteria(new Criteria("deleted").is(0));
-//				query.addCriteria(new Criteria("_id").is(circleBo.getId()));
-//				Update update = new Update();
-//				//创建者默认为群主，后续修改需要更改群主字段
-//				update.set("deleted", 1);
-//				mongoTemplate.updateFirst(query, update, CircleBo.class);
-//			}
-		}
+		List<UserLevelBo> userLevelBos = mongoTemplate.findAll(UserLevelBo.class);
 
+		int num = 0;
+		userLevelBos.forEach( userLevelBo -> {
+			Query query = new Query();
+			query.addCriteria(new Criteria("_id").is(userLevelBo.getId()));
+			Update update = new Update();
+			update.inc("onlineHours", num);
+			update.inc("launchPartys", num);
+			update.inc("noteNum", num);
+				update.inc("commentNum", num);
+				update.inc("transmitNum", num);
+				update.inc("shareNum", num);
+				update.inc("circleNum", num);
+
+			mongoTemplate.updateFirst(query, update, UserLevelBo.class);
+		});
 	}
 
 
 	@Test
 	public void addApply() {
-		CircleTypeBo circleTypeBo = new CircleTypeBo();
-		circleTypeBo.setLevel(1);
-		circleTypeBo.setCategory("其他");
-		circleService.addCircleType(circleTypeBo);
+		String keyword = "队长";
+		String city = "成都市";
+		List<CircleBo> circleBos = circleService.findBykeyword(keyword, city, 1, 10);
+		for (CircleBo circleBo : circleBos) {
+			System.out.println(JSON.toJSONString(circleBo));
+		}
 	}
 
 
@@ -376,39 +450,31 @@ public class MongoDBTest {
 	@Test
 	public void test1() {
 
-//		List<CircleBo> circleBos = mongoTemplate.findAll(CircleBo.class);
-//
-//		for (CircleBo circleBo : circleBos) {
-//			System.out.println(JSON.toJSONString(circleBo));
-//		}
+		String module = "节目展演";
 
-//		List<CircleBo> circleBos = circleService.findByType("运动", 1, "", false, 10);
-//		for (CircleBo circleBo : circleBos) {
-//			System.out.println(JSON.toJSONString(circleBo));
-//		}
+		String className = "CCTV空中剧院";
 
-		List<NoteBo> noteBos = noteService.finyByCreateTime("599314b131f0a579c692e5cf", "", false, 10);
-		for (NoteBo noteBo : noteBos) {
-			System.out.println(JSON.toJSONString(noteBo));
-		}
+		long start = System.currentTimeMillis();
 
+		List<VideoBo> videoBos = inforService.selectClassNamePage(module, className, 1, 50);
 
-//		List<NoteBo> noteBos = noteDao.selectCircleNotes(circleBo.getId(), "", false, 200);
-//		System.out.println(noteBos.size() + ",=== " + circleBo.getNoteSize());
-//
-//		String circleid = "599314b131f0a579c692e5cf";
-//
-//		System.out.println("-----------------");
-//		CircleBo circleBo = circleService.selectById(circleid);
-//		System.out.println(circleBo.getNoteSize());
+		long end = System.currentTimeMillis();
+
+		
 	}
 
 
 	@Test
 	public void delete() {
-		List<CircleTypeBo> typeBos = mongoTemplate.findAll(CircleTypeBo.class);
-		for (CircleTypeBo typeBo : typeBos) {
-			mongoTemplate.remove(typeBo);
+		List<NoteBo> noteBos = mongoTemplate.findAll(NoteBo.class);
+		for (NoteBo noteBo : noteBos) {
+			if (noteBo.getDeleted() == 1) {
+				continue;
+			}
+			List<CommentBo> commentBos = commentService.selectByNoteid(noteBo.getId(), 1, 100);
+			if (commentBos != null && noteBo.getCommentcount() != commentBos.size()) {
+				noteService.updateCommentCount(noteBo.getId(), commentBos.size());
+			}
 		}
 	}
 
@@ -728,17 +794,17 @@ public class MongoDBTest {
 
 		double[] position = new double[]{116.855425465695, 40.3682890329198};
 
-		List<CircleBo> circleBos = circleDao.findNearCircle("",position, 10000, 10);
+		Point point = new Point(position[0],position[1]);
+		Query query = new Query();
+		Distance distance = new Distance(10000/1000, Metrics.KILOMETERS);
 
-		for (CircleBo circleBo: circleBos) {
-			System.out.println(JSON.toJSONString(circleBo));
-		}
+		NearQuery near =NearQuery.near(point);
+		near.maxDistance(distance);
+		GeoResults<CircleBo> circleBoGeoResult =  mongoTemplate.geoNear(near, CircleBo.class);
 
-		List<CircleHistoryBo> historyBos = circleService.findNearPeople("5989cbd631f0a569e1dbfee6",
-				"5989cb6231f0a569e1dbfee3", position, 10000);
-
-		for (CircleHistoryBo circleBo: historyBos) {
-			System.out.println(JSON.toJSONString(circleBo));
+		for (GeoResult<CircleBo> geoResult : circleBoGeoResult) {
+			System.out.println(JSON.toJSONString(geoResult.getContent()));
+			System.out.println(geoResult.getDistance().getValue());
 		}
 
 	}
@@ -782,17 +848,88 @@ public class MongoDBTest {
 	@Test
 	public void citys() throws Exception{
 
-		List<String> userid = new ArrayList<>();
-		userid.add("59c1ea8c31f0a51f8c9d2e3b");
-		userid.add("59c1eb3e31f0a51f8c9d2e3f");
-		userid.add("59c36f3231f0a51f8c9d2e71");
-		userid.add("59c51d5531f0a54366ff2441");
-
 		Query query = new Query();
-		query.addCriteria(new Criteria("_id").in(userid));
-		List<UserBo> userBos = mongoTemplate.find(query, UserBo.class);
-		for (UserBo userBo : userBos) {
-			System.out.println(JSON.toJSONString(userBo));
+		query.addCriteria(new Criteria("type").is(Constant.INFOR_TYPE));
+		List<CommentBo> commentBos = mongoTemplate.find(query, CommentBo.class);
+		for (CommentBo commentBo : commentBos) {
+			int inforType = commentBo.getSubType();
+			String inforid = commentBo.getTargetid();
+			boolean hasType = false;
+			switch (inforType){
+				case Constant.INFOR_HEALTH:
+					Query query1 = new Query();
+					query1.addCriteria(new Criteria("_id").is(inforid));
+					Update update = new Update();
+					update.set("commnetNum",0);
+					mongoTemplateTwo.updateFirst(query1, update, InforBo.class);
+					break;
+				case Constant.INFOR_SECRITY:
+					Query query2 = new Query();
+					query2.addCriteria(new Criteria("_id").is(inforid));
+					Update update1 = new Update();
+					update1.set("commnetNum",0);
+					mongoTemplateTwo.updateFirst(query2, update1, SecurityBo.class);
+					break;
+				case Constant.INFOR_RADIO:
+					Query query3 = new Query();
+					query3.addCriteria(new Criteria("_id").is(inforid));
+					Update update2 = new Update();
+					update2.set("commnetNum",0);
+					mongoTemplateTwo.updateFirst(query3, update2, BroadcastBo.class);
+					break;
+				case Constant.INFOR_VIDEO:
+					Query query4 = new Query();
+					query4.addCriteria(new Criteria("_id").is(inforid));
+					Update update3 = new Update();
+					update3.set("commnetNum",0);
+					mongoTemplateTwo.updateFirst(query4, update3, VideoBo.class);
+					break;
+				default:
+					hasType = true;
+					break;
+			}
+			if (hasType) {
+				InforBo inforBo = inforService.findById(inforid);
+				if (inforBo == null) {
+				 	SecurityBo securityBo = inforService.findSecurityById(inforid);
+				 	if (securityBo == null) {
+				 		BroadcastBo broadcastBo = inforService.findBroadById(inforid);
+				 		if (broadcastBo == null) {
+				 			VideoBo videoBo = inforService.findVideoById(inforid);
+				 			if (videoBo  == null) {
+								System.out.println("--------------------------" + commentBo.getId());
+							} else {
+								Query query4 = new Query();
+								query4.addCriteria(new Criteria("_id").is(inforid));
+								Update update3 = new Update();
+								update3.set("commnetNum",0);
+								mongoTemplateTwo.updateFirst(query4, update3, VideoBo.class);
+							}
+						} else {
+							Query query3 = new Query();
+							query3.addCriteria(new Criteria("_id").is(inforid));
+							Update update2 = new Update();
+							update2.set("commnetNum",0);
+							mongoTemplateTwo.updateFirst(query3, update2, BroadcastBo.class);
+						}
+					} else {
+						Query query2 = new Query();
+						query2.addCriteria(new Criteria("_id").is(inforid));
+						Update update1 = new Update();
+						update1.set("commnetNum",0);
+						mongoTemplateTwo.updateFirst(query2, update1, SecurityBo.class);
+					}
+				} else {
+					 Query query1 = new Query();
+					 query1.addCriteria(new Criteria("_id").is(inforid));
+					 Update update = new Update();
+					 update.set("commnetNum",0);
+					 mongoTemplateTwo.updateFirst(query1, update, InforBo.class);
+				 }
+			}
+			System.out.println(inforType);
+			System.out.println("==================".concat(commentBo.getTargetid()));
+			commentService.delete(commentBo.getId());
 		}
 	}
 
@@ -864,84 +1001,57 @@ public class MongoDBTest {
 	@Test
 	public void collect(){
 
-//
-//		IMTermBo termBo = iMTermService.selectByUserid("59d4878631f0a55478a38a9b");
-//
-//
-//		String[] ss = IMUtil.unSubscribe("59eea94631f0a53f2a0f886f",
-//				termBo.getTerm(),"59d4878631f0a55478a38a9b" );
-//
-//		System.out.println(ss[0]);
-//		System.out.println("term : " + ss[1]);
-//
-//		System.out.println("=======================================");
-//
-//		System.out.println("term has : " + ss[1]);
+		String userid = "59d98be831f0a57ce97a5219";
+		boolean isNew = false;
+		int type = Constant.INFOR_RADIO;
 
-		List<InforBo> inforBos = inforService.findClassInfos("四季保健", "2017-09-11", 10);
-		for (InforBo inforBo : inforBos) {
-			System.out.println("-------------------------------------");
-			System.out.println(JSON.toJSONString(inforBo));
+		String module = "戏曲大全";
 
+		InforUserReadBo readBo = inforRecomService.findUserReadByUserid(userid);
+		if (readBo == null) {
+			readBo = new InforUserReadBo();
+			readBo.setUserid(userid);
+			isNew = true;
 		}
-
-//		InforBo inforBo = inforService.findById("59ed7d71d78a36518045c54f");
-//		System.out.println(JSON.toJSONString(inforBo));
-//
-//
-//		inforBo = inforService.findById("59fc9d22d78a360e1b209c64");
-//		System.out.println(JSON.toJSONString(inforBo));
-
-
+		LinkedHashSet<String> sets = null;
+		if (Constant.INFOR_HEALTH == type) {
+			sets = readBo.getHealths();
+		} else if (Constant.INFOR_SECRITY == type) {
+			sets = readBo.getSecuritys();
+		} else if (Constant.INFOR_RADIO == type) {
+			sets= readBo.getRadios();
+		} else if (Constant.INFOR_VIDEO == type) {
+			sets = readBo.getVideos();
+		} else {
+			sets = new LinkedHashSet<>();
+		}
+		if (isNew) {
+			sets.add(module);
+			inforRecomService.addUserRead(readBo);
+		} else {
+			if (!sets.contains(module)){
+				sets.add(module);
+				inforRecomService.updateUserRead(readBo.getId(), type, sets);
+				//更新其他过时分类
+			}
+		}
 	}
 
 	@Test
 	public void test222(){
 
+		UserBo userBo = userDao.getUserByPhone("18228148133");
 
+		System.out.println(userBo.getId());
 
-		ImAssistant assistent = ImAssistant.init("180.76.138.200", 2222);
-		String res = "";
-		if (assistent == null) {
-			System.out.println("--------------------");
-			return;
+		FriendsBo friendsBo = friendsService.get("5ad9c15131f0a56b965fd406");
+		if (friendsBo == null) {
+			System.out.println("=============");
 		}
-//		Message message = assistent.getAppKey();
-//		String appKey = message.getMsg();
-//		System.out.println("status1 : " +message.getStatus());
-//		Message message2 = assistent.authServer(appKey);
-//		System.out.println("term : " +message2.getMsg());
-//		System.out.println("status2 : " +message2.getStatus());
-//		assistent.setServerTerm(message2.getMsg());
-//		Message message3 = assistent.addUserToChatRoom("59e5da9031f0a549b6806c8e", "59c64e9331f0a5457e5f8986");
-//		System.out.println("msg : " +message3.getMsg());
-//		System.out.println("status3 : " +message3.getStatus());
-
-
-		Message message = assistent.getAppKey();
-		if(message.getStatus() != Message.Status.success){
-			System.out.println("get appkey error");
-			return;
+		FriendsBo friend = friendsService.getFriendByIdAndVisitorIdAgree(friendsBo.getFriendid(), userBo.getId());
+		if (friend == null) {
+			System.out.println("=============");
 		}
-
-		message = assistent.authServer(message.getMsg());
-		if(message.getStatus() != Message.Status.success){
-			System.out.println("auth server error");
-			return;
-		}
-
-
-		assistent.setServerTerm(message.getMsg());
-//        message = assistent.createChatRoom("room100", "user889");
-		message = assistent.addUserToChatRoom("room100", "uuid2");
-		if(message.getStatus() != Message.Status.success){
-			System.out.println("create room error");
-			return;
-		}
-		assistent.close();
-
-		System.out.println("success");
-
 
 	}
 
@@ -1110,57 +1220,70 @@ public class MongoDBTest {
 	}
 
 	@Test
-	public void circleTest1(){
+	public void circleTest1() throws  Exception{
+//
+//		String module = "节目展演";
+//		String className = "第二届中老年模特大赛";
+////		List<VideoBo> broadcastBos = inforService.selectVideoClassByGroups(module);
+//		List<VideoBo> videoBos = inforService.selectClassNamePage(module,className, 1, 10);
+//		for (VideoBo bo : videoBos) {
+//			System.out.println(JSON.toJSONString(bo));
+//		}
 
-		UserBo userBo = userService.getUser("59c26cf631f0a51f8c9d2e46");
-		String chatroomid = "59f9f02131f0a539cd3fddf9";
 
-		HashSet<String> chatroom = userBo.getChatrooms();
-		LinkedList<String> chatroomTops = userBo.getChatroomsTop();
-		boolean hasRoom = false;
-		if (chatroom.contains(chatroomid)){
-			chatroom.remove(chatroomid);
-			userBo.setChatrooms(chatroom);
-			hasRoom = true;
+		List<NoteBo> noteBos = mongoTemplate.findAll(NoteBo.class);
+		for (NoteBo noteBo : noteBos) {
+			if (noteBo.getDeleted() == 0) {
+				CircleShowBo circleShowBo = new CircleShowBo();
+				circleShowBo.setCircleid(noteBo.getCircleId());
+				circleShowBo.setTargetid(noteBo.getId());
+				circleShowBo.setType(0);
+				circleShowBo.setCreateTime(noteBo.getCreateTime());
+				circleService.addCircleShow(circleShowBo);
+				Thread.sleep(50);
+			}
 		}
-		if (chatroomTops.contains(chatroomid)){
-			chatroomTops.remove(chatroomid);
-			userBo.setChatroomsTop(chatroomTops);
-			hasRoom = true;
+		List<PartyBo> partyBos = mongoTemplate.findAll(PartyBo.class);
+		for (PartyBo partyBo : partyBos) {
+			if (partyBo.getDeleted() == 0) {
+
+				CircleShowBo circleShowBo = new CircleShowBo();
+				circleShowBo.setCircleid(partyBo.getCircleid());
+				circleShowBo.setTargetid(partyBo.getId());
+				circleShowBo.setType(1);
+				circleShowBo.setCreateTime(partyBo.getCreateTime());
+				circleService.addCircleShow(circleShowBo);
+				Thread.sleep(50);
+			}
 		}
-		System.out.println(hasRoom + "; " + chatroom.size());
-		if (hasRoom){
-			userService.updateChatrooms(userBo);
-		}
+
 	}
 
 
 	@Test
 	public void myTest(){
 
-		List<BasicDBObject> objects = commentService.selectMyNoteReply("59c37cea31f0a51f8c9d2e79","",50 );
-		List<NoteVo> noteVoList = new LinkedList<>();
-		for (BasicDBObject object : objects) {
-			String id = object.get("noteid").toString();
-			NoteBo noteBo = noteService.selectById(id);
-			System.out.println("===============" + noteBo.getCreateTime());
-		}
-		Map<String, Object> map = new HashMap<>();
-		map.put("ret", 0);
-		map.put("noteVoList", noteVoList);
-		System.out.println(JSON.toJSONString(map));
 
-		List<NoteBo> noteBos = noteService.selectMyNotes("59c37cea31f0a51f8c9d2e79", "", false, 10);
 
-		for (NoteBo noteBo : noteBos) {
-			System.out.println("-------------" + noteBo.getCreateTime());
-		}
-		System.out.println(JSON.toJSONString(map));
+		double px = 104.102167;
+		double py = 30.644147;
 
-		noteBos = noteService.finyByCreateTime("59f7cd4031f0a52007710c0d","",false,50);
-		for (NoteBo noteBo : noteBos) {
-			System.out.println("-------------" + noteBo.getCreateTime());
+		List<LocationBo> locationBoList = locationService.findCircleNear(px, py, 5000);
+		System.out.println("----------" + locationBoList.size());
+		for (LocationBo bo : locationBoList) {
+			String userid = bo.getUserid();
+			UserBo temp = userService.getUser(userid);
+			System.out.println(JSON.toJSONString(bo));
+			if (temp != null) {
+				System.out.println("======================");
+				System.out.println(JSON.toJSONString(temp.getId()));
+			}
 		}
+
+//		noteBos = noteService.finyByCreateTime("59f7cd4031f0a52007710c0d","",false,50);
+//		for (NoteBo noteBo : noteBos) {
+//			System.out.println("-------------" + noteBo.getCreateTime());
+//		}
 	}
 
 	private void boToVo(NoteBo noteBo, NoteVo noteVo, UserBo userBo){
@@ -1181,62 +1304,122 @@ public class MongoDBTest {
 	}
 
 
-	private void removeTag(String userid, String friendid, List<String> tags){
-		List<TagBo> tagBoList = tagService.getTagBoListByUseridAndFrinedid(
-				userid, friendid);
-		if (tagBoList != null) {
-			for (TagBo tagBo : tagBoList) {
-				System.out.println("==========" + tagBo.getName());
-				if (!tags.contains(tagBo.getName())){
-					System.out.println("-----------" + tagBo.getName());
-					LinkedHashSet<String> firendsSet = tagBo.getFriendsIds();
-					firendsSet.remove(friendid);
-					tagService.updateTagFriends(tagBo.getId(), firendsSet);
-				}
+	@Test
+	public void removeTag(){
+//		List<BroadcastBo> broadcastBos = inforService.selectBroadClassByGroups("中医养生");
+//		for (BroadcastBo broadcastBo : broadcastBos) {
+//			System.out.println(JSON.toJSONString(broadcastBo));
+//		}
+
+
+		List<FriendsBo> friendsBos = mongoTemplate.findAll(FriendsBo.class);
+
+		for (FriendsBo friendsBo : friendsBos) {
+			if (friendsBo.getApply() != 1 || friendsBo.getDeleted() == 1) {
+				continue;
 			}
+			UserBo userBo = userService.getUser(friendsBo.getFriendid());
+			if (userBo == null) {
+				continue;
+			}
+			Update update = new Update();
+			update.set("friendHeadPic", userBo.getHeadPictureName());
+			update.set("username", userBo.getUserName());
+			//如果当初没有创建成功
+			ChatroomBo chatroomBo = chatroomService.selectByUserIdAndFriendid(
+					friendsBo.getUserid(), friendsBo.getFriendid());
+			if (chatroomBo == null) {
+				chatroomBo = chatroomService.selectByUserIdAndFriendid(
+						friendsBo.getFriendid(), friendsBo.getUserid());
+			}
+			if (chatroomBo != null) {
+				update.set("chatroomid", chatroomBo.getId());
+			}
+			Query query = new Query();
+			query.addCriteria(new Criteria("_id").is(friendsBo.getId()));
+			mongoTemplate.updateFirst(query, update, FriendsBo.class);
 		}
+
+		
+
 	}
 
 
 	@Test
 	public void circle(){
 
-		CircleBo circleBo = new CircleBo();
-		circleBo.setPosition(new double[]{118.788345,32.029078});
-		circleBo.setProvince("北京市");
-		circleBo.setCity("北京市");
-		circleBo.setDistrict("昌平区");
-		circleBo.setDescription("测试圈子222");
-		circleBo.setTag("交友");
-		circleBo.setSub_tag("80后");
-		circleBo.setName("圈子222");
-		HashSet<String> users = circleBo.getUsers();
-		users.add("59cfa38231f0a51d1e04741d");
-		circleBo.setUsers(users);
-		circleBo.setCreateuid("59cfa38231f0a51d1e04741d");
-		circleBo.setUsernum(1);
-		circleBo.setOpen(true);
+		String timestamp = "0";
+		
+//		String userid = "59c37cea31f0a51f8c9d2e79";
+//		List<FriendsVo> voList = new LinkedList<>();
+//		String timeStr = "";
+//		try {
+//			Date times = CommonUtil.getDate(timestamp);
+//			List<FriendsBo> list = friendsService.getFriendByUserid(userid, times);
+//			if (!CommonUtil.isEmpty(list)) {
+//				FriendsBo first = list.get(0);
+//				timeStr = CommonUtil.getDateStr(first.getUpdateTime(),"yyyy-MM-dd HH:mm:ss");
+//			}
+//			for (FriendsBo friendsBo : list) {
+//				FriendsVo vo = new FriendsVo();
+//				BeanUtils.copyProperties(friendsBo, vo);
+//				String friendid = friendsBo.getFriendid();
+//				List<TagBo> tagBos = tagService.getTagBoListByUseridAndFrinedid(userid, friendid);
+//				List<String> tagList = new ArrayList<>();
+//				for (TagBo tagBo : tagBos) {
+//					tagList.add(tagBo.getName());
+//				}
+//				vo.setPicture(friendsBo.getFriendHeadPic());
+//				vo.setTag(tagList);
+//				if (StringUtils.isEmpty(friendsBo.getBackname())) {
+//					UserBo friend = userService.getUser(friendid);
+//					vo.setBackname(friend.getUserName());
+//					vo.setUsername(friend.getUserName());
+//				} else {
+//					vo.setBackname(friendsBo.getBackname());
+//					vo.setUsername(friendsBo.getUsername());
+//				}
+//					vo.setChannelId(friendsBo.getChatroomid());
+//				voList.add(vo);
+//			}
+//		} catch (ParseException e){
+//			e.printStackTrace();
+//		}
+//		Map<String, Object> map = new HashMap<String, Object>();
+//		map.put("ret", 0);
+//		map.put("timestamp", StringUtils.isNotEmpty(timeStr) ? timeStr : timestamp);
+//		map.put("tag", voList);
 
-		circleDao.insert(circleBo);
 
-		circleBo = new CircleBo();
-		circleBo.setPosition(new double[]{118.788343, 32.029075});
-		circleBo.setProvince("北京市");
-		circleBo.setCity("北京市");
-		circleBo.setDistrict("东城区");
-		circleBo.setDescription("测试圈子222");
-		circleBo.setTag("运动");
-		circleBo.setSub_tag("滑板");
-		circleBo.setName("圈子222");
-		users = circleBo.getUsers();
-		users.add("59cfa42831f0a51d1e047420");
-		circleBo.setUsers(users);
-		circleBo.setCreateuid("59cfa42831f0a51d1e047420");
-		circleBo.setUsernum(1);
-		circleBo.setOpen(true);
+		String[] phones = new String[]{"13716057225", "17611156225"};
 
-		circleDao.insert(circleBo);
+		List<UserBaseVo> userBaseVos = new ArrayList<>();
+		List<String> phoneList = new ArrayList<>();
+		String timeStr = "";
+		if(null != phones) {
+			Collections.addAll(phoneList, phones);
+			try {
+				Date times = CommonUtil.getDate(timestamp);
+				List<UserBo> userBos = userService.getUserByPhoneAndTime(phoneList, times);
+				if (!CommonUtil.isEmpty(userBos)) {
+					UserBo first = userBos.get(0);
+					timeStr = CommonUtil.getDateStr(first.getCreateTime(),"yyyy-MM-dd HH:mm:ss");
+					for (UserBo userBo : userBos) {
+						UserBaseVo baseVo = new UserBaseVo();
+						BeanUtils.copyProperties(userBo, baseVo);
+						userBaseVos.add(baseVo);
+					}
+				}
+			} catch (ParseException e){
+				e.printStackTrace();
+			}
+		}
+		Map<String, Object> map = new LinkedHashMap<>();
+		map.put("ret", 0);
+		map.put("timestamp", StringUtils.isNotEmpty(timeStr) ? timeStr : timestamp);
+		map.put("userVos", userBaseVos);
 
+		System.out.println(JSON.toJSONString(map));
 	}
 
 

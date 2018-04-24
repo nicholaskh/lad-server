@@ -959,12 +959,14 @@ public class FriendsController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		//申请好友的好友关联信息
 		FriendsBo friendsBo = friendsService.get(id);
 		if (friendsBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NOT_EXIST.getIndex(),
 					ERRORCODE.FRIEND_NOT_EXIST.getReason());
 		}
-		FriendsBo friend = friendsService.getFriendByIdAndVisitorIdAgree(friendsBo.getFriendid(), userBo.getId());
+		//我的好友关联信息
+		FriendsBo friend = friendsService.getFriendByIdAndVisitorIdAgree(userBo.getId(), friendsBo.getUserid());
 		if (friend == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NOT_HAS_YOU.getIndex(),
 					ERRORCODE.FRIEND_NOT_HAS_YOU.getReason());
