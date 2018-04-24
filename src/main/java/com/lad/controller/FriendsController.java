@@ -959,7 +959,6 @@ public class FriendsController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
-		System.out.println(userBo.getUserName());
 		FriendsBo friendsBo = friendsService.get(id);
 		if (friendsBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.FRIEND_NOT_EXIST.getIndex(),
