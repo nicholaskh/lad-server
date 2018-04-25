@@ -592,6 +592,7 @@ public class ChatroomController extends BaseContorller {
 		ChatroomVo vo = new ChatroomVo();
 		if (null != temp) {
 			BeanUtils.copyProperties(temp,vo);
+
 			ChatroomUserBo chatroomUserBo = chatroomService.findChatUserByUserAndRoomid(userBo.getId(), chatroomid);
 			if (chatroomUserBo == null) {
 				chatroomUserBo = new ChatroomUserBo();
@@ -603,27 +604,28 @@ public class ChatroomController extends BaseContorller {
 				chatroomUserBo.setDisturb(false);
 				chatroomService.insertUser(chatroomUserBo);
 				vo.setDisturb(false);
+			} 
+			
+			if (temp.getType() != 1) {
+				bo2vo(temp, vo);
+				vo.setUserNum(temp.getUsers().size());
+				vo.setShowNick(chatroomUserBo.isShowNick());
 			} else {
-				if (temp.getType() != 1) {
-					bo2vo(temp, vo);
-					vo.setUserNum(temp.getUsers().size());
-					vo.setShowNick(chatroomUserBo.isShowNick());
+				FriendsBo bo = friendsService.getFriendByIdAndVisitorIdAgree(temp.getUserid(), temp
+						.getFriendid());
+				if (bo != null && StringUtils.isNotEmpty(bo.getBackname())) {
+					vo.setName(bo.getBackname());
 				} else {
-					FriendsBo bo = friendsService.getFriendByIdAndVisitorIdAgree(temp.getUserid(), temp
-							.getFriendid());
-					if (bo != null && StringUtils.isNotEmpty(bo.getBackname())) {
-						vo.setName(bo.getBackname());
+					UserBo friend = userService.getUser(temp.getFriendid());
+					if (friend != null){
+						vo.setName(friend.getUserName());
 					} else {
-						UserBo friend = userService.getUser(temp.getFriendid());
-						if (friend != null){
-							vo.setName(friend.getUserName());
-						} else {
-							vo.setName(chatroomUserBo.getUsername());
-						}
+						vo.setName(chatroomUserBo.getUsername());
 					}
 				}
-				vo.setDisturb(chatroomUserBo.isDisturb());
 			}
+			vo.setDisturb(chatroomUserBo.isDisturb());
+			
 		} else {
 			return CommonUtil.toErrorResult(
 					ERRORCODE.CHATROOM_ID_NULL.getIndex(),
