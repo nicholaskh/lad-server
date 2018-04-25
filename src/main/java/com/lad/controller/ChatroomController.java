@@ -288,8 +288,8 @@ public class ChatroomController extends BaseContorller {
 		}
 		String name = chatroomBo.getName();
 
-		//聊天室少于2人则直接删除
-		if (set.size() < 2) {
+		//聊天室最后1人退出人则直接删除
+		if (set.size() < 1) {
 			String res = IMUtil.disolveRoom(chatroomid);
 			if (!res.equals(IMUtil.FINISH) && !res.contains("not found")) {
 				return res;
@@ -356,7 +356,7 @@ public class ChatroomController extends BaseContorller {
 			return result;
 		}
 		LinkedHashSet<String> set = chatroomBo.getUsers();
-		if (set.size() >= 2) {
+		if (set.size() >= 1) {
 			//如果是群主退出，则由下一个人担当
 			if (userid.equals(chatroomBo.getMaster())) {
 				set.remove(userid);
@@ -383,7 +383,7 @@ public class ChatroomController extends BaseContorller {
 
 		String name = chatroomBo.getName();
 
-		if (set.size() < 2) {
+		if (set.size() < 1) {
 			String res = IMUtil.disolveRoom(chatroomid);
 			if (!res.equals(IMUtil.FINISH) && !res.contains("not found")) {
 				return res;
