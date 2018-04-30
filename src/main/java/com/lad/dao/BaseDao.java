@@ -178,6 +178,7 @@ public class BaseDao<T extends Serializable> {
                 break;
             default:
                 update.inc("visitNum", 1);
+                break;
         }
         return mongoTemplate.updateFirst(query, update, getClz());
     }

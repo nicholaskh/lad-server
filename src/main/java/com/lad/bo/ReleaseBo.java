@@ -34,12 +34,7 @@ public class ReleaseBo extends BaseBo {
      */
     public static final int TOUR_CP = 3;
 
-    /**
-     * 找演出信息
-     */
-    public static final int SHOW = 4;
-
-    //发布类型 type=all
+    //发布类型
     private int releaseType;
     //发布信息内容简介 type=all
     private String brief;
@@ -75,11 +70,4 @@ public class ReleaseBo extends BaseBo {
     private LinkedHashSet<String> destinations;
     // 是否自驾 type=3
     private boolean selfDrive;
-
-    // 演出时间 type=4
-    private Date showTime;
-    // 演出预算 type=4
-    private double amount;
-    // 演出类型 type=4
-    private LinkedHashSet<String> showTypes;
 }
