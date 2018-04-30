@@ -1194,6 +1194,7 @@ public class NoteController extends BaseContorller {
 		NoteBo noteBo = new NoteBo();
 		noteBo.setCircleId(circleid);
 		noteBo.setVideoPic(old.getVideoPic());
+		noteBo.setSubject(old.getSubject());
 		noteBo.setPhotos(old.getPhotos());
 		noteBo.setType(old.getType());
 		noteBo.setContent(old.getContent());
