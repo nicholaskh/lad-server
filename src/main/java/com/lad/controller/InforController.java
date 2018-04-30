@@ -294,7 +294,6 @@ public class InforController extends BaseContorller {
         }
         for (BroadcastBo bo : broadcastBos) {
             RadioClassVo classVo = new RadioClassVo();
-            JSONObject object = new JSONObject();
             classVo.setModule(bo.getModule());
             classVo.setTitle(bo.getClassName());
             classVo.setSource(bo.getSource());
