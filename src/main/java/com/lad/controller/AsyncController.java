@@ -92,9 +92,7 @@ public class AsyncController extends BaseContorller {
             if (isAdd) {
                 userBo.setChatrooms(chatroom);
                 //个人聊天室中没有当前聊天室，则添加到个人的聊天室
-                if (!chatroom.contains(chatroomid)) {
-                    chatroom.add(chatroomid);
-                }
+                chatroom.add(chatroomid);
                 showRooms.add(chatroomid);
             } else {
                 if (chatroom.contains(chatroomid)) {
@@ -112,7 +110,6 @@ public class AsyncController extends BaseContorller {
         } finally {
             lock.unlock();
         }
-        chatroomService.deleteChatroomUser(userid, chatroomid);
     }
 
 

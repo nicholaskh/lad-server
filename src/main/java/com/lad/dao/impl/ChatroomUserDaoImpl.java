@@ -44,8 +44,7 @@ public class ChatroomUserDaoImpl implements IChatroomUserDao {
     @Override
     public ChatroomUserBo findByUserAndRoomid(String userid, String chatroomid) {
         Query query = new Query();
-        query.addCriteria(new Criteria("userid").is(userid));
-        query.addCriteria(new Criteria("chatroomid").is(chatroomid));
+        query.addCriteria(new Criteria("userid").is(userid).and("chatroomid").is(chatroomid));
         return mongoTemplate.findOne(query, ChatroomUserBo.class);
     }
 

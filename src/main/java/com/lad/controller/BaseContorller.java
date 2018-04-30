@@ -209,7 +209,7 @@ public abstract class BaseContorller {
 			chatroomUserBo.setShowNick(false);
 			chatroomUserBo.setDisturb(false);
 			service.insertUser(chatroomUserBo);
-		} else {
+		} else if (chatroomUserBo.getDeleted() == Constant.DELETED){
 			service.updateUserNickname(chatroomUserBo.getId(), nickname);
 		}
 	}
