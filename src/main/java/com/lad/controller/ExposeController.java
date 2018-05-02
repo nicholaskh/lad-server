@@ -212,6 +212,7 @@ public class ExposeController extends BaseContorller {
         UserBo userBo = getUserLogin(request);
         if (userBo != null) {
             String userid = userBo.getId();
+            vo.setCreate(userid.equals(expose.getCreateuid()));
             FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(userid, expose.getCreateuid());
             if (friendsBo != null && !StringUtils.isEmpty(friendsBo.getBackname())) {
                 baseVo.setUserName(friendsBo.getBackname());
@@ -361,18 +362,18 @@ public class ExposeController extends BaseContorller {
      * @return
      */
     @ApiOperation("删除自己的评论")
-    @ApiImplicitParam(name = "commentId", value = "评论id", required = true, dataType = "string", paramType = "query")
+    @ApiImplicitParam(name = "commentid", value = "评论id", required = true, dataType = "string", paramType = "query")
     @DeleteMapping("/delete-self-comment")
-    public String deleteComments(String commentId,HttpServletRequest request,  HttpServletResponse response) {
+    public String deleteComments(String commentid,HttpServletRequest request,  HttpServletResponse response) {
         UserBo userBo = getUserLogin(request);
         if (userBo == null) {
             return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
                     ERRORCODE.ACCOUNT_OFF_LINE.getReason());
         }
-        CommentBo commentBo = commentService.findById(commentId);
+        CommentBo commentBo = commentService.findById(commentid);
         if (commentBo != null) {
             if (userBo.getId().equals(commentBo.getCreateuid()) || CommonUtil.getAdminUserids().contains(userBo.getId())) {
-                commentService.delete(commentId);
+                commentService.delete(commentid);
                 asyncController.updateExposeCounts(exposeService, commentBo.getTargetid(), Constant.COMMENT_NUM, 1);
             } else {
                 return CommonUtil.toErrorResult(ERRORCODE.NOTE_NOT_MASTER.getIndex(),
@@ -490,6 +491,7 @@ public class ExposeController extends BaseContorller {
             ExposeVo exposeVo = new ExposeVo();
             BeanUtils.copyProperties(exposeBo, exposeVo);
             exposeVo.setExposeid(exposeBo.getId());
+            exposeVo.setCreate(userid.equals(exposeBo.getCreateuid()));
             if (exposeBo.getCreateuid().equals(userid)){
                 UserBaseVo baseVo = new UserBaseVo();
                 BeanUtils.copyProperties(userBo,baseVo);
@@ -515,5 +517,76 @@ public class ExposeController extends BaseContorller {
         map.put("ret", 0);
         map.put("exposeVoList", exposeVos);
         return JSONObject.fromObject(map).toString();
+    }
+
+
+
+    @ApiOperation("曝光评论点赞")
+    @ApiImplicitParam(name = "commentid", value = "评论id", required = true, dataType = "string", paramType = "query")
+    @PostMapping("/com-thumbsup")
+    public String comThumbsup(String commentid, HttpServletRequest request, HttpServletResponse response){
+        UserBo userBo = getUserLogin(request);
+        if (userBo == null) {
+            return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+                    ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+        }
+        CommentBo commentBo = commentService.findById(commentid);
+        if (commentBo == null) {
+            return CommonUtil.toErrorResult(ERRORCODE.COMMENT_IS_NULL.getIndex(),
+                    ERRORCODE.COMMENT_IS_NULL.getReason());
+        }
+        ExposeBo expose = exposeService.findById(commentBo.getTargetid());
+        if (expose == null) {
+            return CommonUtil.toErrorResult(ERRORCODE.EXPOSE_MSG_NULL.getIndex(),
+                    ERRORCODE.EXPOSE_MSG_NULL.getReason());
+        }
+        ThumbsupBo thumbsupBo = thumbsupService.findHaveOwenidAndVisitorid(commentid, userBo.getId());
+        boolean isThumsup = false;
+        if (null == thumbsupBo) {
+            thumbsupBo = new ThumbsupBo();
+            thumbsupBo.setType(Constant.EXPOSE_TYPE);
+            thumbsupBo.setOwner_id(commentid);
+            thumbsupBo.setImage(userBo.getHeadPictureName());
+            thumbsupBo.setVisitor_id(userBo.getId());
+            thumbsupBo.setCreateuid(userBo.getId());
+            thumbsupService.insert(thumbsupBo);
+            isThumsup = true;
+        } else {
+            if (thumbsupBo.getDeleted() == Constant.DELETED) {
+                thumbsupService.udateDeleteById(thumbsupBo.getId());
+                isThumsup = true;
+            }
+        }
+        if (isThumsup) {
+            asyncController.updateExposeCounts(exposeService, commentid, Constant.THUMPSUB_NUM, 1);
+        }
+        return Constant.COM_RESP;
+    }
+
+    @ApiOperation("取消曝光评论点赞")
+    @ApiImplicitParam(name = "commentid", value = "评论信息id", required = true, dataType = "string", paramType = "query")
+    @PostMapping("/cancal-com-thumbsup")
+    public String cancelComThumbsup(String commentid, HttpServletRequest request, HttpServletResponse response){
+        UserBo userBo = getUserLogin(request);
+        if (userBo == null) {
+            return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+                    ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+        }
+        CommentBo commentBo = commentService.findById(commentid);
+        if (commentBo == null) {
+            return CommonUtil.toErrorResult(ERRORCODE.COMMENT_IS_NULL.getIndex(),
+                    ERRORCODE.COMMENT_IS_NULL.getReason());
+        }
+        ExposeBo expose = exposeService.findById(commentBo.getTargetid());
+        if (expose == null) {
+            return CommonUtil.toErrorResult(ERRORCODE.EXPOSE_MSG_NULL.getIndex(),
+                    ERRORCODE.EXPOSE_MSG_NULL.getReason());
+        }
+        ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(commentid, userBo.getId());
+        if (thumbsupBo != null) {
+            thumbsupService.deleteById(thumbsupBo.getId());
+            asyncController.updateExposeCounts(exposeService, commentid, Constant.THUMPSUB_NUM, -1);
+        }
+        return Constant.COM_RESP;
     }
 }
