@@ -936,4 +936,87 @@ public class AsyncController extends BaseContorller {
         }
     }
 
+    /**
+     * 演出发布团队向商家推送演出信息
+     * @param service
+     * @param showType
+     * @param username
+     * @param userid
+     */
+    @Async
+    public void pushShowToCompany(IShowService service, String showType,String showid, String username, String
+            userid){
+        //查找商家发布的招演信息
+        List<ShowBo> showBos = service.findByShowType(showType, ShowBo.NEED);
+        if (CommonUtil.isEmpty(showBos)) {
+            return;
+        }
+        //先去除重复的数据
+        HashSet<String> userids = new LinkedHashSet<>();
+        String path = String.format("/show/show-info?showid=%s",showid);
+        String content = String.format("{“%s”}刚刚发布了{%s}演出，赶紧去看看吧！",username, showType);
+        HashSet<String> friendids = new LinkedHashSet<>();
+
+        List<String> showids = new LinkedList<>();
+        for (ShowBo showBo : showBos) {
+            //已超时的不在推送
+            Date time = CommonUtil.getDate(showBo.getShowTime(),"yyyy-MM-dd HH:mm:ss");
+            if (System.currentTimeMillis() > time.getTime()) {
+                showids.add(showBo.getId());
+                continue;
+            }
+            //判断招演发布人与接演发布人是不是好友，好友的话需要在推送消息时需要显示昵称
+            FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(showBo.getCreateuid(), userid);
+            if (friendsBo != null && !StringUtils.isEmpty(friendsBo.getBackname())){
+                //同一个演出团队一种类型只发送一个给商家
+                if (!friendids.contains(friendsBo.getId())) {
+                    username =  friendsBo.getBackname();
+                    path = String.format("/show/show-info?showid=%s",showid);
+                    content = String.format("{“%s”}刚刚发布了{%s}演出，赶紧去看看吧！",username, showType);
+                    JPushUtil.push("演出通知", content, path, showBo.getCreateuid());
+                    addMessage(messageService, path, content, "演出通知", userid, showBo.getCreateuid());
+                    friendids.add(friendsBo.getId());
+                }
+            } else {
+                userids.add(showBo.getCreateuid());
+            }
+        }
+        //非好友统一推送信息
+        if (!userids.isEmpty()) {
+            String[] useridArr = userids.toArray(new String[]{});
+            JPushUtil.push("演出通知", content, path, useridArr);
+            addMessage(messageService, path, content, "演出通知", userid, useridArr);
+        }
+        //更新过期招演信息
+        if (!showids.isEmpty()) {
+            service.updateShowStatus(showids, 1);
+        }
+    }
+
+
+    /**
+     * 商家发布招演信息向演出团队推送
+     * @param service
+     * @param show
+     */
+    @Async
+    public void pushShowToCreate(IShowService service, ShowBo show){
+        String showType = show.getShowType();
+        List<ShowBo> showBos = service.findByShowType(showType, ShowBo.PROVIDE);
+        String path = String.format("/show/show-info?showid=%s",show.getId());
+        String content = String.format("{“%s”}正在找{%s}演出，赶紧去看看吧！",show.getCompany(), showType);
+        HashSet<String> userids = new LinkedHashSet<>();
+        showBos.forEach(showBo -> userids.add(showBo.getCreateuid()));
+        List<CircleBo> circleBos = circleService.selectByRegexName(showType);
+        for (CircleBo circleBo : circleBos) {
+            userids.addAll(circleBo.getMasters());
+            userids.add(circleBo.getCreateuid());
+        }
+        if (!userids.isEmpty()) {
+            String[] useridArr = userids.toArray(new String[]{});
+            JPushUtil.push("演出通知", content, path, useridArr);
+            addMessage(messageService, path, content, "演出通知", show.getCreateuid(), useridArr);
+        }
+    }
+
 }

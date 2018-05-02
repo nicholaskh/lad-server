@@ -467,4 +467,22 @@ public class CircleDaoImpl implements ICircleDao {
 		query.addCriteria(new Criteria("_id").in(circleids).and("deleted").is(Constant.ACTIVITY));
 		return mongoTemplate.find(query, CircleBo.class);
 	}
+
+	@Override
+	public WriteResult updateTakeShow(String circleid, boolean takeShow) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("_id").is(circleid));
+		Update update = new Update();
+		update.set("takeShow", takeShow);
+		return mongoTemplate.updateFirst(query, update, CircleBo.class);
+	}
+
+	@Override
+	public List<CircleBo> selectByRegexName(String showType) {
+		Pattern pattern = Pattern.compile("^.*"+showType+".*$", Pattern.CASE_INSENSITIVE);
+		Query query = new Query(new Criteria("takeShow").is(true).and("deleted").is(Constant.ACTIVITY)
+				.and("name").regex(pattern));
+		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
+		return mongoTemplate.find(query, CircleBo.class);
+	}
 }

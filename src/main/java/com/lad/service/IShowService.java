@@ -38,4 +38,24 @@ public interface IShowService {
 
     List<ShowBo> findByShowType(String keyword, int type);
 
+
+    WriteResult updateShowStatus(List<String> showids, int status);
+
+    
+    WriteResult updateShowStatus(String showid, int status);
+
+    /**
+     * 根据id查找
+     * @param id
+     * @return
+     */
+    ShowBo findById(String id);
+
+    /**
+     * 根据id删除
+     * @param id
+     * @return
+     */
+    WriteResult deleteById(String id);
+
 }

@@ -218,4 +218,20 @@ public interface ICircleDao extends IBaseDao {
 	 */
 	List<CircleBo> selectByCity(String city, int page, int limit);
 
+	/**
+	 * 更新圈子承接演出信息
+	 * @param circleid
+	 * @param takeShow
+	 * @return
+	 */
+	WriteResult updateTakeShow(String circleid, boolean takeShow);
+
+
+	/**
+	 * 根据演出类型模糊匹配圈子名称搜索圈子
+	 * @return
+	 */
+	List<CircleBo> selectByRegexName(String showType);
+
+
 }

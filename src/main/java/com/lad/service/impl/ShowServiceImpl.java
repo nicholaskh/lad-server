@@ -62,4 +62,24 @@ public class ShowServiceImpl implements IShowService {
     public List<ShowBo> findByShowType(String keyword, int type) {
         return showDao.findByShowType(keyword, type);
     }
+
+    @Override
+    public WriteResult updateShowStatus(List<String> showids, int status) {
+        return showDao.updateShowStatus(showids, status);
+    }
+
+    @Override
+    public WriteResult updateShowStatus(String showid, int status) {
+        return showDao.updateShowStatus(showid, status);
+    }
+
+    @Override
+    public ShowBo findById(String id) {
+        return showDao.findById(id);
+    }
+
+    @Override
+    public WriteResult deleteById(String id) {
+        return showDao.deleteById(id);
+    }
 }

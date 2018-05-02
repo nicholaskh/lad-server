@@ -40,7 +40,7 @@ public class ShowBo extends BaseBo {
     private String dist;
     //详细地址
     private String address;
-    //演出信息的状态
+    //演出信息的状态  0 发布， 1结束
     private int status;
 
     private String phone;

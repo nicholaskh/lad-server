@@ -1,5 +1,6 @@
 package com.lad.controller;
 
+import com.lad.bo.FriendsBo;
 import com.lad.bo.ShowBo;
 import com.lad.bo.UserBo;
 import com.lad.service.*;
@@ -7,15 +8,14 @@ import com.lad.util.CommonUtil;
 import com.lad.util.Constant;
 import com.lad.util.ERRORCODE;
 import com.lad.vo.ShowVo;
+import com.lad.vo.UserBaseVo;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.json.JSONObject;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
@@ -32,7 +32,7 @@ import java.util.Map;
  * Time:2018/4/28
  */
 @Slf4j
-@Api("招接演出接口")
+@Api(value = "ShowController", description = "招接演出接口")
 @RestController
 @RequestMapping("show")
 public class ShowController extends BaseContorller {
@@ -59,13 +59,12 @@ public class ShowController extends BaseContorller {
 
     @ApiOperation("发表招接演出信息")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "showVo", value = "演出信息实体类", required = true),
             @ApiImplicitParam(name = "images", value = "图片信息,如果是招演类型，则为营业执照图片", paramType = "query", dataType =
                     "file"),
             @ApiImplicitParam(name = "video", value = "视频信息，与图片二选一", paramType = "query", dataType = "file")})
     @PostMapping("/insert")
-    public String insert(@RequestBody ShowVo showVo, MultipartFile[] images, MultipartFile video,
-                         HttpServletRequest request, HttpServletResponse response) {
+    public String insert(@RequestBody @ApiParam(name = "showVo", value = "演出信息实体类", required = true)ShowVo showVo,
+                         MultipartFile[] images, MultipartFile video, HttpServletRequest request, HttpServletResponse response) {
         UserBo userBo = getUserLogin(request);
         if (userBo == null) {
             return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
@@ -105,21 +104,54 @@ public class ShowController extends BaseContorller {
             log.info("user {} shows add video path: {},  videoPic: {} ", userid, paths[0], paths[1]);
         }
         showService.insert(showBo);
-
-        if (showVo.getType() == ShowBo.NEED) {
-
-
+        if (showBo.getType() == ShowBo.NEED) {
+            asyncController.pushShowToCreate(showService, showBo);
         } else {
-
-
-
-
+            asyncController.pushShowToCompany(showService, showBo.getShowType(), showBo.getId(),
+                    userBo.getUserName(), userid);
         }
-
         Map<String, Object> map = new HashMap<>();
         map.put("ret", 0);
         map.put("showid", showBo.getId());
         return JSONObject.fromObject(map).toString();
     }
+
+
+
+    @ApiOperation("获取演出详情")
+    @ApiImplicitParam(name = "showid", value = "演出id", required = true, paramType = "query",
+            dataType = "string")
+    @GetMapping("/show-info")
+    public String detail(String showid,HttpServletRequest request, HttpServletResponse response) {
+        ShowBo showBo = showService.findById(showid);
+        if (showBo == null) {
+            return CommonUtil.toErrorResult(ERRORCODE.SHOW_NULL.getIndex(),
+                    ERRORCODE.SHOW_NULL.getReason());
+        }
+        ShowVo vo = new ShowVo();
+        BeanUtils.copyProperties(showBo, vo);
+        vo.setShowid(showBo.getId());
+        UserBaseVo baseVo = new UserBaseVo();
+        UserBo createUser = userService.getUser(showBo.getCreateuid());
+        if (createUser != null) {
+            BeanUtils.copyProperties(createUser,baseVo);
+        }
+        UserBo userBo = getUserLogin(request);
+        if (userBo != null) {
+            String userid = userBo.getId();
+            vo.setCreate(userid.equals(showBo.getCreateuid()));
+            FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(userid, showBo.getCreateuid());
+            if (friendsBo != null && !StringUtils.isEmpty(friendsBo.getBackname())) {
+                baseVo.setUserName(friendsBo.getBackname());
+            }
+        }
+        vo.setCreatUser(baseVo);
+        Map<String, Object> map = new HashMap<>();
+        map.put("ret", 0);
+        map.put("showVo", vo);
+        return JSONObject.fromObject(map).toString();
+    }
+
+    
 
 }
