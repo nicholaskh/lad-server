@@ -551,9 +551,11 @@ public class ExposeController extends BaseContorller {
             thumbsupBo.setCreateuid(userBo.getId());
             thumbsupService.insert(thumbsupBo);
             isThumsup = true;
+            asyncController.updateCommentThump(commentid, 1);
         } else {
             if (thumbsupBo.getDeleted() == Constant.DELETED) {
                 thumbsupService.udateDeleteById(thumbsupBo.getId());
+                asyncController.updateCommentThump(commentid, 1);
                 isThumsup = true;
             }
         }
@@ -586,6 +588,9 @@ public class ExposeController extends BaseContorller {
         if (thumbsupBo != null) {
             thumbsupService.deleteById(thumbsupBo.getId());
             asyncController.updateExposeCounts(exposeService, commentid, Constant.THUMPSUB_NUM, -1);
+            if (commentBo.getThumpsubNum() > 0) {
+                asyncController.updateCommentThump(commentid, -1);
+            }
         }
         return Constant.COM_RESP;
     }

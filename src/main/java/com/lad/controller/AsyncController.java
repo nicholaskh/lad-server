@@ -936,6 +936,24 @@ public class AsyncController extends BaseContorller {
         }
     }
 
+
+    /**
+     * 异步更新阅读点赞等数据
+     * @param commentid
+     * @param num
+     * @return
+     */
+    @Async
+    public void updateCommentThump(String commentid, int num){
+        RLock lock = redisServer.getRLock(commentid.concat("thump"));
+        try {
+            lock.lock(2, TimeUnit.SECONDS);
+            commentService.updateThumpsubNum(commentid, num);
+        } finally {
+            lock.unlock();
+        }
+    }
+
     /**
      * 演出发布团队向商家推送演出信息
      * @param service
