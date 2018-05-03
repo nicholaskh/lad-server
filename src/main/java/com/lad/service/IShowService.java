@@ -58,4 +58,6 @@ public interface IShowService {
      */
     WriteResult deleteById(String id);
 
+
+    List<ShowBo> findByShowType(int type, int page, int limit);
 }

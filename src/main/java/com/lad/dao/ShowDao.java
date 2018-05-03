@@ -31,7 +31,7 @@ public class ShowDao extends BaseDao<ShowBo>{
      */
     public List<ShowBo> findByList(String keyword, int type, int page, int limit){
         Query query = new Query();
-        Criteria criteria = new Criteria("type").is(type);
+        Criteria criteria = new Criteria("type").is(type).and("status").is(0).and("deleted").is(Constant.ACTIVITY);
         if (!StringUtils.isEmpty(keyword)) {
             criteria.orOperator(new Criteria("showType").regex("^.*"+keyword+".*$"),
                     new Criteria("title").regex("^.*"+keyword+".*$"));
@@ -73,7 +73,9 @@ public class ShowDao extends BaseDao<ShowBo>{
         Query query = new Query();
         query.addCriteria(new Criteria("type").is(type).and("createuid").is(userid)
                 .and("deleted").is(Constant.ACTIVITY));
-        query.with(new Sort(Sort.Direction.DESC, "_id"));
+        //自己发布已失效也需要排序
+        query.with(new Sort(new Sort.Order(Sort.Direction.ASC,"status")));
+        query.with(new Sort(new Sort.Order(Sort.Direction.DESC,"_id")));
         page = page < 1 ? 1 : page;
         query.skip((page-1)*limit);
         query.limit(limit);
@@ -119,7 +121,7 @@ public class ShowDao extends BaseDao<ShowBo>{
 
 
     /**
-     * 根据关键和type 查询
+     *
      * @param showid
      * @param status
      * @return
@@ -131,4 +133,20 @@ public class ShowDao extends BaseDao<ShowBo>{
         return getMongoTemplate().updateFirst(query, update,  ShowBo.class);
     }
 
+
+    /**
+     * 根据关键和type 查询
+     * @param type
+     * @return
+     */
+    public List<ShowBo> findByShowType(int type, int page, int limit){
+        Query query = new Query();
+        Criteria criteria = new Criteria("type").is(type).and("deleted").is(Constant.ACTIVITY).and("status").is(0);
+        query.addCriteria(criteria);
+        query.with(new Sort(Sort.Direction.DESC, "_id"));
+        page = page < 1 ? 1 : page;
+        query.skip((page-1)*limit);
+        query.limit(limit);
+        return getMongoTemplate().find(query, ShowBo.class);
+    }
 }

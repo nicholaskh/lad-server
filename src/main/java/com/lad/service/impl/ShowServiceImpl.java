@@ -5,6 +5,7 @@ import com.lad.dao.ShowDao;
 import com.lad.service.IShowService;
 import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -64,6 +65,7 @@ public class ShowServiceImpl implements IShowService {
     }
 
     @Override
+    @Async
     public WriteResult updateShowStatus(List<String> showids, int status) {
         return showDao.updateShowStatus(showids, status);
     }
@@ -81,5 +83,10 @@ public class ShowServiceImpl implements IShowService {
     @Override
     public WriteResult deleteById(String id) {
         return showDao.deleteById(id);
+    }
+
+    @Override
+    public List<ShowBo> findByShowType(int type, int page, int limit) {
+        return showDao.findByShowType(type, page, limit);
     }
 }

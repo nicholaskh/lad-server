@@ -972,7 +972,7 @@ public class AsyncController extends BaseContorller {
                 if (!friendids.contains(friendsBo.getId())) {
                     username =  friendsBo.getBackname();
                     path = String.format("/show/show-info?showid=%s",showid);
-                    content = String.format("{“%s”}刚刚发布了{%s}演出，赶紧去看看吧！",username, showType);
+                    content = String.format("{“%s”}刚刚发布了{“%s”}演出，赶紧去看看吧！",username, showType);
                     JPushUtil.push("演出通知", content, path, showBo.getCreateuid());
                     addMessage(messageService, path, content, "演出通知", userid, showBo.getCreateuid());
                     friendids.add(friendsBo.getId());
@@ -1004,7 +1004,7 @@ public class AsyncController extends BaseContorller {
         String showType = show.getShowType();
         List<ShowBo> showBos = service.findByShowType(showType, ShowBo.PROVIDE);
         String path = String.format("/show/show-info?showid=%s",show.getId());
-        String content = String.format("{“%s”}正在找{%s}演出，赶紧去看看吧！",show.getCompany(), showType);
+        String content = String.format("{“%s”}正在找{“%s”}演出，赶紧去看看吧！",show.getCompany(), showType);
         HashSet<String> userids = new LinkedHashSet<>();
         showBos.forEach(showBo -> userids.add(showBo.getCreateuid()));
         List<CircleBo> circleBos = circleService.selectByRegexName(showType);

@@ -25,10 +25,10 @@ public class ShowVo implements Serializable {
     @ApiModelProperty(value="演出id")
     private String showid;
 
-    @ApiModelProperty(value="1招演出，2接演出",name="type")
+    @ApiModelProperty(value="招演出，2接演出1",name="type")
     private int type;
 
-    @ApiModelProperty(value="演出时间,格式yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty(value="演出时间,招演出时，格式为：yyyy-MM-dd HH:mm:ss")
     private String showTime;
 
     @ApiModelProperty(value="演出金额")
@@ -46,7 +46,7 @@ public class ShowVo implements Serializable {
     @ApiModelProperty(value="招演出的详细地址")
     private String address;
 
-    @ApiModelProperty(value="详细信息状态")
+    @ApiModelProperty(value="演出信息状态，0 有效，1 失效")
     private int status;
 
     @ApiModelProperty(value="演出联系电话")
