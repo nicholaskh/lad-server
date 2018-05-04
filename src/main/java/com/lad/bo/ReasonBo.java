@@ -32,7 +32,7 @@ public class ReasonBo extends BaseBo {
 
     //圈子内未读数据，为了减少数据冗余，放到reason表中
     private int unReadNum;
-
+    
     /**
      * 是否通过聚会页面加入圈子
      * 0 正常加入圈子，

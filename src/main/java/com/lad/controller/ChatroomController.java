@@ -1347,29 +1347,32 @@ public class ChatroomController extends BaseContorller {
 		map.put("ret", 0);
 		map.put("channelId", chatroomBo.getId());
 		if (isAgree) {
+			UserBo user = userService.getUser(reasonBo.getCreateuid());
+			reasonService.updateApply(applyid, 1, refues);
 			//第一个为返回结果信息，第二位term信息
-			String result = IMUtil.subscribe(1,chatroomid, userBo.getId());
+			String result = IMUtil.subscribe(1,chatroomid, user.getId());
 			if (!result.equals(IMUtil.FINISH)) {
 				return result;
 			}
-			addChatroomUser(chatroomService, userBo, chatroomid, userBo.getUserName());
-			HashSet<String> chatroom = userBo.getChatrooms();
+			
+			addChatroomUser(chatroomService, user, chatroomid, user.getUserName());	
+			HashSet<String> chatroom = user.getChatrooms();
 			//个人聊天室中没有当前聊天室，则添加到个人的聊天室
 			if (!chatroom.contains(chatroomid)) {
 				chatroom.add(chatroomid);
-				userBo.setChatrooms(chatroom);
-				userService.updateChatrooms(userBo);
+				user.setChatrooms(chatroom);
+				userService.updateChatrooms(user);
 			}
 			// 为IMUtil通知做数据准备
 			LinkedHashSet<String> set = chatroomBo.getUsers();
 			int size = set.size();
-			if (set.contains(userBo.getId())) {
+			if (set.contains(user.getId())) {
 				size --;
 			}
 			String[] tt = new String[size];
 			int i=0;
 			for(String uu: set){
-				if (uu.equals(userBo.getId())) continue;
+				if (uu.equals(user.getId())) continue;
 				tt[i++] = uu;
 			}
 			Object[] otherNameAndId = ChatRoomUtil.getUserNamesAndIds(userService, tt, logger);
@@ -1381,11 +1384,12 @@ public class ChatroomController extends BaseContorller {
 				name = newChatRoomName != null ? newChatRoomName : name;
 			}
 			asyncController.updateChatroomNameAndUser(chatroomid, name, chatroomBo.isNameSet(), set);
-			asyncController.addRoomInfo(userBo, chatroomid, imIds, imNames, otherNameAndId);
+//			
+			asyncController.addRoomInfo(user, chatroomid, imIds, imNames, otherNameAndId);
 			reasonService.updateApply(applyid, Constant.ADD_AGREE, "");
 
 			String path = "";
-			String content = String.format("%s已通过您的加群申请", userBo.getUserName());
+			String content = String.format("%s已通过您的加群申请", user.getUserName());
 			JPushUtil.push(titlePush, content, path,  reasonBo.getCreateuid());
 			addMessage(messageService, path, content, titlePush, reasonBo.getCreateuid());
 			map.put("chatroomUser", set.size());

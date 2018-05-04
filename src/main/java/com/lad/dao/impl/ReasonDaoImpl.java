@@ -110,7 +110,8 @@ public class ReasonDaoImpl implements IReasonDao {
         query.addCriteria(new Criteria("circleid").is(circleid));
         query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
         query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "createTime")));
-        query.skip(page < 1 ? 1: page);
+//        query.skip(page < 1 ? 1: page);
+        query.skip((page - 1) * limit);
         query.limit(limit);
         return mongoTemplate.find(query, ReasonBo.class);
     }
@@ -118,10 +119,13 @@ public class ReasonDaoImpl implements IReasonDao {
     @Override
     public List<ReasonBo> findByChatroomHis(String chatroomid, int page, int limit) {
         Query query = new Query();
-        query.addCriteria(new Criteria("chatroomid").is(chatroomid).and("deleted").is(Constant.ACTIVITY)
-                .and("status").is(0));
+        Criteria criteria = new Criteria();
+        criteria.andOperator(Criteria.where("chatroomid").is(chatroomid),Criteria.where("deleted").is(Constant.ACTIVITY),Criteria.where("status").is(0));      
+        query.addCriteria(criteria);
+        
+        
         query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "createTime")));
-        query.skip(page < 1 ? 1: page);
+        query.skip((page - 1) * limit);
         query.limit(limit);
         return mongoTemplate.find(query, ReasonBo.class);
     }
