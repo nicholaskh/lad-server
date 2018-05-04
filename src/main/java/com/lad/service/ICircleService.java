@@ -419,4 +419,19 @@ public interface ICircleService extends IBaseService {
 	 */
 	long findNoticeTotal(String targetid, int noticeType);
 
+	/**
+	 * 更新圈子承接演出信息
+	 * @param circleid
+	 * @param takeShow
+	 * @return
+	 */
+	WriteResult updateTakeShow(String circleid, boolean takeShow);
+
+	/**
+	 * 根据演出类型模糊匹配圈子名称搜索圈子
+	 * @param showType
+	 * @return
+	 */
+	List<CircleBo> selectByRegexName(String showType);
+
 }

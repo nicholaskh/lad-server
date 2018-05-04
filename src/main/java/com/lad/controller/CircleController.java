@@ -1654,6 +1654,36 @@ public class CircleController extends BaseContorller {
         return Constant.COM_RESP;
     }
 
+	/**
+	 * 是否允许加入
+	 */
+	@ApiOperation("修改圈子接演出状态")
+	@ApiImplicitParams({@ApiImplicitParam(name = "circleid", required = true, value = "圈子id", dataType =
+			"string"),@ApiImplicitParam(name = "takeShow", required = true, value = "圈子是否承接演出", dataType =
+			"boolean")})
+	@PostMapping("/take-show")
+	public String updateShow(String circleid, boolean takeShow,
+							   HttpServletRequest request, HttpServletResponse response) {
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		CircleBo circleBo = circleService.selectById(circleid);
+		if (circleBo == null) {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CIRCLE_IS_NULL.getIndex(), ERRORCODE.CIRCLE_IS_NULL.getReason());
+		}
+		if (circleBo.getCreateuid().equals(userBo.getId()) ||
+				circleBo.getMasters().contains(userBo.getId())) {
+			circleService.updateTakeShow(circleid, takeShow);
+		} else {
+			return CommonUtil.toErrorResult(
+					ERRORCODE.CIRCLE_MASTER_NULL.getIndex(), ERRORCODE.CIRCLE_MASTER_NULL.getReason());
+		}
+		return Constant.COM_RESP;
+	}
+
 
 	/**
 	 * 添加公告

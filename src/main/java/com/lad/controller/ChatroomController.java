@@ -330,6 +330,7 @@ public class ChatroomController extends BaseContorller {
 		ChatroomBo chatroomBo = chatroomService.get(chatroomid);
 		if (null == chatroomBo) {
 			asyncController.updateUserChatroom(userBo.getId(), chatroomid, false);
+			chatroomService.deleteChatroomUser(userBo.getId(), chatroomid);
 			return Constant.COM_RESP;
 		}
 
@@ -378,6 +379,7 @@ public class ChatroomController extends BaseContorller {
 			}
 		}
 		asyncController.updateUserChatroom(userBo.getId(), chatroomid, false);
+		chatroomService.deleteChatroomUser(userid, chatroomid);
 		asyncController.deleteNickname(userid, chatroomid);
 		set.remove(userid);
 
@@ -389,7 +391,6 @@ public class ChatroomController extends BaseContorller {
 				return res;
 			}
 			deletePartyChatroom(chatroomBo, set);
-
 		} else {
 			// 如果群聊没有修改过名称，自动修改名称
 			RLock lock = redisServer.getRLock(chatroomid.concat("users"));
@@ -404,7 +405,6 @@ public class ChatroomController extends BaseContorller {
 				lock.unlock();
 			}
 		}
-		chatroomService.deleteChatroomUser(userid, chatroomid);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("ret", 0);
 		map.put("channelId", chatroomBo.getId());
@@ -604,8 +604,10 @@ public class ChatroomController extends BaseContorller {
 				chatroomUserBo.setDisturb(false);
 				chatroomService.insertUser(chatroomUserBo);
 				vo.setDisturb(false);
-			} 
-			
+			} else if (chatroomUserBo.getDeleted() == Constant.DELETED) {
+				chatroomService.updateUserNickname(chatroomUserBo.getId(), userBo.getUserName());
+			}
+
 			if (temp.getType() != 1) {
 				bo2vo(temp, vo);
 				vo.setUserNum(temp.getUsers().size());
@@ -625,11 +627,9 @@ public class ChatroomController extends BaseContorller {
 				}
 			}
 			vo.setDisturb(chatroomUserBo.isDisturb());
-			
 		} else {
 			return CommonUtil.toErrorResult(
-					ERRORCODE.CHATROOM_ID_NULL.getIndex(),
-					ERRORCODE.CHATROOM_ID_NULL.getReason());
+					ERRORCODE.CHATROOM_ID_NULL.getIndex(), ERRORCODE.CHATROOM_ID_NULL.getReason());
 		}
 		Map<String, Object> map = new HashMap<>();
 		map.put("ret", 0);
@@ -679,14 +679,8 @@ public class ChatroomController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.CHATROOM_NULL.getIndex(),
 					ERRORCODE.CHATROOM_NULL.getReason());
 		}
-		HashSet<String> chatrooms = userBo.getChatrooms();
-		LinkedList<String> chatroomsTop = userBo.getChatroomsTop();
-		if (chatroomsTop.contains(chatroomid)) {
-			chatroomsTop.remove(chatroomid);
-		}
-		if (!chatrooms.contains(chatroomid)) {
-			chatrooms.add(chatroomid);
-		}
+		userBo.getChatrooms().add(chatroomid);
+		userBo.getChatroomsTop().remove(chatroomid);
 		userService.updateChatrooms(userBo);
 		updateUserSession(request, userService);
 		return Constant.COM_RESP;
@@ -1864,9 +1858,10 @@ public class ChatroomController extends BaseContorller {
 		}
 		if (!isPartyEnd) {
 			//删除最后一人的聊天室
-			if (set.size() == 1) {
+			if (set.size() < 1) {
 				String friendid = set.iterator().next();
 				asyncController.updateUserChatroom(friendid, chatroomBo.getId(), false);
+				chatroomService.deleteChatroomUser(friendid, chatroomBo.getId());
 			}
 			chatroomService.delete(chatroomBo.getId());
 		}

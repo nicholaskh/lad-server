@@ -8,7 +8,6 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -147,7 +146,6 @@ public class CommonUtil {
 		return -1;
 	}
 
-	@Async
 	public static int sendSMS2(String mobile, String message) {
 		try {
 			message = URLEncoder.encode(message, "GBK");
@@ -192,8 +190,8 @@ public class CommonUtil {
 	public static String buildCodeMsg(String number) {
 		String msg = "";
 		try {
-			String new1 =  new String("您的验证码为：".getBytes(), "GBK");
-			String new2 =  new String("，该验证码5分钟内有效，如非本人操作，请忽略。".getBytes(), "GBK");
+			String new1 =  new String("您的验证码为：".getBytes(), "UTF-8");
+			String new2 =  new String("，该验证码5分钟内有效，如非本人操作，请忽略。".getBytes(), "UTF-8");
 			StringBuilder builder = new StringBuilder();
 			builder.append(new1).append(number).append(new2);
 			msg = builder.toString();
@@ -208,7 +206,7 @@ public class CommonUtil {
 		try {
 			StringBuilder builder = new StringBuilder();
 			builder.append("您正在修改密码，验证码为：").append(number).append("，该验证码5分钟内有效，如非本人操作，请忽略。");
-			msg = new String(builder.toString().getBytes(), "GBK");
+			msg = new String(builder.toString().getBytes(), "UTF-8");
 		} catch (Exception e) {
 			logger.error("send Msg exception : {}",e.getMessage());
 		}

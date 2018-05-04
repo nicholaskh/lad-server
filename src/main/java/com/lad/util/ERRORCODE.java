@@ -113,6 +113,7 @@ public enum ERRORCODE {
 	MESSAGE_NULL(160001, "消息不存在"),
 
 	EXPOSE_MSG_NULL(170001, "曝光信息不存在"),
+	SHOW_NULL(170002, "曝光信息不存在"),
 	
 	NOTE_IS_NULL(120001, "帖子不存在"),
 	NOTE_NOT_MASTER(120002, "没有权限"),

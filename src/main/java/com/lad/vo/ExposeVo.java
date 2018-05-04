@@ -49,5 +49,7 @@ public class ExposeVo {
     private Date updateTime;
 
     private boolean selfSup;
+
+    private boolean isCreate;
     
 }

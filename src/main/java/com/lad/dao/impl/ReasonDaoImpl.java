@@ -118,8 +118,8 @@ public class ReasonDaoImpl implements IReasonDao {
     @Override
     public List<ReasonBo> findByChatroomHis(String chatroomid, int page, int limit) {
         Query query = new Query();
-        query.addCriteria(new Criteria("chatroomid").is(chatroomid));
-        query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+        query.addCriteria(new Criteria("chatroomid").is(chatroomid).and("deleted").is(Constant.ACTIVITY)
+                .and("status").is(0));
         query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "createTime")));
         query.skip(page < 1 ? 1: page);
         query.limit(limit);

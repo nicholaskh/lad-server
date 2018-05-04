@@ -58,7 +58,6 @@ public class JPushUtil {
 				.setNotification(Notification.alert(content)).build();
 	}
 
-	@Async
 	public static PushResult pushTo(String content, String... alias) {
 		JPushClient jpushClient = new JPushClient(MASTER_SECRET, APP_KEY, null,
 				ClientConfig.getInstance());
@@ -88,7 +87,6 @@ public class JPushUtil {
 	}
 
 
-	@Async
 	public static void push(String title, String content, String path,
 								  String... alias) {
 		try {
@@ -113,7 +111,6 @@ public class JPushUtil {
 		}
 	}
 
-	@Async
 	public static void pushNotify(String title, String content, String path,
 							String... alias) {
 		try {
@@ -185,7 +182,6 @@ public class JPushUtil {
 	}
 
 
-	@Async
 	public static boolean pushMessage(String title, String content, String path,
 							   String... alias) {
 		JPushClient jpushClient = new JPushClient(MASTER_SECRET, APP_KEY, null,
@@ -207,7 +203,6 @@ public class JPushUtil {
 		return false;
 	}
 
-	@Async
 	public static boolean pushParams(String title, String content, String path,
 									 Map<String, String> params, String... alias) {
 		JPushClient jpushClient = new JPushClient(MASTER_SECRET, APP_KEY, null,

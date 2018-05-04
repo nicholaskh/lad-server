@@ -107,13 +107,12 @@ public class CommentDaoImpl implements ICommentDao {
     public List<CommentBo> selectCommentByType(int type, String id, int page, int limit) {
 
         Query query = new Query();
+        query.addCriteria(new Criteria("deleted").is(0).and("type").is(type));
         if (type == Constant.NOTE_TYPE) {
             query.addCriteria(new Criteria("noteid").is(id));
-        } else if (type == Constant.INFOR_TYPE) {
+        } else {
             query.addCriteria(new Criteria("targetid").is(id));
         }
-        query.addCriteria(new Criteria("deleted").is(0));
-        query.addCriteria(new Criteria("type").is(type));
         query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
         page = page < 1 ? 1 : page;
         query.skip((page -1) * limit);

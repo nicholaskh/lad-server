@@ -369,4 +369,14 @@ public class CircleServiceImpl implements ICircleService {
 	public long findNoticeTotal(String targetid, int noticeType) {
 		return circleNoticeDao.findNoticeTotal(targetid, noticeType);
 	}
+
+	@Override
+	public WriteResult updateTakeShow(String circleid, boolean takeShow) {
+		return circleDao.updateTakeShow(circleid, takeShow);
+	}
+
+	@Override
+	public List<CircleBo> selectByRegexName(String showType) {
+		return circleDao.selectByRegexName(showType);
+	}
 }
