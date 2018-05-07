@@ -50,8 +50,8 @@ public class ShowServiceImpl implements IShowService {
     }
 
     @Override
-    public List<ShowBo> findByKeyword(String keyword, int type, int page, int limit) {
-        return showDao.findByList(keyword, type, page, limit);
+    public List<ShowBo> findByKeyword(String keyword, String userid, int type, int page, int limit) {
+        return showDao.findByList(keyword, userid, type, page, limit);
     }
 
     @Override

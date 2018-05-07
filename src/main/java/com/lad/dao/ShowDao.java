@@ -29,9 +29,17 @@ public class ShowDao extends BaseDao<ShowBo>{
      * @param limit
      * @return
      */
-    public List<ShowBo> findByList(String keyword, int type, int page, int limit){
+    public List<ShowBo> findByList(String keyword, String userid, int type, int page, int limit){
         Query query = new Query();
-        Criteria criteria = new Criteria("type").is(type).and("status").is(0).and("deleted").is(Constant.ACTIVITY);
+        Criteria criteria = new Criteria("status").is(0).and("deleted").is(Constant.ACTIVITY);
+        //-1表示查询所有
+        if (type != -1) {
+            criteria.and("type").is(type);
+        }
+        //排除自己发布的信息
+        if (!StringUtils.isEmpty(userid)) {
+            criteria.and("createuid").ne(userid);
+        }
         if (!StringUtils.isEmpty(keyword)) {
             criteria.orOperator(new Criteria("showType").regex("^.*"+keyword+".*$"),
                     new Criteria("title").regex("^.*"+keyword+".*$"));
@@ -71,8 +79,13 @@ public class ShowDao extends BaseDao<ShowBo>{
      */
     public List<ShowBo> findByMyShows(String userid, int type, int page, int limit){
         Query query = new Query();
-        query.addCriteria(new Criteria("type").is(type).and("createuid").is(userid)
-                .and("deleted").is(Constant.ACTIVITY));
+        Criteria criteria = new Criteria("createuid").is(userid)
+                .and("deleted").is(Constant.ACTIVITY);
+        //-1表示查询所有
+        if (type != -1) {
+            criteria.and("type").is(type);
+        }
+        query.addCriteria(criteria);
         //自己发布已失效也需要排序
         query.with(new Sort(new Sort.Order(Sort.Direction.ASC,"status")));
         query.with(new Sort(new Sort.Order(Sort.Direction.DESC,"_id")));

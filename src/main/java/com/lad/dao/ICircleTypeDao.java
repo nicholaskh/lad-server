@@ -1,6 +1,7 @@
 package com.lad.dao;
 
 import com.lad.bo.CircleTypeBo;
+import com.mongodb.WriteResult;
 
 import java.util.List;
 
@@ -30,5 +31,8 @@ public interface ICircleTypeDao {
      * @return
      */
     CircleTypeBo findEsixtTagName(String keyword, int type);
+
+
+    WriteResult updateCircleTypeTimes(String id);
 
 }

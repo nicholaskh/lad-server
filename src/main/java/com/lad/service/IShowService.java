@@ -30,7 +30,7 @@ public interface IShowService {
     List<ShowBo> findByCreateuid(String userid, int type, int page, int limit);
 
 
-    List<ShowBo> findByKeyword(String keyword, int type, int page, int limit);
+    List<ShowBo> findByKeyword(String keyword, String userid, int type, int page, int limit);
 
 
     List<ShowBo> findByCircleid(String circleid, int status, int type);

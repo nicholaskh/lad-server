@@ -151,18 +151,18 @@ public class CircleServiceImpl implements ICircleService {
 	}
 
 	@Override
-	public List<CircleTypeBo> selectByLevel(int level) {
-		return circleTypeDao.selectByLevel(level, 0);
-	}
-
-	@Override
-	public List<CircleTypeBo> selectByParent(String name) {
-		return circleTypeDao.selectByParent(name, 0);
+	public List<CircleTypeBo> selectByLevel(int level, int type) {
+		return circleTypeDao.selectByLevel(level, type);
 	}
 
 	@Override
 	public CircleTypeBo addCircleType(CircleTypeBo circleTypeBo) {
 		return circleTypeDao.insert(circleTypeBo);
+	}
+
+	@Override
+	public List<CircleTypeBo> selectByParent(String name) {
+		return circleTypeDao.selectByParent(name, 0);
 	}
 
 	@Override
@@ -176,8 +176,8 @@ public class CircleServiceImpl implements ICircleService {
 	}
 
 	@Override
-	public CircleTypeBo findByName(String name, int level) {
-		return circleTypeDao.selectByNameLevel(name, level, 0);
+	public CircleTypeBo findByName(String name, int level, int type) {
+		return circleTypeDao.selectByNameLevel(name, level, type);
 	}
 
 	@Override
@@ -378,5 +378,10 @@ public class CircleServiceImpl implements ICircleService {
 	@Override
 	public List<CircleBo> selectByRegexName(String showType) {
 		return circleDao.selectByRegexName(showType);
+	}
+
+	@Override
+	public WriteResult updateCircleTypeTimes(String id) {
+		return circleTypeDao.updateCircleTypeTimes(id);
 	}
 }

@@ -1037,4 +1037,25 @@ public class AsyncController extends BaseContorller {
         }
     }
 
+
+    /**
+     * 添加演出类型或更新次数
+     * @param service
+     * @param showType
+     * @param createuid
+     */
+    @Async
+    public void addShowTypes(IShowService service, String showType, String createuid){
+        CircleTypeBo circleTypeBo = circleService.findByName(showType, 1, CircleTypeBo.SHOW_TYPE);
+        if (circleTypeBo == null) {
+            circleTypeBo = new CircleTypeBo();
+            circleTypeBo.setLevel(1);
+            circleTypeBo.setTimes(1);
+            circleTypeBo.setType(CircleTypeBo.SHOW_TYPE);
+            circleTypeBo.setCreateuid(createuid);
+            circleService.addCircleType(circleTypeBo);
+        } else {
+            circleService.updateCircleTypeTimes(circleTypeBo.getId());
+        }
+    }
 }

@@ -3,11 +3,13 @@ package com.lad.dao.impl;
 import com.lad.bo.CircleTypeBo;
 import com.lad.dao.ICircleTypeDao;
 import com.lad.util.Constant;
+import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -61,7 +63,7 @@ public class CircleTypeDaoImpl implements ICircleTypeDao {
         query.addCriteria(new Criteria("deleted").is(0));
         query.addCriteria(new Criteria("type").is(type));
         query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
-        query.skip(start);
+        query.skip((start - 1) * limit );
         query.limit(limit);
         return mongoTemplate.find(query, CircleTypeBo.class);
     }
@@ -78,4 +80,10 @@ public class CircleTypeDaoImpl implements ICircleTypeDao {
         return mongoTemplate.findOne(query, CircleTypeBo.class);
     }
 
+    @Override
+    public WriteResult updateCircleTypeTimes(String id) {
+        Query query = new Query(new Criteria("_id").is(id));
+        Update update = new Update().inc("times", 1);
+        return mongoTemplate.updateFirst(query, update, CircleTypeBo.class);
+    }
 }

@@ -1198,7 +1198,7 @@ public class CircleController extends BaseContorller {
 	}
 
 	private void saveKeyword(String keyword){
-		CircleTypeBo typeBo = circleService.findByName(keyword, 2);
+		CircleTypeBo typeBo = circleService.findByName(keyword, 2, CircleTypeBo.CIRCLE);
 		if (typeBo != null){
 			RLock lock = redisServer.getRLock("keyword");
 			try {
@@ -1320,7 +1320,7 @@ public class CircleController extends BaseContorller {
 	@RequestMapping(value = "/circle-type", method = {RequestMethod.GET, RequestMethod.POST})
 	public String circleType(HttpServletRequest request, HttpServletResponse response) {
 
-		List<CircleTypeBo> typeBos = circleService.selectByLevel(1);
+		List<CircleTypeBo> typeBos = circleService.selectByLevel(1, CircleTypeBo.CIRCLE);
 		Map<String, List<String>> maps = new LinkedHashMap<>();
 		for (CircleTypeBo typeBo : typeBos) {
 			List<CircleTypeBo> bos = circleService.selectByParent(typeBo.getCategory());
@@ -1353,7 +1353,7 @@ public class CircleController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
-		CircleTypeBo typeBo = circleService.findByName(name, level);
+		CircleTypeBo typeBo = circleService.findByName(name, level, CircleTypeBo.CIRCLE);
 		if (typeBo == null) {
 			typeBo = new CircleTypeBo();
 			typeBo.setCategory(name);
@@ -1361,7 +1361,7 @@ public class CircleController extends BaseContorller {
 			if (StringUtils.isNotEmpty(parent)) {
 				typeBo.setPreCateg(parent);
 			}
-			typeBo.setType(0);
+			typeBo.setType(CircleTypeBo.CIRCLE);
 			typeBo.setCreateuid(userBo.getId());
 		} else {
 			return CommonUtil.toErrorResult(

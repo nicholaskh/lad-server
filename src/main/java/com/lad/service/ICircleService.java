@@ -101,7 +101,7 @@ public interface ICircleService extends IBaseService {
 	 */
 	WriteResult updateTotal(String circleid, int total);
 
-	List<CircleTypeBo> selectByLevel(int level);
+	List<CircleTypeBo> selectByLevel(int level, int type);
 
 	List<CircleTypeBo> selectByParent(String name);
 
@@ -116,7 +116,7 @@ public interface ICircleService extends IBaseService {
 
 	List<CircleTypeBo> selectByPage(int start, int limit);
 
-	CircleTypeBo findByName(String name, int level);
+	CircleTypeBo findByName(String name, int level, int type);
 
 	/**
 	 * 查找所有圈子类型
@@ -295,7 +295,6 @@ public interface ICircleService extends IBaseService {
 
 	/**
 	 * 查找圈子公告历史信息
-	 * @param circleid
 	 * @param page
 	 * @param limit
 	 * @return
@@ -304,7 +303,6 @@ public interface ICircleService extends IBaseService {
 
 	/**
 	 * 查找最后一条历史信息
-	 * @param circleid
 	 * @return
 	 */
 	CircleNoticeBo findLastNotice(String targetid, int noticeType);
@@ -433,5 +431,12 @@ public interface ICircleService extends IBaseService {
 	 * @return
 	 */
 	List<CircleBo> selectByRegexName(String showType);
+
+	/**
+	 * 更新类型
+	 * @param id
+	 * @return
+	 */
+	WriteResult updateCircleTypeTimes(String id);
 
 }

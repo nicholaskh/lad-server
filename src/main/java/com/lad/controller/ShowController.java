@@ -1,5 +1,6 @@
 package com.lad.controller;
 
+import com.lad.bo.CircleTypeBo;
 import com.lad.bo.FriendsBo;
 import com.lad.bo.ShowBo;
 import com.lad.bo.UserBo;
@@ -46,6 +47,9 @@ public class ShowController extends BaseContorller {
 
     @Autowired
     private AsyncController asyncController;
+
+    @Autowired
+    private ICircleService circleService;
 
 
     @ApiOperation("发表招接演出信息")
@@ -95,6 +99,7 @@ public class ShowController extends BaseContorller {
             log.info("user {} shows add video path: {},  videoPic: {} ", userid, paths[0], paths[1]);
         }
         showService.insert(showBo);
+        asyncController.addShowTypes(showService, showBo.getShowType(), userid);
         if (showBo.getType() == ShowBo.NEED) {
             asyncController.pushShowToCreate(showService, showBo);
         } else {
@@ -126,8 +131,9 @@ public class ShowController extends BaseContorller {
         UserBo userBo = getUserLogin(request);
         UserBo createUser = null;
         String friendName = "";
+        String userid = "";
         if (userBo != null) {
-            String userid = userBo.getId();
+            userid = userBo.getId();
             if (userid.equals(showBo.getCreateuid())) {
                 vo.setCreate(true);
                 BeanUtils.copyProperties(userBo,baseVo);
@@ -151,10 +157,10 @@ public class ShowController extends BaseContorller {
         List<ShowBo> showBos;
         //招演商家推荐接演团队信息
         if (showBo.getType() == ShowBo.NEED) {
-            showBos = showService.findByKeyword(showBo.getShowType(), ShowBo.PROVIDE, 1, 3);
+            showBos = showService.findByKeyword(showBo.getShowType(), userid, ShowBo.PROVIDE, 1, 3);
         } else {
             // 接演团队推荐商家信息
-            showBos = showService.findByKeyword(showBo.getShowType(), ShowBo.NEED, 1, 3);
+            showBos = showService.findByKeyword(showBo.getShowType(), userid,  ShowBo.NEED, 1, 3);
         }
         bo2vos(showBos, showVos, userBo);
         Map<String, Object> map = new HashMap<>();
@@ -278,19 +284,17 @@ public class ShowController extends BaseContorller {
 
     @ApiOperation("我的招接演出列表信息")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "type", value = "1招演出，2接演出", required = true, paramType = "query",
-                    dataType = "int"),
             @ApiImplicitParam(name = "page", value = "页码",paramType = "query",dataType = "int"),
             @ApiImplicitParam(name = "limit", value = "条数",paramType = "query",dataType = "int")})
     @GetMapping("/my-shows")
-    public String myShows(int type, int page, int limit, HttpServletRequest request, HttpServletResponse
+    public String myShows(int page, int limit, HttpServletRequest request, HttpServletResponse
             response) {
         UserBo userBo = getUserLogin(request);
         if (userBo == null) {
             return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
                     ERRORCODE.ACCOUNT_OFF_LINE.getReason());
         }
-        List<ShowBo> showBos = showService.findByCreateuid(userBo.getId(), type, page, limit);
+        List<ShowBo> showBos = showService.findByCreateuid(userBo.getId(), -1, page, limit);
         List<ShowVo> showVos = new LinkedList<>();
         List<String> showids = new LinkedList<>();
         UserBaseVo baseVo = new UserBaseVo();
@@ -335,15 +339,9 @@ public class ShowController extends BaseContorller {
             return CommonUtil.toErrorResult(ERRORCODE.SHOW_NULL.getIndex(),
                     ERRORCODE.SHOW_NULL.getReason());
         }
+        String userid = userBo == null ? "" : userBo.getId();
         List<ShowVo> showVos = new LinkedList<>();
-        List<ShowBo> showBos;
-        //招演商家推荐接演团队信息
-        if (showBo.getType() == ShowBo.NEED) {
-            showBos = showService.findByKeyword(showBo.getShowType(), ShowBo.PROVIDE, page, limit);
-        } else {
-            // 接演团队推荐商家信息
-            showBos = showService.findByKeyword(showBo.getShowType(), ShowBo.NEED, page, limit);
-        }
+        List<ShowBo> showBos = showService.findByKeyword(showBo.getShowType(), userid, -1, page, limit);
         bo2vos(showBos, showVos, userBo);
         Map<String, Object> map = new HashMap<>();
         map.put("ret", 0);
@@ -375,6 +373,21 @@ public class ShowController extends BaseContorller {
             return CommonUtil.toErrorResult(ERRORCODE.NOTE_NOT_MASTER.getIndex(),
                     ERRORCODE.NOTE_NOT_MASTER.getReason());
         }
+    }
+
+
+    @ApiOperation("查找所有演出类型")
+    @GetMapping("/show-types")
+    public String showTypes() {
+        List<CircleTypeBo> circleTypeBos = circleService.selectByLevel(1, CircleTypeBo.SHOW_TYPE);
+        LinkedHashSet<String> showTypes = new LinkedHashSet<>();
+        if (circleTypeBos != null){
+            circleTypeBos.forEach( circleTypeBo -> showTypes.add(circleTypeBo.getCategory()));
+        }
+        Map<String, Object> map = new HashMap<>();
+        map.put("ret", 0);
+        map.put("showTypes", showTypes);
+        return JSONObject.fromObject(map).toString();
     }
 
 
