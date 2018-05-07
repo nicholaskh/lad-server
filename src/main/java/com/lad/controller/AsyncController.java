@@ -1053,6 +1053,7 @@ public class AsyncController extends BaseContorller {
             circleTypeBo.setTimes(1);
             circleTypeBo.setType(CircleTypeBo.SHOW_TYPE);
             circleTypeBo.setCreateuid(createuid);
+            circleTypeBo.setCategory(showType);
             circleService.addCircleType(circleTypeBo);
         } else {
             circleService.updateCircleTypeTimes(circleTypeBo.getId());
