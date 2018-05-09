@@ -37,20 +37,26 @@ public class InforSubDaoImpl implements IInforSubDao {
         query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
         Update update = new Update();
         switch (type){
-            case Constant.ONE:
+            case Constant.INFOR_HEALTH:
                 update.set("subscriptions", list);
                 break;
-            case Constant.TWO:
+            case Constant.INFOR_SECRITY:
                 update.set("securitys", list);
                 break;
-            case Constant.THREE:
+            case Constant.INFOR_RADIO:
                 update.set("radios", list);
                 break;
-            case Constant.FOUR:
+            case Constant.INFOR_VIDEO:
                 update.set("videos", list);
                 break;
-            default:
+            case Constant.INFOR_DAILY:
+                update.set("dailys", list);
                 break;
+            case Constant.INFOR_YANGLAO:
+                update.set("yanglaos", list);
+                break;
+            default:
+                return null;
         }
         return mongoTemplate.updateFirst(query, update, InforSubscriptionBo.class);
     }
