@@ -654,6 +654,7 @@ public class InforController extends BaseContorller {
         }
         RMapCache<String, Object> cache = redisServer.getCacheMap(Constant.TEST_CACHE);
         LinkedHashSet<String> groupTypes = (LinkedHashSet<String>) cache.get(keys);
+        logger.info("====== user {} update infor recom {}", userBo.getId(), groupNames);
         if (groupNames.indexOf(',') > -1) {
             String[] namesArr = groupNames.split(",");
             for (String name : namesArr) {
