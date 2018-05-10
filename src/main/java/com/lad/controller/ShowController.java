@@ -1,9 +1,6 @@
 package com.lad.controller;
 
-import com.lad.bo.CircleTypeBo;
-import com.lad.bo.FriendsBo;
-import com.lad.bo.ShowBo;
-import com.lad.bo.UserBo;
+import com.lad.bo.*;
 import com.lad.service.*;
 import com.lad.util.CommonUtil;
 import com.lad.util.Constant;
@@ -52,13 +49,24 @@ public class ShowController extends BaseContorller {
     private ICircleService circleService;
 
 
+    @ApiOperation("showVo对象说明")
+    @PostMapping("/showVotest")
+    @Deprecated
+    public ShowVo showVoTest(@RequestBody @ApiParam(name = "showVo", value = "演出信息实体类", required = true)ShowVo showVo) {
+        return new ShowVo();
+    }
+
+
+
     @ApiOperation("发表招接演出信息")
     @ApiImplicitParams({
+            @ApiImplicitParam(name = "showJson", value = "演出实体类信息", paramType = "query", dataType =
+                    "string"),
             @ApiImplicitParam(name = "images", value = "图片信息,如果是招演类型，则为营业执照图片", paramType = "query", dataType =
                     "file"),
             @ApiImplicitParam(name = "video", value = "视频信息，与图片二选一", paramType = "query", dataType = "file")})
     @PostMapping("/insert")
-    public String insert(@RequestBody @ApiParam(name = "showVo", value = "演出信息实体类", required = true)ShowVo showVo,
+    public String insert(String showVoJson,
                          MultipartFile[] images, MultipartFile video, HttpServletRequest request, HttpServletResponse response) {
         UserBo userBo = getUserLogin(request);
         if (userBo == null) {
@@ -66,8 +74,14 @@ public class ShowController extends BaseContorller {
                     ERRORCODE.ACCOUNT_OFF_LINE.getReason());
         }
         String userid = userBo.getId();
-        ShowBo showBo = new ShowBo();
-        BeanUtils.copyProperties(showVo, showBo);
+        ShowBo showBo = null;
+        try {
+            JSONObject jsonObject = JSONObject.fromObject(showVoJson);
+            showBo = (ShowBo)JSONObject.toBean(jsonObject, ShowBo.class);
+        } catch (Exception e) {
+            return CommonUtil.toErrorResult(ERRORCODE.FORMAT_ERROR.getIndex(),
+                    ERRORCODE.FORMAT_ERROR.getReason());
+        }
         showBo.setCreateuid(userid);
         if (images != null && images.length > 0) {
             if (showBo.getType() == ShowBo.NEED) {
@@ -76,7 +90,7 @@ public class ShowController extends BaseContorller {
                 String fileName = String.format("%s-%d-%s", userid, time, file.getOriginalFilename());
                 String path = CommonUtil.upload(file, Constant.RELEASE_PICTURE_PATH, fileName, 0);
                 showBo.setComPic(path);
-            } else if (showVo.getType() == ShowBo.PROVIDE) {
+            } else if (showBo.getType() == ShowBo.PROVIDE) {
                 LinkedHashSet<String> photos = new LinkedHashSet<>();
                 for (MultipartFile file : images) {
                     Long time = Calendar.getInstance().getTimeInMillis();
