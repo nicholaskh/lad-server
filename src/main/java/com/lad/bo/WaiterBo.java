@@ -3,6 +3,8 @@ package com.lad.bo;
 import java.util.Date;
 import java.util.List;
 
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -10,6 +12,7 @@ import lombok.ToString;
 @Setter
 @Getter
 @ToString
+@Document(collection = "waiters")
 public class WaiterBo {
 	private String id;
 	private String createrId;	// 创建者Id

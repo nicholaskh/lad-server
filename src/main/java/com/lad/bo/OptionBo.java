@@ -1,5 +1,7 @@
 package com.lad.bo;
 
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -7,6 +9,7 @@ import lombok.ToString;
 @Setter
 @Getter
 @ToString
+@Document(collection = "options")
 public class OptionBo {
 	private String id;		// 当前选项id(具体的选项)
 	private String value;	
