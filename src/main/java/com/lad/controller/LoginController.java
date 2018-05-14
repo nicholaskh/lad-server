@@ -127,7 +127,7 @@ public class LoginController extends BaseContorller {
 				map.put("token",token);
 				String msg = "";
 				try {
-					msg = new String(Constant.QUICK_LOGIN.getBytes(), "GBK");
+					msg = new String(Constant.QUICK_LOGIN.getBytes(), "UTF-8");
 				} catch (Exception e) {
 					logger.error(e);
 				}
