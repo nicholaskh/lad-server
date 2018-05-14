@@ -60,7 +60,7 @@ public class ShowController extends BaseContorller {
 
     @ApiOperation("发表招接演出信息")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "showJson", value = "演出实体类信息", paramType = "query", dataType =
+            @ApiImplicitParam(name = "showVoJson", value = "演出实体类信息", paramType = "query", dataType =
                     "string"),
             @ApiImplicitParam(name = "images", value = "图片信息,如果是招演类型，则为营业执照图片", paramType = "query", dataType =
                     "file"),
@@ -319,6 +319,10 @@ public class ShowController extends BaseContorller {
                 showVo.setStatus(1);
                 showids.add(showBo.getId());
             }
+            if (ShowBo.PROVIDE == showBo.getType()) {
+                CircleBo circleBo = circleService.selectById(showBo.getCircleid());
+                showVo.setCirName(circleBo == null ? "" : circleBo.getName());
+            }
             showVo.setShowid(showBo.getId());
             showVo.setCreate(true);
             showVo.setCreatUser(baseVo);
@@ -422,6 +426,10 @@ public class ShowController extends BaseContorller {
             ShowVo showVo = new ShowVo();
             BeanUtils.copyProperties(showBo, showVo);
             showVo.setShowid(showBo.getId());
+            if (ShowBo.PROVIDE == showBo.getType()) {
+                CircleBo circleBo = circleService.selectById(showBo.getCircleid());
+                showVo.setCirName(circleBo == null ? "" : circleBo.getName());
+            }
             UserBaseVo baseVo = new UserBaseVo();
             UserBo createUser = null;
             String friendName = "";
