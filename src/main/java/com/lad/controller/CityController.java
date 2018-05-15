@@ -6,6 +6,8 @@ import com.lad.service.ICityService;
 import com.lad.util.Constant;
 import com.lad.util.PinyinComparator;
 import com.mongodb.BasicDBObject;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sourceforge.pinyin4j.PinyinHelper;
@@ -13,6 +15,7 @@ import org.redisson.api.RMapCache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
@@ -25,6 +28,7 @@ import java.util.*;
  * Version: 1.0
  * Time:2017/9/6
  */
+@Api("城市信息接口")
 @Controller
 @RequestMapping("/city")
 public class CityController extends BaseContorller {
@@ -38,10 +42,9 @@ public class CityController extends BaseContorller {
     /**
      * 获取省市
      */
-    @RequestMapping("/get-province")
+    @RequestMapping(value = "/get-province", method = {RequestMethod.GET, RequestMethod.POST})
     @ResponseBody
-    public String getProvince(HttpServletRequest request, HttpServletResponse response) {
-
+    public String getProvince() {
         List<BasicDBObject> objects = cityService.findProvince();
         List<String> prpvince = new ArrayList<>();
         for (BasicDBObject object : objects) {
@@ -56,17 +59,17 @@ public class CityController extends BaseContorller {
     /**
      * 获取城市和区
      */
-    @RequestMapping("/get-province-city")
+    @RequestMapping(value = "/get-province-city", method = {RequestMethod.GET, RequestMethod.POST})
     @ResponseBody
-    public String getProvinceCitys(String province, HttpServletRequest request, HttpServletResponse response) {
+    public String getProvinceCitys(String province) {
 
         List<String> citys = new ArrayList<>();
         if (province.equals("北京市") || province.equals("天津市") || province.equals("上海市")
-						|| province.equals("重庆市")) {
-           List<CityBo> cityBos = cityService.findByParams(province, "");
-           for (CityBo cityBo : cityBos) {
-               citys.add(cityBo.getDistrit());
-           }
+                || province.equals("重庆市")) {
+            List<CityBo> cityBos = cityService.findByParams(province, "");
+            for (CityBo cityBo : cityBos) {
+                citys.add(cityBo.getDistrit());
+            }
         } else {
             List<BasicDBObject> objects = cityService.findCitys(province);
             for (BasicDBObject object : objects) {
@@ -82,9 +85,9 @@ public class CityController extends BaseContorller {
     /**
      * 获取城市和区
      */
-    @RequestMapping("/get-city")
+    @RequestMapping(value = "/get-city", method = {RequestMethod.GET, RequestMethod.POST})
     @ResponseBody
-    public String getCitys(String city, HttpServletRequest request, HttpServletResponse response) {
+    public String getCitys(String city) {
         List<String> district = new ArrayList<>();
         List<CityBo> cityBos = null;
         if (city.equals("北京市") || city.equals("天津市") || city.equals("上海市")
@@ -105,9 +108,9 @@ public class CityController extends BaseContorller {
     /**
      * 获取区县
      */
-    @RequestMapping("/get-district")
+    @RequestMapping(value = "/get-district", method = {RequestMethod.GET, RequestMethod.POST})
     @ResponseBody
-    public String getDistrict(String province,String city, HttpServletRequest request, HttpServletResponse response) {
+    public String getDistrict(String province,String city) {
 
         List<String> district = new ArrayList<>();
         List<CityBo> cityBos = null;
@@ -129,9 +132,10 @@ public class CityController extends BaseContorller {
     /**
      * 获取城市和区
      */
-    @RequestMapping("/get-all")
+    @ApiOperation("根据英文字母顺序获取所有城市和区县")
+    @RequestMapping(value = "/get-all", method = {RequestMethod.GET, RequestMethod.POST})
     @ResponseBody
-    public String getAlls(HttpServletRequest request, HttpServletResponse response) {
+    public String getAlls() {
         RMapCache<String, Object> cache = redisServer.getCacheMap(Constant.TEST_CACHE);
         String cityJson = "";
         if (cache.containsKey("citys")) {
@@ -147,7 +151,7 @@ public class CityController extends BaseContorller {
     /**
      * 获取城市和区
      */
-    @RequestMapping("/init")
+    @RequestMapping(value = "/init", method = RequestMethod.GET)
     @ResponseBody
     public String init(HttpServletRequest request, HttpServletResponse response) {
         RMapCache<String, Object> cache = redisServer.getCacheMap(Constant.TEST_CACHE);
@@ -157,12 +161,14 @@ public class CityController extends BaseContorller {
         return res ;
     }
 
-    private String getAllCitys(){
+    @ApiOperation("获取所有省市区")
+    @RequestMapping(value = "/get-all-citys", method = RequestMethod.GET)
+    @ResponseBody
+    public String getAllCitys(){
         List<BasicDBObject> objects = cityService.findProvince();
         JSONObject proObject = new JSONObject();
         for (BasicDBObject object : objects) {
             String province = object.get("province").toString();
-            Map<String , ArrayList<String>> citys = new LinkedHashMap<>();
             JSONArray ciArr = new JSONArray();
             if (province.equals("北京市") || province.equals("天津市") || province.equals("上海市")
                     || province.equals("重庆市")) {

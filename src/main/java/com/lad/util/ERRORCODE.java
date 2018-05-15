@@ -88,6 +88,7 @@ public enum ERRORCODE {
 	CIRCLE_NEED_VERIFY(110014, "加入圈子需要申请"),
 	CIRCLE_NAME_EXIST(110015, "圈子名称已经存在"),
 	CIRCLE_NOTICE_NULL(110016, "圈子公告已删除"),
+	CIRCLE_SHOW_CLOSE(110017, "圈子演出未开启"),
 
 	INFOR_IS_NULL(130001, "资讯不存在"),
 	INFOR_NAME_ERROR(130002, "分类名称错误"),

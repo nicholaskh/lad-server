@@ -93,8 +93,11 @@ public class ShowVo implements Serializable {
 
     @ApiModelProperty(value="是否是本人发布的信息，创建可为空")
     private boolean isCreate;
-
+    @ApiModelProperty(value="接演出开始时间")
+    private Date startTime;
     //接演出结束时间
     @ApiModelProperty(value="接演出截止时间")
     private Date endTime;
+    @ApiModelProperty(value="接演出提前预约天数")
+    private String advanceDays;
 }

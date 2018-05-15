@@ -1,7 +1,10 @@
 package com.lad.controller;
 
 import com.lad.bo.*;
-import com.lad.service.*;
+import com.lad.service.ICircleService;
+import com.lad.service.IFriendsService;
+import com.lad.service.IShowService;
+import com.lad.service.IUserService;
 import com.lad.util.CommonUtil;
 import com.lad.util.Constant;
 import com.lad.util.ERRORCODE;
@@ -176,11 +179,13 @@ public class ShowController extends BaseContorller {
             // 接演团队推荐商家信息
             showBos = showService.findByKeyword(showBo.getShowType(), userid,  ShowBo.NEED, 1, 3);
         }
+        long num = showService.findByKeyword(showBo.getShowType(), userid, showBo.getType());
         bo2vos(showBos, showVos, userBo);
         Map<String, Object> map = new HashMap<>();
         map.put("ret", 0);
         map.put("showVo", vo);
         map.put("recomShowVos", showVos);
+        map.put("recomShowNum", num);
         return JSONObject.fromObject(map).toString();
     }
 
@@ -296,17 +301,19 @@ public class ShowController extends BaseContorller {
 
     @ApiOperation("我的招接演出列表信息")
     @ApiImplicitParams({
+            @ApiImplicitParam(name = "type", value = "1招演出，2接演出, -1所有", required = true, paramType = "query",
+                    dataType = "int"),
             @ApiImplicitParam(name = "page", value = "页码",paramType = "query",dataType = "int"),
             @ApiImplicitParam(name = "limit", value = "条数",paramType = "query",dataType = "int")})
     @GetMapping("/my-shows")
-    public String myShows(int page, int limit, HttpServletRequest request, HttpServletResponse
+    public String myShows(int type, int page, int limit, HttpServletRequest request, HttpServletResponse
             response) {
         UserBo userBo = getUserLogin(request);
         if (userBo == null) {
             return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
                     ERRORCODE.ACCOUNT_OFF_LINE.getReason());
         }
-        List<ShowBo> showBos = showService.findByCreateuid(userBo.getId(), -1, page, limit);
+        List<ShowBo> showBos = showService.findByCreateuid(userBo.getId(), type, page, limit);
         List<ShowVo> showVos = new LinkedList<>();
         List<String> showids = new LinkedList<>();
         UserBaseVo baseVo = new UserBaseVo();
@@ -316,6 +323,9 @@ public class ShowController extends BaseContorller {
             BeanUtils.copyProperties(showBo, showVo);
             //在当前失效的招演信息
             if (showBo.getType() == ShowBo.NEED && showBo.getStatus() == 0 && isTimeout(showBo.getShowTime())) {
+                showVo.setStatus(1);
+                showids.add(showBo.getId());
+            } else if (showBo.getType() == ShowBo.PROVIDE && System.currentTimeMillis() > showBo.getEndTime().getTime()) {
                 showVo.setStatus(1);
                 showids.add(showBo.getId());
             }
@@ -392,6 +402,95 @@ public class ShowController extends BaseContorller {
     }
 
 
+    @ApiOperation("全部推荐接口")
+    @GetMapping("/my-show-recoms")
+    public String myShowRecoms(HttpServletRequest request) {
+        UserBo userBo = getUserLogin(request);
+        if (userBo == null) {
+            return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+                    ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+        }
+        List<ShowBo> showBos = showService.findByMyShows(userBo.getId(), -1);
+        LinkedHashSet<String> showTypes = new LinkedHashSet<>();
+        if (showBos != null){
+            showBos.forEach(showBo -> showTypes.add(showBo.getShowType()));
+        }
+        List<ShowVo> showVos = new LinkedList<>();
+        if (!showTypes.isEmpty()) {
+            List<ShowBo> recomShows = showService.findRecomShows(userBo.getId(), showTypes);
+            bo2vos(recomShows, showVos, userBo);
+        }
+        Map<String, Object> map = new HashMap<>();
+        map.put("ret", 0);
+        map.put("recomShowVos", showVos);
+        return JSONObject.fromObject(map).toString();
+    }
+
+
+    @ApiOperation("圈子演出关联后推荐接口")
+    @ApiImplicitParam(name = "circleid", value = "圈子id", required = true, paramType = "query",
+            dataType = "string")
+    @GetMapping("/circle-recoms")
+    public String circleRecoms(String circleid, HttpServletRequest request) {
+        UserBo userBo = getUserLogin(request);
+        CircleBo circleBo = circleService.selectById(circleid);
+        if (circleBo == null) {
+            return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_IS_NULL.getIndex(),
+                    ERRORCODE.CIRCLE_IS_NULL.getReason());
+        }
+        if (!circleBo.isTakeShow()) {
+            return CommonUtil.toErrorResult(ERRORCODE.CIRCLE_SHOW_CLOSE.getIndex(),
+                    ERRORCODE.CIRCLE_SHOW_CLOSE.getReason());
+        }
+        //圈子是否发表过接演出信息
+        List<ShowBo> showBos = showService.findByCircleid(circleid, 0, ShowBo.PROVIDE);
+        LinkedHashSet<String> showTypes = new LinkedHashSet<>();
+        if (!CommonUtil.isEmpty(showBos) ){
+            showBos.forEach(showBo -> showTypes.add(showBo.getShowType()));
+        } else {
+            //因为圈子标题比类型长，所以数据库匹配不行，需要圈子名称去匹配所有类型
+            String cirName = circleBo.getName();
+            List<CircleTypeBo> circleTypeBos = circleService.selectByLevel(1, CircleTypeBo.SHOW_TYPE);
+            if (circleTypeBos != null){
+                circleTypeBos.forEach(typeBo -> {
+                    String regex = String.format("^.*%s.*$", typeBo.getCategory());
+                    if (!"其他".equals(typeBo.getCategory()) && cirName.matches(regex)){
+                        showTypes.add(typeBo.getCategory());
+                    }
+                });
+            }
+        }
+        List<ShowVo> showVos = new LinkedList<>();
+        List<ShowBo> recomShows = showService.findCircleRecoms(showTypes);
+        bo2vos(recomShows, showVos, userBo);
+        Map<String, Object> map = new HashMap<>();
+        map.put("ret", 0);
+        map.put("recomShowVos", showVos);
+        return JSONObject.fromObject(map).toString();
+    }
+
+    @ApiOperation("招接演出搜索")
+    @ApiImplicitParams({@ApiImplicitParam(name = "keyword", value = "搜索关键字", paramType = "query",
+            dataType = "string"),
+            @ApiImplicitParam(name = "type", value = "1 招演出， 2 接演出， -1 所有", paramType = "query",
+                    dataType = "int"),
+            @ApiImplicitParam(name = "page", value = "页码",paramType = "query",dataType = "int"),
+            @ApiImplicitParam(name = "limit", value = "条数",paramType = "query",dataType = "int")})
+    @GetMapping("/search")
+    public String showSearch(String keyword, int type, int page, int limit, HttpServletRequest request) {
+        UserBo userBo = getUserLogin(request);
+        List<ShowBo> showBos = showService.findByKeword(keyword, type, page, limit);
+        List<ShowVo> showVos = new LinkedList<>();
+        bo2vos(showBos, showVos, userBo);
+        Map<String, Object> map = new HashMap<>();
+        map.put("ret", 0);
+        map.put("showVos", showVos);
+        return JSONObject.fromObject(map).toString();
+    }
+
+
+
+
     @ApiOperation("查找所有演出类型")
     @GetMapping("/show-types")
     public String showTypes() {
@@ -420,6 +519,9 @@ public class ShowController extends BaseContorller {
         for (ShowBo showBo : showBos) {
             //已过期的不再添加
             if (showBo.getType() == ShowBo.NEED && isTimeout(showBo.getShowTime())) {
+                showids.add(showBo.getId());
+                continue;
+            } else if (showBo.getType() == ShowBo.PROVIDE && System.currentTimeMillis() > showBo.getEndTime().getTime()) {
                 showids.add(showBo.getId());
                 continue;
             }
