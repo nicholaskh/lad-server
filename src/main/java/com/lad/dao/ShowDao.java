@@ -146,10 +146,14 @@ public class ShowDao extends BaseDao<ShowBo>{
      * @param showTypes
      * @return
      */
-    public List<ShowBo> findRecomShows(String userid, LinkedHashSet<String> showTypes){
+    public List<ShowBo> findRecomShows(String userid, LinkedHashSet<String> showTypes, int type){
         Query query = new Query();
         Criteria criteria = new Criteria("createuid").ne(userid)
                 .and("deleted").is(Constant.ACTIVITY).and("status").is(0).and("showType").in(showTypes);
+        //-1表示查询所有
+        if (type != -1) {
+            criteria.and("type").is(type);
+        }
         query.addCriteria(criteria);
         query.with(new Sort(new Sort.Order(Sort.Direction.DESC,"_id")));
         return getMongoTemplate().find(query, ShowBo.class);

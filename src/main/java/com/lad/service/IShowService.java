@@ -63,7 +63,7 @@ public interface IShowService {
     List<ShowBo> findByShowType(int type, int page, int limit);
 
 
-    List<ShowBo> findRecomShows(String userid, LinkedHashSet<String> showTypes);
+    List<ShowBo> findRecomShows(String userid, LinkedHashSet<String> showTypes, int type);
 
 
     List<ShowBo> findByMyShows(String userid, int type);

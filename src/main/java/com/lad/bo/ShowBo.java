@@ -4,7 +4,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.Date;
 import java.util.LinkedHashSet;
 
 /**
@@ -64,9 +63,9 @@ public class ShowBo extends BaseBo {
     //演出圈子
     private String circleid;
     //接演出结束时间
-    private Date startTime;
+    private String startTime;
     //接演出结束时间
-    private Date endTime;
+    private String endTime;
     //提前预约时间
     private String advanceDays;
 

@@ -116,6 +116,8 @@ public class ShowController extends BaseContorller {
             log.info("user {} shows add video path: {},  videoPic: {} ", userid, paths[0], paths[1]);
         }
         showService.insert(showBo);
+        int recomType = showBo.getType() == ShowBo.NEED ? ShowBo.PROVIDE : ShowBo.NEED;
+        long num = showService.findByKeyword(showBo.getShowType(), userid, recomType);
         asyncController.addShowTypes(showService, showBo.getShowType(), userid);
         if (showBo.getType() == ShowBo.NEED) {
             asyncController.pushShowToCreate(showService, showBo);
@@ -126,6 +128,7 @@ public class ShowController extends BaseContorller {
         Map<String, Object> map = new HashMap<>();
         map.put("ret", 0);
         map.put("showid", showBo.getId());
+        map.put("recomShowNum", num);
         return JSONObject.fromObject(map).toString();
     }
 
@@ -325,7 +328,7 @@ public class ShowController extends BaseContorller {
             if (showBo.getType() == ShowBo.NEED && showBo.getStatus() == 0 && isTimeout(showBo.getShowTime())) {
                 showVo.setStatus(1);
                 showids.add(showBo.getId());
-            } else if (showBo.getType() == ShowBo.PROVIDE && System.currentTimeMillis() > showBo.getEndTime().getTime()) {
+            } else if (showBo.getType() == ShowBo.PROVIDE && isEndTimeout(showBo.getEndTime())) {
                 showVo.setStatus(1);
                 showids.add(showBo.getId());
             }
@@ -403,21 +406,27 @@ public class ShowController extends BaseContorller {
 
 
     @ApiOperation("全部推荐接口")
+    @ApiImplicitParam(name = "type", value = "1招演出，2接演出, -1所有", required = true, paramType = "query",
+            dataType = "int")
     @GetMapping("/my-show-recoms")
-    public String myShowRecoms(HttpServletRequest request) {
+    public String myShowRecoms(int type, HttpServletRequest request) {
         UserBo userBo = getUserLogin(request);
         if (userBo == null) {
             return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
                     ERRORCODE.ACCOUNT_OFF_LINE.getReason());
         }
-        List<ShowBo> showBos = showService.findByMyShows(userBo.getId(), -1);
+        int recomType = -1;
+        if ( type != -1) {
+            recomType = type == ShowBo.NEED ? ShowBo.PROVIDE : ShowBo.NEED;
+        }
+        List<ShowBo> showBos = showService.findByMyShows(userBo.getId(), recomType);
         LinkedHashSet<String> showTypes = new LinkedHashSet<>();
         if (showBos != null){
             showBos.forEach(showBo -> showTypes.add(showBo.getShowType()));
         }
         List<ShowVo> showVos = new LinkedList<>();
         if (!showTypes.isEmpty()) {
-            List<ShowBo> recomShows = showService.findRecomShows(userBo.getId(), showTypes);
+            List<ShowBo> recomShows = showService.findRecomShows(userBo.getId(), showTypes, type);
             bo2vos(recomShows, showVos, userBo);
         }
         Map<String, Object> map = new HashMap<>();
@@ -521,7 +530,7 @@ public class ShowController extends BaseContorller {
             if (showBo.getType() == ShowBo.NEED && isTimeout(showBo.getShowTime())) {
                 showids.add(showBo.getId());
                 continue;
-            } else if (showBo.getType() == ShowBo.PROVIDE && System.currentTimeMillis() > showBo.getEndTime().getTime()) {
+            } else if (showBo.getType() == ShowBo.PROVIDE && isEndTimeout(showBo.getEndTime())) {
                 showids.add(showBo.getId());
                 continue;
             }
@@ -574,6 +583,24 @@ public class ShowController extends BaseContorller {
         Date time = CommonUtil.getDate(timeStr,"yyyy-MM-dd HH:mm:ss");
         if (time != null) {
             return System.currentTimeMillis() > time.getTime();
+        }
+        return false;
+    }
+
+
+    /**
+     * 判断是否超时
+     * @param timeStr
+     * @return
+     */
+    private boolean isEndTimeout(String timeStr){
+        if (StringUtils.isEmpty(timeStr)) {
+            return false;
+        }
+        //已超时的不在推送
+        Date time = CommonUtil.getDate(timeStr,"yyyy-MM-dd");
+        if (time != null) {
+            return System.currentTimeMillis() >= CommonUtil.getLastDate(time).getTime();
         }
         return false;
     }

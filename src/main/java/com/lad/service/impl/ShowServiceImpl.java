@@ -92,8 +92,8 @@ public class ShowServiceImpl implements IShowService {
     }
 
     @Override
-    public List<ShowBo> findRecomShows(String userid, LinkedHashSet<String> showTypes) {
-        return showDao.findRecomShows(userid, showTypes);
+    public List<ShowBo> findRecomShows(String userid, LinkedHashSet<String> showTypes, int type) {
+        return showDao.findRecomShows(userid, showTypes, type);
     }
 
     @Override
