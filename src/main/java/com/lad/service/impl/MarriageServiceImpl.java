@@ -1,0 +1,133 @@
+package com.lad.service.impl;
+
+import java.io.File;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.lad.bo.OptionBo;
+import com.lad.bo.RequireBo;
+import com.lad.bo.WaiterBo;
+import com.lad.dao.IMarriageDao;
+import com.lad.service.IMarriageService;
+import com.lad.vo.OptionVo;
+import com.lad.vo.RequireVo;
+import com.lad.vo.WaiterVo;
+import com.mongodb.WriteResult;
+@Service("marriageService")
+public class MarriageServiceImpl implements IMarriageService {
+	
+	@Autowired
+	public IMarriageDao marriageDao;
+
+	@Override
+	public WaiterBo findWaiterById(String caresId) {
+		return marriageDao.findWaiterById(caresId);
+	}
+	
+	@Override
+	public List<String> getCaresList(String waiterId) {
+		return marriageDao.getCaresList(waiterId);
+	}
+	
+	@Override
+	public WriteResult deletePublish(String pubId) {
+		return marriageDao.deletePublish(pubId);
+	}
+	@Override
+	public WriteResult updateByParams(String id, Map<String, Object> params, Class class1) {
+		return marriageDao.updateByParams(id,params,class1);
+	}
+	
+	public MarriageServiceImpl() {
+		// TODO Auto-generated constructor stub
+	}
+
+	@Override
+	public List<WaiterBo> getPublishById(String userId) {
+		return marriageDao.getPublishById(userId);
+	}
+
+	@Override
+	public Map<String, Object> getPublishDescById(String WaiterId) {
+		return null;
+	}
+
+	@Override
+	public String insertPublish(WaiterBo wb, RequireBo rb) {
+		String rbid = marriageDao.insert(rb);
+		wb.setRequireId(rbid);
+		String wbid = marriageDao.insert(wb);
+		
+		return wbid;
+	}
+
+	@Override
+	public WriteResult updateWaiter(WaiterVo wv) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public WriteResult updateRequire(RequireVo rv) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+
+	@Override
+	public List<OptionBo> getOptions(OptionVo ov) {
+		return marriageDao.getOptions(ov);
+	}
+
+	@Override
+	public List<WaiterBo> getRecommend(String WaiterId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<WaiterBo> addUnRecommend(String WaiterId, String unRecommendId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<WaiterBo> addCare(String WaiterId, String CareId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public WriteResult deleteCare(String WaiterId, String CareId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<WaiterBo> getCares(String WaiterId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<String> insertImage(File[] image) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getNickName() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+
+
+
+
+}
