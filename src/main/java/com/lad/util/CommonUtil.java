@@ -463,5 +463,31 @@ public class CommonUtil {
 
 	}
 
-
+	/**
+	 * 根据生日计算年龄
+	 * @param birth
+	 * @return
+	 */
+	public static int getAge(Date birth){
+		Calendar birthTime = Calendar.getInstance();
+		birthTime.setTime(birth);
+		int birthYear = birthTime.get(Calendar.YEAR);
+		int birthMonth = birthTime.get(Calendar.MONTH)+1;
+		int birthDay = birthTime.get(Calendar.DAY_OF_MONTH);
+		
+		Calendar now = Calendar.getInstance();
+		int nowYear = now.get(Calendar.YEAR);
+		int nowMonth = now.get(Calendar.MONTH)+1;
+		int nowDay = now.get(Calendar.DAY_OF_MONTH);
+		
+		int age = 0;
+//		System.out.println(nowYear+"     "+birthYear);
+		if(nowMonth-birthMonth>=0 && nowDay-birthDay>=0){
+			age = nowYear-birthYear;
+		}else{
+			age = nowYear-birthYear-1;
+		}
+		return age;
+	}
+	
 }

@@ -7,7 +7,7 @@ import lombok.ToString;
 @Setter
 @Getter
 @ToString
-public class OptionVo {
+public class OptionVo extends BaseVo {
 	private String field;
 	private String supId;
 }

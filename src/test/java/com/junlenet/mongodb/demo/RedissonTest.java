@@ -9,7 +9,7 @@ import org.junit.Test;
 public class RedissonTest {
 
 
-    @Test
+//    @Test
     public void initTest(){
 //        Config config = new Config();
 //        config.useSingleServer().setAddress("180.76.138.200:6379");

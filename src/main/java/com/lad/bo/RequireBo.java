@@ -12,8 +12,8 @@ import lombok.ToString;
 @Getter
 @ToString
 @Document(collection = "requires")
-public class RequireBo {
-	private String id;
+public class RequireBo extends BaseBo{
+//	private String id;
 	private Integer sex;		// 性别 0,女;1,男
 	private String age;			// 年龄要求(范围值)
 	private String hight;		// 身高要求(范围值)

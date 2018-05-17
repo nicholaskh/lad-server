@@ -13,9 +13,9 @@ import lombok.ToString;
 @Getter
 @ToString
 @Document(collection = "waiters")
-public class WaiterBo {
-	private String id;
-	private String createrId;	// 创建者Id
+public class WaiterBo extends BaseBo{
+//	private String id;
+//	private String createrId;	// 创建者Id
 	private String nickName;	// 昵称
 	private Integer sex;		// 性别 0,女;1,男
 	private Date birthday;		// 生日
@@ -31,5 +31,5 @@ public class WaiterBo {
 	private List<String> cares; // 感兴趣的人,保存id的list;
 	private List<String> pass;	// 不感兴趣的人,保存id的list;
 	private String requireId;	// 关联的require的id
-	private Date createDate;	// 创建时间
+//	private Date createDate;	// 创建时间
 }

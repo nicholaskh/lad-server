@@ -1,5 +1,6 @@
-package com.lad.dao;
+package com.lad.dao.impl;
 
+import com.lad.dao.InforBaseDao;
 import com.lad.scrapybo.DailynewsBo;
 import com.lad.scrapybo.YanglaoBo;
 import com.mongodb.WriteResult;

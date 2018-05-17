@@ -10,8 +10,9 @@ import lombok.ToString;
 @Setter
 @Getter
 @ToString
-public class WaiterVo {
-	private String id;
+
+public class WaiterVo extends BaseVo {
+
 	private String createrId;	// 创建者Id
 	private String nickName;	// 昵称
 	private Integer sex;		// 性别 0,女;1,男

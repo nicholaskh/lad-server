@@ -9,8 +9,7 @@ import lombok.ToString;
 @Setter
 @Getter
 @ToString
-public class RequireVo {
-	private String id;
+public class RequireVo extends BaseVo {
 	private String age;			// 年龄要求(范围值)
 	private String hight;		// 身高要求(范围值)
 	private Integer education; 	// 学历 0,不限;
