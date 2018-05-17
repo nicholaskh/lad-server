@@ -22,7 +22,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+import net.sf.json.JSONObject;
+import com.lad.bo.BaseBo;
 import com.lad.bo.OptionBo;
 import com.lad.bo.RequireBo;
 import com.lad.bo.UserBo;
@@ -49,27 +50,52 @@ public class MarriageController extends BaseContorller{
 	@Autowired
 	public IMarriageService marriageService;
 	
-	@ApiOperation("移除关注")
-	@PutMapping("/unrecommend")
-	public String addUnRecommend(String waiterId,String unRecommendId,HttpServletRequest request, HttpServletResponse response){
+	@ApiOperation("查询发布详情")
+	@GetMapping("/publishe-desc-search")
+	public String getPublishDescById(String waiterId,HttpServletRequest request, HttpServletResponse response){
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		WaiterBo waiter = marriageService.findWaiterById(waiterId);
+		
+		if(waiter == null){
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		
+		RequireBo require = marriageService.findRequireById(waiter.getRequireId());
+		
+		if(require == null){
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		
+		Map<String,BaseBo> map = new HashMap<>();
+		map.put("waiter", waiter);
+		map.put("require", require);
+		return JSONObject.fromObject(map).toString();
+	}
+	
+	@ApiOperation("不再推荐")
+	@PutMapping("/pass")
+	public String addPass(String waiterId,String passId,HttpServletRequest request, HttpServletResponse response){
 		UserBo userBo = getUserLogin(request);
 		if (userBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		List<String> list = null;
 		if(waiterId != null && waiterId!=""){
-			list = getCaresList(waiterId);
+			list = getList(waiterId,"pass");
 		}else{
 			return "参数错误";
 		}
-		WaiterBo care = marriageService.findWaiterById(unRecommendId);
+		WaiterBo care = marriageService.findWaiterById(passId);
 		
 		if(care != null){
-			list.add(unRecommendId);
+			list.add(passId);
 		}
 		
 		Map<String, Object> params = new HashMap<>();
-		params.put("cares", list);
+		params.put("pass", list);
 		WriteResult result = marriageService.updateByParams(waiterId, params , WaiterBo.class);
 		
 		if(result.isUpdateOfExisting()){
@@ -87,7 +113,7 @@ public class MarriageController extends BaseContorller{
 		}
 		List<String> list = null;
 		if(waiterId != null && waiterId!=""){
-			list = getCaresList(waiterId);
+			list = getList(waiterId,"cares");
 		}else{
 			return "参数错误";
 		}
@@ -116,7 +142,7 @@ public class MarriageController extends BaseContorller{
 		}
 		List<String> list = null;
 		if(waiterId != null && waiterId!=""){
-			list = getCaresList(waiterId);
+			list = getList(waiterId,"cares");
 		}else{
 			return "参数错误";
 		}
@@ -145,7 +171,7 @@ public class MarriageController extends BaseContorller{
 		}
 		List<String> list = null;
 		if(waiterId != null && waiterId!=""){
-			list = getCaresList(waiterId);
+			list = getList(waiterId,"cares");
 		}else{
 			return "参数错误";
 		}
@@ -245,8 +271,10 @@ public class MarriageController extends BaseContorller{
 	
     @ApiOperation("发布信息")
     @PostMapping("/insert")
-    public String insertPublish(WaiterVo wv,RequireVo rv,HttpServletRequest request, HttpServletResponse response) {
+    public String insertPublish(@RequestBody WaiterVo wv,@RequestBody RequireVo rv,HttpServletRequest request, HttpServletResponse response) {
         UserBo userBo = getUserLogin(request);
+        System.out.println(rv);
+        System.out.println(wv);
         if (userBo == null) {
             return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
                     ERRORCODE.ACCOUNT_OFF_LINE.getReason());
@@ -261,6 +289,8 @@ public class MarriageController extends BaseContorller{
         RequireBo rb = new RequireBo();
         BeanUtils.copyProperties(rv, rb);
         rb.setSex(1-wv.getSex());
+        // 插入需求,并返回需求id
+        String rbid = marriageService.insertPublish(rb);
         
         
         // 设置基本资料的实体
@@ -269,78 +299,31 @@ public class MarriageController extends BaseContorller{
         wb.setAge(CommonUtil.getAge(wv.getBirthday()));
         wb.setCreateuid(userBo.getId());
         wb.setUpdateTime(new Date());
+        wb.setDeleted(0);
         
         // 设置图片地址
-        List<String> image = new ArrayList<>();
-        wb.setImages(image);
+        List<String> image = wv.getImages();
+        
         
         // 设置兴趣
-        List<String> hobbys = new ArrayList<>();
-        wb.setHobbys(hobbys);
+        List<String> hobbys = wv.getHobbys();
 
         // 设置关心的人,初始为空
         List<String> cares = new ArrayList<>();
-        wb.setCares(cares);
         
-        // 设置不关心的人,初始为空
+        // 设置不再推荐的人,初始为空
         List<String> pass = new ArrayList<>();
-        wb.setPass(pass);
         
+        wb.setRequireId(rbid);
         
-        String wbid = marriageService.insertPublish(wb, rb);
-        /*String userid = userBo.getId();
-        ShowBo showBo = null;
-        try {
-            JSONObject jsonObject = JSONObject.fromObject(showVoJson);
-            showBo = (ShowBo)JSONObject.toBean(jsonObject, ShowBo.class);
-        } catch (Exception e) {
-            return CommonUtil.toErrorResult(ERRORCODE.FORMAT_ERROR.getIndex(),
-                    ERRORCODE.FORMAT_ERROR.getReason());
-        }
-        showBo.setCreateuid(userid);
-        if (images != null && images.length > 0) {
-            if (showBo.getType() == ShowBo.NEED) {
-                MultipartFile file = images[0];
-                Long time = Calendar.getInstance().getTimeInMillis();
-                String fileName = String.format("%s-%d-%s", userid, time, file.getOriginalFilename());
-                String path = CommonUtil.upload(file, Constant.RELEASE_PICTURE_PATH, fileName, 0);
-                showBo.setComPic(path);
-            } else if (showBo.getType() == ShowBo.PROVIDE) {
-                LinkedHashSet<String> photos = new LinkedHashSet<>();
-                for (MultipartFile file : images) {
-                    Long time = Calendar.getInstance().getTimeInMillis();
-                    String fileName = String.format("%s-%d-%s", userid, time, file.getOriginalFilename());
-                    String path = CommonUtil.upload(file, Constant.RELEASE_PICTURE_PATH, fileName, 0);
-                    photos.add(path);
-                }
-                showBo.setPicType("pic");
-                showBo.setImages(photos);
-            }
-            log.info("shows {} add pic   size: {} ",userid, images.length);
-        }
-        if (video != null) {
-            Long time = Calendar.getInstance().getTimeInMillis();
-            String fileName = String.format("%s-%d-%s", userid, time, video.getOriginalFilename());
-            String[] paths = CommonUtil.uploadVedio(video, Constant.RELEASE_PICTURE_PATH, fileName, 0);
-            showBo.setVideo(paths[0]);
-            showBo.setVideoPic(paths[1]);
-            showBo.setPicType("video");
-            log.info("user {} shows add video path: {},  videoPic: {} ", userid, paths[0], paths[1]);
-        }
-        showService.insert(showBo);
-        asyncController.addShowTypes(showService, showBo.getShowType(), userid);
-        if (showBo.getType() == ShowBo.NEED) {
-            asyncController.pushShowToCreate(showService, showBo);
-        } else {
-            asyncController.pushShowToCompany(showService, showBo.getShowType(), showBo.getId(),
-                    userBo.getUserName(), userid);
-        }
+        marriageService.insertPublish(wb);
+        
         Map<String, Object> map = new HashMap<>();
         map.put("ret", 0);
-        map.put("showid", showBo.getId());
-        return JSONObject.fromObject(map).toString();*/
-        return null;
+        map.put("showid", wb.getId());
+        return JSONObject.fromObject(map).toString();
     }
+    
     
     private WriteResult update(BaseVo obj,Class clazz){
 		JSONObject jsonObject = (JSONObject) JSON.toJSON(obj);
@@ -359,10 +342,9 @@ public class MarriageController extends BaseContorller{
 		return result;
     }
     
-    private List<String> getCaresList(String waiterId){
-    	List<String> list = new ArrayList();
-    	list = marriageService.getCaresList(waiterId);    	
+    private List<String> getList(String waiterId,String key){
+    	List<String> list = new ArrayList<String>();
+    	list = marriageService.getCaresList(waiterId,key);    	
     	return list;
     }
-    
 }

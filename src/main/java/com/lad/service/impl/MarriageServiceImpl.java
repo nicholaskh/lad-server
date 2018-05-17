@@ -7,6 +7,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.lad.bo.BaseBo;
 import com.lad.bo.OptionBo;
 import com.lad.bo.RequireBo;
 import com.lad.bo.WaiterBo;
@@ -21,15 +22,30 @@ public class MarriageServiceImpl implements IMarriageService {
 	
 	@Autowired
 	public IMarriageDao marriageDao;
+	
+	@Override
+	public String insertPublish(BaseBo bb) {
+		return marriageDao.insertPublish(bb);
+	}
 
+	@Override
+	public List<String> getUnrecommendList(String waiterId) {
+		return marriageDao.getUnrecommendList(waiterId);
+	}
+	
 	@Override
 	public WaiterBo findWaiterById(String caresId) {
 		return marriageDao.findWaiterById(caresId);
 	}
 	
 	@Override
-	public List<String> getCaresList(String waiterId) {
-		return marriageDao.getCaresList(waiterId);
+	public RequireBo findRequireById(String requireId) {
+		return marriageDao.findRequireById(requireId);
+	}
+	
+	@Override
+	public List<String> getCaresList(String waiterId,String key) {
+		return marriageDao.getCaresList(waiterId,key);
 	}
 	
 	@Override
@@ -55,14 +71,14 @@ public class MarriageServiceImpl implements IMarriageService {
 		return null;
 	}
 
-	@Override
-	public String insertPublish(WaiterBo wb, RequireBo rb) {
-		String rbid = marriageDao.insert(rb);
-		wb.setRequireId(rbid);
-		String wbid = marriageDao.insert(wb);
-		
-		return wbid;
-	}
+//	@Override
+//	public String insertPublish(WaiterBo wb, RequireBo rb) {
+//		String rbid = marriageDao.insert(rb);
+//		wb.setRequireId(rbid);
+//		String wbid = marriageDao.insert(wb);
+//		
+//		return wbid;
+//	}
 
 	@Override
 	public WriteResult updateWaiter(WaiterVo wv) {
@@ -124,6 +140,12 @@ public class MarriageServiceImpl implements IMarriageService {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+
+
+
+
+
 
 
 

@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.List;
 import java.util.Map;
 
+import com.lad.bo.BaseBo;
 import com.lad.bo.OptionBo;
 import com.lad.bo.RequireBo;
 import com.lad.bo.WaiterBo;
@@ -19,7 +20,7 @@ public interface IMarriageService extends IBaseService {
 //	查看发布消息的具体信息,返回消息时分别将基本资料与要求封装到Map
 	public Map<String,Object> getPublishDescById(String WaiterId);
 //	添加发布,返回waiterId
-	public String insertPublish(WaiterBo wb,RequireBo rb); 
+//	public String insertPublish(WaiterBo wb,RequireBo rb); 
 
 //	修改儿女资料
 	public WriteResult updateWaiter(WaiterVo wv);
@@ -48,9 +49,15 @@ public interface IMarriageService extends IBaseService {
 //  更新
 	public WriteResult updateByParams(String id, Map<String, Object> params, Class class1);
 
-	public List<String> getCaresList(String waiterId);
+	public List<String> getCaresList(String waiterId,String key);
 
 	public WaiterBo findWaiterById(String caresId);
+
+	public List<String> getUnrecommendList(String waiterId);
+
+	public RequireBo findRequireById(String requireId);
+
+	public String insertPublish(BaseBo bb);
 
 
 	

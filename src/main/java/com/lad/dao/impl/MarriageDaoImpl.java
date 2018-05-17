@@ -12,7 +12,9 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
+import com.lad.bo.BaseBo;
 import com.lad.bo.OptionBo;
+import com.lad.bo.RequireBo;
 import com.lad.bo.WaiterBo;
 import com.lad.dao.IMarriageDao;
 import com.lad.vo.OptionVo;
@@ -26,8 +28,41 @@ public class MarriageDaoImpl implements IMarriageDao {
 	@Autowired
 	private MongoTemplate mongoTemplate;
 	
+	@Override
+	public String insertPublish(BaseBo bb) {
+		System.out.println(bb.getClass());
+		mongoTemplate.insert(bb);
+		System.out.println(bb.getId());
+		return bb.getId();
+	}
+	
+	@Override
+	public List<String> getUnrecommendList(String waiterId) {
+		
+		DBObject dbObject = new BasicDBObject();  
+		dbObject.put("_id", waiterId);  //查询条件  
+		  
+		BasicDBObject fieldsObject=new BasicDBObject();  
+		//指定返回的字段  
+		fieldsObject.put("pass", true);  
+		  
+		Query query = new BasicQuery(dbObject,fieldsObject);
+		WaiterBo findOne = mongoTemplate.findOne(query, WaiterBo.class); 
+		return findOne.getPass();
+	}
+	
 	/**
-	 * 查询单挑waiter
+	 * 查询单个Require
+	 */
+	@Override
+	public RequireBo findRequireById(String requireId) {
+		Query query = new Query(Criteria.where("_id").is(requireId));
+		return mongoTemplate.findOne(query, RequireBo.class);
+	}
+	
+	
+	/**
+	 * 查询单个waiter
 	 */
 	@Override
 	public WaiterBo findWaiterById(String caresId) {
@@ -41,18 +76,26 @@ public class MarriageDaoImpl implements IMarriageDao {
 	 * 
 	 */
 	@Override
-	public List<String> getCaresList(String waiterId) {
+	public List<String> getCaresList(String waiterId,String key) {
 		
 		DBObject dbObject = new BasicDBObject();  
 		dbObject.put("_id", waiterId);  //查询条件  
 		  
 		BasicDBObject fieldsObject=new BasicDBObject();  
 		//指定返回的字段  
-		fieldsObject.put("cares", true);  
+		fieldsObject.put(key, true);  
 		  
 		Query query = new BasicQuery(dbObject,fieldsObject);
-		WaiterBo findOne = mongoTemplate.findOne(query, WaiterBo.class); 
-		return findOne.getCares();
+		WaiterBo findOne = mongoTemplate.findOne(query, WaiterBo.class);
+		List list = null;
+		if("cares".equals(key)){
+			list = findOne.getCares();
+		}
+		
+		if("pass".equals(key)){
+			list = findOne.getPass();
+		}
+		return list;
 	}
 
 	/**
@@ -128,9 +171,4 @@ public class MarriageDaoImpl implements IMarriageDao {
         }
         return mongoTemplate.updateFirst(query, update, class1);
 	}
-
-
-
-
-
 }
