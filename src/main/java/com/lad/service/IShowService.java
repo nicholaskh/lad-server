@@ -3,6 +3,7 @@ package com.lad.service;
 import com.lad.bo.ShowBo;
 import com.mongodb.WriteResult;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -60,4 +61,19 @@ public interface IShowService {
 
 
     List<ShowBo> findByShowType(int type, int page, int limit);
+
+
+    List<ShowBo> findRecomShows(String userid, LinkedHashSet<String> showTypes, int type);
+
+
+    List<ShowBo> findByMyShows(String userid, int type);
+
+
+    List<ShowBo> findCircleRecoms(LinkedHashSet<String> showTypes);
+
+
+    List<ShowBo> findByKeword(String keyword, int type, int page, int limit);
+
+
+    long findByKeyword(String keyword, String userid, int type);
 }

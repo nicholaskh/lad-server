@@ -46,4 +46,6 @@ public class CircleVo extends BaseVo {
 	private String city;
 	private String district;
 
+	//圈子是否承接演出
+	private boolean takeShow;
 }

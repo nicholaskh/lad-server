@@ -11,6 +11,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 
 /**
@@ -51,6 +52,31 @@ public class ShowDao extends BaseDao<ShowBo>{
         query.skip((page-1)*limit);
         query.limit(limit);
         return getMongoTemplate().find(query, ShowBo.class);
+    }
+
+    /**
+     * 根据关键和type 查询
+     * @param keyword
+     * @param type
+     * @return
+     */
+    public long findByList(String keyword, String userid, int type){
+        Query query = new Query();
+        Criteria criteria = new Criteria("status").is(0).and("deleted").is(Constant.ACTIVITY);
+        //-1表示查询所有
+        if (type != -1) {
+            criteria.and("type").is(type);
+        }
+        //排除自己发布的信息
+        if (!StringUtils.isEmpty(userid)) {
+            criteria.and("createuid").ne(userid);
+        }
+        if (!StringUtils.isEmpty(keyword)) {
+            criteria.orOperator(new Criteria("showType").regex("^.*"+keyword+".*$"),
+                    new Criteria("title").regex("^.*"+keyword+".*$"));
+        }
+        query.addCriteria(criteria);
+        return getMongoTemplate().count(query, ShowBo.class);
     }
 
 
@@ -95,6 +121,58 @@ public class ShowDao extends BaseDao<ShowBo>{
         query.limit(limit);
         return getMongoTemplate().find(query, ShowBo.class);
     }
+
+
+    /**
+     * 根据关键和type 查询
+     * @param userid
+     * @param type
+     * @return
+     */
+    public List<ShowBo> findByMyShows(String userid, int type){
+        Query query = new Query();
+        Criteria criteria = new Criteria("createuid").is(userid)
+                .and("deleted").is(Constant.ACTIVITY).and("status").is(0);
+        //-1表示查询所有
+        if (type != -1) {
+            criteria.and("type").is(type);
+        }
+        query.addCriteria(criteria);
+        query.with(new Sort(new Sort.Order(Sort.Direction.DESC,"_id")));
+        return getMongoTemplate().find(query, ShowBo.class);
+    }
+
+    /**
+     * 根据关键和type 查询
+     * @param showTypes
+     * @return
+     */
+    public List<ShowBo> findRecomShows(String userid, LinkedHashSet<String> showTypes, int type){
+        Query query = new Query();
+        Criteria criteria = new Criteria("createuid").ne(userid)
+                .and("deleted").is(Constant.ACTIVITY).and("status").is(0).and("showType").in(showTypes);
+        //-1表示查询所有
+        if (type != -1) {
+            criteria.and("type").is(type);
+        }
+        query.addCriteria(criteria);
+        query.with(new Sort(new Sort.Order(Sort.Direction.DESC,"_id")));
+        return getMongoTemplate().find(query, ShowBo.class);
+    }
+
+    /**
+     * 根据关键和type 查询
+     * @param showTypes
+     * @return
+     */
+    public List<ShowBo> findCircleRecoms(LinkedHashSet<String> showTypes){
+        Query query = new Query();
+        Criteria criteria = new Criteria("deleted").is(Constant.ACTIVITY).and("status").is(0).and("showType").in(showTypes);
+        query.addCriteria(criteria);
+        query.with(new Sort(new Sort.Order(Sort.Direction.DESC,"_id")));
+        return getMongoTemplate().find(query, ShowBo.class);
+    }
+
 
 
 
@@ -156,6 +234,34 @@ public class ShowDao extends BaseDao<ShowBo>{
     public List<ShowBo> findByShowType(int type, int page, int limit){
         Query query = new Query();
         Criteria criteria = new Criteria("type").is(type).and("deleted").is(Constant.ACTIVITY).and("status").is(0);
+        query.addCriteria(criteria);
+        query.with(new Sort(Sort.Direction.DESC, "_id"));
+        page = page < 1 ? 1 : page;
+        query.skip((page-1)*limit);
+        query.limit(limit);
+        return getMongoTemplate().find(query, ShowBo.class);
+    }
+
+
+    /**
+     * 根据关键和type 查询
+     * @param keyword
+     * @param type
+     * @param page
+     * @param limit
+     * @return
+     */
+    public List<ShowBo> findByKeword(String keyword, int type, int page, int limit){
+        Query query = new Query();
+        Criteria criteria = new Criteria("status").is(0).and("deleted").is(Constant.ACTIVITY);
+        //-1表示查询所有
+        if (type != -1) {
+            criteria.and("type").is(type);
+        }
+        if (!StringUtils.isEmpty(keyword)) {
+            criteria.orOperator(new Criteria("showType").regex("^.*"+keyword+".*$"),
+                    new Criteria("company").regex("^.*"+keyword+".*$"));
+        }
         query.addCriteria(criteria);
         query.with(new Sort(Sort.Direction.DESC, "_id"));
         page = page < 1 ? 1 : page;

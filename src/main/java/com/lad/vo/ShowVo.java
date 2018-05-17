@@ -79,6 +79,9 @@ public class ShowVo implements Serializable {
     @ApiModelProperty(value="接演归属圈子")
     private String circleid;
 
+    @ApiModelProperty(value="接演归属圈子名称")
+    private String cirName;
+
     @ApiModelProperty(value="招接演出发布人，创建演出时不需要该参数")
     private UserBaseVo creatUser;
 
@@ -90,4 +93,11 @@ public class ShowVo implements Serializable {
 
     @ApiModelProperty(value="是否是本人发布的信息，创建可为空")
     private boolean isCreate;
+    @ApiModelProperty(value="接演出开始时间, yyyy-MM-dd")
+    private String startTime;
+    //接演出结束时间
+    @ApiModelProperty(value="接演出截止时间, yyyy-MM-dd")
+    private String endTime;
+    @ApiModelProperty(value="接演出提前预约天数")
+    private String advanceDays;
 }

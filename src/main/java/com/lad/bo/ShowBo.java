@@ -62,5 +62,11 @@ public class ShowBo extends BaseBo {
     private String videoPic;
     //演出圈子
     private String circleid;
+    //接演出结束时间
+    private String startTime;
+    //接演出结束时间
+    private String endTime;
+    //提前预约时间
+    private String advanceDays;
 
 }

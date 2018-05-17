@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -88,5 +89,30 @@ public class ShowServiceImpl implements IShowService {
     @Override
     public List<ShowBo> findByShowType(int type, int page, int limit) {
         return showDao.findByShowType(type, page, limit);
+    }
+
+    @Override
+    public List<ShowBo> findRecomShows(String userid, LinkedHashSet<String> showTypes, int type) {
+        return showDao.findRecomShows(userid, showTypes, type);
+    }
+
+    @Override
+    public List<ShowBo> findByMyShows(String userid, int type) {
+        return showDao.findByMyShows(userid, type);
+    }
+
+    @Override
+    public List<ShowBo> findCircleRecoms(LinkedHashSet<String> showTypes) {
+        return showDao.findCircleRecoms(showTypes);
+    }
+
+    @Override
+    public List<ShowBo> findByKeword(String keyword, int type, int page, int limit) {
+        return showDao.findByKeword(keyword, type, page, limit);
+    }
+
+    @Override
+    public long findByKeyword(String keyword, String userid, int type) {
+        return showDao.findByList(keyword, userid, type);
     }
 }
