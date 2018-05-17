@@ -101,9 +101,9 @@ public class ShowController extends BaseContorller {
                     String path = CommonUtil.upload(file, Constant.RELEASE_PICTURE_PATH, fileName, 0);
                     photos.add(path);
                 }
-                showBo.setPicType("pic");
                 showBo.setImages(photos);
             }
+            showBo.setPicType("pic");
             log.info("shows {} add pic   size: {} ",userid, images.length);
         }
         if (video != null) {
@@ -167,6 +167,10 @@ public class ShowController extends BaseContorller {
         } else {
             createUser = userService.getUser(showBo.getCreateuid());
         }
+        if (ShowBo.PROVIDE == showBo.getType()) {
+            CircleBo circleBo = circleService.selectById(showBo.getCircleid());
+            vo.setCirName(circleBo == null ? "" : circleBo.getName());
+        }
         if (createUser != null) {
             BeanUtils.copyProperties(createUser, baseVo);
             baseVo.setUserName(!"".equals(friendName) ? friendName : createUser.getUserName());
@@ -200,46 +204,62 @@ public class ShowController extends BaseContorller {
             @ApiImplicitParam(name = "showVoJson",
                     value = "修改的参数和信息，json字符串，字段根据showVo来定义，不需要修改内容则不传入，可为空，文件url不需要传入",
                     paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "picType", value = "删除的是图片还是视频，video 视频，pic 图片",
+                    paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "delImages", value = "删除的图片信息，多个以逗号给开，不删除则为空",
                     paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "images", value = "新增图片信息, 如果是招演类型，则默认为营业执照图片",
                     paramType = "query", dataType = "file"),
             @ApiImplicitParam(name = "video", value = "需要修改视频信息，与图片二选一", paramType = "query", dataType = "file")})
     @PostMapping("/update")
-    public String insert(String showid, String showVoJson,String delImages, MultipartFile[] images, MultipartFile
+    public String insert(String showid, String showVoJson,String picType,String delImages, MultipartFile[] images, MultipartFile
             video, HttpServletRequest request, HttpServletResponse response) {
         UserBo userBo = getUserLogin(request);
         if (userBo == null) {
-            return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-                    ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+            return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(), ERRORCODE.ACCOUNT_OFF_LINE.getReason());
         }
         String userid = userBo.getId();
         ShowBo showBo = showService.findById(showid);
         if (showBo == null) {
-            return CommonUtil.toErrorResult(ERRORCODE.SHOW_NULL.getIndex(),
-                    ERRORCODE.SHOW_NULL.getReason());
+            return CommonUtil.toErrorResult(ERRORCODE.SHOW_NULL.getIndex(), ERRORCODE.SHOW_NULL.getReason());
         }
         //创建者或者管理员才能修改
         if (!userBo.getId().equals(showBo.getCreateuid()) && !CommonUtil.getAdminUserids().contains(userBo.getId())) {
-            return CommonUtil.toErrorResult(ERRORCODE.NOTE_NOT_MASTER.getIndex(),
-                    ERRORCODE.NOTE_NOT_MASTER.getReason());
+            return CommonUtil.toErrorResult(ERRORCODE.NOTE_NOT_MASTER.getIndex(), ERRORCODE.NOTE_NOT_MASTER.getReason());
         }
         Map<String, Object> params = new LinkedHashMap<>();
         if (!StringUtils.isEmpty(showVoJson)) {
             JSONObject jsonObject = JSONObject.fromObject(showVoJson);
             Iterator iterator = jsonObject.keys();
-            while (iterator.hasNext()){
-                String key = (String)iterator.next();
+            while (iterator.hasNext()) {
+                String key = (String) iterator.next();
                 params.put(key, jsonObject.get(key));
             }
         }
-        showBo.setCreateuid(userid);
         LinkedHashSet<String> photos = showBo.getImages();
-         //需要删除的图片
         if (!StringUtils.isEmpty(delImages)) {
-            String[] delArray = delImages.trim().split(",");
-            for (String url : delArray) {
-                photos.remove(url);
+            if ("video".equals(picType)) {
+                if (delImages.equals(showBo.getVideo())) {
+                    params.put("video", "");
+                    params.put("videoPic", "");
+                    params.put("picType", "");
+                }
+            } else if ("pic".equals(picType)) {
+                //删除公司图片
+                if (showBo.getType() == ShowBo.NEED && delImages.equals(showBo.getComPic())) {
+                    params.put("comPic", "");
+                } else {
+                    //需要删除的图片
+                    String[] delArray = delImages.trim().split(",");
+                    for (String url : delArray) {
+                        photos.remove(url);
+                    }
+                }
+            } else {
+                HashMap<String, Object> map = new HashMap<String, Object>();
+                map.put("ret", "-1");
+                map.put("error", "need picType");
+                return JSONObject.fromObject(map).toString();
             }
         }
         //新增的图片
@@ -257,10 +277,10 @@ public class ShowController extends BaseContorller {
                     String path = CommonUtil.upload(file, Constant.RELEASE_PICTURE_PATH, fileName, 0);
                     photos.add(path);
                 }
-                params.put("picType", "pic");
-                params.put("images", photos);
             }
+            params.put("picType", "pic");
         }
+        params.put("images", photos);
         if (video != null) {
             Long time = Calendar.getInstance().getTimeInMillis();
             String fileName = String.format("%s-%d-%s", userid, time, video.getOriginalFilename());
