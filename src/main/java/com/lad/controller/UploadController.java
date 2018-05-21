@@ -6,19 +6,22 @@ import com.lad.service.IUserService;
 import com.lad.util.CommonUtil;
 import com.lad.util.Constant;
 import com.lad.util.ERRORCODE;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiOperation;
 import net.sf.json.JSONObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @RequestMapping("upload")
@@ -84,7 +87,32 @@ public class UploadController extends BaseContorller {
 		map.put("path", path);
 		return JSONObject.fromObject(map).toString();
 	}
-	
+
+
+	@ApiOperation("批量上传文件")
+	@ApiImplicitParam(name = "feedback_pictures", value = "数组批量文件信息", paramType = "query", dataType = "file")
+	@PostMapping("/mutli-feedback-picture")
+	public String feedback_pictures(MultipartFile[] feedback_pictures, HttpServletRequest request) {
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(), ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		if (feedback_pictures != null) {
+			Map<String, Object> map = new HashMap<String, Object>();
+			map.put("ret", 0);
+			List<String> paths = new ArrayList<>();
+			for (MultipartFile file : feedback_pictures) {
+				long time = Calendar.getInstance().getTimeInMillis();
+				String fileName = String.format("%s-%d-%s",userBo.getId(), time, file.getOriginalFilename());
+				String path = CommonUtil.upload(file, Constant.FEEDBACK_PICTURE_PATH, fileName, 0);
+				paths.add(path);
+			}
+			map.put("paths", paths);
+			return JSONObject.fromObject(map).toString();
+		}
+		return Constant.COM_FAIL_RESP;
+	}
+
 	@PostMapping("/imfile")
 	public String imfile(MultipartFile imfile, HttpServletRequest request,
 			HttpServletResponse response) {

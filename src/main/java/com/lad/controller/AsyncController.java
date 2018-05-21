@@ -979,7 +979,7 @@ public class AsyncController extends BaseContorller {
         for (ShowBo showBo : showBos) {
             //已超时的不在推送
             Date time = CommonUtil.getDate(showBo.getShowTime(),"yyyy-MM-dd HH:mm:ss");
-            if (System.currentTimeMillis() > time.getTime()) {
+            if (time == null || System.currentTimeMillis() > time.getTime()) {
                 showids.add(showBo.getId());
                 continue;
             }
@@ -1040,12 +1040,11 @@ public class AsyncController extends BaseContorller {
 
     /**
      * 添加演出类型或更新次数
-     * @param service
      * @param showType
      * @param createuid
      */
     @Async
-    public void addShowTypes(IShowService service, String showType, String createuid){
+    public void addShowTypes(String showType, String createuid){
         CircleTypeBo circleTypeBo = circleService.findByName(showType, 1, CircleTypeBo.SHOW_TYPE);
         if (circleTypeBo == null) {
             circleTypeBo = new CircleTypeBo();

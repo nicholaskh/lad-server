@@ -118,7 +118,7 @@ public class ShowController extends BaseContorller {
         showService.insert(showBo);
         int recomType = showBo.getType() == ShowBo.NEED ? ShowBo.PROVIDE : ShowBo.NEED;
         long num = showService.findByKeyword(showBo.getShowType(), userid, recomType);
-        asyncController.addShowTypes(showService, showBo.getShowType(), userid);
+        asyncController.addShowTypes(showBo.getShowType(), userid);
         if (showBo.getType() == ShowBo.NEED) {
             asyncController.pushShowToCreate(showService, showBo);
         } else {
@@ -237,6 +237,9 @@ public class ShowController extends BaseContorller {
             }
         }
         LinkedHashSet<String> photos = showBo.getImages();
+        if (photos == null) {
+            photos = new LinkedHashSet<>();
+        }
         if (!StringUtils.isEmpty(delImages)) {
             if ("video".equals(picType)) {
                 if (delImages.equals(showBo.getVideo())) {
@@ -269,12 +272,14 @@ public class ShowController extends BaseContorller {
                 Long time = Calendar.getInstance().getTimeInMillis();
                 String fileName = String.format("%s-%d-%s", userid, time, file.getOriginalFilename());
                 String path = CommonUtil.upload(file, Constant.RELEASE_PICTURE_PATH, fileName, 0);
+                log.info("show {} pic  user {}  path  ", showid, userid,   path);
                 params.put("comPic", path);
             } else if (showBo.getType() == ShowBo.PROVIDE) {
                 for (MultipartFile file : images) {
                     Long time = Calendar.getInstance().getTimeInMillis();
                     String fileName = String.format("%s-%d-%s", userid, time, file.getOriginalFilename());
                     String path = CommonUtil.upload(file, Constant.RELEASE_PICTURE_PATH, fileName, 0);
+                    log.info("show {} pic  user {}  path  ", showid, userid,   path);
                     photos.add(path);
                 }
             }
@@ -285,6 +290,7 @@ public class ShowController extends BaseContorller {
             Long time = Calendar.getInstance().getTimeInMillis();
             String fileName = String.format("%s-%d-%s", userid, time, video.getOriginalFilename());
             String[] paths = CommonUtil.uploadVedio(video, Constant.RELEASE_PICTURE_PATH, fileName, 0);
+            log.info("show {} pic  user {}  path  ", showid, userid,   paths[0]);
             showBo.setVideo(paths[0]);
             showBo.setVideoPic(paths[1]);
             params.put("video", paths[0]);
@@ -294,9 +300,12 @@ public class ShowController extends BaseContorller {
         if (!params.isEmpty()) {
             showService.update(showid, params);
         }
+        int recomType = showBo.getType() == ShowBo.NEED ? ShowBo.PROVIDE : ShowBo.NEED;
+        long num = showService.findByKeyword(showBo.getShowType(), userid, recomType);
         Map<String, Object> map = new HashMap<>();
         map.put("ret", 0);
         map.put("showid", showBo.getId());
+        map.put("recomShowNum", num);
         return JSONObject.fromObject(map).toString();
     }
 
