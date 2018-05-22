@@ -212,7 +212,7 @@ public class ShowController extends BaseContorller {
                     paramType = "query", dataType = "file"),
             @ApiImplicitParam(name = "video", value = "需要修改视频信息，与图片二选一", paramType = "query", dataType = "file")})
     @PostMapping("/update")
-    public String insert(String showid, String showVoJson,String picType,String delImages, MultipartFile[] images, MultipartFile
+    public String update(String showid, String showVoJson,String picType,String delImages, MultipartFile[] images, MultipartFile
             video, HttpServletRequest request, HttpServletResponse response) {
         UserBo userBo = getUserLogin(request);
         if (userBo == null) {
@@ -259,32 +259,54 @@ public class ShowController extends BaseContorller {
                     }
                 }
             } else {
-                HashMap<String, Object> map = new HashMap<String, Object>();
+                HashMap<String, Object> map = new HashMap<>();
                 map.put("ret", "-1");
                 map.put("error", "need picType");
                 return JSONObject.fromObject(map).toString();
             }
         }
         //新增的图片
-        if (images != null && images.length > 0) {
+        if (images != null) {
             if (showBo.getType() == ShowBo.NEED) {
-                MultipartFile file = images[0];
-                Long time = Calendar.getInstance().getTimeInMillis();
-                String fileName = String.format("%s-%d-%s", userid, time, file.getOriginalFilename());
-                String path = CommonUtil.upload(file, Constant.RELEASE_PICTURE_PATH, fileName, 0);
-                log.info("show {} pic  user {}  path  ", showid, userid,   path);
-                params.put("comPic", path);
-            } else if (showBo.getType() == ShowBo.PROVIDE) {
+                log.info("show id {} showVoJson {} -- images {} ", showid, showVoJson, images.length);
+                //如果包含修改了演出时间
+                if (params.containsKey("showTime")) {
+                    String showTime = (String)params.get("showTime");
+                    //如果修改招演时间，需要将状态改成未结束状态
+                    if (!isTimeout(showTime)){
+                       params.put("status", 0);
+                    }
+                }
                 for (MultipartFile file : images) {
                     Long time = Calendar.getInstance().getTimeInMillis();
                     String fileName = String.format("%s-%d-%s", userid, time, file.getOriginalFilename());
                     String path = CommonUtil.upload(file, Constant.RELEASE_PICTURE_PATH, fileName, 0);
-                    log.info("show {} pic  user {}  path  ", showid, userid,   path);
+                    log.info("show NEED {} pic  user {}  path  {}", showid, userid,   path);
+                    params.put("comPic", path);
+                    break;
+                }
+            } else if (showBo.getType() == ShowBo.PROVIDE) {
+                //如果包含修改了结束时间
+                if (params.containsKey("endTime")) {
+                    String endTime = (String)params.get("endTime");
+                    //需要将状态改成未结束状态
+                    if (!isEndTimeout(endTime)){
+                        params.put("status", 0);
+                    }
+                }
+                for (MultipartFile file : images) {
+                    Long time = Calendar.getInstance().getTimeInMillis();
+                    String fileName = String.format("%s-%d-%s", userid, time, file.getOriginalFilename());
+                    String path = CommonUtil.upload(file, Constant.RELEASE_PICTURE_PATH, fileName, 0);
+                    log.info("show PROVIDE {} pic  user {}  path  {}", showid, userid,   path);
                     photos.add(path);
                 }
             }
             params.put("picType", "pic");
+        } else {
+            log.info("show id {}  showVoJson {} --------------- null ", showid, showVoJson);
         }
+        log.info("show id {} 5555  showVoJson {} --------------- null ", showid, showVoJson);
         params.put("images", photos);
         if (video != null) {
             Long time = Calendar.getInstance().getTimeInMillis();
@@ -609,7 +631,7 @@ public class ShowController extends BaseContorller {
      */
     private boolean isTimeout(String timeStr){
         //已超时的不在推送
-        Date time = CommonUtil.getDate(timeStr,"yyyy-MM-dd HH:mm:ss");
+        Date time = CommonUtil.getDate(timeStr,"yyyy-MM-dd HH:mm");
         if (time != null) {
             return System.currentTimeMillis() > time.getTime();
         }
