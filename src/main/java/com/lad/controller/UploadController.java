@@ -135,4 +135,29 @@ public class UploadController extends BaseContorller {
 		return Constant.COM_FAIL_RESP;
 	}
 
+
+	@ApiOperation("批量上传t图片")
+	@ApiImplicitParam(name = "images", value = "批量文件list集合信息", paramType = "query", dataType = "file")
+	@PostMapping("/mutli-upload-images")
+	public String uploadPics(List<MultipartFile> images, HttpServletRequest request) {
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(), ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		if (images != null) {
+			Map<String, Object> map = new HashMap<String, Object>();
+			map.put("ret", 0);
+			List<String> paths = new ArrayList<>();
+			for (MultipartFile file : images) {
+				long time = Calendar.getInstance().getTimeInMillis();
+				String fileName = String.format("%s-%d-%s",userBo.getId(), time, file.getOriginalFilename());
+				String path = CommonUtil.upload(file, Constant.FEEDBACK_PICTURE_PATH, fileName, 0);
+				paths.add(path);
+			}
+			map.put("paths", paths);
+			return JSONObject.fromObject(map).toString();
+		}
+		return Constant.COM_FAIL_RESP;
+	}
+
 }
