@@ -19,10 +19,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.alibaba.fastjson.JSON;
-import net.sf.json.JSONObject;
 import com.lad.bo.BaseBo;
 import com.lad.bo.OptionBo;
 import com.lad.bo.RequireBo;
@@ -41,6 +41,8 @@ import com.mongodb.WriteResult;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 @Api("儿媳/女婿接口")
 @RestController
@@ -49,6 +51,65 @@ public class MarriageController extends BaseContorller{
 
 	@Autowired
 	public IMarriageService marriageService;
+	
+	@ApiOperation("查找新发布")
+	@GetMapping("/newpublish-search")
+	public String getNewPublic(int type,int page,int limit,HttpServletRequest request, HttpServletResponse response){
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		List<WaiterBo> list = marriageService.getNewPublish(type,page,limit);
+		return JSON.toJSONString(list);
+	}
+	
+	/**
+	 * 推荐
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@ApiOperation("推荐")
+	@GetMapping("/recommend-search")
+	public String getRecommend(String waiterId,HttpServletRequest request, HttpServletResponse response){
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		List<Map> list = marriageService.getRecommend(waiterId);
+		return JSONArray.fromObject(list).toString();
+	}
+	
+	
+	@ApiOperation("查询选项")
+	@GetMapping("/options-all-search")
+	public String getAllOptions(HttpServletRequest request, HttpServletResponse response){
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		List<OptionBo> options = marriageService.getOptions();
+
+		Map<String,List<OptionBo>> map = new HashMap<>();
+		List<OptionBo> salarys = new ArrayList<>();
+		List<OptionBo> job = new ArrayList<>();
+		List<OptionBo> hobbys = new ArrayList<>();
+		for (OptionBo optionBo : options) {
+			if("salary".equals(optionBo.getField())){
+				salarys.add(optionBo);
+			}
+			if("job".equals(optionBo.getField())){
+				job.add(optionBo);
+			}
+			if("hobbys".equals(optionBo.getField())){
+				hobbys.add(optionBo);
+			}
+		}
+		map.put("salary", salarys);
+		map.put("job", job);
+		map.put("hobbys", hobbys);
+		return JSONObject.fromObject(map).toString();
+	}
 	
 	@ApiOperation("查询发布详情")
 	@GetMapping("/publishe-desc-search")
@@ -63,7 +124,7 @@ public class MarriageController extends BaseContorller{
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		
-		RequireBo require = marriageService.findRequireById(waiter.getRequireId());
+		RequireBo require = marriageService.findRequireById(waiterId);
 		
 		if(require == null){
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
@@ -150,7 +211,6 @@ public class MarriageController extends BaseContorller{
 		if(care != null&&list.contains(careId)){
 			list.remove(careId);
 		}
-		System.out.println(list);
 		
 		Map<String, Object> params = new HashMap<>();
 		params.put("cares", list);
@@ -271,52 +331,64 @@ public class MarriageController extends BaseContorller{
 	
     @ApiOperation("发布信息")
     @PostMapping("/insert")
-    public String insertPublish(@RequestBody WaiterVo wv,@RequestBody RequireVo rv,HttpServletRequest request, HttpServletResponse response) {
+    public String insertPublish(@RequestParam String wv,@RequestParam String rv,HttpServletRequest request, HttpServletResponse response) {
         UserBo userBo = getUserLogin(request);
-        System.out.println(rv);
-        System.out.println(wv);
+
         if (userBo == null) {
             return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
                     ERRORCODE.ACCOUNT_OFF_LINE.getReason());
         }
         
-        if (rv == null) {
+        WaiterVo waiterVo = null;
+        RequireVo requireVo = null;
+        try {
+        	JSONObject fromObject = JSONObject.fromObject(wv);
+        	waiterVo = (WaiterVo) JSONObject.toBean(fromObject, WaiterVo.class);
+        	fromObject = JSONObject.fromObject(rv);
+        	requireVo = (RequireVo) JSONObject.toBean(fromObject, RequireVo.class);
+        } catch (Exception e) {
+            return e.toString();
+        }
+        
+        
+        if (requireVo == null) {
             return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
                     ERRORCODE.ACCOUNT_OFF_LINE.getReason());
         }
-        
-        // 设置要求的实体参数
-        RequireBo rb = new RequireBo();
-        BeanUtils.copyProperties(rv, rb);
-        rb.setSex(1-wv.getSex());
-        // 插入需求,并返回需求id
-        String rbid = marriageService.insertPublish(rb);
-        
-        
+        if(waiterVo.isAgree()== false){
+        	return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+                    ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+        }
+         
         // 设置基本资料的实体
         WaiterBo wb = new WaiterBo();
-        BeanUtils.copyProperties(wv,wb);
-        wb.setAge(CommonUtil.getAge(wv.getBirthday()));
+        BeanUtils.copyProperties(waiterVo,wb);
+        wb.setAge(CommonUtil.getAge(waiterVo.getBirthday()));
         wb.setCreateuid(userBo.getId());
         wb.setUpdateTime(new Date());
         wb.setDeleted(0);
         
         // 设置图片地址
-        List<String> image = wv.getImages();
-        
-        
+        List<String> image = waiterVo.getImages();
+           
         // 设置兴趣
-        List<String> hobbys = wv.getHobbys();
+        List<String> hobbys = waiterVo.getHobbys();
 
         // 设置关心的人,初始为空
         List<String> cares = new ArrayList<>();
         
         // 设置不再推荐的人,初始为空
         List<String> pass = new ArrayList<>();
+                
+        String waiterId = marriageService.insertPublish(wb);
         
-        wb.setRequireId(rbid);
-        
-        marriageService.insertPublish(wb);
+        // 设置要求的实体参数
+        RequireBo rb = new RequireBo();
+        BeanUtils.copyProperties(requireVo, rb);
+        rb.setSex(1-waiterVo.getSex());
+        rb.setWaiterId(waiterId);
+        // 插入需求,并返回需求id
+        marriageService.insertPublish(rb);
         
         Map<String, Object> map = new HashMap<>();
         map.put("ret", 0);
@@ -347,4 +419,6 @@ public class MarriageController extends BaseContorller{
     	list = marriageService.getCaresList(waiterId,key);    	
     	return list;
     }
+    
+    
 }

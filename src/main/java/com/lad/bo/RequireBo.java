@@ -23,4 +23,5 @@ public class RequireBo extends BaseBo{
 	private String salary;		// 收入要求(范围值)
 	private String nowin;		// 居住地
 	private List<String> hobbys;// 兴趣,list
+	private String waiterId;
 }

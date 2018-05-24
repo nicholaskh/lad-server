@@ -25,4 +25,5 @@ public class WaiterVo extends BaseVo {
 	private String nowin;		// 居住地
 	private List<String> images;// 照片地址,保存url的list;
 	private List<String> hobbys;// 兴趣,list
+	private boolean agree = false;
 }

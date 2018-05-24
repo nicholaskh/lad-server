@@ -1,7 +1,12 @@
 package com.lad.dao.impl;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +22,7 @@ import com.lad.bo.OptionBo;
 import com.lad.bo.RequireBo;
 import com.lad.bo.WaiterBo;
 import com.lad.dao.IMarriageDao;
+import com.lad.util.CommonUtil;
 import com.lad.vo.OptionVo;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
@@ -27,6 +33,77 @@ public class MarriageDaoImpl implements IMarriageDao {
 
 	@Autowired
 	private MongoTemplate mongoTemplate;
+	
+	/**
+	 * 查询新的发布
+	 */
+
+	@Override
+	public List<WaiterBo> getNewPublic(int type, int page, int limit) {
+		Query query = new Query();
+		Criteria criteria = new Criteria();
+		Date date = new Date();
+		long time = date.getTime()-7*24*60*60*1000;
+		Date weekBefore = new Date(time);
+		criteria.andOperator(Criteria.where("deleted").is(0),Criteria.where("createTime").gt(weekBefore),Criteria.where("sex").is(type));
+		query.addCriteria(criteria);
+		query.skip((page - 1) * limit);
+		query.limit(limit);
+		return mongoTemplate.find(query, WaiterBo.class);
+	}
+	
+	/**
+	 * 推荐
+	 */
+	public List<Map> getRecommend(String waiterId){
+		// 查找waiter的需求
+		Query waiter = new	Query(Criteria.where("waiterId").is(waiterId));
+		RequireBo requireBo = mongoTemplate.findOne(waiter, RequireBo.class);
+		
+		// 随机取100个实体
+		Query query = new Query(Criteria.where("sex").is(requireBo.getSex()));
+		int count = (int)mongoTemplate.count(query , "waiters");
+		Random r = new Random();
+		int length = (count-99)>0?(count-99):1;
+		int skip = r.nextInt(length);
+		query.skip(skip);
+		query.limit(100);
+		List<WaiterBo> find = mongoTemplate.find(query, WaiterBo.class);
+		
+		List<Map> result = new ArrayList<>();
+		for (WaiterBo waiterBo : find) {
+			
+			
+			Map map = CommonUtil.getMatch(mongoTemplate,requireBo, waiterBo);
+			result.add(map);
+			
+		}
+		
+		return result;
+	}
+
+
+
+	/**
+	 * 获取所有选项
+	 */
+	@Override
+	public List<OptionBo> getOptions() {
+		
+		DBObject dbObject = new BasicDBObject();  
+		dbObject.put("deleted", 1);  //查询条件  
+		  
+		BasicDBObject fieldsObject=new BasicDBObject();  
+		//指定返回的字段  
+		fieldsObject.put("value", true);
+		fieldsObject.put("field", true);
+		fieldsObject.put("sort", true);
+		fieldsObject.put("_id", true);
+		fieldsObject.put("supId", true);
+		
+		Query query = new BasicQuery(dbObject,fieldsObject);
+		return mongoTemplate.find(query, OptionBo.class);
+	}
 	
 	@Override
 	public String insertPublish(BaseBo bb) {
@@ -55,8 +132,8 @@ public class MarriageDaoImpl implements IMarriageDao {
 	 * 查询单个Require
 	 */
 	@Override
-	public RequireBo findRequireById(String requireId) {
-		Query query = new Query(Criteria.where("_id").is(requireId));
+	public RequireBo findRequireById(String waiterId) {
+		Query query = new Query(Criteria.where("waiterId").is(waiterId));
 		return mongoTemplate.findOne(query, RequireBo.class);
 	}
 	
@@ -171,4 +248,7 @@ public class MarriageDaoImpl implements IMarriageDao {
         }
         return mongoTemplate.updateFirst(query, update, class1);
 	}
+
+
+
 }

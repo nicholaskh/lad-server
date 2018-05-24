@@ -8,7 +8,6 @@ import com.lad.bo.OptionBo;
 import com.lad.bo.RequireBo;
 import com.lad.bo.WaiterBo;
 import com.lad.vo.OptionVo;
-import com.lad.vo.WaiterVo;
 import com.mongodb.WriteResult;
 
 public interface IMarriageDao {
@@ -29,8 +28,14 @@ public interface IMarriageDao {
 
 	List<String> getUnrecommendList(String waiterId);
 
-	RequireBo findRequireById(String requireId);
+	RequireBo findRequireById(String waiterId);
 
 	String insertPublish(BaseBo bb);
+
+	List<OptionBo> getOptions();
+
+	List<Map> getRecommend(String waiterId);
+	
+	List<WaiterBo> getNewPublic(int type,int page,int limit);
 
 }

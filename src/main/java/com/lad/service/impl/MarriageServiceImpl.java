@@ -23,6 +23,17 @@ public class MarriageServiceImpl implements IMarriageService {
 	@Autowired
 	public IMarriageDao marriageDao;
 	
+	
+	@Override
+	public List<WaiterBo> getNewPublish(int type, int page, int limit) {
+		return marriageDao.getNewPublic(type, page, limit);
+	}
+	
+	@Override
+	public List<OptionBo> getOptions() {
+		return marriageDao.getOptions();
+	}
+	
 	@Override
 	public String insertPublish(BaseBo bb) {
 		return marriageDao.insertPublish(bb);
@@ -39,8 +50,8 @@ public class MarriageServiceImpl implements IMarriageService {
 	}
 	
 	@Override
-	public RequireBo findRequireById(String requireId) {
-		return marriageDao.findRequireById(requireId);
+	public RequireBo findRequireById(String waiterId) {
+		return marriageDao.findRequireById(waiterId);
 	}
 	
 	@Override
@@ -100,14 +111,12 @@ public class MarriageServiceImpl implements IMarriageService {
 	}
 
 	@Override
-	public List<WaiterBo> getRecommend(String WaiterId) {
-		// TODO Auto-generated method stub
-		return null;
+	public List<Map> getRecommend(String waiterId) {
+		return marriageDao.getRecommend(waiterId);
 	}
 
 	@Override
 	public List<WaiterBo> addUnRecommend(String WaiterId, String unRecommendId) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -119,27 +128,27 @@ public class MarriageServiceImpl implements IMarriageService {
 
 	@Override
 	public WriteResult deleteCare(String WaiterId, String CareId) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public List<WaiterBo> getCares(String WaiterId) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public List<String> insertImage(File[] image) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public String getNickName() {
-		// TODO Auto-generated method stub
 		return null;
 	}
+
+
+
+
 
 
 

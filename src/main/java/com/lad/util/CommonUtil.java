@@ -6,9 +6,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.web.multipart.MultipartFile;
+
+import com.lad.bo.OptionBo;
+import com.lad.bo.RequireBo;
+import com.lad.bo.WaiterBo;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
@@ -490,4 +495,112 @@ public class CommonUtil {
 		return age;
 	}
 	
+	/**
+	 * 计算匹配度
+	 * @param mongoTemplate
+	 * @param requireBo
+	 * @param waiterBo
+	 * @return
+	 */
+	public static Map getMatch(MongoTemplate mongoTemplate,RequireBo requireBo, WaiterBo waiterBo) {
+		int matchNum = 0;
+		
+		// 基础条件匹配
+		int baseNum = 0;
+		if(requireBo.getNowin().equals(waiterBo.getNowin())){
+			baseNum+=20;
+		}
+		if(requireBo.getMarriaged().equals(waiterBo.getMarriaged())){
+			baseNum+=20;
+		}
+		
+		// 其他条件匹配
+		int otherNum=0;
+		
+		// 工作匹配
+		if(requireBo.getJob().contains(waiterBo.getJob())){
+			otherNum+=10;
+		}
+		// 兴趣匹配
+		int hobbyMacthNum = 0;
+		for (String hobbys : waiterBo.getHobbys()) {
+			if(requireBo.getHobbys().contains(hobbys)){
+				hobbyMacthNum++;
+			}
+		}
+		if(hobbyMacthNum>=1){
+			int size = requireBo.getHobbys().size();
+			int round = Math.round(hobbyMacthNum/size*40);
+			otherNum+=Math.round((round+60)*0.1);
+		}
+		
+		// 学历匹配
+		int educationMatch = 0;
+		// 如果学历不限,或者基础资料学历大于要求学历
+		int requireEducation = requireBo.getEducation();
+		int waiterEducation = waiterBo.getEducation();
+		if(requireEducation== 0 || waiterEducation-requireEducation>=0){
+			educationMatch = 100;
+		}/*else{
+			educationMatch = 100 - 10*(waiterBo.getEducation()-requireBo.getEducation());
+		}*/
+		otherNum+=educationMatch*0.1;
+		
+		// 收入匹配
+		int salaryNum = 0;
+		Query salarQuery = new Query(Criteria.where("value").is(waiterBo.getSalary()));
+		int waiterSort = mongoTemplate.findOne(salarQuery, OptionBo.class).getSort();
+		salarQuery = new Query(Criteria.where("value").is(requireBo.getSalary()));
+		int requireSort = mongoTemplate.findOne(salarQuery, OptionBo.class).getSort();
+		
+		if(requireSort == 0 || waiterSort - requireSort>=0){
+			salaryNum = 100;
+		}/*else{
+			salaryNum = 100 - 10*(waiterSort - requireSort);
+		}*/
+		otherNum+=salaryNum*0.3;
+		
+		// 身高匹配
+		int hightMatch = 0;
+		int waiterHight = waiterBo.getHight();
+		String[] split = requireBo.getHight().replace("厘米", "").split("-");
+		int minHight = Integer.valueOf(split[0]);
+		int maxHight = Integer.valueOf(split[1]);
+		
+		if(waiterHight>=minHight && waiterHight<=maxHight){
+			hightMatch =100;
+		}
+		if(waiterHight<minHight){
+			hightMatch = (100 - 50*(minHight-waiterHight)/10>0)?(100 - 50*(minHight-waiterHight)/10):0;
+		}
+		if(waiterHight>maxHight){
+			hightMatch = (100 - 30*(waiterHight-maxHight)/10>0)?(100 - 50*(minHight-waiterHight)/10):0;
+		}
+		otherNum += hightMatch*0.3;
+		
+		// 年龄匹配
+		int ageMatch = 0;
+		int waiterAge = waiterBo.getAge();
+		String[] split2 = requireBo.getAge().replace("岁", "").split("-");
+		int minAge = Integer.valueOf(split2[0]);
+		int maxAge = Integer.valueOf(split2[1]);
+		
+		if(waiterAge>=minAge && waiterAge<=maxAge){
+			ageMatch =100;
+		}
+		if(waiterAge<minAge){
+			ageMatch = (100 - 30*(minAge-waiterAge)/10>0)?(100 - 30*(minAge-waiterAge)/10):0;
+		}
+		if(waiterAge>maxAge){
+			ageMatch = (100 - 50*(waiterAge-maxAge)/10>0)?(100 - 50*(waiterAge-maxAge)/10):0;
+		}
+		otherNum += ageMatch*0.3;
+		
+		matchNum = (int) (baseNum +Math.round(otherNum*0.6));
+		
+		Map map = new HashMap<>();
+		map.put("match", matchNum);
+		map.put("waiter", waiterBo);
+		return map;
+	}
 }

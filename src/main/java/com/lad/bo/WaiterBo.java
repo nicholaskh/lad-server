@@ -30,6 +30,6 @@ public class WaiterBo extends BaseBo{
 	private List<String> hobbys;// 兴趣,list
 	private List<String> cares; // 感兴趣的人,保存id的list;
 	private List<String> pass;	// 不感兴趣的人,保存id的list;
-	private String requireId;	// 关联的require的id
+//	private String requireId;	// 关联的require的id
 //	private Date createDate;	// 创建时间
 }

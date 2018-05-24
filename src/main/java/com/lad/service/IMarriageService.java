@@ -31,7 +31,7 @@ public interface IMarriageService extends IBaseService {
 //	获取选项列表
 	public List<OptionBo> getOptions(OptionVo ov);
 //	 获取/刷新推荐
-	public List<WaiterBo> getRecommend(String WaiterId);
+	public List<Map> getRecommend(String waiterId);
 //	不再推荐
 	public List<WaiterBo> addUnRecommend(String WaiterId,String unRecommendId);
 //	添加关注
@@ -55,9 +55,13 @@ public interface IMarriageService extends IBaseService {
 
 	public List<String> getUnrecommendList(String waiterId);
 
-	public RequireBo findRequireById(String requireId);
+	public RequireBo findRequireById(String waiterId);
 
 	public String insertPublish(BaseBo bb);
+
+	public List<OptionBo> getOptions();
+
+	public List<WaiterBo> getNewPublish(int type, int page, int limit);
 
 
 	
