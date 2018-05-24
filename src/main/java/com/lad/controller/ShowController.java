@@ -101,9 +101,9 @@ public class ShowController extends BaseContorller {
                     String path = CommonUtil.upload(file, Constant.RELEASE_PICTURE_PATH, fileName, 0);
                     photos.add(path);
                 }
-                showBo.setPicType("pic");
                 showBo.setImages(photos);
             }
+            showBo.setPicType("pic");
             log.info("shows {} add pic   size: {} ",userid, images.length);
         }
         if (video != null) {
@@ -118,7 +118,7 @@ public class ShowController extends BaseContorller {
         showService.insert(showBo);
         int recomType = showBo.getType() == ShowBo.NEED ? ShowBo.PROVIDE : ShowBo.NEED;
         long num = showService.findByKeyword(showBo.getShowType(), userid, recomType);
-        asyncController.addShowTypes(showService, showBo.getShowType(), userid);
+        asyncController.addShowTypes(showBo.getShowType(), userid);
         if (showBo.getType() == ShowBo.NEED) {
             asyncController.pushShowToCreate(showService, showBo);
         } else {
@@ -167,6 +167,10 @@ public class ShowController extends BaseContorller {
         } else {
             createUser = userService.getUser(showBo.getCreateuid());
         }
+        if (ShowBo.PROVIDE == showBo.getType()) {
+            CircleBo circleBo = circleService.selectById(showBo.getCircleid());
+            vo.setCirName(circleBo == null ? "" : circleBo.getName());
+        }
         if (createUser != null) {
             BeanUtils.copyProperties(createUser, baseVo);
             baseVo.setUserName(!"".equals(friendName) ? friendName : createUser.getUserName());
@@ -200,71 +204,115 @@ public class ShowController extends BaseContorller {
             @ApiImplicitParam(name = "showVoJson",
                     value = "修改的参数和信息，json字符串，字段根据showVo来定义，不需要修改内容则不传入，可为空，文件url不需要传入",
                     paramType = "query", dataType = "string"),
+            @ApiImplicitParam(name = "picType", value = "删除的是图片还是视频，video 视频，pic 图片",
+                    paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "delImages", value = "删除的图片信息，多个以逗号给开，不删除则为空",
                     paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "images", value = "新增图片信息, 如果是招演类型，则默认为营业执照图片",
                     paramType = "query", dataType = "file"),
             @ApiImplicitParam(name = "video", value = "需要修改视频信息，与图片二选一", paramType = "query", dataType = "file")})
     @PostMapping("/update")
-    public String insert(String showid, String showVoJson,String delImages, MultipartFile[] images, MultipartFile
+    public String update(String showid, String showVoJson,String picType,String delImages, MultipartFile[] images, MultipartFile
             video, HttpServletRequest request, HttpServletResponse response) {
         UserBo userBo = getUserLogin(request);
         if (userBo == null) {
-            return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
-                    ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+            return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(), ERRORCODE.ACCOUNT_OFF_LINE.getReason());
         }
         String userid = userBo.getId();
         ShowBo showBo = showService.findById(showid);
         if (showBo == null) {
-            return CommonUtil.toErrorResult(ERRORCODE.SHOW_NULL.getIndex(),
-                    ERRORCODE.SHOW_NULL.getReason());
+            return CommonUtil.toErrorResult(ERRORCODE.SHOW_NULL.getIndex(), ERRORCODE.SHOW_NULL.getReason());
         }
         //创建者或者管理员才能修改
         if (!userBo.getId().equals(showBo.getCreateuid()) && !CommonUtil.getAdminUserids().contains(userBo.getId())) {
-            return CommonUtil.toErrorResult(ERRORCODE.NOTE_NOT_MASTER.getIndex(),
-                    ERRORCODE.NOTE_NOT_MASTER.getReason());
+            return CommonUtil.toErrorResult(ERRORCODE.NOTE_NOT_MASTER.getIndex(), ERRORCODE.NOTE_NOT_MASTER.getReason());
         }
         Map<String, Object> params = new LinkedHashMap<>();
         if (!StringUtils.isEmpty(showVoJson)) {
             JSONObject jsonObject = JSONObject.fromObject(showVoJson);
             Iterator iterator = jsonObject.keys();
-            while (iterator.hasNext()){
-                String key = (String)iterator.next();
+            while (iterator.hasNext()) {
+                String key = (String) iterator.next();
                 params.put(key, jsonObject.get(key));
             }
         }
-        showBo.setCreateuid(userid);
         LinkedHashSet<String> photos = showBo.getImages();
-         //需要删除的图片
+        if (photos == null) {
+            photos = new LinkedHashSet<>();
+        }
         if (!StringUtils.isEmpty(delImages)) {
-            String[] delArray = delImages.trim().split(",");
-            for (String url : delArray) {
-                photos.remove(url);
+            if ("video".equals(picType)) {
+                if (delImages.equals(showBo.getVideo())) {
+                    params.put("video", "");
+                    params.put("videoPic", "");
+                    params.put("picType", "");
+                }
+            } else if ("pic".equals(picType)) {
+                //删除公司图片
+                if (showBo.getType() == ShowBo.NEED && delImages.equals(showBo.getComPic())) {
+                    params.put("comPic", "");
+                } else {
+                    //需要删除的图片
+                    String[] delArray = delImages.trim().split(",");
+                    for (String url : delArray) {
+                        photos.remove(url);
+                    }
+                }
+            } else {
+                HashMap<String, Object> map = new HashMap<>();
+                map.put("ret", "-1");
+                map.put("error", "need picType");
+                return JSONObject.fromObject(map).toString();
             }
         }
         //新增的图片
-        if (images != null && images.length > 0) {
+        if (images != null) {
             if (showBo.getType() == ShowBo.NEED) {
-                MultipartFile file = images[0];
-                Long time = Calendar.getInstance().getTimeInMillis();
-                String fileName = String.format("%s-%d-%s", userid, time, file.getOriginalFilename());
-                String path = CommonUtil.upload(file, Constant.RELEASE_PICTURE_PATH, fileName, 0);
-                params.put("comPic", path);
-            } else if (showBo.getType() == ShowBo.PROVIDE) {
+                log.info("show id {} showVoJson {} -- images {} ", showid, showVoJson, images.length);
+                //如果包含修改了演出时间
+                if (params.containsKey("showTime")) {
+                    String showTime = (String)params.get("showTime");
+                    //如果修改招演时间，需要将状态改成未结束状态
+                    if (!isTimeout(showTime)){
+                       params.put("status", 0);
+                    }
+                }
                 for (MultipartFile file : images) {
                     Long time = Calendar.getInstance().getTimeInMillis();
                     String fileName = String.format("%s-%d-%s", userid, time, file.getOriginalFilename());
                     String path = CommonUtil.upload(file, Constant.RELEASE_PICTURE_PATH, fileName, 0);
+                    log.info("show NEED {} pic  user {}  path  {}", showid, userid,   path);
+                    params.put("comPic", path);
+                    break;
+                }
+            } else if (showBo.getType() == ShowBo.PROVIDE) {
+                //如果包含修改了结束时间
+                if (params.containsKey("endTime")) {
+                    String endTime = (String)params.get("endTime");
+                    //需要将状态改成未结束状态
+                    if (!isEndTimeout(endTime)){
+                        params.put("status", 0);
+                    }
+                }
+                for (MultipartFile file : images) {
+                    Long time = Calendar.getInstance().getTimeInMillis();
+                    String fileName = String.format("%s-%d-%s", userid, time, file.getOriginalFilename());
+                    String path = CommonUtil.upload(file, Constant.RELEASE_PICTURE_PATH, fileName, 0);
+                    log.info("show PROVIDE {} pic  user {}  path  {}", showid, userid,   path);
                     photos.add(path);
                 }
-                params.put("picType", "pic");
-                params.put("images", photos);
             }
+            params.put("picType", "pic");
+        } else {
+            log.info("show id {}  showVoJson {} --------------- null ", showid, showVoJson);
         }
+        log.info("show id {} 5555  showVoJson {} --------------- null ", showid, showVoJson);
+        params.put("images", photos);
         if (video != null) {
             Long time = Calendar.getInstance().getTimeInMillis();
             String fileName = String.format("%s-%d-%s", userid, time, video.getOriginalFilename());
             String[] paths = CommonUtil.uploadVedio(video, Constant.RELEASE_PICTURE_PATH, fileName, 0);
+            log.info("show {} pic  user {}  path  ", showid, userid,   paths[0]);
             showBo.setVideo(paths[0]);
             showBo.setVideoPic(paths[1]);
             params.put("video", paths[0]);
@@ -274,9 +322,12 @@ public class ShowController extends BaseContorller {
         if (!params.isEmpty()) {
             showService.update(showid, params);
         }
+        int recomType = showBo.getType() == ShowBo.NEED ? ShowBo.PROVIDE : ShowBo.NEED;
+        long num = showService.findByKeyword(showBo.getShowType(), userid, recomType);
         Map<String, Object> map = new HashMap<>();
         map.put("ret", 0);
         map.put("showid", showBo.getId());
+        map.put("recomShowNum", num);
         return JSONObject.fromObject(map).toString();
     }
 
@@ -580,7 +631,7 @@ public class ShowController extends BaseContorller {
      */
     private boolean isTimeout(String timeStr){
         //已超时的不在推送
-        Date time = CommonUtil.getDate(timeStr,"yyyy-MM-dd HH:mm:ss");
+        Date time = CommonUtil.getDate(timeStr,"yyyy-MM-dd HH:mm");
         if (time != null) {
             return System.currentTimeMillis() > time.getTime();
         }
@@ -604,5 +655,4 @@ public class ShowController extends BaseContorller {
         }
         return false;
     }
-
 }
