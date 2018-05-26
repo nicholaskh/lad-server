@@ -11,7 +11,6 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
-import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
@@ -100,9 +99,7 @@ public class UserReadHisDaoImpl implements IUserReadHisDao {
         }
         query.addCriteria(criteria);
         query.with(new Sort(Sort.Direction.DESC, "lastTime"));
-        if (inforType != 0) {
-            query.limit(5);
-        } 
+        query.limit(5);
         return mongoTemplate.find(query, UserReadHisBo.class);
     }
 
