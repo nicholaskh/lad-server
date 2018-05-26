@@ -1,7 +1,8 @@
-package com.lad.dao;
+package com.lad.dao.impl;
 
 import cn.jiguang.common.utils.StringUtils;
 import com.lad.bo.ShowBo;
+import com.lad.dao.BaseDao;
 import com.lad.util.Constant;
 import com.mongodb.WriteResult;
 import org.springframework.data.domain.Sort;

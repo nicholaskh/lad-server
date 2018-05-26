@@ -4,6 +4,7 @@ import com.lad.bo.InforReadNumBo;
 import com.lad.bo.InforSubscriptionBo;
 import com.lad.bo.UserReadHisBo;
 import com.lad.dao.*;
+import com.lad.dao.impl.YanglaoDao;
 import com.lad.scrapybo.*;
 import com.lad.service.IInforService;
 import com.mongodb.WriteResult;
