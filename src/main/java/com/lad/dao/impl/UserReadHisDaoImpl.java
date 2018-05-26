@@ -107,6 +107,7 @@ public class UserReadHisDaoImpl implements IUserReadHisDao {
     public WriteResult deleteUserReadHis(List<String> removeIds) {
         Query query = new Query();
         Criteria criteria = new Criteria("_id").in(removeIds);
+        query.addCriteria(criteria);
         return mongoTemplate.remove(query, UserReadHisBo.class);
     }
 }
