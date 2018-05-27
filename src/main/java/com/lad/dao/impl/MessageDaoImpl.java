@@ -2,13 +2,9 @@ package com.lad.dao.impl;
 
 import java.util.List;
 
-import com.lad.util.Constant;
-import com.mongodb.WriteResult;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
-import org.springframework.data.domain.Sort.Order;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -17,6 +13,8 @@ import org.springframework.stereotype.Repository;
 
 import com.lad.bo.MessageBo;
 import com.lad.dao.IMessageDao;
+import com.lad.util.Constant;
+import com.mongodb.WriteResult;
 
 @Repository("messageDao")
 public class MessageDaoImpl implements IMessageDao {

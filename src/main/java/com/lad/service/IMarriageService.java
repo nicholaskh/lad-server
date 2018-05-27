@@ -61,7 +61,7 @@ public interface IMarriageService extends IBaseService {
 
 	public List<OptionBo> getOptions();
 
-	public List<WaiterBo> getNewPublish(int type, int page, int limit);
+	public List<WaiterBo> getNewPublish(int type, int page, int limit,String userId);
 
 
 	

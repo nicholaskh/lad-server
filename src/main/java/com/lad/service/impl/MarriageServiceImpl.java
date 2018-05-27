@@ -25,8 +25,8 @@ public class MarriageServiceImpl implements IMarriageService {
 	
 	
 	@Override
-	public List<WaiterBo> getNewPublish(int type, int page, int limit) {
-		return marriageDao.getNewPublic(type, page, limit);
+	public List<WaiterBo> getNewPublish(int type, int page, int limit,String userId) {
+		return marriageDao.getNewPublic(type, page, limit,userId);
 	}
 	
 	@Override

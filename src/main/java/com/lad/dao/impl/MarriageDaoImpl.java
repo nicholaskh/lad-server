@@ -37,19 +37,19 @@ public class MarriageDaoImpl implements IMarriageDao {
 	/**
 	 * 查询新的发布
 	 */
-
 	@Override
-	public List<WaiterBo> getNewPublic(int type, int page, int limit) {
+	public List<WaiterBo> getNewPublic(int type, int page, int limit,String uid) {
 		Query query = new Query();
 		Criteria criteria = new Criteria();
 		Date date = new Date();
 		long time = date.getTime()-7*24*60*60*1000;
 		Date weekBefore = new Date(time);
-		criteria.andOperator(Criteria.where("deleted").is(0),Criteria.where("createTime").gt(weekBefore),Criteria.where("sex").is(type));
+		criteria.andOperator(Criteria.where("deleted").is(0),Criteria.where("createTime").gt(weekBefore),Criteria.where("sex").is(type),Criteria.where("createuid").ne(uid));
 		query.addCriteria(criteria);
 		query.skip((page - 1) * limit);
 		query.limit(limit);
-		return mongoTemplate.find(query, WaiterBo.class);
+		List<WaiterBo> list = mongoTemplate.find(query, WaiterBo.class);
+		return list;
 	}
 	
 	/**
@@ -72,13 +72,9 @@ public class MarriageDaoImpl implements IMarriageDao {
 		
 		List<Map> result = new ArrayList<>();
 		for (WaiterBo waiterBo : find) {
-			
-			
 			Map map = CommonUtil.getMatch(mongoTemplate,requireBo, waiterBo);
 			result.add(map);
-			
 		}
-		
 		return result;
 	}
 
@@ -107,9 +103,7 @@ public class MarriageDaoImpl implements IMarriageDao {
 	
 	@Override
 	public String insertPublish(BaseBo bb) {
-		System.out.println(bb.getClass());
 		mongoTemplate.insert(bb);
-		System.out.println(bb.getId());
 		return bb.getId();
 	}
 	
@@ -143,7 +137,10 @@ public class MarriageDaoImpl implements IMarriageDao {
 	 */
 	@Override
 	public WaiterBo findWaiterById(String caresId) {
-		Query query = new Query(Criteria.where("_id").is(caresId));
+		Query query = new Query();
+		Criteria criteria = new Criteria();
+		criteria.andOperator(Criteria.where("_id").is(caresId),Criteria.where("deleted").is(0));
+		query.addCriteria(criteria);
 		return mongoTemplate.findOne(query, WaiterBo.class);
 	}
 
@@ -198,15 +195,6 @@ public class MarriageDaoImpl implements IMarriageDao {
 		query.addCriteria(criteria);
 		List<WaiterBo> find = mongoTemplate.find(query, WaiterBo.class);
 		return find;
-	}
-
-	/**
-	 * 添加发布
-	 */
-	@Override
-	public String insert(Object obj) {
-		System.out.println(obj.getClass());
-		return null;
 	}
 
 	/**

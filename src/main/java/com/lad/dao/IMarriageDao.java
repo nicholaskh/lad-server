@@ -14,8 +14,6 @@ public interface IMarriageDao {
 
 	List<WaiterBo> getPublishById(String userId);
 
-	String insert(Object obj);
-
 	List<OptionBo> getOptions(OptionVo ov);
 
 	WriteResult updateByParams(String id, Map<String, Object> params, Class class1);
@@ -36,6 +34,6 @@ public interface IMarriageDao {
 
 	List<Map> getRecommend(String waiterId);
 	
-	List<WaiterBo> getNewPublic(int type,int page,int limit);
+	List<WaiterBo> getNewPublic(int type,int page,int limit,String uid);
 
 }

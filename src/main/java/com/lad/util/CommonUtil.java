@@ -11,6 +11,8 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.serializer.PropertyFilter;
 import com.lad.bo.OptionBo;
 import com.lad.bo.RequireBo;
 import com.lad.bo.WaiterBo;
@@ -507,10 +509,10 @@ public class CommonUtil {
 		
 		// 基础条件匹配
 		int baseNum = 0;
-		if(requireBo.getNowin().equals(waiterBo.getNowin())){
+		if(requireBo.getNowin()!=null && requireBo.getNowin()!="" && requireBo.getNowin().equals(waiterBo.getNowin())){
 			baseNum+=20;
 		}
-		if(requireBo.getMarriaged().equals(waiterBo.getMarriaged())){
+		if(requireBo.getMarriaged()!=null  && requireBo.getMarriaged().equals(waiterBo.getMarriaged())){
 			baseNum+=20;
 		}
 		
@@ -518,82 +520,96 @@ public class CommonUtil {
 		int otherNum=0;
 		
 		// 工作匹配
-		if(requireBo.getJob().contains(waiterBo.getJob())){
+		if(requireBo.getJob()!=null && requireBo.getJob().contains(waiterBo.getJob()) ){
 			otherNum+=10;
 		}
 		// 兴趣匹配
 		int hobbyMacthNum = 0;
-		for (String hobbys : waiterBo.getHobbys()) {
-			if(requireBo.getHobbys().contains(hobbys)){
-				hobbyMacthNum++;
+		if(waiterBo.getHobbys()!=null){
+			for (String hobbys : waiterBo.getHobbys()) {
+				if(requireBo.getHobbys().contains(hobbys)){
+					hobbyMacthNum++;
+				}
+			}
+			if(hobbyMacthNum>=1){
+				int size = requireBo.getHobbys().size();
+				int round = Math.round(hobbyMacthNum/size*40);
+				otherNum+=Math.round((round+60)*0.1);
 			}
 		}
-		if(hobbyMacthNum>=1){
-			int size = requireBo.getHobbys().size();
-			int round = Math.round(hobbyMacthNum/size*40);
-			otherNum+=Math.round((round+60)*0.1);
-		}
+
 		
 		// 学历匹配
 		int educationMatch = 0;
 		// 如果学历不限,或者基础资料学历大于要求学历
-		int requireEducation = requireBo.getEducation();
-		int waiterEducation = waiterBo.getEducation();
-		if(requireEducation== 0 || waiterEducation-requireEducation>=0){
-			educationMatch = 100;
-		}/*else{
-			educationMatch = 100 - 10*(waiterBo.getEducation()-requireBo.getEducation());
-		}*/
+		Integer requireEducation = requireBo.getEducation();
+		Integer waiterEducation = waiterBo.getEducation();
+		if(requireEducation !=null && waiterEducation!=null){
+			if(requireEducation== 0 || waiterEducation-requireEducation>=0){
+				educationMatch = 100;
+			}
+		}
+		
 		otherNum+=educationMatch*0.1;
 		
 		// 收入匹配
 		int salaryNum = 0;
-		Query salarQuery = new Query(Criteria.where("value").is(waiterBo.getSalary()));
-		int waiterSort = mongoTemplate.findOne(salarQuery, OptionBo.class).getSort();
-		salarQuery = new Query(Criteria.where("value").is(requireBo.getSalary()));
-		int requireSort = mongoTemplate.findOne(salarQuery, OptionBo.class).getSort();
 		
-		if(requireSort == 0 || waiterSort - requireSort>=0){
-			salaryNum = 100;
-		}/*else{
-			salaryNum = 100 - 10*(waiterSort - requireSort);
-		}*/
+		Query salarQuery = new Query(Criteria.where("value").is(waiterBo.getSalary()));
+		OptionBo waiterOptoins = mongoTemplate.findOne(salarQuery, OptionBo.class);
+		salarQuery = new Query(Criteria.where("value").is(requireBo.getSalary()));
+		OptionBo requireOptoins = mongoTemplate.findOne(salarQuery, OptionBo.class);
+	
+		if(waiterOptoins != null && requireOptoins !=null){
+			Integer waiterSort = waiterOptoins.getSort();
+			Integer requireSort = requireOptoins.getSort();
+			if(requireSort == 0 || waiterSort - requireSort>=0){
+				salaryNum = 100;
+			}
+		}
+
 		otherNum+=salaryNum*0.3;
 		
 		// 身高匹配
 		int hightMatch = 0;
-		int waiterHight = waiterBo.getHight();
-		String[] split = requireBo.getHight().replace("厘米", "").split("-");
-		int minHight = Integer.valueOf(split[0]);
-		int maxHight = Integer.valueOf(split[1]);
-		
-		if(waiterHight>=minHight && waiterHight<=maxHight){
-			hightMatch =100;
+		Integer waiterHight = waiterBo.getHight();
+		if(waiterHight!=null){
+			String[] split = requireBo.getHight().replace("厘米", "").split("-");
+			int minHight = Integer.valueOf(split[0]);
+			int maxHight = Integer.valueOf(split[1]);
+			
+			if(waiterHight>=minHight && waiterHight<=maxHight){
+				hightMatch =100;
+			}
+			if(waiterHight<minHight){
+				hightMatch = (100 - 50*(minHight-waiterHight)/10>0)?(100 - 50*(minHight-waiterHight)/10):0;
+			}
+			if(waiterHight>maxHight){
+				hightMatch = (100 - 30*(waiterHight-maxHight)/10>0)?(100 - 50*(minHight-waiterHight)/10):0;
+			}
 		}
-		if(waiterHight<minHight){
-			hightMatch = (100 - 50*(minHight-waiterHight)/10>0)?(100 - 50*(minHight-waiterHight)/10):0;
-		}
-		if(waiterHight>maxHight){
-			hightMatch = (100 - 30*(waiterHight-maxHight)/10>0)?(100 - 50*(minHight-waiterHight)/10):0;
-		}
+
 		otherNum += hightMatch*0.3;
 		
 		// 年龄匹配
 		int ageMatch = 0;
-		int waiterAge = waiterBo.getAge();
-		String[] split2 = requireBo.getAge().replace("岁", "").split("-");
-		int minAge = Integer.valueOf(split2[0]);
-		int maxAge = Integer.valueOf(split2[1]);
-		
-		if(waiterAge>=minAge && waiterAge<=maxAge){
-			ageMatch =100;
+		Integer waiterAge = waiterBo.getAge();
+		if(waiterAge!=null){
+			String[] split2 = requireBo.getAge().replace("岁", "").split("-");
+			int minAge = Integer.valueOf(split2[0]);
+			int maxAge = Integer.valueOf(split2[1]);
+			
+			if(waiterAge>=minAge && waiterAge<=maxAge){
+				ageMatch =100;
+			}
+			if(waiterAge<minAge){
+				ageMatch = (100 - 30*(minAge-waiterAge)/10>0)?(100 - 30*(minAge-waiterAge)/10):0;
+			}
+			if(waiterAge>maxAge){
+				ageMatch = (100 - 50*(waiterAge-maxAge)/10>0)?(100 - 50*(waiterAge-maxAge)/10):0;
+			}
 		}
-		if(waiterAge<minAge){
-			ageMatch = (100 - 30*(minAge-waiterAge)/10>0)?(100 - 30*(minAge-waiterAge)/10):0;
-		}
-		if(waiterAge>maxAge){
-			ageMatch = (100 - 50*(waiterAge-maxAge)/10>0)?(100 - 50*(waiterAge-maxAge)/10):0;
-		}
+
 		otherNum += ageMatch*0.3;
 		
 		matchNum = (int) (baseNum +Math.round(otherNum*0.6));
@@ -602,5 +618,57 @@ public class CommonUtil {
 		map.put("match", matchNum);
 		map.put("waiter", waiterBo);
 		return map;
+	}
+	
+
+	
+	/**
+	 * fastJson字段过滤器
+	 * @param obj 需要过滤字段的实体
+	 * @param need 过滤还是保留
+	 * @param params 需要过滤(保留)的字段名
+	 * @return
+	 */
+	public static String fastJsonfieldFilter(Object obj,boolean need,String... params) {
+		PropertyFilter profilter = new PropertyFilter(){  
+			  
+            @Override  
+            public boolean apply(Object object, String name, Object value) {
+            	for (String string : params) {
+            		if(name.equalsIgnoreCase(string)){  
+                        return need;  
+                    }
+				}
+                  
+                return !need;  
+            }  
+        }; 
+        String json = JSON.toJSONString(obj, profilter);
+		return json;
+	}
+	
+	/**
+	 * fastJson字段过滤器
+	 * @param obj 需要过滤字段的实体
+	 * @param need 过滤还是保留
+	 * @param params 需要过滤(保留)的字段名
+	 * @return
+	 */
+	public static Object fieldFilter(Object obj,boolean need,String... params) {
+		PropertyFilter profilter = new PropertyFilter(){  
+			  
+            @Override  
+            public boolean apply(Object object, String name, Object value) {
+            	for (String string : params) {
+            		if(name.equalsIgnoreCase(string)){  
+                        return need;  
+                    }
+				}
+                  
+                return !need;  
+            }  
+        }; 
+        Object json = JSON.toJSON(obj);
+		return json;
 	}
 }
