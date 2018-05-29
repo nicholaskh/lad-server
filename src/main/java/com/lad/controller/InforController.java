@@ -560,6 +560,9 @@ public class InforController extends BaseContorller {
         }
         HashSet<String> mySubs = null;
         String keys = "";
+        
+        System.out.println("type"+type);
+        
         switch (type){
             case Constant.INFOR_HEALTH:
                 keys = Constant.HEALTH_NAME;
@@ -589,7 +592,14 @@ public class InforController extends BaseContorller {
                 mySubs = new LinkedHashSet<>();
                 break;
         }
+        
+        System.out.println(cache);
+        
         HashSet<String> groupTypes = (HashSet<String>)cache.get(keys);
+        
+        System.out.println("groupTypes"+groupTypes);
+        System.out.println("mySubs"+mySubs);
+        
         groupTypes.removeAll(mySubs);
         map.put("recoTypes", groupTypes);
         map.put("mySubTypes", mySubs);

@@ -206,9 +206,10 @@ public class MarriageController extends BaseContorller{
 		}else{
 			return CommonUtil.toErrorResult(ERRORCODE.MARRIAGE_PUBLISH_NULL.getIndex(),ERRORCODE.MARRIAGE_PUBLISH_NULL.getReason());
 		}
-
+		if(list.contains(careId)){
+			return CommonUtil.toErrorResult(ERRORCODE.MARRIAGE_HAS_CARE.getIndex(),ERRORCODE.MARRIAGE_HAS_CARE.getReason());
+		}
 		list.add(careId);
-		
 		
 		Map<String, Object> params = new HashMap<>();
 		params.put("cares", list);
@@ -413,6 +414,7 @@ public class MarriageController extends BaseContorller{
          
         // 设置基本资料的实体
         WaiterBo wb = new WaiterBo();
+        
         BeanUtils.copyProperties(waiterVo,wb);
         wb.setAge(CommonUtil.getAge(waiterVo.getBirthday()));
         wb.setCreateuid(userBo.getId());
@@ -421,21 +423,54 @@ public class MarriageController extends BaseContorller{
         
         // 设置图片地址
         List<String> image = waiterVo.getImages();
+        if(image == null ){
+        	List<String> list  = new  ArrayList<>();
+        	wb.setImages(list);
+        }else{
+        	 wb.setImages(image);
+        }
+       
            
         // 设置兴趣
         List<String> hobbys = waiterVo.getHobbys();
-
-        // 设置关心的人,初始为空
-        List<String> cares = new ArrayList<>();
+        if(hobbys == null ){
+        	List<String> list  = new  ArrayList<>();
+        	wb.setHobbys(list);
+        }else{
+        	wb.setHobbys(hobbys);
+        }        
         
+        // 设置关心的人,初始为空
+        List<String> cares = new ArrayList<>();    
+        wb.setCares(cares);
         // 设置不再推荐的人,初始为空
         List<String> pass = new ArrayList<>();
-                
+        wb.setPass(pass);
+        
+       
         String waiterId = marriageService.insertPublish(wb);
         
         // 设置要求的实体参数
         RequireBo rb = new RequireBo();
         BeanUtils.copyProperties(requireVo, rb);
+        
+        
+        List<String> requirehobbys = requireVo.getHobbys();
+        if(requirehobbys == null ){
+        	List<String> list  = new  ArrayList<>();
+        	rb.setHobbys(list);
+        }else{
+        	rb.setHobbys(requirehobbys);
+        }
+        
+        List<String> jobs = requireVo.getJob();
+        if(jobs == null ){
+        	List<String> list  = new  ArrayList<>();
+        	rb.setJob(list);
+        }else{
+        	rb.setJob(jobs);
+        }
+        
         rb.setSex(1-waiterVo.getSex());
         rb.setWaiterId(waiterId);
         // 插入需求,并返回需求id
@@ -455,7 +490,8 @@ public class MarriageController extends BaseContorller{
 		Map<String, Object> params = new LinkedHashMap<>();
 		
 
-		
+		String[] split = clazz.toString().split("\\.");
+
 		while (iterator.hasNext()) {
 			Map.Entry<String, Object> entry = iterator.next();
 			
@@ -464,18 +500,22 @@ public class MarriageController extends BaseContorller{
 				params.put(entry.getKey(), entry.getValue());
 			}
 		}
+
 		// 处理时间
-		String birthdayStr = fromObject.getString("birthday");
-		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-		if(birthdayStr!=null){
-			try {
-				Date parse = format.parse(birthdayStr);
-				params.put("birthday", parse);
-				params.put("age", CommonUtil.getAge(parse));
-			} catch (ParseException e) {
-				e.printStackTrace();
+		if("WaiterBo".equals(split[split.length-1])){
+			String birthdayStr = fromObject.getString("birthday");
+			SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+			if(birthdayStr!=null){
+				try {
+					Date parse = format.parse(birthdayStr);
+					params.put("birthday", parse);
+					params.put("age", CommonUtil.getAge(parse));
+				} catch (ParseException e) {
+					e.printStackTrace();
+				}
 			}
 		}
+		
 
 		
 		

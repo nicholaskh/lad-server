@@ -393,7 +393,6 @@
 					<encoding>${project.build.sourceEncoding}</encoding>
 				</configuration>
 			</plugin>
-
 		</plugins>
 	</build>
 
