@@ -178,9 +178,15 @@ public class MarriageController extends BaseContorller{
 		}else{
 			return CommonUtil.toErrorResult(ERRORCODE.MARRIAGE_PUBLISH_NULL.getIndex(),ERRORCODE.MARRIAGE_PUBLISH_NULL.getReason());
 		}
+		if(list == null){
+			list =new ArrayList<String>();
+			list.add(passId);
+		}
 		
-		// 将用户添加到黑名单
-		list.add(passId);
+		if(list!=null&&!(list.contains(passId))){
+			// 将用户添加到黑名单
+			list.add(passId);
+		}
 		
 		// 更新数据库
 		Map<String, Object> params = new HashMap<>();
@@ -206,10 +212,17 @@ public class MarriageController extends BaseContorller{
 		}else{
 			return CommonUtil.toErrorResult(ERRORCODE.MARRIAGE_PUBLISH_NULL.getIndex(),ERRORCODE.MARRIAGE_PUBLISH_NULL.getReason());
 		}
+		
+		if(list==null){
+			list = new ArrayList<>();
+		}
+		
 		if(list.contains(careId)){
 			return CommonUtil.toErrorResult(ERRORCODE.MARRIAGE_HAS_CARE.getIndex(),ERRORCODE.MARRIAGE_HAS_CARE.getReason());
+		}else{
+			list.add(careId);
 		}
-		list.add(careId);
+		
 		
 		Map<String, Object> params = new HashMap<>();
 		params.put("cares", list);
@@ -228,14 +241,21 @@ public class MarriageController extends BaseContorller{
 		if (userBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
-		List<String> list = null;
+		List<String> list = new ArrayList<String>();
 		if(waiterId != null && waiterId!=""){
 			list = getList(waiterId,"cares");
 		}else{
 			return CommonUtil.toErrorResult(ERRORCODE.MARRIAGE_PUBLISH_NULL.getIndex(),ERRORCODE.MARRIAGE_PUBLISH_NULL.getReason());
 		}
-
-		list.remove(careId);
+		
+		if(list==null){
+			list = new ArrayList<>();
+		}
+		
+		if(list.contains(careId)){
+			list.remove(careId);
+		}
+		
 		
 		
 		Map<String, Object> params = new HashMap<>();
@@ -261,6 +281,8 @@ public class MarriageController extends BaseContorller{
 		}else{
 			return CommonUtil.toErrorResult(ERRORCODE.MARRIAGE_PUBLISH_NULL.getIndex(),ERRORCODE.MARRIAGE_PUBLISH_NULL.getReason());
 		}
+		
+		
 		
 		List cares = new ArrayList<>();
 		if(list!=null){

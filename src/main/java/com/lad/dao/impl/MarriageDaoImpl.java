@@ -161,12 +161,12 @@ public class MarriageDaoImpl implements IMarriageDao {
 		  
 		Query query = new BasicQuery(dbObject,fieldsObject);
 		WaiterBo findOne = mongoTemplate.findOne(query, WaiterBo.class);
-		List list = null;
-		if("cares".equals(key)){
-			list = findOne.getCares();
+		List list = new ArrayList<>();
+		if("cares".equals(key) && findOne.getCares()!=null){
+				list = findOne.getCares();		
 		}
 		
-		if("pass".equals(key)){
+		if("pass".equals(key) && findOne.getPass()!=null){
 			list = findOne.getPass();
 		}
 		return list;
