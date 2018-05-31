@@ -265,7 +265,7 @@ public class SpouseController  extends BaseContorller{
         return JSONObject.fromObject(map2).toString();
 	}
 	
-	
+	 
 	@GetMapping("/test")
 	public void test(){
 		spouseService.test();
