@@ -1,6 +1,7 @@
 package com.lad.service.impl;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -10,6 +11,7 @@ import com.lad.bo.SpouseBaseBo;
 import com.lad.bo.SpouseRequireBo;
 import com.lad.dao.SpouseDao;
 import com.lad.service.SpouseService;
+import com.mongodb.WriteResult;
 
 @Service("spouseService")
 public class SpouseServiceImpl implements SpouseService {
@@ -46,9 +48,18 @@ public class SpouseServiceImpl implements SpouseService {
 	}
 
 
+
+
+
 	@Override
-	public List<String> getCaresList(String baseId, String key) {
-		return spouseDao.getCaresList(baseId, key);
+	public Map<String, List> getCareMap(String spouseId) {
+		return spouseDao.getCareMap(spouseId);
+	}
+
+
+	@Override
+	public WriteResult updateCare(String spouseId, Map<String, List> map) {
+		return spouseDao.updateCare(spouseId, map);
 	}
 
 

@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -47,41 +48,102 @@ import net.sf.json.JSONObject;
 public class SpouseController  extends BaseContorller{
 	@Autowired
 	private SpouseService spouseService;
-
 	
-	@ApiOperation("添加关注")
-	@PostMapping("/care-insert")
-	public String addCare(String waiterId,String careId,HttpServletRequest request, HttpServletResponse response){
+	@ApiOperation("查询关注列表")
+	@GetMapping("/care-search")
+	public String getCares(String spouseId,HttpServletRequest request, HttpServletResponse response){
 		UserBo userBo = getUserLogin(request);
 		if (userBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
-		List<String> list = null;
 		
-		if(waiterId != null && waiterId!=""){
-			list = getList(waiterId,"cares");
-		}else{
-			return CommonUtil.toErrorResult(ERRORCODE.MARRIAGE_PUBLISH_NULL.getIndex(),ERRORCODE.MARRIAGE_PUBLISH_NULL.getReason());
+		Map map = new HashMap<>();
+		Map<String, List> careMap = spouseService.getCareMap(spouseId);
+		
+		for (String key : careMap.keySet()) {
+			List list = careMap.get(key);
+			List list2 = new ArrayList<>(); 
+			for (Object Object : list) {
+				SpouseBaseBo baseBo = spouseService.findBaseById(Object.toString());
+				String[] params2 = {"createTime","deleted","waiterId","updateTime","updateuid","createuid","pass"};
+				String jsonfieldFilter = CommonUtil.fastJsonfieldFilter(baseBo, false, params2);
+				list2.add(jsonfieldFilter);
+			}
+			map.put(key, list2);
+		}		
+		map.put("ret", 0);
+		return JSONObject.fromObject(map).toString().replace("\\", "");
+	}
+	
+	@ApiOperation("移除关注")
+	@PostMapping("/care-delete")
+	public String deleteCare(String spouseId,String careId,HttpServletRequest request, HttpServletResponse response){
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		
-		if(list==null){
-			list = new ArrayList<>();
+		Map<String,List> map = spouseService.getCareMap(spouseId);
+		
+		if(map==null){
+			map = new HashMap<String,List>();
+			
 		}
 		
-		if(list.contains(careId)){
-			return CommonUtil.toErrorResult(ERRORCODE.MARRIAGE_HAS_CARE.getIndex(),ERRORCODE.MARRIAGE_HAS_CARE.getReason());
-		}else{
-			list.add(careId);
+		for (Entry<String, List> entity : map.entrySet()) {
+			List list = entity.getValue();
+			if(list.contains(careId)){
+				list.remove(careId);	
+				if(list.size()==0){
+					map.remove(entity.getKey());
+				}
+				break;
+			}
+		}
+		WriteResult updateCare = spouseService.updateCare(spouseId,map);
+		return Constant.COM_RESP;			
+	}
+
+	
+	@ApiOperation("添加关注")
+	@PostMapping("/care-insert")
+	public String addCare(String spouseId,String careId,HttpServletRequest request, HttpServletResponse response){
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		Map<String,List> map = spouseService.getCareMap(spouseId);
+		if(map==null){
+			map = new HashMap<String,List>();
+			
+		}
+		// 设置时间
+		Date date = new Date();
+		DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+		String time = format.format(date);
+		
+		// 如果原map中包含今天的关注,则添加到今天的关注
+		List<String> list = new ArrayList<>();
+		for (String key : map.keySet()) {
+			if(time.equals(key)){
+				list=map.get(key);
+				if(list.contains(careId)){
+					return CommonUtil.toErrorResult(ERRORCODE.MARRIAGE_HAS_CARE.getIndex(), ERRORCODE.MARRIAGE_HAS_CARE.getReason());
+				}
+
+				list.add(careId);
+				spouseService.updateCare(spouseId,map);
+				
+
+				return Constant.COM_RESP;	
+			}
 		}
 		
-		Map<String, Object> params = new HashMap<>();
-		params.put("cares", list);
-		/*WriteResult result = spouseService.updateByParams(waiterId, params , WaiterBo.class);
-		
-		if(result.isUpdateOfExisting()){
-			return Constant.COM_RESP;
-		}*/
-		return Constant.COM_FAIL_RESP;
+		list.add(careId);
+		map.put(time, list);
+		spouseService.updateCare(spouseId,map);
+
+		return Constant.COM_RESP;
 	}
 	
 	@ApiOperation("查看详情")
@@ -171,7 +233,8 @@ public class SpouseController  extends BaseContorller{
         	baseBo.setHobbys(list);
         }
         // 设置关注
-        baseBo.setCare(list);
+       Map map = new HashMap<String,List>();
+        baseBo.setCare(map);
         // 设置黑名单
         baseBo.setPass(list);
         
@@ -196,10 +259,10 @@ public class SpouseController  extends BaseContorller{
         // 插入需求,并返回需求id
         spouseService.insert(requireBo);
         
-        Map<String, Object> map = new HashMap<>();
-        map.put("ret", 0);
-        map.put("showid", baseBo.getId());
-        return JSONObject.fromObject(map).toString();
+        Map<String, Object> map2 = new HashMap<>();
+        map2.put("ret", 0);
+        map2.put("showid", baseBo.getId());
+        return JSONObject.fromObject(map2).toString();
 	}
 	
 	
@@ -207,10 +270,4 @@ public class SpouseController  extends BaseContorller{
 	public void test(){
 		spouseService.test();
 	}
-	
-	   private List<String> getList(String baseId,String key){
-	    	List<String> list = new ArrayList<String>();
-	    	list = spouseService.getCaresList(baseId,key);    	
-	    	return list;
-	    }
 }

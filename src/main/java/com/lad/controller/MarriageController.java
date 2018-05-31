@@ -164,11 +164,8 @@ public class MarriageController extends BaseContorller{
 		Map<String, Object> params = new HashMap<>();
 		params.put("pass", list);
 		WriteResult result = marriageService.updateByParams(waiterId, params , WaiterBo.class);
-		
-		if(result.isUpdateOfExisting()){
-			return Constant.COM_RESP;
-		}
-		return Constant.COM_FAIL_RESP;
+
+		return Constant.COM_RESP;
 	}
 	
 	@ApiOperation("添加关注")
@@ -199,22 +196,15 @@ public class MarriageController extends BaseContorller{
 				}
 
 				list.add(careId);
-				WriteResult updateCare = marriageService.updateCare(waiterId,map);
-				
-				if(updateCare.isUpdateOfExisting()){
-					return Constant.COM_RESP;
-				}
-				return Constant.COM_FAIL_RESP;	
+				marriageService.updateCare(waiterId,map);
+				return Constant.COM_RESP;	
 			}
 		}
 		
 		list.add(careId);
 		map.put(time, list);
-		WriteResult updateCare = marriageService.updateCare(waiterId,map);
-		if(updateCare.isUpdateOfExisting()){
-			return Constant.COM_RESP;
-		}
-		return Constant.COM_FAIL_RESP;
+		marriageService.updateCare(waiterId,map);
+		return Constant.COM_RESP;
 	}
 	
 	@ApiOperation("移除关注")
@@ -227,6 +217,11 @@ public class MarriageController extends BaseContorller{
 		
 		Map<String,List> map = marriageService.getCareMap(waiterId);
 		
+		if(map==null){
+			map = new HashMap<String,List>();
+			
+		}
+		
 		for (Entry<String, List> entity : map.entrySet()) {
 			List list = entity.getValue();
 			if(list.contains(careId)){
@@ -238,10 +233,8 @@ public class MarriageController extends BaseContorller{
 			}
 		}
 		WriteResult updateCare = marriageService.updateCare(waiterId,map);
-		if(updateCare.isUpdateOfExisting()){
-			return Constant.COM_RESP;
-		}
-		return Constant.COM_FAIL_RESP;	
+
+		return Constant.COM_RESP;	
 		/*List<String> list = new ArrayList<String>();
 		if(waiterId != null && waiterId!=""){
 			list = getList(waiterId,"cares");
@@ -323,10 +316,8 @@ public class MarriageController extends BaseContorller{
 		}
 		
 		WriteResult result = marriageService.deletePublish(waiterId);
-		if(result.isUpdateOfExisting()){
-			return Constant.COM_RESP;
-		}
-		return Constant.COM_FAIL_RESP;
+
+		return Constant.COM_RESP;
 	}	
 	
 	
@@ -345,10 +336,8 @@ public class MarriageController extends BaseContorller{
  
 		
 		WriteResult result = update(wv,id,WaiterBo.class);
-		if(result.isUpdateOfExisting()){
-			return Constant.COM_RESP;
-		}
-		return Constant.COM_FAIL_RESP;
+
+		return Constant.COM_RESP;
 	}
 	
 	@ApiOperation("修改要求")
@@ -371,10 +360,8 @@ public class MarriageController extends BaseContorller{
         }*/
 		
 		WriteResult result = update(rv,id,RequireBo.class);
-		if(result.isUpdateOfExisting()){
-			return Constant.COM_RESP;
-		}
-		return Constant.COM_FAIL_RESP;
+
+		return Constant.COM_RESP;
 	}
 	
 	@ApiOperation("查询发布")

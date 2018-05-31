@@ -2,6 +2,7 @@ package com.lad.bo;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -23,6 +24,6 @@ public class SpouseBaseBo extends BaseBo {
 	private String address;		// 居住地
 	private List<String> images;// 照片地址
 	private List<String> hobbys;// 兴趣,list
-	private List<String> care;// 感兴趣的人,保存id;
+	private Map<String,List> care;// 感兴趣的人,保存id;
 	private List<String> pass;	// 不感兴趣的人
 }
