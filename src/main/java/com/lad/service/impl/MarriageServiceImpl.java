@@ -55,8 +55,8 @@ public class MarriageServiceImpl implements IMarriageService {
 	}
 	
 	@Override
-	public List<String> getCaresList(String waiterId,String key) {
-		return marriageDao.getCaresList(waiterId,key);
+	public List<String> getPassList(String waiterId) {
+		return marriageDao.getPassList(waiterId);
 	}
 	
 	@Override
@@ -145,6 +145,20 @@ public class MarriageServiceImpl implements IMarriageService {
 	public String getNickName() {
 		return null;
 	}
+
+	@Override
+	public Map<String, List> getCareMap(String waiterId) {
+		
+		return marriageDao.getCareMap(waiterId);
+	}
+
+	@Override
+	public WriteResult updateCare(String waiterId, Map<String, List> map) {
+		return marriageDao.updateCare(waiterId, map);
+		
+	}
+
+
 
 
 

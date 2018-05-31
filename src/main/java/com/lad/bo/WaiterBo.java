@@ -2,6 +2,7 @@ package com.lad.bo;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -28,7 +29,7 @@ public class WaiterBo extends BaseBo{
 	private String nowin;		// 居住地
 	private List<String> images;// 照片地址,保存url的list;
 	private List<String> hobbys;// 兴趣,list
-	private List<String> cares; // 感兴趣的人,保存id的list;
+	private Map<String,List> cares; // 感兴趣的人,保存id的list;
 	private List<String> pass;	// 不感兴趣的人,保存id的list;
 //	private String requireId;	// 关联的require的id
 //	private Date createDate;	// 创建时间

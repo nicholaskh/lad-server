@@ -49,7 +49,7 @@ public interface IMarriageService extends IBaseService {
 //  更新
 	public WriteResult updateByParams(String id, Map<String, Object> params, Class class1);
 
-	public List<String> getCaresList(String waiterId,String key);
+	public List<String> getPassList(String waiterId);
 
 	public WaiterBo findWaiterById(String caresId);
 
@@ -62,6 +62,10 @@ public interface IMarriageService extends IBaseService {
 	public List<OptionBo> getOptions();
 
 	public List<WaiterBo> getNewPublish(int type, int page, int limit,String userId);
+
+	public Map<String, List> getCareMap(String waiterId);
+
+	public WriteResult updateCare(String waiterId, Map<String, List> map);
 
 
 	

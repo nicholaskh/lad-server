@@ -20,7 +20,7 @@ public interface IMarriageDao {
 
 	WriteResult deletePublish(String pubId);
 
-	List<String> getCaresList(String waiterId,String key);
+	List<String> getPassList(String waiterId);
 
 	WaiterBo findWaiterById(String caresId);
 
@@ -35,5 +35,9 @@ public interface IMarriageDao {
 	List<Map> getRecommend(String waiterId);
 	
 	List<WaiterBo> getNewPublic(int type,int page,int limit,String uid);
+
+	Map<String, List> getCareMap(String waiterId);
+
+	WriteResult updateCare(String waiterId, Map<String, List> map);
 
 }

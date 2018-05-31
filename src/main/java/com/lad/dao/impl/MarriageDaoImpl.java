@@ -27,6 +27,7 @@ import com.lad.vo.OptionVo;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.mongodb.WriteResult;
+import com.mongodb.client.result.UpdateResult;
 
 @Repository("marriageDao")
 public class MarriageDaoImpl implements IMarriageDao {
@@ -150,25 +151,19 @@ public class MarriageDaoImpl implements IMarriageDao {
 	 * 
 	 */
 	@Override
-	public List<String> getCaresList(String waiterId,String key) {
+	public List<String> getPassList(String waiterId) {
 		
 		DBObject dbObject = new BasicDBObject();  
 		dbObject.put("_id", waiterId);  //查询条件  
 		  
 		BasicDBObject fieldsObject=new BasicDBObject();  
 		//指定返回的字段  
-		fieldsObject.put(key, true);  
+		fieldsObject.put("pass", true);  
 		  
 		Query query = new BasicQuery(dbObject,fieldsObject);
 		WaiterBo findOne = mongoTemplate.findOne(query, WaiterBo.class);
-		List list = new ArrayList<>();
-		if("cares".equals(key) && findOne.getCares()!=null){
-				list = findOne.getCares();		
-		}
-		
-		if("pass".equals(key) && findOne.getPass()!=null){
-			list = findOne.getPass();
-		}
+		List list = new ArrayList<>();		
+		list = findOne.getPass();
 		return list;
 	}
 
@@ -235,6 +230,25 @@ public class MarriageDaoImpl implements IMarriageDao {
             }
         }
         return mongoTemplate.updateFirst(query, update, class1);
+	}
+
+	@Override
+	public Map<String, List> getCareMap(String waiterId) {
+		WaiterBo waiter = mongoTemplate.findOne(new Query(Criteria.where("_id").is(waiterId)), WaiterBo.class);
+		Map<String, List> cares = waiter.getCares();
+		return cares;
+	}
+
+	@Override
+	public WriteResult updateCare(String waiterId, Map<String, List> map) {
+        Query query = new Query();
+        Criteria criteria = Criteria.where("_id").is(waiterId);
+        query.addCriteria(criteria);       
+        Update update = new Update();
+        
+        update.set("cares", map);
+        WriteResult updateFirst = mongoTemplate.updateFirst(query, update, WaiterBo.class);
+        return updateFirst;
 	}
 
 
