@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -52,6 +53,53 @@ public class SpouseController  extends BaseContorller{
 	@Autowired
 	private SpouseService spouseService;
 	
+	/**
+	 * 查找当前账号下的发布信息
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@GetMapping("/spouse-search")
+	public String getPublishById(HttpServletRequest request, HttpServletResponse response){
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		SpouseBaseBo spouseBo = spouseService.getSpouseByUserId(userBo.getId());
+		spouseBo.setCreateTime(null);
+		Map map = new HashMap<>();
+		map.put("ret", 0);
+		map.put("publishes", spouseBo);
+		return JSONObject.fromObject(map).toString();
+	}
+	
+	
+	/**
+	 * 修改要求
+	 * @param requireDate
+	 * @param requireId
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@ApiOperation("修改要求")
+	@PostMapping("/require-update")
+	public String updateRequire(@RequestParam String requireDate,String requireId,HttpServletRequest request, HttpServletResponse response){
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		if (requireDate == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.MARRIAGE_REQUIRE_NULL.getIndex(),ERRORCODE.MARRIAGE_REQUIRE_NULL.getReason());
+		}
+		
+		updateByIdAndParams(requireDate, requireId,SpouseRequireBo.class);
+		
+
+		return Constant.COM_RESP;
+	}
+
+
 	
 	/**
 	 * 修改基础资料
@@ -63,7 +111,7 @@ public class SpouseController  extends BaseContorller{
 	 */
 	@ApiOperation("修改基础资料")
 	@PostMapping("/waiter-update")
-	public String updateWaiter(@RequestParam String baseDate,String spouseId,HttpServletRequest request, HttpServletResponse response){
+	public String updateSpouse(@RequestParam String baseDate,String spouseId,HttpServletRequest request, HttpServletResponse response){
 
 		UserBo userBo = getUserLogin(request);
 		if (userBo == null) {
@@ -74,19 +122,18 @@ public class SpouseController  extends BaseContorller{
 			return CommonUtil.toErrorResult(ERRORCODE.MARRIAGE_WAITER_NULL.getIndex(),ERRORCODE.MARRIAGE_WAITER_NULL.getReason());
 		}
  
-		Iterator<Map.Entry<String, Object>> iterator = JSONObject.fromObject(baseDate).entrySet().iterator();
-		
-		Map params = new HashMap<>();
-		if(iterator.hasNext()){
-			Map.Entry<String, Object> entry = iterator.next();
-			params.put(entry.getKey(), entry.getValue());
-		}
-		WriteResult result  = spouseService.updateById(params,spouseId,SpouseBaseBo.class);
+		updateByIdAndParams(baseDate, spouseId,SpouseBaseBo.class);
 
 		return Constant.COM_RESP;
 	}
 	
-	@ApiOperation("取消发布")
+	/**
+	 * 取消发布
+	 * @param spouseId
+	 * @param request
+	 * @param response
+	 * @return
+	 */
 	@DeleteMapping("/publish-delete")
 	public String deletePublish(String spouseId,HttpServletRequest request, HttpServletResponse response){
 		UserBo userBo = getUserLogin(request);
@@ -134,7 +181,13 @@ public class SpouseController  extends BaseContorller{
 		return JSONObject.fromObject(map).toString().replace("\\", "").replace("\"{", "{").replace("}\"", "}");
 	}
 	
-	@ApiOperation("查看基础信息详情")
+	/**
+	 * 查看基础信息详细资料
+	 * @param spouseId
+	 * @param request
+	 * @param response
+	 * @return
+	 */
 	@GetMapping("/base-search")
 	public String getBaseById(String spouseId,HttpServletRequest request, HttpServletResponse response){
 		UserBo userBo = getUserLogin(request);
@@ -418,6 +471,36 @@ public class SpouseController  extends BaseContorller{
         return JSONObject.fromObject(map2).toString();
 	}
 	
+	/**
+	 * 私有方法,根据传入的Map集合参数修改后台数据
+	 * @param requireDate
+	 * @param requireId
+	 * @param clazz
+	 * @return
+	 */
+	private WriteResult updateByIdAndParams(String requireDate, String requireId,Class clazz) {
+		Iterator<Map.Entry<String, Object>> iterator = JSONObject.fromObject(requireDate).entrySet().iterator();
+		Map params = new HashMap<>();
+		while(iterator.hasNext()){
+			Map.Entry<String, Object> entry = iterator.next();
+			
+			params.put(entry.getKey(), entry.getValue());
+			
+			if("birthday".equals(entry.getKey())){
+				DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+				Date birth = null;
+				try {
+					birth = format.parse(entry.getValue().toString());
+				} catch (ParseException e) {
+					e.printStackTrace();
+				}
+				params.put("age", CommonUtil.getAge(birth));
+			}
+			
+		}
+		WriteResult updateByParams = spouseService.updateByParams(requireId, params, clazz);
+		return updateByParams;
+	}
 	 
 	@GetMapping("/test")
 	public void test(){

@@ -9,22 +9,21 @@ import org.springframework.stereotype.Service;
 import com.lad.bo.BaseBo;
 import com.lad.bo.SpouseBaseBo;
 import com.lad.bo.SpouseRequireBo;
-import com.lad.dao.SpouseDao;
+import com.lad.dao.ISpouseDao;
 import com.lad.service.SpouseService;
 import com.mongodb.WriteResult;
 
 @Service("spouseService")
 public class SpouseServiceImpl implements SpouseService {
 	@Autowired
-	private SpouseDao spouseDao;
+	private ISpouseDao spouseDao;
 	
-	/**
-	 * 修改资料
-	 */
+
 	@Override
-	public WriteResult updateById(Map params, String spouseId, Class<SpouseBaseBo> class1) {
-		return spouseDao.updateById(params,spouseId, class1);
+	public SpouseBaseBo getSpouseByUserId(String uid) {
+		return spouseDao.getSpouseByUserId(uid);
 	}
+	
 	
 	/**
 	 * 取消发布
@@ -43,7 +42,7 @@ public class SpouseServiceImpl implements SpouseService {
 	}
 	
 	@Override
-	public WriteResult updateByParams(String spouseId, Map<String, Object> params, Class<SpouseBaseBo> class1) {	
+	public WriteResult updateByParams(String spouseId, Map<String, Object> params, Class class1) {	
 		return spouseDao.updateByParams(spouseId, params, class1);
 	}
 
@@ -93,6 +92,5 @@ public class SpouseServiceImpl implements SpouseService {
 	public void test() {
 		spouseDao.test();
 	}
-
 
 }

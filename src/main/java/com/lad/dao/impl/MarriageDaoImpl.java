@@ -136,10 +136,24 @@ public class MarriageDaoImpl implements IMarriageDao {
 	 */
 	@Override
 	public WaiterBo findWaiterById(String caresId) {
-		Query query = new Query();
-		Criteria criteria = new Criteria();
-		criteria.andOperator(Criteria.where("_id").is(caresId),Criteria.where("deleted").is(0));
-		query.addCriteria(criteria);
+		
+		//{"createTime","deleted","waiterId","updateTime","updateuid","createuid","pass"};
+		BasicDBObject cirteria = new BasicDBObject();
+		cirteria.put("_id", caresId);
+		
+		BasicDBObject filter = new BasicDBObject();
+		filter.put("createTime", false);
+		filter.put("deleted", false);
+		filter.put("waiterId", false);
+		filter.put("updateTime", false);
+		filter.put("updateuid", false);
+		filter.put("createuid", false);
+		filter.put("pass", false);
+		filter.put("cares", false);
+
+		
+		Query query = new BasicQuery(cirteria,filter);
+//		Query query = new Query(Criteria.where("_id").is(caresId));
 		return mongoTemplate.findOne(query, WaiterBo.class);
 	}
 

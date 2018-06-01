@@ -298,24 +298,27 @@ public class MarriageController extends BaseContorller{
 		Map map = new HashMap<>();
 		Map<String, List> careMap = marriageService.getCareMap(waiterId);
 		
+		
+		// 要将result设置为一个list,设置该list进行接收
 		List list2 = new ArrayList();
 		
 		
+		// 循环时间,key为日期
 		for (String key : careMap.keySet()) {
-			List list = careMap.get(key);
-			System.out.println(key);
-			List list3 = new ArrayList<>();
+			// 每个日期下的数据保存到一个CareResultVo试题中
 			CareResultVo re = new CareResultVo();
+			
+			
+			// 获取日期下的关注者集合id
+			List list = careMap.get(key);
+			// 要将关注着集合中的数据从id转换为实体,因此设置该集合用以接收这些实体
+			List list3 = new ArrayList<>();
+			
 			for (Object Object : list) {
 				WaiterBo waiter = marriageService.findWaiterById(Object.toString());
-				String[] params2 = {"createTime","deleted","waiterId","updateTime","updateuid","createuid","pass"};
-				String jsonfieldFilter = CommonUtil.fastJsonfieldFilter(waiter, false, params2).replace("}", ",addDate:\""+key+"\"}");
-//				System.out.println(jsonfieldFilter);
-//				list2.add(jsonfieldFilter);
-				
-				re.setAddTime(key);
-				list3.add(jsonfieldFilter);
+				list3.add(JSON.toJSONString(waiter));
 			}
+			re.setAddTime(key);
 			re.setString(list3);
 			list2.add(re);
 		}

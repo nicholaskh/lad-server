@@ -24,11 +24,12 @@ public interface SpouseService extends IBaseService{
 
 	public List<String> getPassList(String spouseId);
 
-	public WriteResult updateByParams(String spouseId, Map<String, Object> params, Class<SpouseBaseBo> class1);
+	public WriteResult updateByParams(String spouseId, Map<String, Object> params, Class class1);
 
 	public List<SpouseBaseBo> getNewSpouse(int sex,int page,int limit,String uid);
 
 	public WriteResult deletePublish(String spouseId);
 
-	public WriteResult updateById(Map params, String spouseId, Class<SpouseBaseBo> class1);	
+	public SpouseBaseBo getSpouseByUserId(String id);
+
 }

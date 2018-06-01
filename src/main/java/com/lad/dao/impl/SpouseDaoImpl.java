@@ -8,6 +8,7 @@ import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.BasicQuery;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
@@ -16,27 +17,33 @@ import org.springframework.stereotype.Repository;
 import com.lad.bo.BaseBo;
 import com.lad.bo.SpouseBaseBo;
 import com.lad.bo.SpouseRequireBo;
-import com.lad.dao.SpouseDao;
+import com.lad.dao.ISpouseDao;
+import com.mongodb.BasicDBObject;
 import com.mongodb.WriteResult;
 
 @Repository("spouseDao")
-public class SpouseDaoImpl implements SpouseDao {
+public class SpouseDaoImpl implements ISpouseDao {
 	@Autowired
     private MongoTemplate mongoTemplate;
 	
 	/**
-	 * 修改资料
+	 * 查看当前用户下的发布
 	 */
 	@Override
-	public WriteResult updateById(Map params, String spouseId, Class<SpouseBaseBo> class1) {
-		Query query = new Query(Criteria.where("_id").is(spouseId));
-		Update update = new Update();
-		Set<Map.Entry<String, Object>> entrySet = params.entrySet();
-
-		for (Entry<String, Object> entry : entrySet) {
-			update.set(entry.getKey(), entry.getValue());
-		}
-		return mongoTemplate.updateFirst(query, update, class1);
+	public SpouseBaseBo getSpouseByUserId(String uid) {
+		
+		BasicDBObject criteria = new BasicDBObject();
+		criteria.put("createuid", uid);
+		BasicDBObject filter = new BasicDBObject();
+		filter.put("id", true);
+		filter.put("createuid", true);
+		filter.put("nickName", true);
+		filter.put("sex", true);
+		filter.put("birthday", true);
+		
+		Query query = new BasicQuery(criteria,filter);
+		
+		return mongoTemplate.findOne(query, SpouseBaseBo.class);
 	}
 	
 	@Override
@@ -114,25 +121,19 @@ public class SpouseDaoImpl implements SpouseDao {
 	}
 
 	@Override
-	public WriteResult updateByParams(String spouseId, Map<String, Object> params, Class<SpouseBaseBo> class1) {
-		 Query query = new Query();
-	        Criteria criteria = Criteria.where("_id").is(spouseId);
-	        query.addCriteria(criteria);       
-	        Update update = new Update();
-	        if (params != null) {
-	            Set<Map.Entry<String, Object>> entrys = params.entrySet();
-	            for (Map.Entry<String, Object> entry : entrys) {
-	                update.set(entry.getKey(), entry.getValue());
-	            }
-	        }
-	        return mongoTemplate.updateFirst(query, update, class1);
+	public WriteResult updateByParams(String spouseId, Map<String, Object> params, Class class1) {
+		System.out.println(class1);
+		
+		Query query = new Query();
+		Criteria criteria = Criteria.where("_id").is(spouseId);
+		query.addCriteria(criteria);       
+		Update update = new Update();
+		if (params != null) {
+		    Set<Map.Entry<String, Object>> entrys = params.entrySet();
+		    for (Map.Entry<String, Object> entry : entrys) {
+		        update.set(entry.getKey(), entry.getValue());
+		    }
+		}
+		return mongoTemplate.updateFirst(query, update, class1);
 	}
-
-
-
-
-
-
-
-
 }

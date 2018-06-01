@@ -8,7 +8,7 @@ import com.lad.bo.SpouseBaseBo;
 import com.lad.bo.SpouseRequireBo;
 import com.mongodb.WriteResult;
 
-public interface SpouseDao {
+public interface ISpouseDao {
 	void test();
 
 	String insert(BaseBo baseBo);
@@ -24,11 +24,12 @@ public interface SpouseDao {
 
 	List<String> getPassList(String spouseId);
 
-	WriteResult updateByParams(String spouseId, Map<String, Object> params, Class<SpouseBaseBo> class1);
+	WriteResult updateByParams(String spouseId, Map<String, Object> params, Class class1);
 
 	List<SpouseBaseBo> getNewSpouse(int sex,int page,int limit,String uid);
 
 	WriteResult deletePublish(String spouseId);
 
-	WriteResult updateById(Map params, String spouseId, Class<SpouseBaseBo> class1);
+	SpouseBaseBo getSpouseByUserId(String uid);
+
 }
