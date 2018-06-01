@@ -98,9 +98,9 @@ public class FriendsDaoImpl implements IFriendsDao {
 
 	public FriendsBo getFriendByIdAndVisitorId(String userid, String friendid) {
 		Query query = new Query();
-		query.addCriteria(new Criteria("userid").is(userid));
-		query.addCriteria(new Criteria("friendid").is(friendid));
-		query.addCriteria(new Criteria("deleted").is(0));
+		Criteria criteria = new Criteria();
+		criteria.andOperator(Criteria.where("userid").is(userid),Criteria.where("friendid").is(friendid),Criteria.where("deleted").is(0));
+		query.addCriteria(criteria);
 		return mongoTemplate.findOne(query, FriendsBo.class);
 	}
 	

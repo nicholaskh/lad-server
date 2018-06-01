@@ -29,15 +29,18 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.alibaba.fastjson.JSON;
+import com.lad.bo.FriendsBo;
 import com.lad.bo.OptionBo;
 import com.lad.bo.RequireBo;
 import com.lad.bo.UserBo;
 import com.lad.bo.WaiterBo;
+import com.lad.service.IFriendsService;
 import com.lad.service.IMarriageService;
 import com.lad.util.CommonUtil;
 import com.lad.util.Constant;
 import com.lad.util.ERRORCODE;
 import com.lad.vo.BaseVo;
+import com.lad.vo.CareResultVo;
 import com.lad.vo.OptionVo;
 import com.lad.vo.RequireVo;
 import com.lad.vo.WaiterVo;
@@ -57,6 +60,9 @@ public class MarriageController extends BaseContorller{
 
 	@Autowired
 	public IMarriageService marriageService;
+	
+	@Autowired
+	private IFriendsService friendidService;
 	
 	@ApiOperation("查找新发布")
 	@GetMapping("/newpublish-search")
@@ -133,6 +139,26 @@ public class MarriageController extends BaseContorller{
 		}else{
 			map.put("require", ERRORCODE.MARRIAGE_QUIRE_NULL.getReason());
 		}
+		map.put("chatroomid", "非好友");
+		// 查看两者是否为好友
+		if(!(userBo.getId().equals(waiter.getCreateuid()))){
+			// 根据咨询的发布者id  查询是否为当前用户好友
+			List<FriendsBo> friendByFriendid = friendidService.getFriendByFriendid(waiter.getCreateuid());
+			System.out.println(friendByFriendid);
+			if(friendByFriendid!=null){
+				for (FriendsBo friendsBo : friendByFriendid) {
+					
+					if(waiter.getCreateuid().equals(friendsBo.getFriendid())){
+						map.put("chatroomid", friendsBo.getChatroomid());
+					}	
+				}
+			}
+			
+		}else{
+			map.put("chatroomid", "自己的发布");
+		}
+		
+		
 		map.put("ret", 0);
 		return JSON.toJSONString(map);
 	}
@@ -180,7 +206,6 @@ public class MarriageController extends BaseContorller{
 		Map<String,List> map = marriageService.getCareMap(waiterId);
 		if(map==null){
 			map = new HashMap<String,List>();
-			
 		}
 		// 设置时间
 		Date date = new Date();
@@ -195,7 +220,6 @@ public class MarriageController extends BaseContorller{
 				if(list.contains(careId)){
 					return CommonUtil.toErrorResult(ERRORCODE.MARRIAGE_HAS_CARE.getIndex(), ERRORCODE.MARRIAGE_HAS_CARE.getReason());
 				}
-
 				list.add(careId);
 				marriageService.updateCare(waiterId,map);
 				return Constant.COM_RESP;	
@@ -274,37 +298,30 @@ public class MarriageController extends BaseContorller{
 		Map map = new HashMap<>();
 		Map<String, List> careMap = marriageService.getCareMap(waiterId);
 		
+		List list2 = new ArrayList();
+		
+		
 		for (String key : careMap.keySet()) {
 			List list = careMap.get(key);
-			List list2 = new ArrayList<>(); 
+			System.out.println(key);
+			List list3 = new ArrayList<>();
+			CareResultVo re = new CareResultVo();
 			for (Object Object : list) {
 				WaiterBo waiter = marriageService.findWaiterById(Object.toString());
 				String[] params2 = {"createTime","deleted","waiterId","updateTime","updateuid","createuid","pass"};
-				String jsonfieldFilter = CommonUtil.fastJsonfieldFilter(waiter, false, params2);
-				list2.add(jsonfieldFilter);
+				String jsonfieldFilter = CommonUtil.fastJsonfieldFilter(waiter, false, params2).replace("}", ",addDate:\""+key+"\"}");
+//				System.out.println(jsonfieldFilter);
+//				list2.add(jsonfieldFilter);
+				
+				re.setAddTime(key);
+				list3.add(jsonfieldFilter);
 			}
-			map.put(key, list2);
+			re.setString(list3);
+			list2.add(re);
 		}
-		
-		/*List<String> list = null;
-		if(waiterId != null && waiterId!=""){
-			list = getList(waiterId,"cares");
-		}else{
-			return CommonUtil.toErrorResult(ERRORCODE.MARRIAGE_PUBLISH_NULL.getIndex(),ERRORCODE.MARRIAGE_PUBLISH_NULL.getReason());
-		}
-		
-		
-		
-		List cares = new ArrayList<>();
-		if(list!=null){
-			for (String caresId : list) {
-				WaiterBo care = marriageService.findWaiterById(caresId);
-				String[] params2 = {"createTime","deleted","waiterId","updateTime","updateuid","createuid"};
-				cares.add(CommonUtil.fastJsonfieldFilter(care, false, params2));
-			}
-		}*/
 		
 		map.put("ret", 0);
+		map.put("result", list2);
 		return JSONObject.fromObject(map).toString().replace("\\", "");
 	}
 	
@@ -502,8 +519,6 @@ public class MarriageController extends BaseContorller{
 
 		while (iterator.hasNext()) {
 			Map.Entry<String, Object> entry = iterator.next();
-			
-			
 			if (entry.getValue() != null && !("birthday".equals(entry.getValue()))) {
 				params.put(entry.getKey(), entry.getValue());
 			}

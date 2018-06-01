@@ -20,5 +20,15 @@ public interface SpouseService extends IBaseService{
 
 	public Map<String, List> getCareMap(String spouseId);
 
-	public WriteResult updateCare(String spouseId, Map<String, List> map);	
+	public WriteResult updateCare(String spouseId, Map<String, List> map);
+
+	public List<String> getPassList(String spouseId);
+
+	public WriteResult updateByParams(String spouseId, Map<String, Object> params, Class<SpouseBaseBo> class1);
+
+	public List<SpouseBaseBo> getNewSpouse(int sex,int page,int limit,String uid);
+
+	public WriteResult deletePublish(String spouseId);
+
+	public WriteResult updateById(Map params, String spouseId, Class<SpouseBaseBo> class1);	
 }

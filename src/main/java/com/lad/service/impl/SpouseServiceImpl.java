@@ -17,13 +17,43 @@ import com.mongodb.WriteResult;
 public class SpouseServiceImpl implements SpouseService {
 	@Autowired
 	private SpouseDao spouseDao;
-
+	
+	/**
+	 * 修改资料
+	 */
 	@Override
-	public void test() {
-		spouseDao.test();
+	public WriteResult updateById(Map params, String spouseId, Class<SpouseBaseBo> class1) {
+		return spouseDao.updateById(params,spouseId, class1);
+	}
+	
+	/**
+	 * 取消发布
+	 */
+	@Override
+	public WriteResult deletePublish(String spouseId) {
+		return spouseDao.deletePublish(spouseId);
 	}
 
+	/**
+	 * 获取最新的发布信息
+	 */
+	@Override
+	public List<SpouseBaseBo> getNewSpouse(int sex,int page,int limit,String uid) {
+		return spouseDao.getNewSpouse(sex,page,limit,uid);
+	}
 	
+	@Override
+	public WriteResult updateByParams(String spouseId, Map<String, Object> params, Class<SpouseBaseBo> class1) {	
+		return spouseDao.updateByParams(spouseId, params, class1);
+	}
+
+	/**
+	 * 获取不在推荐列表
+	 */
+	@Override
+	public List<String> getPassList(String spouseId) {
+		return spouseDao.getPassList(spouseId);
+	}
 	/**
 	 * 添加找老伴消息
 	 */
@@ -46,11 +76,7 @@ public class SpouseServiceImpl implements SpouseService {
 	public SpouseRequireBo findRequireById(String baseId) {
 		return spouseDao.findRequireById(baseId);
 	}
-
-
-
-
-
+	
 	@Override
 	public Map<String, List> getCareMap(String spouseId) {
 		return spouseDao.getCareMap(spouseId);
@@ -62,6 +88,11 @@ public class SpouseServiceImpl implements SpouseService {
 		return spouseDao.updateCare(spouseId, map);
 	}
 
+
+	@Override
+	public void test() {
+		spouseDao.test();
+	}
 
 
 }

@@ -2,6 +2,7 @@ package com.lad.dao.impl;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -18,7 +19,6 @@ import org.springframework.stereotype.Repository;
 import com.lad.bo.BaseBo;
 import com.lad.bo.OptionBo;
 import com.lad.bo.RequireBo;
-import com.lad.bo.SpouseBaseBo;
 import com.lad.bo.WaiterBo;
 import com.lad.dao.IMarriageDao;
 import com.lad.util.CommonUtil;
@@ -233,7 +233,11 @@ public class MarriageDaoImpl implements IMarriageDao {
 	@Override
 	public Map<String, List> getCareMap(String waiterId) {
 		WaiterBo waiter = mongoTemplate.findOne(new Query(Criteria.where("_id").is(waiterId)), WaiterBo.class);
-		Map<String, List> cares = waiter.getCares();
+		Map<String, List> cares = new HashMap<>();
+		if(waiter!=null){
+			cares = waiter.getCares();
+		}
+		
 		return cares;
 	}
 

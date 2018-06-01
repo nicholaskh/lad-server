@@ -1,7 +1,10 @@
 package com.lad.dao.impl;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -20,6 +23,53 @@ import com.mongodb.WriteResult;
 public class SpouseDaoImpl implements SpouseDao {
 	@Autowired
     private MongoTemplate mongoTemplate;
+	
+	/**
+	 * 修改资料
+	 */
+	@Override
+	public WriteResult updateById(Map params, String spouseId, Class<SpouseBaseBo> class1) {
+		Query query = new Query(Criteria.where("_id").is(spouseId));
+		Update update = new Update();
+		Set<Map.Entry<String, Object>> entrySet = params.entrySet();
+
+		for (Entry<String, Object> entry : entrySet) {
+			update.set(entry.getKey(), entry.getValue());
+		}
+		return mongoTemplate.updateFirst(query, update, class1);
+	}
+	
+	@Override
+	public WriteResult deletePublish(String spouseId) {
+		Query query = new Query(Criteria.where("id").is(spouseId));
+		Update update = new Update();
+		update.set("deleted", 1);
+		WriteResult updateFirst = mongoTemplate.updateFirst(query, update, SpouseBaseBo.class);
+		return updateFirst;
+	}
+	
+	@Override
+	public List<SpouseBaseBo> getNewSpouse(int sex,int page,int limit,String uid) {
+		
+		Query query = new Query();
+		Criteria criteria = new Criteria();
+		Date date = new Date();
+		long time = date.getTime()-7*24*60*60*1000;
+		Date weekBefore = new Date(time);
+		System.out.println(1-sex);
+		criteria.andOperator(Criteria.where("deleted").is(0),Criteria.where("createTime").gt(weekBefore),Criteria.where("sex").is(1-sex),Criteria.where("createuid").ne(uid));
+		query.addCriteria(criteria);
+		query.skip((page - 1) * limit);
+		query.limit(limit);
+		List<SpouseBaseBo> list = mongoTemplate.find(query, SpouseBaseBo.class);
+		return list;		
+	}
+	
+	@Override
+	public List<String> getPassList(String spouseId) {
+		SpouseBaseBo findOne = mongoTemplate.findOne(new Query(Criteria.where("_id").is(spouseId)), SpouseBaseBo.class);
+		return findOne.getPass();
+	}
 	
 	@Override
 	public WriteResult updateCare(String spouseId, Map<String, List> map) {
@@ -62,4 +112,27 @@ public class SpouseDaoImpl implements SpouseDao {
 	public void test() {
 		System.out.println(mongoTemplate);
 	}
+
+	@Override
+	public WriteResult updateByParams(String spouseId, Map<String, Object> params, Class<SpouseBaseBo> class1) {
+		 Query query = new Query();
+	        Criteria criteria = Criteria.where("_id").is(spouseId);
+	        query.addCriteria(criteria);       
+	        Update update = new Update();
+	        if (params != null) {
+	            Set<Map.Entry<String, Object>> entrys = params.entrySet();
+	            for (Map.Entry<String, Object> entry : entrys) {
+	                update.set(entry.getKey(), entry.getValue());
+	            }
+	        }
+	        return mongoTemplate.updateFirst(query, update, class1);
+	}
+
+
+
+
+
+
+
+
 }

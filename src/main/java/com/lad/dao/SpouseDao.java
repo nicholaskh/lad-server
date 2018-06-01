@@ -21,4 +21,14 @@ public interface SpouseDao {
 	Map<String, List> getCareMap(String spouseId);
 
 	WriteResult updateCare(String spouseId, Map<String, List> map);
+
+	List<String> getPassList(String spouseId);
+
+	WriteResult updateByParams(String spouseId, Map<String, Object> params, Class<SpouseBaseBo> class1);
+
+	List<SpouseBaseBo> getNewSpouse(int sex,int page,int limit,String uid);
+
+	WriteResult deletePublish(String spouseId);
+
+	WriteResult updateById(Map params, String spouseId, Class<SpouseBaseBo> class1);
 }
