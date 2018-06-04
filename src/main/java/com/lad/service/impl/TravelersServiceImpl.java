@@ -1,6 +1,7 @@
 package com.lad.service.impl;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -10,6 +11,7 @@ import com.lad.bo.TravelersBaseBo;
 import com.lad.bo.TravelersRequireBo;
 import com.lad.dao.ITravelersDao;
 import com.lad.service.TravelersService;
+import com.mongodb.WriteResult;
 
 @Service("travelersService")
 public class TravelersServiceImpl implements TravelersService {
@@ -51,6 +53,16 @@ public class TravelersServiceImpl implements TravelersService {
 	@Override
 	public void test() {
 		travelersDao.test();
+	}
+
+	@Override
+	public List<TravelersRequireBo> getNewTravelers(int page, int limit, String id) {
+		return travelersDao.getNewTravelers(page, limit, id);
+	}
+
+	@Override
+	public WriteResult updateByIdAndParams(String requireId, Map<String, Object> params) {
+		return travelersDao.updateByIdAndParams(requireId,params);
 	}
 
 

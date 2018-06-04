@@ -18,10 +18,10 @@ public class CareAndPassBo extends BaseBo {
 	private String mainId;
 	
 	// 被动实体id集合
-	private Map<String,List<String>> roster;
+	private Map<String,List<String>> careRoster;
 	
-	// 拉黑还是关注  0. 拉黑 ; 1. 关注
-	private String type;
+	// 拉黑
+	private List<String> passRoster;
 	
 	// 是什么情境下进行的拉黑 1. 找儿媳;2. 找老伴;3. 找驴友
 	private String situation;

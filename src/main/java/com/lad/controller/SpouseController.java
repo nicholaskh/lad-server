@@ -110,7 +110,7 @@ public class SpouseController  extends BaseContorller{
 	 * @return
 	 */
 	@ApiOperation("修改基础资料")
-	@PostMapping("/waiter-update")
+	@PostMapping("/base-update")
 	public String updateSpouse(@RequestParam String baseDate,String spouseId,HttpServletRequest request, HttpServletResponse response){
 
 		UserBo userBo = getUserLogin(request);
@@ -173,9 +173,6 @@ public class SpouseController  extends BaseContorller{
 			String[] params2 = {"createTime","deleted","waiterId","updateTime","updateuid","createuid","pass","care","sex"};
 			list2.add(CommonUtil.fastJsonfieldFilter(spouseBaseBo, false, params2));
 		}
-		System.out.println(userBo.getSex()=="男");
-		System.out.println("从user.getSex获取的数据"+userBo.getSex());
-		System.out.println("传入到层的性别数据"+x);
 		map.put("ret", 0);
 		map.put("result", list2);
 		return JSONObject.fromObject(map).toString().replace("\\", "").replace("\"{", "{").replace("}\"", "}");
@@ -413,11 +410,7 @@ public class SpouseController  extends BaseContorller{
         baseBo.setCreateuid(userBo.getId());
         // 初始化更新时间
         baseBo.setUpdateTime(new Date());
-        
-        // 设置昵称
-        
-        baseBo.setNickName(userBo.getUserName());
-        
+                        
         // 初始化年龄
         DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
         Date age = null;

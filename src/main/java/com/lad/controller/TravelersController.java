@@ -6,9 +6,11 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -64,9 +66,118 @@ public class TravelersController extends BaseContorller {
 	@Autowired
 	private CareAndPassService careAndPassService;
 	
+	@ApiOperation("修改基础资料")
+	@PostMapping("/require-update")
+	public String updateTravelers(@RequestParam String requireDate,String requireId,HttpServletRequest request, HttpServletResponse response){
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		if (requireDate == null) {
+//			基础资料错误
+			return CommonUtil.toErrorResult(ERRORCODE.MARRIAGE_WAITER_NULL.getIndex(),ERRORCODE.MARRIAGE_WAITER_NULL.getReason());
+		}
+ 
+		JSONObject fromObject = JSONObject.fromObject(requireDate);
+		Set<Map.Entry<String, Object>> entitySet = fromObject.entrySet();
+		Iterator<Map.Entry<String, Object>> iterator = entitySet.iterator();
+		
+		Map<String,Object> params = new HashMap<>();
+		
+		while(iterator.hasNext()){
+			Entry<String, Object> next = iterator.next();
+			params.put(next.getKey(), next.getValue());
+		}
+		
+		travelersService.updateByIdAndParams(requireId, params);
+
+		return Constant.COM_RESP;
+	}
+	
+	/**
+	 * 获取最新发布的消息
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@GetMapping("/new-search")
+	public String getNewTravelers(int page,int limit,HttpServletRequest request, HttpServletResponse response){
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		
+		Map map = new  HashMap<>();
+		
+		// 从后台获取数据
+		List<TravelersRequireBo> list = travelersService.getNewTravelers(page,limit,userBo.getId());
+		
+		// 遍历数据,过滤
+		List<String> list2 = new ArrayList<>();
+		for (TravelersRequireBo requireBo : list) {
+			String[] params2 = {"createTime","deleted","updateTime","updateuid","createuid","sex"};
+			list2.add(CommonUtil.fastJsonfieldFilter(requireBo, false, params2));
+		}
+		map.put("ret", 0);
+		map.put("result", list2);
+		return JSONObject.fromObject(map).toString().replace("\\", "").replace("\"{", "{").replace("}\"", "}");
+	}
+	
+	
+	@ApiOperation("添加黑名单")
+	@PostMapping("/addPass")
+	public String addPass(String requireId,String passId,HttpServletRequest request, HttpServletResponse response){
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		
+		List<String> passRoster = careAndPassService.findTravelersPassList(requireId);
+
+		// 如果存在这个记录
+		if(passRoster!=null){
+			if(!passRoster.contains(passId)){
+				passRoster.add(passId);
+				Map<String, List<String>> careMap = careAndPassService.findTravelersCareMap(requireId);
+				for (Entry<String, List<String>> entity : careMap.entrySet()) {
+					if(entity.getValue().contains(passId)){
+						entity.getValue().remove(passId);
+						// 多线程情况下有安全隐患
+						if(entity.getValue().size()==0){
+							careMap.remove(entity.getKey());
+						}
+						careAndPassService.updateCare(Constant.TRAVELERS, requireId, careMap);
+						break;
+					}
+				}
+				careAndPassService.updatePass(Constant.TRAVELERS, requireId, passRoster);
+			}
+		}else{
+			CareAndPassBo care = new CareAndPassBo();
+			// 设置主id
+			care.setMainId(requireId);
+			// 设置关注名单
+			Map<String,List<String>> careRoster = new HashMap<>();
+			care.setCareRoster(careRoster);
+			// 设置黑名单list
+			List<String> passList =new ArrayList<String>();
+			passList.add(passId);
+			care.setPassRoster(passList);
+			// 设置创建者id
+			care.setCreateuid(userBo.getId());
+			// 设置为找驴友情境
+			care.setSituation(Constant.TRAVELERS);
+			careAndPassService.insert(care);
+		}
+		Map map = new HashMap<>();
+		map.put("ret", 0);
+		return JSONObject.fromObject(map).toString();
+	}
+	
+	
 	// 移除关注
 	@ApiOperation("移除关注")
-	@PostMapping("/care-delete")
+	@PostMapping("/removeCare")
 	public String deleteCare(String requireId,String careId,HttpServletRequest request, HttpServletResponse response){
 		UserBo userBo = getUserLogin(request);
 		if (userBo == null) {
@@ -82,7 +193,10 @@ public class TravelersController extends BaseContorller {
 		for (Entry<String, List<String>> entrySet : careMap.entrySet()) {
 			if(entrySet.getValue().contains(careId)){
 				entrySet.getValue().remove(careId);
-				careAndPassService.update(Constant.TRAVELERS,Constant.CARE,requireId,careMap);
+				if(entrySet.getValue().size()==0){
+					careMap.remove(entrySet.getKey());
+				}
+				careAndPassService.updateCare(Constant.TRAVELERS,requireId,careMap);
 				break;
 			}
 		}
@@ -100,29 +214,31 @@ public class TravelersController extends BaseContorller {
 		}
 		// 在找驴友的逻辑中,主id即requireId
 		CareAndPassBo care = careAndPassService.findTravelersCare(requireId);
-		Map<String, List<String>> roster = care.getRoster();
 		
 		// 设置壮哉CareResultVo的容器
 		List<CareResultVo> resultContainer = new ArrayList<>();
-
-		CareResultVo result = new CareResultVo();
-		for (Entry<String, List<String>> entity : roster.entrySet()) {
-			result.setAddTime(entity.getKey());
-			// 设置list装载遍历出的实体数据
-			List<String> requireContainer = new ArrayList<>();
-			for (String entityValue : entity.getValue()) {
-				// 根据requireI遍历出require
-				TravelersRequireBo requireBo = travelersService.getRequireById(entityValue);
-				requireBo.setCreateTime(null);
-				requireBo.setDeleted(null);
-				
-				DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-				requireBo.setAssembleTime(format.format(requireBo.getAssembleTime()));
-				requireContainer.add(JSON.toJSONString(requireBo));
+		if(care!=null){
+			Map<String, List<String>> roster = care.getCareRoster();
+			CareResultVo result = new CareResultVo();
+			for (Entry<String, List<String>> entity : roster.entrySet()) {
+				result.setAddTime(entity.getKey());
+				// 设置list装载遍历出的实体数据
+				List<String> requireContainer = new ArrayList<>();
+				for (String entityValue : entity.getValue()) {
+					// 根据requireI遍历出require
+					TravelersRequireBo requireBo = travelersService.getRequireById(entityValue);
+					requireBo.setCreateTime(null);
+					requireBo.setDeleted(null);
+					
+					DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+					requireBo.setAssembleTime(format.format(requireBo.getAssembleTime()));
+					requireContainer.add(JSON.toJSONString(requireBo));
+				}
+				result.setString(requireContainer);
+				resultContainer.add(result);
 			}
-			result.setString(requireContainer);
-			resultContainer.add(result);
 		}
+		
 		
 	       
         Map<String, Object> map = new HashMap<>();
@@ -140,51 +256,52 @@ public class TravelersController extends BaseContorller {
 		if (userBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
-		// 在找驴友的逻辑中,主id即requireId
-		CareAndPassBo care = careAndPassService.findTravelersCare(requireId);
+		
+		Map<String, List<String>> careRoster = careAndPassService.findTravelersCareMap(requireId);
 		DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
 		String time = format.format(new Date());
 		
-		if(care!=null){
-			// 如果有关注实体,表示已经有关注过
-			Map<String, List<String>> roster = care.getRoster();
-			
-			// 如果已关注,则返回已关注消息
-			for (Entry<String, List<String>> entity : roster.entrySet()) {
+		// 如果存在这个记录
+		if(careRoster!=null){
+			// 判断是否已关注该用户
+			for (Entry<String, List<String>> entity : careRoster.entrySet()) {
 				if(entity.getValue().contains(careId)){
 					return "您已关注该用户";
 				}
 			}
-			// 如果未关注,遍历keySet,看是否有今天的list
 			
-			
-			if(roster.containsKey(time)){
-				roster.get(time).add(careId);
+			// 如果存在当天的添加记录
+			if(careRoster.containsKey(time)){
+				careRoster.get(time).add(careId);
 			}else{
 				List<String> careList =new ArrayList<String>();
 				careList.add(careId);
-				roster.put(time, careList);
+				careRoster.put(time, careList);
 			}
+			careAndPassService.updateCare(Constant.TRAVELERS, requireId, careRoster);
+
 		}else{
-			care = new CareAndPassBo();
+			CareAndPassBo care = new CareAndPassBo();
 			// 设置主id
 			care.setMainId(requireId);
-			// 设置名单
-			Map<String, List<String>> roster = new HashMap<>();
+			// 设置关注名单
+			careRoster = new HashMap<>();
 			List<String> careList =new ArrayList<String>();
 			careList.add(careId);
-			roster.put(time, careList);
-			care.setRoster(roster);
+			careRoster.put(time, careList);
+			care.setCareRoster(careRoster);
+			// 设置黑名单list
+			List<String> passList =new ArrayList<String>();
+			care.setPassRoster(passList);
 			// 设置创建者id
 			care.setCreateuid(userBo.getId());
-			// 设置为关注模式
-			care.setType(Constant.CARE);
 			// 设置为找驴友情境
 			care.setSituation(Constant.TRAVELERS);
+			careAndPassService.insert(care);
 		}
-		String insertId = careAndPassService.insert(care);
-		
-		return insertId;
+		Map map = new HashMap<>();
+		map.put("ret", 0);
+		return JSONObject.fromObject(map).toString();
 	}
 	
 	

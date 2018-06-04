@@ -16,6 +16,13 @@ public interface CareAndPassDao {
 	// 关注 - 找驴友
 	Map<String,List<String>> findTravelersCareMap(String mainId);
 	
+	// 黑名单 - 找儿媳
+	List<String> findMarriagePassList(String mainId);
+	// 黑名单 - 找老伴
+	List<String> findSpousePassList(String mainId);
+	// 黑名单 - 找驴友
+	List<String> findTravelersPassList(String mainId);
+	
 	// 关注 - 找儿媳
 	CareAndPassBo findMarriageCare(String mainId);
 	// 关注 - 找老伴
@@ -34,7 +41,8 @@ public interface CareAndPassDao {
 	// 添加数据
 	String insert(CareAndPassBo care);
 	// 修改数据
-	WriteResult update(String situation, String type, String mainId, Map<String, List<String>> roster);
+	WriteResult updateCare(String situation, String mainId, Map<String, List<String>> careRoster);
+	WriteResult updatePass(String situation, String mainId, List<String> passRoster);
 
 
 }

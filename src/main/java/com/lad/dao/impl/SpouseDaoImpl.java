@@ -63,7 +63,6 @@ public class SpouseDaoImpl implements ISpouseDao {
 		Date date = new Date();
 		long time = date.getTime()-7*24*60*60*1000;
 		Date weekBefore = new Date(time);
-		System.out.println(1-sex);
 		criteria.andOperator(Criteria.where("deleted").is(0),Criteria.where("createTime").gt(weekBefore),Criteria.where("sex").is(1-sex),Criteria.where("createuid").ne(uid));
 		query.addCriteria(criteria);
 		query.skip((page - 1) * limit);

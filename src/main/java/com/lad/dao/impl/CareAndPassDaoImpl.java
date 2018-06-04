@@ -26,30 +26,44 @@ public class CareAndPassDaoImpl implements CareAndPassDao {
 	
 	@Override
 	public Map<String, List<String>> findMarriageCareMap(String mainId) {
-		return getFindQuery(Constant.CARE, Constant.MARRIAGE, mainId).getRoster();
+		return getCareQuery(Constant.MARRIAGE, mainId).getCareRoster();
 	}
 
 
 	@Override
 	public Map<String, List<String>> findSpouseCareMap(String mainId) {
-		return getFindQuery(Constant.CARE, Constant.SPOUSE, mainId).getRoster();
+		return getCareQuery(Constant.SPOUSE, mainId).getCareRoster();
 	}
 
 
 	@Override
-	public Map<String, List<String>> findTravelersCareMap(String mainId) {
-		return getFindQuery(Constant.CARE, Constant.TRAVELERS, mainId).getRoster();
+	public Map<String, List<String>> findTravelersCareMap(String mainId) {		
+		return getCareQuery(Constant.TRAVELERS, mainId).getCareRoster();
 	}
 	
+	@Override
+	public List<String> findMarriagePassList(String mainId) {
+		return getPassQuery(Constant.MARRIAGE,mainId).getPassRoster();
+	}
 
-	
+
+	@Override
+	public List<String> findSpousePassList(String mainId) {
+		return getPassQuery(Constant.SPOUSE,mainId).getPassRoster();
+	}
+
+
+	@Override
+	public List<String> findTravelersPassList(String mainId) {
+		return getPassQuery(Constant.TRAVELERS,mainId).getPassRoster();
+	}
 	
 	/**
 	 * 关注-儿媳
 	 */
 	@Override
 	public CareAndPassBo findMarriageCare(String mainId) {		
-		return getFindQuery(Constant.CARE, Constant.MARRIAGE, mainId);
+		return getCareQuery(Constant.MARRIAGE, mainId);
 	}
 
 	/**
@@ -57,7 +71,7 @@ public class CareAndPassDaoImpl implements CareAndPassDao {
 	 */
 	@Override
 	public CareAndPassBo findSpouseCare(String mainId) {
-		return getFindQuery(Constant.CARE, Constant.SPOUSE, mainId);
+		return getCareQuery(Constant.SPOUSE, mainId);
 	}
 
 	/**
@@ -65,7 +79,7 @@ public class CareAndPassDaoImpl implements CareAndPassDao {
 	 */
 	@Override
 	public CareAndPassBo findTravelersCare(String mainId) {
-		return getFindQuery(Constant.CARE, Constant.TRAVELERS, mainId);
+		return getCareQuery(Constant.TRAVELERS, mainId);
 	}
 
 	/**
@@ -73,7 +87,7 @@ public class CareAndPassDaoImpl implements CareAndPassDao {
 	 */
 	@Override
 	public CareAndPassBo findMarriagePass(String mainId) {
-		return getFindQuery(Constant.PASS, Constant.MARRIAGE, mainId);
+		return getPassQuery(Constant.MARRIAGE, mainId);
 	}
 
 	/**
@@ -81,7 +95,7 @@ public class CareAndPassDaoImpl implements CareAndPassDao {
 	 */
 	@Override
 	public CareAndPassBo findSpousePass(String mainId) {
-		return getFindQuery(Constant.PASS, Constant.SPOUSE, mainId);
+		return getPassQuery(Constant.SPOUSE, mainId);
 	}
 
 	/**
@@ -89,7 +103,7 @@ public class CareAndPassDaoImpl implements CareAndPassDao {
 	 */
 	@Override
 	public CareAndPassBo findTravelersPass(String mainId) {
-		return getFindQuery(Constant.PASS, Constant.TRAVELERS, mainId);
+		return getPassQuery(Constant.TRAVELERS, mainId);
 	}
 	
 	/**
@@ -109,28 +123,56 @@ public class CareAndPassDaoImpl implements CareAndPassDao {
 	 * @param roster
 	 */
 	@Override
-	public WriteResult update(String situation, String type, String mainId, Map<String, List<String>> roster) {
+	public WriteResult updateCare(String situation, String mainId, Map<String, List<String>> careRoster) {
 		Query query = new Query();
 		Criteria criteria = new Criteria();
-		criteria.andOperator(Criteria.where("situation").is(situation),Criteria.where("type").is(type),Criteria.where("mainId").is(mainId),Criteria.where("deleted").is(Constant.ACTIVITY));
-		
+		criteria.andOperator(Criteria.where("mainId").is(mainId),Criteria.where("situation").is(situation),Criteria.where("deleted").is(Constant.ACTIVITY));
+		query.addCriteria(criteria);
+
 		Update update = new Update();
-		update.set("roster", roster);
+		update.set("careRoster", careRoster);
 		return mongoTemplate.updateFirst(query, update, CareAndPassBo.class);
 	}
 	
+	@Override
+	public WriteResult updatePass(String situation, String mainId, List<String> passRoster) {
+		Query query = new Query();
+		Criteria criteria = new Criteria();
+		criteria.andOperator(Criteria.where("mainId").is(mainId),Criteria.where("situation").is(situation),Criteria.where("deleted").is(Constant.ACTIVITY));
+		query.addCriteria(criteria);
+		
+		Update update = new Update();
+		update.set("passRoster", passRoster);
+		return  mongoTemplate.updateFirst(query, update, CareAndPassBo.class);
+	}
 	
-	// 设置根据主id查找实体的条件与过滤条件
-	private CareAndPassBo getFindQuery(String type,String situation,String mainId){
+	
+	
+	// 设置根据主id查找实体的条件与过滤条件--care
+	private CareAndPassBo getCareQuery(String situation,String mainId){
 		BasicDBObject criteria = new BasicDBObject();
 		criteria.put("mainId", mainId);
 		criteria.put("deleted", Constant.ACTIVITY);
-		criteria.put("type", type);
 		criteria.put("situation", situation);
 		
 		BasicDBObject filter = new BasicDBObject();
 		filter.put("_id", true);
-		filter.put("roster", true);
+		filter.put("careRoster", true);
+		Query query = new BasicQuery(criteria,filter);
+		
+		return mongoTemplate.findOne(query, CareAndPassBo.class);
+	}
+	
+	// 设置根据主id查找实体的条件与过滤条件--pass
+	private CareAndPassBo getPassQuery(String situation,String mainId){
+		BasicDBObject criteria = new BasicDBObject();
+		criteria.put("mainId", mainId);
+		criteria.put("deleted", Constant.ACTIVITY);
+		criteria.put("situation", situation);
+		
+		BasicDBObject filter = new BasicDBObject();
+		filter.put("_id", true);
+		filter.put("passRoster", true);
 		Query query = new BasicQuery(criteria,filter);
 		return mongoTemplate.findOne(query, CareAndPassBo.class);
 	}
@@ -139,6 +181,12 @@ public class CareAndPassDaoImpl implements CareAndPassDao {
 	public String test() {		
 		return mongoTemplate.toString();
 	}
+
+
+
+
+
+
 
 
 	

@@ -71,9 +71,32 @@ public class CareAndPassServiceImpl implements CareAndPassService {
 	}
 
 	@Override
-	public WriteResult update(String situation, String type, String mainId, Map<String, List<String>> roster) {
-		return careAndPassDao.update(situation, type, mainId, roster);
+	public WriteResult updateCare(String situation, String mainId, Map<String, List<String>> careRoster) {
+		return careAndPassDao.updateCare(situation,mainId, careRoster);
 	}
+	
+	@Override
+	public WriteResult updatePass(String situation, String mainId, List<String> passRoster) {
+		return careAndPassDao.updatePass(situation, mainId, passRoster);
+	}
+	
+
+	@Override
+	public List<String> findMarriagePassList(String mainId) {
+		return careAndPassDao.findMarriagePassList(mainId);
+	}
+
+	@Override
+	public List<String> findSpousePassList(String mainId) {
+		return careAndPassDao.findSpousePassList(mainId);
+	}
+
+	@Override
+	public List<String> findTravelersPassList(String mainId) {
+		return careAndPassDao.findTravelersPassList(mainId);
+	}
+
+
 
 
 

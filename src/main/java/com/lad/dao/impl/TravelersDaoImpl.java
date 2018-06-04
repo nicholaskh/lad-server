@@ -1,19 +1,25 @@
 package com.lad.dao.impl;
 
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.BasicQuery;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 import com.lad.bo.BaseBo;
+import com.lad.bo.SpouseBaseBo;
 import com.lad.bo.TravelersRequireBo;
 import com.lad.dao.ITravelersDao;
 import com.lad.util.Constant;
 import com.mongodb.BasicDBObject;
+import com.mongodb.WriteResult;
 @Repository("travelersDao")
 public class TravelersDaoImpl implements ITravelersDao {
 	@Autowired
@@ -51,7 +57,6 @@ public class TravelersDaoImpl implements ITravelersDao {
 		filter.put("destination", true);
 		filter.put("days", true);
 		filter.put("type", true);
-		filter.put("deleted", false);
 		Query query = new BasicQuery(criteria,filter);
 		return mongoTemplate.find(query, TravelersRequireBo.class);
 	}
@@ -70,14 +75,33 @@ public class TravelersDaoImpl implements ITravelersDao {
 		System.out.println(mongoTemplate);
 	}
 
+	@Override
+	public List<TravelersRequireBo> getNewTravelers(int page, int limit, String id) {
+		Query query = new Query();
+		Criteria criteria = new Criteria();
+		Date date = new Date();
+		long time = date.getTime()-7*24*60*60*1000;
+		Date weekBefore = new Date(time);
+		
+		
+		criteria.andOperator(Criteria.where("deleted").is(Constant.ACTIVITY),Criteria.where("createTime").gt(weekBefore),Criteria.where("createuid").ne(id));
+		query.addCriteria(criteria);
+		query.skip((page - 1) * limit);
+		query.limit(limit);
+		return mongoTemplate.find(query, TravelersRequireBo.class);
+	}
 
-
-
-
-
-
-
-
-
-
+	@Override
+	public WriteResult updateByIdAndParams(String requireId, Map<String, Object> params) {
+		Query query = new Query();
+		Criteria criteria = new Criteria();
+		criteria.andOperator(Criteria.where("_id").is(requireId),Criteria.where("deleted").is(Constant.ACTIVITY));
+		query.addCriteria(criteria);
+		
+		Update update = new Update();
+		for (Entry<String, Object> entity : params.entrySet()) {
+			update.set(entity.getKey(), entity.getValue());
+		}
+		return mongoTemplate.updateFirst(query, update, TravelersRequireBo.class);
+	}
 }
