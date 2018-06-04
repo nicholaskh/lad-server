@@ -259,32 +259,7 @@ public class MarriageController extends BaseContorller{
 		}
 		WriteResult updateCare = marriageService.updateCare(waiterId,map);
 
-		return Constant.COM_RESP;	
-		/*List<String> list = new ArrayList<String>();
-		if(waiterId != null && waiterId!=""){
-			list = getList(waiterId,"cares");
-		}else{
-			return CommonUtil.toErrorResult(ERRORCODE.MARRIAGE_PUBLISH_NULL.getIndex(),ERRORCODE.MARRIAGE_PUBLISH_NULL.getReason());
-		}
-		
-		if(list==null){
-			list = new ArrayList<>();
-		}
-		
-		if(list.contains(careId)){
-			list.remove(careId);
-		}
-		
-		
-		
-		Map<String, Object> params = new HashMap<>();
-		params.put("cares", list);
-		WriteResult result = marriageService.updateByParams(waiterId, params , WaiterBo.class);
-		
-		if(result.isUpdateOfExisting()){
-			return Constant.COM_RESP;
-		}*/
-		
+		return Constant.COM_RESP;			
 	}
 	
 	@ApiOperation("查询关注列表")

@@ -19,6 +19,7 @@ import com.alibaba.fastjson.JSON;
 import com.lad.bo.OptionBo;
 import com.lad.bo.UserBo;
 import com.lad.service.IMarriageService;
+import com.lad.service.TravelersService;
 import com.lad.util.CommonUtil;
 import com.lad.util.ERRORCODE;
 import com.lad.vo.OptionVo;
@@ -38,6 +39,31 @@ import net.sf.json.JSONObject;
 public class CommonsController extends BaseContorller{
 	@Autowired
 	public IMarriageService marriageService;
+	
+	@Autowired
+	public TravelersService travelersService;
+	
+	/**
+	 * 获取当前用户发布消息的条数
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@GetMapping("getNums")
+	public String getPublishNum(HttpServletRequest request, HttpServletResponse response){
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		
+		int marriageNum = marriageService.findPublishNum(userBo.getId());
+		Map map = new HashMap<>();
+		map.put("ret", 0);
+		map.put("marriageNum", marriageNum);
+		int travelersNum = travelersService.findPublishNum(userBo.getId());
+		map.put("travelersNum", travelersNum);
+		return JSONObject.fromObject(map).toString();
+	}
 	
 
 	@ApiOperation("查询选项")
@@ -85,5 +111,5 @@ public class CommonsController extends BaseContorller{
 		String jsonString = JSON.toJSONString(options);
 		return jsonString;
 	}
-
+	
 }

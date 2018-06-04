@@ -40,4 +40,6 @@ public interface IMarriageDao {
 
 	WriteResult updateCare(String waiterId, Map<String, List> map);
 
+	int findPublishNum(String id);
+
 }

@@ -67,6 +67,8 @@ public interface IMarriageService extends IBaseService {
 
 	public WriteResult updateCare(String waiterId, Map<String, List> map);
 
+	public int findPublishNum(String id);
+
 
 	
 }

@@ -7,30 +7,37 @@ import org.springframework.stereotype.Service;
 
 import com.lad.bo.BaseBo;
 import com.lad.bo.TravelersBaseBo;
+import com.lad.bo.TravelersRequireBo;
 import com.lad.dao.ITravelersDao;
 import com.lad.service.TravelersService;
-import com.lad.vo.TravelersRequireVo;
 
 @Service("travelersService")
 public class TravelersServiceImpl implements TravelersService {
 
 	@Autowired
 	private ITravelersDao travelersDao;
-	
-
-	@Override
-	public TravelersRequireVo getRequireByBaseId(String id) {
-		return travelersDao.getRequireByBaseId(id);
-	}
-	
-	
 	/**
-	 * 根据用户id查找他的发布
+	 * 查看当前用户发布条数
 	 */
 	@Override
-	public List<TravelersBaseBo> getTravelersByUserId(String id) {
-		return travelersDao.getTravelersByUserId(id);
+	public int findPublishNum(String id) {
+		return travelersDao.findPublishNum(id);
 	}
+
+	/**
+	 * 查询一条发布请求
+	 */
+	@Override
+	public TravelersRequireBo getRequireById(String requireId) {
+		
+		return travelersDao.getRequireById(requireId);
+	}
+
+	@Override
+	public List<TravelersRequireBo> getRequireList(String id) {
+		return travelersDao.getRequireList(id);
+	}
+	
 	
 	/**
 	 * 向数据库插入一条发布
@@ -45,6 +52,15 @@ public class TravelersServiceImpl implements TravelersService {
 	public void test() {
 		travelersDao.test();
 	}
+
+
+
+
+
+
+
+
+
 
 
 

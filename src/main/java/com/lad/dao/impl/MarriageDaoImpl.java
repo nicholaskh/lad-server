@@ -22,6 +22,7 @@ import com.lad.bo.RequireBo;
 import com.lad.bo.WaiterBo;
 import com.lad.dao.IMarriageDao;
 import com.lad.util.CommonUtil;
+import com.lad.util.Constant;
 import com.lad.vo.OptionVo;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
@@ -32,6 +33,16 @@ public class MarriageDaoImpl implements IMarriageDao {
 
 	@Autowired
 	private MongoTemplate mongoTemplate;
+	
+
+	@Override
+	public int findPublishNum(String id) {
+		Query query = new Query();
+		Criteria criteria = new Criteria();
+		criteria.andOperator(Criteria.where("createuid").is(id),Criteria.where("deleted").is(Constant.ACTIVITY));
+		query.addCriteria(criteria);
+		return (int)mongoTemplate.count(query, WaiterBo.class);
+	}
 	
 	/**
 	 * 查询新的发布
@@ -266,6 +277,7 @@ public class MarriageDaoImpl implements IMarriageDao {
         WriteResult updateFirst = mongoTemplate.updateFirst(query, update, WaiterBo.class);
         return updateFirst;
 	}
+
 
 
 

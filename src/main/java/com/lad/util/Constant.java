@@ -395,5 +395,20 @@ public class Constant {
 
 
 	public static final int PAGE_LIMIT = 20;
+	
+	// 关注
+	public static final String CARE = "关注";
+	
+	// 拉黑
+	public static final String PASS = "拉黑";
+	
+	// 找儿媳/招女婿
+	public static final String MARRIAGE= "找儿媳/招女婿";
+	
+	// 找老伴
+	public static final String SPOUSE = "找老伴";
+	
+	// 找驴友
+	public static final String TRAVELERS = "找驴友";
 
 }

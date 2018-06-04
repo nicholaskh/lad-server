@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.lad.bo.BaseBo;
 import com.lad.bo.TravelersBaseBo;
-import com.lad.vo.TravelersRequireVo;
+import com.lad.bo.TravelersRequireBo;
 
 public interface ITravelersDao {
 
@@ -12,8 +12,11 @@ public interface ITravelersDao {
 
 	String insert(BaseBo baseBo);
 
-	List<TravelersBaseBo> getTravelersByUserId(String id);
+	List<TravelersRequireBo> getRequireList(String id);
 
-	TravelersRequireVo getRequireByBaseId(String id);
+	TravelersRequireBo getRequireById(String requireId);
+
+	int findPublishNum(String id);
+
 
 }

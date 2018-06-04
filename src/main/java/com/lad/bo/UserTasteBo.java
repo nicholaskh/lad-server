@@ -2,6 +2,8 @@ package com.lad.bo;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import lombok.ToString;
+
 import java.util.LinkedHashSet;
 
 /**
@@ -11,6 +13,7 @@ import java.util.LinkedHashSet;
  * Time:2017/9/13
  */
 @Document(collection = "userTaste")
+@ToString
 public class UserTasteBo extends BaseBo {
 
     private String userid;

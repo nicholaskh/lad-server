@@ -18,7 +18,6 @@ public class TravelersRequireBo extends BaseBo {
 	private String type;		// 旅行方式
 	private String sex;			// 驴友性别
 	private String age;			// 驴友年龄
-	private Date assembleTime;// 集合时间
+	private Object assembleTime;// 集合时间
 	private String assemblePlace;// 集合地点
-	private String baseId;		// 
 }

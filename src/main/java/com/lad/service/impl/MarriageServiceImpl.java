@@ -23,6 +23,10 @@ public class MarriageServiceImpl implements IMarriageService {
 	@Autowired
 	public IMarriageDao marriageDao;
 	
+	@Override
+	public int findPublishNum(String id) {
+		return marriageDao.findPublishNum(id);
+	}
 	
 	@Override
 	public List<WaiterBo> getNewPublish(int type, int page, int limit,String userId) {
@@ -66,10 +70,6 @@ public class MarriageServiceImpl implements IMarriageService {
 	@Override
 	public WriteResult updateByParams(String id, Map<String, Object> params, Class class1) {
 		return marriageDao.updateByParams(id,params,class1);
-	}
-	
-	public MarriageServiceImpl() {
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
@@ -157,6 +157,8 @@ public class MarriageServiceImpl implements IMarriageService {
 		return marriageDao.updateCare(waiterId, map);
 		
 	}
+
+
 
 
 
