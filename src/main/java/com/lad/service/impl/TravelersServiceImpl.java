@@ -18,6 +18,12 @@ public class TravelersServiceImpl implements TravelersService {
 
 	@Autowired
 	private ITravelersDao travelersDao;
+	
+	@Override
+	public WriteResult deletePublish(String requireId) {
+		return travelersDao.deletePublish(requireId);
+	}
+	
 	/**
 	 * 查看当前用户发布条数
 	 */
@@ -64,6 +70,8 @@ public class TravelersServiceImpl implements TravelersService {
 	public WriteResult updateByIdAndParams(String requireId, Map<String, Object> params) {
 		return travelersDao.updateByIdAndParams(requireId,params);
 	}
+
+
 
 
 

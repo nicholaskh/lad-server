@@ -14,7 +14,7 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 import com.lad.bo.BaseBo;
-import com.lad.bo.SpouseBaseBo;
+import com.lad.bo.TravelersBaseBo;
 import com.lad.bo.TravelersRequireBo;
 import com.lad.dao.ITravelersDao;
 import com.lad.util.Constant;
@@ -24,6 +24,14 @@ import com.mongodb.WriteResult;
 public class TravelersDaoImpl implements ITravelersDao {
 	@Autowired
     private MongoTemplate mongoTemplate;
+	
+	@Override
+	public WriteResult deletePublish(String requireId) {
+		Query query = new Query(Criteria.where("_id").is(requireId));
+		Update update = new Update();
+		update.set("deleted", Constant.DELETED);
+		return mongoTemplate.updateFirst(query, update, TravelersBaseBo.class);
+	}
 	
 	@Override
 	public int findPublishNum(String id) {
@@ -104,4 +112,6 @@ public class TravelersDaoImpl implements ITravelersDao {
 		}
 		return mongoTemplate.updateFirst(query, update, TravelersRequireBo.class);
 	}
+
+
 }

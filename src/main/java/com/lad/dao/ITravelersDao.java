@@ -23,5 +23,7 @@ public interface ITravelersDao {
 
 	WriteResult updateByIdAndParams(String requireId, Map<String, Object> params);
 
+	WriteResult deletePublish(String requireId);
+
 
 }

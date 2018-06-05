@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -65,6 +66,25 @@ public class TravelersController extends BaseContorller {
 	
 	@Autowired
 	private CareAndPassService careAndPassService;
+	
+	/**
+	 * 取消发布
+	 * @param spouseId
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@PostMapping("/delete")
+	public String deletePublish(String requireId,HttpServletRequest request, HttpServletResponse response){
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		
+		WriteResult result = travelersService.deletePublish(requireId);
+
+		return Constant.COM_RESP;
+	}
 	
 	@ApiOperation("修改基础资料")
 	@PostMapping("/require-update")
@@ -205,7 +225,7 @@ public class TravelersController extends BaseContorller {
 	}
 	
 	
-	@ApiOperation("查找关注")
+	@ApiOperation("查看关注列表")
 	@GetMapping("/getCare")
 	public String getCare(String requireId,HttpServletRequest request, HttpServletResponse response){
 		UserBo userBo = getUserLogin(request);
@@ -391,7 +411,6 @@ public class TravelersController extends BaseContorller {
                     ERRORCODE.ACCOUNT_OFF_LINE.getReason());
         }
         
-        TravelersBaseVo baseVo = null;
         TravelersRequireVo requireVo = null;
         try {
         	JSONObject fromObject = JSONObject.fromObject(requireDate);

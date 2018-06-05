@@ -22,6 +22,8 @@ public interface TravelersService extends IBaseService {
 
 	public WriteResult updateByIdAndParams(String requireId, Map<String, Object> params);
 
+	public WriteResult deletePublish(String requireId);
+
 
 
 }
