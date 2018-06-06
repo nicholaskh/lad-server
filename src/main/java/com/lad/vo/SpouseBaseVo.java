@@ -10,7 +10,8 @@ import lombok.ToString;
 @Getter
 @ToString
 public class SpouseBaseVo extends BaseVo{
-	private Integer sex;
+	private String nickName;
+	private String sex;
 	private String birthday;
 	private Integer marriaged;	// 0,没有;1,爱过;-1,不限
 	private String salary;		// 收入

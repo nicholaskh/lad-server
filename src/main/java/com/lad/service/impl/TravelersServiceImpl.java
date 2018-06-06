@@ -71,6 +71,11 @@ public class TravelersServiceImpl implements TravelersService {
 		return travelersDao.updateByIdAndParams(requireId,params);
 	}
 
+	@Override
+	public List<TravelersRequireBo> findListByKeyword(String keyWord, Class<TravelersRequireBo> clazz) {
+		return travelersDao.findListByKeyword(keyWord,clazz);
+	}
+
 
 
 

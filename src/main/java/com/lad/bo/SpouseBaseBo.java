@@ -16,7 +16,7 @@ import lombok.ToString;
 @Document(collection = "spousebase")
 public class SpouseBaseBo extends BaseBo {
 	private String nickName;
-	private Integer sex;
+	private String sex;
 	private Object birthday;
 	private Integer age;
 	private Integer marriaged;	// 0,没有;1,爱过;-1,不限

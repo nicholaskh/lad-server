@@ -17,7 +17,9 @@ import org.springframework.stereotype.Repository;
 import com.lad.bo.BaseBo;
 import com.lad.bo.SpouseBaseBo;
 import com.lad.bo.SpouseRequireBo;
+import com.lad.bo.WaiterBo;
 import com.lad.dao.ISpouseDao;
+import com.lad.util.Constant;
 import com.mongodb.BasicDBObject;
 import com.mongodb.WriteResult;
 
@@ -30,19 +32,17 @@ public class SpouseDaoImpl implements ISpouseDao {
 	 * 查看当前用户下的发布
 	 */
 	@Override
-	public SpouseBaseBo getSpouseByUserId(String uid) {
-		
+	public SpouseBaseBo getSpouseByUserId(String uid) {	
+
 		BasicDBObject criteria = new BasicDBObject();
 		criteria.put("createuid", uid);
+		criteria.put("deleted", Constant.ACTIVITY);
 		BasicDBObject filter = new BasicDBObject();
-		filter.put("id", true);
-		filter.put("createuid", true);
-		filter.put("nickName", true);
-		filter.put("sex", true);
-		filter.put("birthday", true);
-		
-		Query query = new BasicQuery(criteria,filter);
-		
+		filter.put("pass", false);
+		filter.put("care", false);
+		filter.put("createuid", false);
+		filter.put("updateTime", false);
+		Query query =new BasicQuery(criteria,filter);
 		return mongoTemplate.findOne(query, SpouseBaseBo.class);
 	}
 	
@@ -56,15 +56,16 @@ public class SpouseDaoImpl implements ISpouseDao {
 	}
 	
 	@Override
-	public List<SpouseBaseBo> getNewSpouse(int sex,int page,int limit,String uid) {
+	public List<SpouseBaseBo> getNewSpouse(String sex,int page,int limit,String uid) {
 		
 		Query query = new Query();
 		Criteria criteria = new Criteria();
 		Date date = new Date();
 		long time = date.getTime()-7*24*60*60*1000;
 		Date weekBefore = new Date(time);
-		criteria.andOperator(Criteria.where("deleted").is(0),Criteria.where("createTime").gt(weekBefore),Criteria.where("sex").is(1-sex),Criteria.where("createuid").ne(uid));
+		criteria.andOperator(Criteria.where("deleted").is(0),Criteria.where("createTime").gt(weekBefore),Criteria.where("sex").is(sex),Criteria.where("createuid").ne(uid));
 		query.addCriteria(criteria);
+		System.out.println((page - 1) * limit);
 		query.skip((page - 1) * limit);
 		query.limit(limit);
 		List<SpouseBaseBo> list = mongoTemplate.find(query, SpouseBaseBo.class);
@@ -134,5 +135,25 @@ public class SpouseDaoImpl implements ISpouseDao {
 		    }
 		}
 		return mongoTemplate.updateFirst(query, update, class1);
+	}
+
+	@Override
+	public int getNum(String id) {
+		Query query = new Query();
+		Criteria criteria = new Criteria();
+		criteria.andOperator(Criteria.where("createuid").is(id),Criteria.where("deleted").is(Constant.ACTIVITY));
+		query.addCriteria(criteria);
+		return (int)mongoTemplate.count(query, SpouseBaseBo.class);
+	}
+
+	@Override
+	public List<SpouseBaseBo> findListByKeyword(String keyWord,Class clazz) {
+		Criteria c = new Criteria();
+		c.orOperator(Criteria.where("nickName").regex( ".*"+keyWord+".*"),Criteria.where("address").regex(".*"+keyWord+".*"));
+		Criteria criertia = new Criteria();
+		criertia.andOperator(Criteria.where("deleted").is(Constant.ACTIVITY),c);
+		Query query = new Query();
+		query.addCriteria(criertia);
+		return mongoTemplate.find(query, clazz);
 	}
 }

@@ -278,6 +278,17 @@ public class MarriageDaoImpl implements IMarriageDao {
         return updateFirst;
 	}
 
+	@Override
+	public List<WaiterBo> findListByKeyword(String keyWord,Class clazz) {
+		Criteria c = new Criteria();
+		c.orOperator(Criteria.where("nickName").regex( ".*"+keyWord+".*"),Criteria.where("nowin").regex(".*"+keyWord+".*"));
+		Criteria criertia = new Criteria();
+		criertia.andOperator(Criteria.where("deleted").is(Constant.ACTIVITY),c);
+		Query query = new Query();
+		query.addCriteria(criertia);
+		return mongoTemplate.find(query, clazz);
+	}
+
 
 
 

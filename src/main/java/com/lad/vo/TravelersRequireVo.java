@@ -1,5 +1,7 @@
 package com.lad.vo;
 
+import java.util.List;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -15,4 +17,5 @@ public class TravelersRequireVo extends BaseVo {
 	private String age;			// 驴友年龄
 	private String assembleTime;// 集合时间
 	private String assemblePlace;// 集合地点
+	private List<String> images;	
 }

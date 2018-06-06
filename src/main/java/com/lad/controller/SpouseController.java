@@ -45,13 +45,33 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import net.sf.json.JSONObject;
 
-@Api("儿媳/女婿接口")
+@Api("老伴")
 @RestController
 @RequestMapping("spouse")
 @SuppressWarnings("all")
 public class SpouseController  extends BaseContorller{
 	@Autowired
 	private SpouseService spouseService;
+	
+	
+	
+	
+	@GetMapping("/search")
+	public String search(String keyWord,HttpServletRequest request, HttpServletResponse response){
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+
+//		keyWord = "as";
+//		System.out.println(keyWord);
+		List<SpouseBaseBo> list = spouseService.findListByKeyword(keyWord,SpouseBaseBo.class);
+		
+		Map map = new HashMap<>();
+		map.put("ret", 0);
+		map.put("result", list);
+		return JSONObject.fromObject(map).toString();
+	}
 	
 	/**
 	 * 查找当前账号下的发布信息
@@ -61,16 +81,29 @@ public class SpouseController  extends BaseContorller{
 	 */
 	@GetMapping("/spouse-search")
 	public String getPublishById(HttpServletRequest request, HttpServletResponse response){
+
 		UserBo userBo = getUserLogin(request);
 		if (userBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
-		SpouseBaseBo spouseBo = spouseService.getSpouseByUserId(userBo.getId());
-		spouseBo.setCreateTime(null);
 		Map map = new HashMap<>();
 		map.put("ret", 0);
-		map.put("publishes", spouseBo);
-		return JSONObject.fromObject(map).toString();
+		SpouseBaseBo spouseBo = spouseService.getSpouseByUserId(userBo.getId());
+		spouseBo.setCreateTime(null);
+		spouseBo.setDeleted(null);
+
+		DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+		System.out.println(spouseBo.getBirthday().getClass());
+		spouseBo.setBirthday(format.format(spouseBo.getBirthday()));
+		map.put("baseDate", JSON.toJSONString(spouseBo));
+		
+		SpouseRequireBo requireBo = spouseService.findRequireById(spouseBo.getId());
+		requireBo.setCreateTime(null);
+		requireBo.setCreateuid(null);
+		requireBo.setDeleted(null);
+		requireBo.setBaseId(null);
+		map.put("RequireDate", JSON.toJSONString(requireBo));		
+		return JSONObject.fromObject(map).toString().replace("\\", "").replace("\"{", "{").replace("}\"", "}");
 	}
 	
 	
@@ -163,14 +196,19 @@ public class SpouseController  extends BaseContorller{
 		
 		Map map = new  HashMap<>();
 		
+		SpouseBaseBo baseBo = spouseService.getSpouseByUserId(userBo.getId());
+		
 		// 从后台获取数据
-		int x = (userBo.getSex()=="男")?1:0;
+		String x = ("男".equals(baseBo.getSex()))?"女":"男";
+		
+
+
 		List<SpouseBaseBo> list = spouseService.getNewSpouse(x,page,limit,userBo.getId());
 		
 		// 遍历数据,过滤
 		List<String> list2 = new ArrayList<>();
 		for (SpouseBaseBo spouseBaseBo : list) {
-			String[] params2 = {"createTime","deleted","waiterId","updateTime","updateuid","createuid","pass","care","sex"};
+			String[] params2 = {"createTime","deleted","waiterId","updateTime","updateuid","createuid","pass","care"};
 			list2.add(CommonUtil.fastJsonfieldFilter(spouseBaseBo, false, params2));
 		}
 		map.put("ret", 0);
@@ -320,6 +358,8 @@ public class SpouseController  extends BaseContorller{
 			map = new HashMap<String,List>();
 			
 		}
+		
+		
 		// 设置时间
 		Date date = new Date();
 		DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
@@ -389,6 +429,13 @@ public class SpouseController  extends BaseContorller{
                     ERRORCODE.ACCOUNT_OFF_LINE.getReason());
         }
         
+		int num = spouseService.getNum(userBo.getId());
+		
+		if(num>=1){
+			return CommonUtil.toErrorResult(ERRORCODE.SPOUSE_NUM_OUTOFLIMIT.getIndex(), ERRORCODE.SPOUSE_NUM_OUTOFLIMIT.getReason());
+		}
+        
+        
         SpouseBaseVo baseVo = null;
         SpouseRequireVo requireVo = null;
         try {
@@ -445,7 +492,10 @@ public class SpouseController  extends BaseContorller{
         BeanUtils.copyProperties(requireVo, requireBo);
         
         // 设置性别
-        requireBo.setSex(1-baseBo.getSex());
+//        baseBo==男 则 取女
+//        baseBo==女 则 取男
+        
+        requireBo.setSex(("男".equals(baseBo.getSex()))?"女":"男");
         
         // 设置兴趣
         if(requireBo.getHobbys()==null){

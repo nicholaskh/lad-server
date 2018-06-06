@@ -37,7 +37,7 @@ public class SpouseServiceImpl implements SpouseService {
 	 * 获取最新的发布信息
 	 */
 	@Override
-	public List<SpouseBaseBo> getNewSpouse(int sex,int page,int limit,String uid) {
+	public List<SpouseBaseBo> getNewSpouse(String sex,int page,int limit,String uid) {
 		return spouseDao.getNewSpouse(sex,page,limit,uid);
 	}
 	
@@ -87,10 +87,23 @@ public class SpouseServiceImpl implements SpouseService {
 		return spouseDao.updateCare(spouseId, map);
 	}
 
-
+	@Override
+	public int getNum(String id) {
+		return spouseDao.getNum(id);
+	}
+	
 	@Override
 	public void test() {
 		spouseDao.test();
 	}
+
+
+	@Override
+	public List<SpouseBaseBo> findListByKeyword(String keyWord, Class<SpouseBaseBo> clazz) {
+		return spouseDao.findListByKeyword(keyWord,clazz);
+	}
+
+
+
 
 }

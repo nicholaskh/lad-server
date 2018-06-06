@@ -113,5 +113,14 @@ public class TravelersDaoImpl implements ITravelersDao {
 		return mongoTemplate.updateFirst(query, update, TravelersRequireBo.class);
 	}
 
+	@Override
+	public List<TravelersRequireBo> findListByKeyword(String keyWord, Class<TravelersRequireBo> clazz) {
+		Query query = new Query();
+		Criteria criteria = new Criteria();
+		criteria.andOperator(Criteria.where("destination").regex( ".*"+keyWord+".*"),Criteria.where("deleted").is(Constant.ACTIVITY));
+		query.addCriteria(criteria);
+		return mongoTemplate.find(query, clazz);
+	}
+
 
 }

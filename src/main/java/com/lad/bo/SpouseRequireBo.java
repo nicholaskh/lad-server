@@ -13,7 +13,7 @@ import lombok.ToString;
 @ToString
 @Document(collection="spouserequire")
 public class SpouseRequireBo extends BaseBo {
-	private Integer sex;		// 性别 隐藏字段
+	private String sex;		// 性别 隐藏字段
 	private String age;			// 年龄要求(范围值)
 	private String salary;		// 收入要求(范围值)
 	private String address;		// 居住地

@@ -26,10 +26,14 @@ public interface ISpouseDao {
 
 	WriteResult updateByParams(String spouseId, Map<String, Object> params, Class class1);
 
-	List<SpouseBaseBo> getNewSpouse(int sex,int page,int limit,String uid);
+	List<SpouseBaseBo> getNewSpouse(String sex,int page,int limit,String uid);
 
 	WriteResult deletePublish(String spouseId);
 
 	SpouseBaseBo getSpouseByUserId(String uid);
+
+	int getNum(String id);
+
+	List<SpouseBaseBo> findListByKeyword(String keyWord,Class clazz);
 
 }

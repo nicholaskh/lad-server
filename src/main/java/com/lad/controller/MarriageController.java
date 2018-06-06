@@ -64,6 +64,25 @@ public class MarriageController extends BaseContorller{
 	@Autowired
 	private IFriendsService friendidService;
 	
+	
+	@GetMapping("/search")
+	public String search(String keyWord,HttpServletRequest request, HttpServletResponse response){
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+
+		keyWord = "成";
+		System.out.println(keyWord);
+		List<WaiterBo> list = marriageService.findListByKeyword(keyWord,WaiterBo.class);
+		
+		Map map = new HashMap<>();
+		map.put("ret", 0);
+		map.put("result", list);
+		return JSONObject.fromObject(map).toString();
+	} 
+	
+	
 	@ApiOperation("查找新发布")
 	@GetMapping("/newpublish-search")
 	public String getNewPublic(int type,int page,int limit,HttpServletRequest request, HttpServletResponse response){

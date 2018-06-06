@@ -26,10 +26,14 @@ public interface SpouseService extends IBaseService{
 
 	public WriteResult updateByParams(String spouseId, Map<String, Object> params, Class class1);
 
-	public List<SpouseBaseBo> getNewSpouse(int sex,int page,int limit,String uid);
+	public List<SpouseBaseBo> getNewSpouse(String sex,int page,int limit,String uid);
 
 	public WriteResult deletePublish(String spouseId);
 
 	public SpouseBaseBo getSpouseByUserId(String id);
+
+	public int getNum(String id);
+
+	public List<SpouseBaseBo> findListByKeyword(String keyWord, Class<SpouseBaseBo> clazz);
 
 }

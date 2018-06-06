@@ -74,6 +74,24 @@ public class TravelersController extends BaseContorller {
 	 * @param response
 	 * @return
 	 */
+	
+	@GetMapping("/search")
+	public String search(String keyWord,HttpServletRequest request, HttpServletResponse response){
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+
+//		keyWord = "as";
+//		System.out.println(keyWord);
+		List<TravelersRequireBo> list = travelersService.findListByKeyword(keyWord,TravelersRequireBo.class);
+		
+		Map map = new HashMap<>();
+		map.put("ret", 0);
+		map.put("result", list);
+		return JSONObject.fromObject(map).toString();
+	}
+	
 	@PostMapping("/delete")
 	public String deletePublish(String requireId,HttpServletRequest request, HttpServletResponse response){
 		UserBo userBo = getUserLogin(request);
@@ -437,6 +455,11 @@ public class TravelersController extends BaseContorller {
         requireBo.setAssembleTime(parse);        
         // 插入需求,并返回需求id
         requireBo.setCreateuid(userBo.getId());
+        
+        if(requireBo.getImages()==null){
+        	List<String> list = new ArrayList<String>();
+        	requireBo.setImages(list);
+        }
         
         travelersService.insert(requireBo);
         
