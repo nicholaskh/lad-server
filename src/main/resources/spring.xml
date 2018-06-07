@@ -21,27 +21,26 @@
     </context:component-scan>
 
     <!-- mongo对象 -->
-    <!-- <mongo:mongo-client id="mongo" replica-set="${mongo.hostport}" credentials="${mongo.username}:${mongo.password}@${mongo.databaseName}">
+    <mongo:mongo-client id="mongo" replica-set="${mongo.hostport}" credentials="${mongo.username}:${mongo.password}@${mongo.databaseName}">
         <mongo:client-options connections-per-host="${mongo.connectionsPerHost}"
                               threads-allowed-to-block-for-connection-multiplier="${mongo.threadsAllowedToBlockForConnectionMultiplier}"
                               connect-timeout="${mongo.connectTimeout}"
                               max-wait-time="${mongo.maxWaitTime}"
                               socket-keep-alive="${mongo.socketKeepAlive}"
                               socket-timeout="${mongo.socketTimeout}" />
-    </mongo:mongo-client> -->
-    <mongo:mongo-client id="mongo" replica-set="${mongo.hostport}" >
+    </mongo:mongo-client>
+    <!-- <mongo:mongo-client id="mongo" replica-set="${mongo.hostport}" >
         <mongo:client-options write-concern="NORMAL" connections-per-host="${mongo.connectionsPerHost}"
                               threads-allowed-to-block-for-connection-multiplier="${mongo.threadsAllowedToBlockForConnectionMultiplier}"
                               connect-timeout="${mongo.connectTimeout}"
                               max-wait-time="${mongo.maxWaitTime}"
                               socket-keep-alive="${mongo.socketKeepAlive}"
                               socket-timeout="${mongo.socketTimeout}" />
-    </mongo:mongo-client>
+    </mongo:mongo-client> -->
 
 
 
-    <mongo:db-factory dbname="database"
-                      mongo-ref="mongo"/>
+    <mongo:db-factory dbname="database" mongo-ref="mongo"/>
 
     <bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
         <constructor-arg ref="mongo" />

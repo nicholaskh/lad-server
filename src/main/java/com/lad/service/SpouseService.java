@@ -36,4 +36,6 @@ public interface SpouseService extends IBaseService{
 
 	public List<SpouseBaseBo> findListByKeyword(String keyWord, Class<SpouseBaseBo> clazz);
 
+	public List<Map> getRecommend(SpouseRequireBo require);
+
 }

@@ -54,8 +54,40 @@ public class SpouseController  extends BaseContorller{
 	private SpouseService spouseService;
 	
 	
+	@GetMapping("/recommend")
+	public String recommend(HttpServletRequest request, HttpServletResponse response){
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		Map map = new HashMap<>();
+		// 获取自身的需求的基础id
+		SpouseBaseBo spouseBaseBo = spouseService.getSpouseByUserId(userBo.getId());
+		if(spouseBaseBo==null){
+			map.put("ret", -1);
+			map.put("result", "当前账号无发布消息");
+		}
+		String baseId = spouseBaseBo.getId();
+		// 通过基础id获取需求
+		SpouseRequireBo require = spouseService.findRequireById(baseId);
+		
+		List<Map> recommend = spouseService.getRecommend(require);
+		
+		
+		map.put("ret", 0);
+		map.put("result", recommend);
+		return JSONObject.fromObject(map).toString();
+	}
 	
 	
+	
+	/**
+	 * 
+	 * @param keyWord
+	 * @param request
+	 * @param response
+	 * @return
+	 */
 	@GetMapping("/search")
 	public String search(String keyWord,HttpServletRequest request, HttpServletResponse response){
 		UserBo userBo = getUserLogin(request);
@@ -89,11 +121,17 @@ public class SpouseController  extends BaseContorller{
 		Map map = new HashMap<>();
 		map.put("ret", 0);
 		SpouseBaseBo spouseBo = spouseService.getSpouseByUserId(userBo.getId());
+		
+		if(spouseBo == null){
+			map.put("ret", -1);
+			map.put("result", "当前账号无发布消息");
+			return JSONObject.fromObject(map).toString().replace("\\", "").replace("\"{", "{").replace("}\"", "}");
+		}
+		
 		spouseBo.setCreateTime(null);
 		spouseBo.setDeleted(null);
 
 		DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-		System.out.println(spouseBo.getBirthday().getClass());
 		spouseBo.setBirthday(format.format(spouseBo.getBirthday()));
 		map.put("baseDate", JSON.toJSONString(spouseBo));
 		
@@ -122,8 +160,8 @@ public class SpouseController  extends BaseContorller{
 		if (userBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
-		if (requireDate == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.MARRIAGE_REQUIRE_NULL.getIndex(),ERRORCODE.MARRIAGE_REQUIRE_NULL.getReason());
+		if (requireDate == null || requireId == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.PARAMS_ERROR.getIndex(),ERRORCODE.PARAMS_ERROR.getReason());
 		}
 		
 		updateByIdAndParams(requireDate, requireId,SpouseRequireBo.class);
@@ -224,14 +262,22 @@ public class SpouseController  extends BaseContorller{
 	 * @return
 	 */
 	@GetMapping("/base-search")
-	public String getBaseById(String spouseId,HttpServletRequest request, HttpServletResponse response){
+	public String getBaseById(HttpServletRequest request, HttpServletResponse response){
 		UserBo userBo = getUserLogin(request);
 		if (userBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		
+		SpouseBaseBo baseBo2 = spouseService.getSpouseByUserId(userBo.getId());
+		if(baseBo2 == null){
+			Map map = new HashMap<String,String>();
+			map.put("ret", -1);
+			map.put("result", "当前账号无发布消息");
+			return JSONObject.fromObject(map).toString();
+		}
+		
 		Map<String,Object> map = new HashMap<>();
-		SpouseBaseBo baseBo = spouseService.findBaseById(spouseId);
+		SpouseBaseBo baseBo = spouseService.findBaseById(baseBo2.getId());
 		if(baseBo == null){
 			return CommonUtil.toErrorResult(ERRORCODE.MARRIAGE_PUBLISH_NULL.getIndex(),ERRORCODE.MARRIAGE_PUBLISH_NULL.getReason());
 		}
@@ -247,13 +293,22 @@ public class SpouseController  extends BaseContorller{
 	
 	@ApiOperation("不再推荐")
 	@PostMapping("/pass")
-	public String addPass(String spouseId,String passId,HttpServletRequest request, HttpServletResponse response){
+	public String addPass(String passId,HttpServletRequest request, HttpServletResponse response){
 		UserBo userBo = getUserLogin(request);
 		if (userBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		SpouseBaseBo baseBo = spouseService.getSpouseByUserId(userBo.getId());
+		if(baseBo == null){
+			Map map = new HashMap<String,String>();
+			map.put("ret", -1);
+			map.put("result", "当前账号无发布消息");
+			return JSONObject.fromObject(map).toString();
+		}
+		
+		
 		// 获取当前用户的黑名单列表
-		List<String> list = spouseService.getPassList(spouseId);;
+		List<String> list = spouseService.getPassList(baseBo.getId());;
 		if(list == null){
 			list =new ArrayList<String>();
 			list.add(passId);
@@ -267,15 +322,15 @@ public class SpouseController  extends BaseContorller{
 		// 更新数据库
 		Map<String, Object> params = new HashMap<>();
 		params.put("pass", list);
-		WriteResult result = spouseService.updateByParams(spouseId, params , SpouseBaseBo.class);
+		WriteResult result = spouseService.updateByParams(baseBo.getId(), params , SpouseBaseBo.class);
 
 		// 如果黑名单用户在关注列表,将之从关注列表删除
-		Map<String, List> careMap = spouseService.getCareMap(spouseId);
+		Map<String, List> careMap = spouseService.getCareMap(baseBo.getId());
 		for (String key : careMap.keySet()) {
 			List list2 = careMap.get(key);
 			if(list2.contains(passId)){
 				list2.remove(passId);
-				spouseService.updateCare(spouseId, careMap);
+				spouseService.updateCare(baseBo.getId(), careMap);
 				if(list2.size()==0){
 					careMap.remove(key);
 				}
@@ -288,22 +343,30 @@ public class SpouseController  extends BaseContorller{
 	
 	@ApiOperation("查询关注列表")
 	@GetMapping("/care-search")
-	public String getCares(String spouseId,HttpServletRequest request, HttpServletResponse response){
+	public String getCares(HttpServletRequest request, HttpServletResponse response){
 		UserBo userBo = getUserLogin(request);
 		if (userBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		SpouseBaseBo baseBo = spouseService.getSpouseByUserId(userBo.getId());
+		if(baseBo == null){
+			Map map = new HashMap<String,String>();
+			map.put("ret", -1);
+			map.put("result", "当前账号无发布消息");
+			return JSONObject.fromObject(map).toString();
+		}
+		
 		
 		Map map = new HashMap<>();
-		Map<String, List> careMap = spouseService.getCareMap(spouseId);
+		Map<String, List> careMap = spouseService.getCareMap(baseBo.getId());
 		
 		for (String key : careMap.keySet()) {
 			List list = careMap.get(key);
 			List list2 = new ArrayList<>(); 
 			for (Object Object : list) {
-				SpouseBaseBo baseBo = spouseService.findBaseById(Object.toString());
+				SpouseBaseBo baseBo2 = spouseService.findBaseById(Object.toString());
 				String[] params2 = {"createTime","deleted","waiterId","updateTime","updateuid","createuid","pass"};
-				String jsonfieldFilter = CommonUtil.fastJsonfieldFilter(baseBo, false, params2);
+				String jsonfieldFilter = CommonUtil.fastJsonfieldFilter(baseBo2, false, params2);
 				list2.add(jsonfieldFilter);
 			}
 			map.put(key, list2);
@@ -318,13 +381,21 @@ public class SpouseController  extends BaseContorller{
 	
 	@ApiOperation("移除关注")
 	@PostMapping("/care-delete")
-	public String deleteCare(String spouseId,String careId,HttpServletRequest request, HttpServletResponse response){
+	public String deleteCare(String careId,HttpServletRequest request, HttpServletResponse response){
 		UserBo userBo = getUserLogin(request);
 		if (userBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		SpouseBaseBo baseBo = spouseService.getSpouseByUserId(userBo.getId());
+		if(baseBo == null){
+			Map map = new HashMap<String,String>();
+			map.put("ret", -1);
+			map.put("result", "当前账号无发布消息");
+			return JSONObject.fromObject(map).toString();
+		}
 		
-		Map<String,List> map = spouseService.getCareMap(spouseId);
+		
+		Map<String,List> map = spouseService.getCareMap(baseBo.getId());
 		
 		if(map==null){
 			map = new HashMap<String,List>();
@@ -341,19 +412,26 @@ public class SpouseController  extends BaseContorller{
 				break;
 			}
 		}
-		WriteResult updateCare = spouseService.updateCare(spouseId,map);
+		WriteResult updateCare = spouseService.updateCare(baseBo.getId(),map);
 		return Constant.COM_RESP;			
 	}
 
 	
 	@ApiOperation("添加关注")
 	@PostMapping("/care-insert")
-	public String addCare(String spouseId,String careId,HttpServletRequest request, HttpServletResponse response){
+	public String addCare(String careId,HttpServletRequest request, HttpServletResponse response){
 		UserBo userBo = getUserLogin(request);
 		if (userBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
-		Map<String,List> map = spouseService.getCareMap(spouseId);
+		SpouseBaseBo baseBo = spouseService.getSpouseByUserId(userBo.getId());
+		if(baseBo == null){
+			Map map = new HashMap<String,String>();
+			map.put("ret", -1);
+			map.put("result", "当前账号无发布消息");
+			return JSONObject.fromObject(map).toString();
+		}
+		Map<String,List> map = spouseService.getCareMap(baseBo.getId());
 		if(map==null){
 			map = new HashMap<String,List>();
 			
@@ -375,7 +453,7 @@ public class SpouseController  extends BaseContorller{
 				}
 
 				list.add(careId);
-				spouseService.updateCare(spouseId,map);
+				spouseService.updateCare(baseBo.getId(),map);
 				
 
 				return Constant.COM_RESP;	
@@ -384,7 +462,7 @@ public class SpouseController  extends BaseContorller{
 		
 		list.add(careId);
 		map.put(time, list);
-		spouseService.updateCare(spouseId,map);
+		spouseService.updateCare(baseBo.getId(),map);
 
 		return Constant.COM_RESP;
 	}

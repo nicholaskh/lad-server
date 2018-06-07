@@ -104,6 +104,12 @@ public class SpouseServiceImpl implements SpouseService {
 	}
 
 
+	@Override
+	public List<Map> getRecommend(SpouseRequireBo require) {
+		return spouseDao.getRecommend(require);
+	}
+
+
 
 
 }

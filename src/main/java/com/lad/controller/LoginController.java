@@ -164,6 +164,7 @@ public class LoginController extends BaseContorller {
 	public String login(@RequestParam("phone")String phone,
 						@RequestParam("password")String password,
 						HttpServletRequest request, HttpServletResponse response) {
+		
 		HttpSession session = request.getSession();
 		if (!StringUtils.hasLength(phone)) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_PHONE_ERROR.getIndex(), ERRORCODE.ACCOUNT_PHONE_ERROR.getReason());

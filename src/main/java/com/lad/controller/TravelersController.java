@@ -347,6 +347,7 @@ public class TravelersController extends BaseContorller {
 	@ApiOperation("查询发布详情")
 	@GetMapping("/desc-search")
 	public String getPublishDescById(String requireId,HttpServletRequest request, HttpServletResponse response){
+		
 		UserBo userBo = getUserLogin(request);
 		if (userBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
@@ -355,12 +356,35 @@ public class TravelersController extends BaseContorller {
 		Map<String,Object> map = new HashMap<>();
 		TravelersRequireBo requireBo = travelersService.getRequireById(requireId);
 		
+		map.put("ret", 0);
+		
+		/*UserBo user = new UserBo();
+		user.setUserName(userBo.getUserName());
+		user.setBirthDay(userBo.getBirthDay());
+		user.setHeadPictureName(userBo.getHeadPictureName());
+		String[] params = {"birthDay","userName","headPictureName"};
+		CommonUtil.fastJsonfieldFilter(user, true, params);
+		map.put("userBaseData", CommonUtil.fastJsonfieldFilter(user, true, params));
+		
+		// 用户兴趣,字段过滤
+		UserTasteBo hobbys = userService.findByUserId(userBo.getId());
+		if(hobbys!=null){
+			hobbys.setId(null);
+			hobbys.setUserid(null);
+			hobbys.setDeleted(null);
+			hobbys.setUpdateTime(null);
+			hobbys.setUpdateuid(null);
+			hobbys.setCreateTime(null);
+		}
+		map.put("userHobbys", JSON.toJSONString(hobbys));*/
 		
 		DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+		System.out.println(requireBo.getAssembleTime());
+		System.out.println(requireBo.getAssembleTime().getClass());
 		requireBo.setAssembleTime(format.format(requireBo.getAssembleTime()));
 		requireBo.setDeleted(null);
 		requireBo.setCreateTime(null);
-		map.put("ret", 0);
+
 		map.put("require", JSON.toJSONString(requireBo));
 		
 		return JSON.toJSONString(map).replace("\\", "").replace("\"{", "{").replace("}\"", "}");

@@ -130,7 +130,9 @@ public enum ERRORCODE {
 	MARRIAGE_REQUIRE_NULL(180005,"要求资料为空"),
 	MARRIAGE_HAS_CARE(180006,"你已经关注该用户"),
 	
-	SPOUSE_NUM_OUTOFLIMIT(19001,"每个账户下只能发布一条找老伴的消息");
+	SPOUSE_NUM_OUTOFLIMIT(190001,"每个账户下只能发布一条找老伴的消息"),
+	
+	PARAMS_ERROR(200001,"参数错误");
 
 
 

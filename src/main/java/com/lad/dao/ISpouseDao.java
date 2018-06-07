@@ -36,4 +36,6 @@ public interface ISpouseDao {
 
 	List<SpouseBaseBo> findListByKeyword(String keyWord,Class clazz);
 
+	List<Map> getRecommend(SpouseRequireBo require);
+
 }

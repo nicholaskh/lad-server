@@ -1,8 +1,12 @@
 package com.lad.bo;
 
-import org.springframework.data.mongodb.core.mapping.Document;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
 
-import java.util.*;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "user")
 public class UserBo extends BaseBo {
@@ -56,7 +60,7 @@ public class UserBo extends BaseBo {
 	private int vipLevel;
 
 	//实名认证 类型 0 未实名认证， 1 身份证实名认证， 2 银行卡实名认证
-	private int idCardType;
+	private Integer idCardType;
 	//实名认证卡号
 	private String idCardNo;
 	//实名认证的图片
