@@ -295,12 +295,14 @@ public class TravelersController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		
-		Map<String, List<String>> careRoster = careAndPassService.findTravelersCareMap(requireId);
+		CareAndPassBo careAndPassBo = careAndPassService.findTravelersCare(requireId);
 		DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
 		String time = format.format(new Date());
 		
-		// 如果存在这个记录
-		if(careRoster!=null){
+		if(careAndPassBo!=null){
+			Map<String, List<String>> careRoster = careAndPassBo.getCareRoster();
+
+			
 			// 判断是否已关注该用户
 			for (Entry<String, List<String>> entity : careRoster.entrySet()) {
 				if(entity.getValue().contains(careId)){
@@ -318,12 +320,13 @@ public class TravelersController extends BaseContorller {
 			}
 			careAndPassService.updateCare(Constant.TRAVELERS, requireId, careRoster);
 
+			
 		}else{
 			CareAndPassBo care = new CareAndPassBo();
 			// 设置主id
 			care.setMainId(requireId);
 			// 设置关注名单
-			careRoster = new HashMap<>();
+			Map<String, List<String>> careRoster = new HashMap<>();
 			List<String> careList =new ArrayList<String>();
 			careList.add(careId);
 			careRoster.put(time, careList);
@@ -337,6 +340,7 @@ public class TravelersController extends BaseContorller {
 			care.setSituation(Constant.TRAVELERS);
 			careAndPassService.insert(care);
 		}
+
 		Map map = new HashMap<>();
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();
@@ -355,16 +359,22 @@ public class TravelersController extends BaseContorller {
 		
 		Map<String,Object> map = new HashMap<>();
 		TravelersRequireBo requireBo = travelersService.getRequireById(requireId);
+		System.out.println(requireBo.getImages());
 		
 		map.put("ret", 0);
+		
+		String s =  "http://res.ttlaoyou.com/feedback-59d4878631f0a55478a38a9b-1528276755035-ly_1528276752891.png?v=6";
 		
 		/*UserBo user = new UserBo();
 		user.setUserName(userBo.getUserName());
 		user.setBirthDay(userBo.getBirthDay());
 		user.setHeadPictureName(userBo.getHeadPictureName());
 		String[] params = {"birthDay","userName","headPictureName"};
-		CommonUtil.fastJsonfieldFilter(user, true, params);
-		map.put("userBaseData", CommonUtil.fastJsonfieldFilter(user, true, params));
+		map.put("userBaseData", CommonUtil.fastJsonfieldFilter(user, true, params));*/
+		
+		// 该接口重新查找了一次数据库,需要优化,在实现功能后应该修复上述方法
+		UserBo user = userService.findUserById(requireBo.getCreateuid());
+		map.put("userBaseData", JSON.toJSONString(user));
 		
 		// 用户兴趣,字段过滤
 		UserTasteBo hobbys = userService.findByUserId(userBo.getId());
@@ -376,11 +386,9 @@ public class TravelersController extends BaseContorller {
 			hobbys.setUpdateuid(null);
 			hobbys.setCreateTime(null);
 		}
-		map.put("userHobbys", JSON.toJSONString(hobbys));*/
+		map.put("userHobbys", JSON.toJSONString(hobbys));
 		
 		DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-		System.out.println(requireBo.getAssembleTime());
-		System.out.println(requireBo.getAssembleTime().getClass());
 		requireBo.setAssembleTime(format.format(requireBo.getAssembleTime()));
 		requireBo.setDeleted(null);
 		requireBo.setCreateTime(null);
@@ -431,6 +439,7 @@ public class TravelersController extends BaseContorller {
 		map.put("nickName", userBo.getUserName());
 		map.put("hobbys", JSON.toJSONString(hobbys));
 		map.put("result", list);
+		map.put("headPictureName", userBo.getHeadPictureName());
 		return JSONObject.fromObject(map).toString().replace("\\", "").replace("\"{", "{").replace("}\"", "}");
 	}
 	

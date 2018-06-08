@@ -286,4 +286,6 @@ public interface IUserService extends IBaseService {
 	 * @return
 	 */
 	WriteResult removeUser(String id);
+
+	public UserBo findUserById(String id);
 }

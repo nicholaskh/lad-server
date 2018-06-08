@@ -60,7 +60,7 @@ public class UserBo extends BaseBo {
 	private int vipLevel;
 
 	//实名认证 类型 0 未实名认证， 1 身份证实名认证， 2 银行卡实名认证
-	private Integer idCardType;
+	private int idCardType;
 	//实名认证卡号
 	private String idCardNo;
 	//实名认证的图片

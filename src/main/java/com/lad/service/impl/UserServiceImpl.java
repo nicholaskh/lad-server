@@ -385,4 +385,9 @@ public class UserServiceImpl implements IUserService{
 	public WriteResult removeUser(String id) {
 		return userDao.removeUser(id);
 	}
+
+	@Override
+	public UserBo findUserById(String id) {
+		return userDao.findUserById(id);
+	}
 }

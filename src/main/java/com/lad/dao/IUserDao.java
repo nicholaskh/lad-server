@@ -183,4 +183,6 @@ public interface IUserDao extends IBaseDao {
      * @return
      */
     WriteResult removeUser(String id);
+
+	UserBo findUserById(String id);
 }

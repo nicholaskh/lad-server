@@ -113,6 +113,12 @@ public class MarriageController extends BaseContorller{
 		if (userBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		
+		WaiterBo findWaiterById = marriageService.findWaiterById(waiterId);
+		if(findWaiterById==null){
+			return CommonUtil.toErrorResult(ERRORCODE.MARRIAGE_PUBLISH_NULL.getIndex(), ERRORCODE.MARRIAGE_PUBLISH_NULL.getReason());
+		}
+		
 		List<Map> list = marriageService.getRecommend(waiterId);
 		// 过滤字段
 		/*for (Map map : list) {
@@ -123,7 +129,11 @@ public class MarriageController extends BaseContorller{
 		}*/
 		Map map = new HashMap<>();
 		map.put("ret", 0);
-		map.put("result", list);
+		if(list.size() == 0){
+			map.put("result", "数据为空");
+		}else{
+			map.put("result", list);
+		}
 		return JSONObject.fromObject(map).toString();
 	}
 	

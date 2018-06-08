@@ -50,7 +50,6 @@ public class TravelersDaoImpl implements ITravelersDao {
 		// deleted 与createTime就算这里过滤也会字在转json中重新初始化,所以
 		filter.put("updateTime", false);
 		filter.put("updateuid", false);
-		filter.put("createuid", false);
 		filter.put("deleted", false);
 		Query query = new BasicQuery(criteria,filter);
 		return mongoTemplate.findOne(query, TravelersRequireBo.class);

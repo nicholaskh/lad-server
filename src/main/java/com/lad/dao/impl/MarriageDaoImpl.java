@@ -67,7 +67,7 @@ public class MarriageDaoImpl implements IMarriageDao {
 	 */
 	public List<Map> getRecommend(String waiterId){
 		// 查找waiter的需求
-		Query waiter = new	Query(Criteria.where("waiterId").is(waiterId));
+		Query waiter = new	Query(Criteria.where("waiterId").is(waiterId).and("deleted").is(Constant.ACTIVITY));
 		RequireBo requireBo = mongoTemplate.findOne(waiter, RequireBo.class);
 		
 		// 随机取100个实体
@@ -151,6 +151,7 @@ public class MarriageDaoImpl implements IMarriageDao {
 		//{"createTime","deleted","waiterId","updateTime","updateuid","createuid","pass"};
 		BasicDBObject cirteria = new BasicDBObject();
 		cirteria.put("_id", caresId);
+		cirteria.put("deleted", Constant.ACTIVITY);
 		
 		BasicDBObject filter = new BasicDBObject();
 		filter.put("createTime", false);

@@ -630,8 +630,7 @@ public class CommonUtil {
 	 * @return
 	 */
 	public static String fastJsonfieldFilter(Object obj,boolean need,String... params) {
-		PropertyFilter profilter = new PropertyFilter(){  
-			  
+		PropertyFilter profilter = new PropertyFilter(){  	  
             @Override  
             public boolean apply(Object object, String name, Object value) {
             	for (String string : params) {
@@ -639,7 +638,7 @@ public class CommonUtil {
                         return need;  
                     }
 				}
-                  
+                  System.out.println(!need);
                 return !need;  
             }  
         }; 

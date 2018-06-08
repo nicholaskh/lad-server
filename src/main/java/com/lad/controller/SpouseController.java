@@ -26,15 +26,19 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.alibaba.fastjson.JSON;
+import com.lad.bo.CareAndPassBo;
 import com.lad.bo.RequireBo;
 import com.lad.bo.SpouseBaseBo;
 import com.lad.bo.SpouseRequireBo;
+import com.lad.bo.TravelersRequireBo;
 import com.lad.bo.UserBo;
 import com.lad.bo.WaiterBo;
+import com.lad.service.CareAndPassService;
 import com.lad.service.SpouseService;
 import com.lad.util.CommonUtil;
 import com.lad.util.Constant;
 import com.lad.util.ERRORCODE;
+import com.lad.vo.CareResultVo;
 import com.lad.vo.RequireVo;
 import com.lad.vo.SpouseBaseVo;
 import com.lad.vo.SpouseRequireVo;
@@ -52,6 +56,9 @@ import net.sf.json.JSONObject;
 public class SpouseController  extends BaseContorller{
 	@Autowired
 	private SpouseService spouseService;
+	
+	@Autowired
+	private CareAndPassService careAndPassService;
 	
 	
 	@GetMapping("/recommend")
@@ -306,8 +313,49 @@ public class SpouseController  extends BaseContorller{
 			return JSONObject.fromObject(map).toString();
 		}
 		
+		List<String> passRoster = careAndPassService.findSpousePassList(baseBo.getId());
+
+		// 如果存在这个记录
+		if(passRoster!=null){
+			if(!passRoster.contains(passId)){
+				passRoster.add(passId);
+				Map<String, List<String>> careMap = careAndPassService.findTravelersCareMap(baseBo.getId());
+				for (Entry<String, List<String>> entity : careMap.entrySet()) {
+					if(entity.getValue().contains(passId)){
+						entity.getValue().remove(passId);
+						// 多线程情况下有安全隐患
+						if(entity.getValue().size()==0){
+							careMap.remove(entity.getKey());
+						}
+						careAndPassService.updateCare(Constant.SPOUSE, baseBo.getId(), careMap);
+						break;
+					}
+				}
+				careAndPassService.updatePass(Constant.SPOUSE, baseBo.getId(), passRoster);
+			}
+		}else{
+			CareAndPassBo care = new CareAndPassBo();
+			// 设置主id
+			care.setMainId(baseBo.getId());
+			// 设置关注名单
+			Map<String,List<String>> careRoster = new HashMap<>();
+			care.setCareRoster(careRoster);
+			// 设置黑名单list
+			List<String> passList =new ArrayList<String>();
+			passList.add(passId);
+			care.setPassRoster(passList);
+			// 设置创建者id
+			care.setCreateuid(userBo.getId());
+			// 设置为找驴友情境
+			care.setSituation(Constant.SPOUSE);
+			careAndPassService.insert(care);
+		}
+		Map map = new HashMap<>();
+		map.put("ret", 0);
+		return JSONObject.fromObject(map).toString();
 		
-		// 获取当前用户的黑名单列表
+		
+/*		// 获取当前用户的黑名单列表
 		List<String> list = spouseService.getPassList(baseBo.getId());;
 		if(list == null){
 			list =new ArrayList<String>();
@@ -338,7 +386,7 @@ public class SpouseController  extends BaseContorller{
 			}
 		}
 		
-		return Constant.COM_RESP;
+		return Constant.COM_RESP;*/
 	}
 	
 	@ApiOperation("查询关注列表")
@@ -355,9 +403,8 @@ public class SpouseController  extends BaseContorller{
 			map.put("result", "当前账号无发布消息");
 			return JSONObject.fromObject(map).toString();
 		}
-		
-		
-		Map map = new HashMap<>();
+			
+		/*Map map = new HashMap<>();
 		Map<String, List> careMap = spouseService.getCareMap(baseBo.getId());
 		
 		for (String key : careMap.keySet()) {
@@ -376,7 +423,42 @@ public class SpouseController  extends BaseContorller{
 		if(careMap.size()==0){
 			map.put("error", "您的关注列表为空");
 		}
-		return JSONObject.fromObject(map).toString().replace("\\", "");
+		return JSONObject.fromObject(map).toString().replace("\\", "");*/
+		
+		 // 在找老伴的逻辑中,主id为SpouseBaseId
+		CareAndPassBo care = careAndPassService.findSpouseCare(baseBo.getId());
+		
+		
+		 // 设置壮哉CareResultVo的容器
+		List<CareResultVo> resultContainer = new ArrayList<>();
+		if(care!=null){
+			Map<String, List<String>> roster = care.getCareRoster();
+			CareResultVo result = new CareResultVo();
+			for (Entry<String, List<String>> entity : roster.entrySet()) {
+				result.setAddTime(entity.getKey());
+				// 设置list装载遍历出的实体数据
+				List<String> requireContainer = new ArrayList<>();
+				for (String entityValue : entity.getValue()) {
+					// 根据requireI遍历出require
+					SpouseBaseBo requireBo = spouseService.findBaseById(entityValue);
+					requireBo.setCreateTime(null);
+					requireBo.setDeleted(null);
+					
+					DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+					requireBo.setBirthday(format.format(requireBo.getBirthday()));
+					requireContainer.add(JSON.toJSONString(requireBo));
+				}
+				result.setString(requireContainer);
+				resultContainer.add(result);
+			}
+		}
+		
+		
+	       
+       Map<String, Object> map = new HashMap<>();
+       map.put("ret", 0);
+       map.put("require", resultContainer);
+       return JSONObject.fromObject(map).toString();
 	}
 	
 	@ApiOperation("移除关注")
@@ -395,7 +477,27 @@ public class SpouseController  extends BaseContorller{
 		}
 		
 		
-		Map<String,List> map = spouseService.getCareMap(baseBo.getId());
+		Map<String,List<String>> careMap = careAndPassService.findSpouseCareMap(baseBo.getId());
+		
+		if(careMap==null){
+			careMap = new HashMap<String,List<String>>();
+		}
+		
+		for (Entry<String, List<String>> entrySet : careMap.entrySet()) {
+			if(entrySet.getValue().contains(careId)){
+				entrySet.getValue().remove(careId);
+				if(entrySet.getValue().size()==0){
+					careMap.remove(entrySet.getKey());
+				}
+				careAndPassService.updateCare(Constant.SPOUSE,baseBo.getId(),careMap);
+				break;
+			}
+		}
+
+		return Constant.COM_RESP;
+		
+		
+/*		Map<String,List> map = spouseService.getCareMap(baseBo.getId());
 		
 		if(map==null){
 			map = new HashMap<String,List>();
@@ -413,7 +515,7 @@ public class SpouseController  extends BaseContorller{
 			}
 		}
 		WriteResult updateCare = spouseService.updateCare(baseBo.getId(),map);
-		return Constant.COM_RESP;			
+		return Constant.COM_RESP;*/			
 	}
 
 	
@@ -431,40 +533,56 @@ public class SpouseController  extends BaseContorller{
 			map.put("result", "当前账号无发布消息");
 			return JSONObject.fromObject(map).toString();
 		}
-		Map<String,List> map = spouseService.getCareMap(baseBo.getId());
-		if(map==null){
-			map = new HashMap<String,List>();
-			
-		}
 		
-		
-		// 设置时间
-		Date date = new Date();
+		CareAndPassBo careAndPassBo = careAndPassService.findSpouseCare(baseBo.getId());
 		DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-		String time = format.format(date);
+		String time = format.format(new Date());
 		
-		// 如果原map中包含今天的关注,则添加到今天的关注
-		List<String> list = new ArrayList<>();
-		for (String key : map.keySet()) {
-			if(time.equals(key)){
-				list=map.get(key);
-				if(list.contains(careId)){
-					return CommonUtil.toErrorResult(ERRORCODE.MARRIAGE_HAS_CARE.getIndex(), ERRORCODE.MARRIAGE_HAS_CARE.getReason());
+		if(careAndPassBo!=null){
+			Map<String, List<String>> careRoster = careAndPassBo.getCareRoster();
+
+			
+			// 判断是否已关注该用户
+			for (Entry<String, List<String>> entity : careRoster.entrySet()) {
+				if(entity.getValue().contains(careId)){
+					return "您已关注该用户";
 				}
-
-				list.add(careId);
-				spouseService.updateCare(baseBo.getId(),map);
-				
-
-				return Constant.COM_RESP;	
 			}
-		}
-		
-		list.add(careId);
-		map.put(time, list);
-		spouseService.updateCare(baseBo.getId(),map);
+			
+			// 如果存在当天的添加记录
+			if(careRoster.containsKey(time)){
+				careRoster.get(time).add(careId);
+			}else{
+				List<String> careList =new ArrayList<String>();
+				careList.add(careId);
+				careRoster.put(time, careList);
+			}
+			careAndPassService.updateCare(Constant.SPOUSE, baseBo.getId(), careRoster);
 
-		return Constant.COM_RESP;
+			
+		}else{
+			CareAndPassBo care = new CareAndPassBo();
+			// 设置主id
+			care.setMainId(baseBo.getId());
+			// 设置关注名单
+			Map<String, List<String>> careRoster = new HashMap<>();
+			List<String> careList =new ArrayList<String>();
+			careList.add(careId);
+			careRoster.put(time, careList);
+			care.setCareRoster(careRoster);
+			// 设置黑名单list
+			List<String> passList =new ArrayList<String>();
+			care.setPassRoster(passList);
+			// 设置创建者id
+			care.setCreateuid(userBo.getId());
+			// 设置为找驴友情境
+			care.setSituation(Constant.SPOUSE);
+			careAndPassService.insert(care);
+		}
+
+		Map map = new HashMap<>();
+		map.put("ret", 0);
+		return JSONObject.fromObject(map).toString();
 	}
 	
 	@ApiOperation("查看详情")
@@ -600,12 +718,25 @@ public class SpouseController  extends BaseContorller{
 	 * @return
 	 */
 	private WriteResult updateByIdAndParams(String requireDate, String requireId,Class clazz) {
+
+
 		Iterator<Map.Entry<String, Object>> iterator = JSONObject.fromObject(requireDate).entrySet().iterator();
 		Map params = new HashMap<>();
 		while(iterator.hasNext()){
 			Map.Entry<String, Object> entry = iterator.next();
 			
 			params.put(entry.getKey(), entry.getValue());
+			if("images".equals(entry.getKey())){
+				List<String> images = (List<String>)entry.getValue();
+				if(images.size()>4){
+					params.put("images", images.subList(0, 4));
+				}else {
+					params.put("images", images);
+				}
+				continue;
+			}
+			
+			
 			
 			if("birthday".equals(entry.getKey())){
 				DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
@@ -615,6 +746,7 @@ public class SpouseController  extends BaseContorller{
 				} catch (ParseException e) {
 					e.printStackTrace();
 				}
+				params.put("birthday", birth);
 				params.put("age", CommonUtil.getAge(birth));
 			}
 			

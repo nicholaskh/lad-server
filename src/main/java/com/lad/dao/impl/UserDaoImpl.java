@@ -3,10 +3,13 @@ package com.lad.dao.impl;
 import com.lad.bo.Pager;
 import com.lad.bo.UserBo;
 import com.lad.dao.IUserDao;
+import com.lad.util.Constant;
+import com.mongodb.BasicDBObject;
 import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.BasicQuery;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
@@ -362,4 +365,19 @@ public class UserDaoImpl implements IUserDao {
         query.addCriteria(new Criteria("_id").is(id));
         return mongoTemplate.remove(query, UserBo.class);
     }
+
+	@Override
+	public UserBo findUserById(String id) {
+		BasicDBObject criteria = new BasicDBObject();
+		criteria.put("_id", id);
+		criteria.put("deleted", Constant.ACTIVITY);
+		
+		BasicDBObject filter = new BasicDBObject();
+		filter.put("userName", true);
+		filter.put("birthDay", true);
+		filter.put("headPictureName", true);
+		
+		Query query = new BasicQuery(criteria,filter);
+		return mongoTemplate.findOne(query, UserBo.class);
+	}
 }

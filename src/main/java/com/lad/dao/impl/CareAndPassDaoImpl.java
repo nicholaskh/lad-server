@@ -159,7 +159,7 @@ public class CareAndPassDaoImpl implements CareAndPassDao {
 		filter.put("_id", true);
 		filter.put("careRoster", true);
 		Query query = new BasicQuery(criteria,filter);
-		
+		System.out.println(mongoTemplate.findOne(query, CareAndPassBo.class));
 		return mongoTemplate.findOne(query, CareAndPassBo.class);
 	}
 	
