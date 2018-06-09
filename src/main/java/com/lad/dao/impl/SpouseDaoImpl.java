@@ -10,6 +10,9 @@ import java.util.Random;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.domain.Sort.Order;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.BasicQuery;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -64,16 +67,18 @@ public class SpouseDaoImpl implements ISpouseDao {
 
 		Query query = new Query();
 		Criteria criteria = new Criteria();
-		Date date = new Date();
-		long time = date.getTime() - 7 * 24 * 60 * 60 * 1000;
-		Date weekBefore = new Date(time);
-		criteria.andOperator(Criteria.where("deleted").is(Constant.ACTIVITY), Criteria.where("createTime").gt(weekBefore),
-				Criteria.where("sex").is(sex), Criteria.where("createuid").ne(uid));
+
+		if(sex!=null){
+			criteria.andOperator(Criteria.where("deleted").is(Constant.ACTIVITY),Criteria.where("sex").is(sex), Criteria.where("createuid").ne(uid));
+		}else{
+			criteria.andOperator(Criteria.where("deleted").is(Constant.ACTIVITY),Criteria.where("createuid").ne(uid));
+		}
+
 		query.addCriteria(criteria);
 		query.skip((page - 1) * limit);
 		query.limit(limit);
-		List<SpouseBaseBo> list = mongoTemplate.find(query, SpouseBaseBo.class);
-		return list;
+		query.with(new Sort(new Order(Direction.DESC,"createTime")));
+		return mongoTemplate.find(query, SpouseBaseBo.class);
 	}
 
 	@Override
@@ -146,14 +151,14 @@ public class SpouseDaoImpl implements ISpouseDao {
 	}
 
 	@Override
-	public List<SpouseBaseBo> findListByKeyword(String keyWord, Class clazz) {
+	public List<SpouseBaseBo> findListByKeyword(String keyWord,int page,int limit,Class clazz) {
 		Criteria c = new Criteria();
 		c.orOperator(Criteria.where("nickName").regex(".*" + keyWord + ".*"),
 				Criteria.where("address").regex(".*" + keyWord + ".*"));
 		Criteria criertia = new Criteria();
 		criertia.andOperator(Criteria.where("deleted").is(Constant.ACTIVITY), c);
 		Query query = new Query();
-		query.addCriteria(criertia);
+		query.addCriteria(criertia).skip((page-1)*limit).limit(limit).with(new Sort(new Order(Direction.DESC,"createTime")));
 		return mongoTemplate.find(query, clazz);
 	}
 
@@ -204,17 +209,7 @@ public class SpouseDaoImpl implements ISpouseDao {
 		hobbys.add("不限");
 		if (require.getHobbys() != null) {
 			hobbys = require.getHobbys();
-		}
-
-		/*
-		 * baseBo = { "age" : 21, "salary" : "3000元以下", "address" : "四川省成都市武侯区",
-		 * "hobbys" : [ "文体", "养花" ] }
-		 * 
-		 * { "sex" : 0, "age" : "18岁-19岁", "salary" : "不限", "address" :
-		 * "四川省成都市武侯区", "hobbys" : [ "跳舞" ], }
-		 */
-		// 开始匹配
-		
+		}		
 		
 		List<Map> list = new ArrayList<>();
 		for (SpouseBaseBo bo : find) {

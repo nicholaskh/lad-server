@@ -12,4 +12,5 @@ import lombok.ToString;
 public class CareResultVo {
 	private String addTime;
 	private List String;
+	private Object result;
 }

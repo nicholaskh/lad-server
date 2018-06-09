@@ -34,7 +34,7 @@ public interface SpouseService extends IBaseService{
 
 	public int getNum(String id);
 
-	public List<SpouseBaseBo> findListByKeyword(String keyWord, Class<SpouseBaseBo> clazz);
+	public List<SpouseBaseBo> findListByKeyword(String keyWord, int page, int limit, Class<SpouseBaseBo> clazz);
 
 	public List<Map> getRecommend(SpouseRequireBo require);
 

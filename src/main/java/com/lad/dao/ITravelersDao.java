@@ -25,7 +25,7 @@ public interface ITravelersDao {
 
 	WriteResult deletePublish(String requireId);
 
-	List<TravelersRequireBo> findListByKeyword(String keyWord, Class<TravelersRequireBo> clazz);
+	List<TravelersRequireBo> findListByKeyword(String keyWord, int page, int limit, Class<TravelersRequireBo> clazz);
 
-
+	List<Map> getRecommend(TravelersRequireBo require);
 }

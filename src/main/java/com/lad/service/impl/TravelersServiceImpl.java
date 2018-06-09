@@ -20,6 +20,11 @@ public class TravelersServiceImpl implements TravelersService {
 	private ITravelersDao travelersDao;
 	
 	@Override
+	public List<Map> getRecommend(TravelersRequireBo require) {
+		return travelersDao.getRecommend(require);
+	}
+	
+	@Override
 	public WriteResult deletePublish(String requireId) {
 		return travelersDao.deletePublish(requireId);
 	}
@@ -72,24 +77,7 @@ public class TravelersServiceImpl implements TravelersService {
 	}
 
 	@Override
-	public List<TravelersRequireBo> findListByKeyword(String keyWord, Class<TravelersRequireBo> clazz) {
-		return travelersDao.findListByKeyword(keyWord,clazz);
+	public List<TravelersRequireBo> findListByKeyword(String keyWord,int page,int limit, Class<TravelersRequireBo> clazz) {
+		return travelersDao.findListByKeyword(keyWord,page,limit,clazz);
 	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }

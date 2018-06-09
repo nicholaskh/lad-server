@@ -70,9 +70,11 @@ public class SpouseController  extends BaseContorller{
 		Map map = new HashMap<>();
 		// 获取自身的需求的基础id
 		SpouseBaseBo spouseBaseBo = spouseService.getSpouseByUserId(userBo.getId());
+		System.out.println(userBo.getId());
 		if(spouseBaseBo==null){
 			map.put("ret", -1);
 			map.put("result", "当前账号无发布消息");
+			return JSONObject.fromObject(map).toString();
 		}
 		String baseId = spouseBaseBo.getId();
 		// 通过基础id获取需求
@@ -96,19 +98,25 @@ public class SpouseController  extends BaseContorller{
 	 * @return
 	 */
 	@GetMapping("/search")
-	public String search(String keyWord,HttpServletRequest request, HttpServletResponse response){
+	public String search(String keyWord,int page,int limit,HttpServletRequest request, HttpServletResponse response){
 		UserBo userBo = getUserLogin(request);
 		if (userBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
-
-//		keyWord = "as";
-//		System.out.println(keyWord);
-		List<SpouseBaseBo> list = spouseService.findListByKeyword(keyWord,SpouseBaseBo.class);
+		
+		List<SpouseBaseBo> list = spouseService.findListByKeyword(keyWord,page,limit,SpouseBaseBo.class);
+		
+		
+		// 遍历数据,过滤
+		List<String> list2 = new ArrayList<>();
+		for (SpouseBaseBo spouseBaseBo : list) {
+			String[] params2 = {"createTime","deleted","waiterId","updateTime","updateuid","createuid","pass","care"};
+			list2.add(CommonUtil.fastJsonfieldFilter(spouseBaseBo, false, params2));
+		}
 		
 		Map map = new HashMap<>();
 		map.put("ret", 0);
-		map.put("result", list);
+		map.put("result", list2);
 		return JSONObject.fromObject(map).toString();
 	}
 	
@@ -126,7 +134,6 @@ public class SpouseController  extends BaseContorller{
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		Map map = new HashMap<>();
-		map.put("ret", 0);
 		SpouseBaseBo spouseBo = spouseService.getSpouseByUserId(userBo.getId());
 		
 		if(spouseBo == null){
@@ -147,6 +154,7 @@ public class SpouseController  extends BaseContorller{
 		requireBo.setCreateuid(null);
 		requireBo.setDeleted(null);
 		requireBo.setBaseId(null);
+		map.put("ret", 0);
 		map.put("RequireDate", JSON.toJSONString(requireBo));		
 		return JSONObject.fromObject(map).toString().replace("\\", "").replace("\"{", "{").replace("}\"", "}");
 	}
@@ -190,7 +198,6 @@ public class SpouseController  extends BaseContorller{
 	@ApiOperation("修改基础资料")
 	@PostMapping("/base-update")
 	public String updateSpouse(@RequestParam String baseDate,String spouseId,HttpServletRequest request, HttpServletResponse response){
-
 		UserBo userBo = getUserLogin(request);
 		if (userBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
@@ -218,6 +225,7 @@ public class SpouseController  extends BaseContorller{
 		if (userBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+
 		
 		WriteResult result = spouseService.deletePublish(spouseId);
 
@@ -240,15 +248,14 @@ public class SpouseController  extends BaseContorller{
 		}
 		
 		Map map = new  HashMap<>();
-		
 		SpouseBaseBo baseBo = spouseService.getSpouseByUserId(userBo.getId());
-		
+
+		String sex = null;
+		if(baseBo!=null){
+			sex = ("男".equals(baseBo.getSex()))?"女":"男";
+		}
 		// 从后台获取数据
-		String x = ("男".equals(baseBo.getSex()))?"女":"男";
-		
-
-
-		List<SpouseBaseBo> list = spouseService.getNewSpouse(x,page,limit,userBo.getId());
+		List<SpouseBaseBo> list = spouseService.getNewSpouse(sex,page,limit,userBo.getId());
 		
 		// 遍历数据,过滤
 		List<String> list2 = new ArrayList<>();
@@ -276,12 +283,7 @@ public class SpouseController  extends BaseContorller{
 		}
 		
 		SpouseBaseBo baseBo2 = spouseService.getSpouseByUserId(userBo.getId());
-		if(baseBo2 == null){
-			Map map = new HashMap<String,String>();
-			map.put("ret", -1);
-			map.put("result", "当前账号无发布消息");
-			return JSONObject.fromObject(map).toString();
-		}
+
 		
 		Map<String,Object> map = new HashMap<>();
 		SpouseBaseBo baseBo = spouseService.findBaseById(baseBo2.getId());
@@ -353,40 +355,6 @@ public class SpouseController  extends BaseContorller{
 		Map map = new HashMap<>();
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();
-		
-		
-/*		// 获取当前用户的黑名单列表
-		List<String> list = spouseService.getPassList(baseBo.getId());;
-		if(list == null){
-			list =new ArrayList<String>();
-			list.add(passId);
-		}
-		
-		if(list!=null&&!(list.contains(passId))){
-			// 将用户添加到黑名单
-			list.add(passId);
-		}
-		
-		// 更新数据库
-		Map<String, Object> params = new HashMap<>();
-		params.put("pass", list);
-		WriteResult result = spouseService.updateByParams(baseBo.getId(), params , SpouseBaseBo.class);
-
-		// 如果黑名单用户在关注列表,将之从关注列表删除
-		Map<String, List> careMap = spouseService.getCareMap(baseBo.getId());
-		for (String key : careMap.keySet()) {
-			List list2 = careMap.get(key);
-			if(list2.contains(passId)){
-				list2.remove(passId);
-				spouseService.updateCare(baseBo.getId(), careMap);
-				if(list2.size()==0){
-					careMap.remove(key);
-				}
-				break;
-			}
-		}
-		
-		return Constant.COM_RESP;*/
 	}
 	
 	@ApiOperation("查询关注列表")
@@ -404,27 +372,6 @@ public class SpouseController  extends BaseContorller{
 			return JSONObject.fromObject(map).toString();
 		}
 			
-		/*Map map = new HashMap<>();
-		Map<String, List> careMap = spouseService.getCareMap(baseBo.getId());
-		
-		for (String key : careMap.keySet()) {
-			List list = careMap.get(key);
-			List list2 = new ArrayList<>(); 
-			for (Object Object : list) {
-				SpouseBaseBo baseBo2 = spouseService.findBaseById(Object.toString());
-				String[] params2 = {"createTime","deleted","waiterId","updateTime","updateuid","createuid","pass"};
-				String jsonfieldFilter = CommonUtil.fastJsonfieldFilter(baseBo2, false, params2);
-				list2.add(jsonfieldFilter);
-			}
-			map.put(key, list2);
-		}
-		
-		map.put("ret", 0);
-		if(careMap.size()==0){
-			map.put("error", "您的关注列表为空");
-		}
-		return JSONObject.fromObject(map).toString().replace("\\", "");*/
-		
 		 // 在找老伴的逻辑中,主id为SpouseBaseId
 		CareAndPassBo care = careAndPassService.findSpouseCare(baseBo.getId());
 		
@@ -476,7 +423,6 @@ public class SpouseController  extends BaseContorller{
 			return JSONObject.fromObject(map).toString();
 		}
 		
-		
 		Map<String,List<String>> careMap = careAndPassService.findSpouseCareMap(baseBo.getId());
 		
 		if(careMap==null){
@@ -495,27 +441,6 @@ public class SpouseController  extends BaseContorller{
 		}
 
 		return Constant.COM_RESP;
-		
-		
-/*		Map<String,List> map = spouseService.getCareMap(baseBo.getId());
-		
-		if(map==null){
-			map = new HashMap<String,List>();
-			
-		}
-		
-		for (Entry<String, List> entity : map.entrySet()) {
-			List list = entity.getValue();
-			if(list.contains(careId)){
-				list.remove(careId);	
-				if(list.size()==0){
-					map.remove(entity.getKey());
-				}
-				break;
-			}
-		}
-		WriteResult updateCare = spouseService.updateCare(baseBo.getId(),map);
-		return Constant.COM_RESP;*/			
 	}
 
 	
@@ -592,6 +517,14 @@ public class SpouseController  extends BaseContorller{
 		if (userBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
+		SpouseBaseBo baseBo2 = spouseService.getSpouseByUserId(userBo.getId());
+		if(baseBo2 == null){
+			Map map = new HashMap<String,String>();
+			map.put("ret", -1);
+			map.put("result", "当前账号无发布消息");
+			return JSONObject.fromObject(map).toString();
+		}
+		
 		
 		Map<String,Object> map = new HashMap<>();
 		SpouseBaseBo baseBo = spouseService.findBaseById(spouseId);
@@ -623,7 +556,7 @@ public class SpouseController  extends BaseContorller{
         if (userBo == null) {
             return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
                     ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-        }
+        }        
         
 		int num = spouseService.getNum(userBo.getId());
 		

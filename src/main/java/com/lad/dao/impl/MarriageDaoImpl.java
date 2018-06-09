@@ -9,6 +9,9 @@ import java.util.Random;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.domain.Sort.Order;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.BasicQuery;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -51,15 +54,13 @@ public class MarriageDaoImpl implements IMarriageDao {
 	public List<WaiterBo> getNewPublic(int type, int page, int limit,String uid) {
 		Query query = new Query();
 		Criteria criteria = new Criteria();
-		Date date = new Date();
-		long time = date.getTime()-7*24*60*60*1000;
-		Date weekBefore = new Date(time);
-		criteria.andOperator(Criteria.where("deleted").is(0),Criteria.where("createTime").gt(weekBefore),Criteria.where("sex").is(type),Criteria.where("createuid").ne(uid));
+		criteria.andOperator(Criteria.where("deleted").is(0),Criteria.where("sex").is(type),Criteria.where("createuid").ne(uid));
 		query.addCriteria(criteria);
 		query.skip((page - 1) * limit);
 		query.limit(limit);
-		List<WaiterBo> list = mongoTemplate.find(query, WaiterBo.class);
-		return list;
+		query.with(new Sort(new Order(Direction.DESC,"createTime")));
+		
+		return mongoTemplate.find(query, WaiterBo.class);
 	}
 	
 	/**
@@ -271,26 +272,21 @@ public class MarriageDaoImpl implements IMarriageDao {
 	public WriteResult updateCare(String waiterId, Map<String, List> map) {
         Query query = new Query();
         Criteria criteria = Criteria.where("_id").is(waiterId);
-        query.addCriteria(criteria);       
+        query.addCriteria(criteria); 
         Update update = new Update();
-        
         update.set("cares", map);
         WriteResult updateFirst = mongoTemplate.updateFirst(query, update, WaiterBo.class);
         return updateFirst;
 	}
 
 	@Override
-	public List<WaiterBo> findListByKeyword(String keyWord,Class clazz) {
+	public List<WaiterBo> findListByKeyword(String keyWord,int page,int limit,Class clazz) {
 		Criteria c = new Criteria();
 		c.orOperator(Criteria.where("nickName").regex( ".*"+keyWord+".*"),Criteria.where("nowin").regex(".*"+keyWord+".*"));
 		Criteria criertia = new Criteria();
 		criertia.andOperator(Criteria.where("deleted").is(Constant.ACTIVITY),c);
 		Query query = new Query();
-		query.addCriteria(criertia);
+		query.addCriteria(criertia).skip((page-1)*limit).limit(limit).with(new Sort(new Order(Direction.DESC,"createTime")));
 		return mongoTemplate.find(query, clazz);
 	}
-
-
-
-
 }

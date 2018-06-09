@@ -1,11 +1,19 @@
 package com.lad.dao.impl;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.domain.Sort.Order;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.BasicQuery;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -49,7 +57,6 @@ public class TravelersDaoImpl implements ITravelersDao {
 		BasicDBObject filter = new BasicDBObject();
 		// deleted 与createTime就算这里过滤也会字在转json中重新初始化,所以
 		filter.put("updateTime", false);
-		filter.put("updateuid", false);
 		filter.put("deleted", false);
 		Query query = new BasicQuery(criteria,filter);
 		return mongoTemplate.findOne(query, TravelersRequireBo.class);
@@ -95,6 +102,8 @@ public class TravelersDaoImpl implements ITravelersDao {
 		query.addCriteria(criteria);
 		query.skip((page - 1) * limit);
 		query.limit(limit);
+		query.with(new Sort(new Order(Direction.DESC,"createTime")));
+		
 		return mongoTemplate.find(query, TravelersRequireBo.class);
 	}
 
@@ -113,12 +122,91 @@ public class TravelersDaoImpl implements ITravelersDao {
 	}
 
 	@Override
-	public List<TravelersRequireBo> findListByKeyword(String keyWord, Class<TravelersRequireBo> clazz) {
+	public List<TravelersRequireBo> findListByKeyword(String keyWord,int page,int limit, Class<TravelersRequireBo> clazz) {
 		Query query = new Query();
 		Criteria criteria = new Criteria();
 		criteria.andOperator(Criteria.where("destination").regex( ".*"+keyWord+".*"),Criteria.where("deleted").is(Constant.ACTIVITY));
 		query.addCriteria(criteria);
+		query.skip((page-1)*limit);
+		query.limit(limit);
+		query.with(new Sort(new Order(Direction.DESC,"createTime")));
 		return mongoTemplate.find(query, clazz);
+	}
+
+	@Override
+	public List<Map> getRecommend(TravelersRequireBo require) {
+		// 随机取100个实体
+		Query query = new Query(Criteria.where("sex").is(require.getSex()).and("deleted").is(Constant.ACTIVITY).and("createuid").ne(require.getCreateuid()));
+		int count = (int) mongoTemplate.count(query, "waiters");
+		Random r = new Random();
+		int length = (count - 99) > 0 ? (count - 99) : 1;
+		int skip = r.nextInt(length);
+		query.skip(skip);
+		query.limit(100);
+		List<TravelersRequireBo> find = mongoTemplate.find(query, TravelersRequireBo.class);
+		
+		// 我的资料
+		String destination = require.getDestination();
+		String days = require.getDays();
+		String type = require.getType();
+		DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+		String assembleTime = format.format(require.getAssembleTime());
+		String sex = require.getSex();
+		String age = require.getAge();
+		
+		List<Map> list = new ArrayList<>();
+		for (TravelersRequireBo other : find) {	
+			int match = 0;
+			if(destination!=null && other.getDestination()!=null){
+				if(destination.equals(other.getDestination())){
+					match+=22;
+				}
+			}
+			
+			if(days!=null && other.getDays()!=null){
+				if(days.equals(other.getDays())){
+					match+=22;
+				}
+			}
+			if(type!=null && other.getType()!=null){
+				if(type.equals(other.getType())){
+					match+=17;
+				}
+			}
+			if(assembleTime!=null && other.getAssembleTime()!=null){
+				if(type.equals(format.format(other.getAssembleTime()))){
+					match+=15;
+				}
+			}
+
+			if(sex!=null && other.getSex()!=null){
+				if(sex.equals((String)other.getSex()) || "不限".equals(sex)){
+					match+=12;
+				}
+			}
+
+			if(age!=null && other.getAge()!=null){
+				if(age.equals((String)other.getAge()) || "不限".equals(age)){
+					match+=12;
+				}
+			}
+			
+			Map map = new HashMap<>();
+			map.put("match", match);
+			map.put("result", other);
+			list.add(map);
+			
+			
+			/*if(match>60){
+				Map map = new HashMap<>();
+				map.put("match", match);
+				map.put("result", other);
+				list.add(map);
+			}*/
+			
+		}
+		
+		return list;
 	}
 
 

@@ -34,7 +34,7 @@ public interface ISpouseDao {
 
 	int getNum(String id);
 
-	List<SpouseBaseBo> findListByKeyword(String keyWord,Class clazz);
+	List<SpouseBaseBo> findListByKeyword(String keyWord,int page, int limit, Class clazz);
 
 	List<Map> getRecommend(SpouseRequireBo require);
 

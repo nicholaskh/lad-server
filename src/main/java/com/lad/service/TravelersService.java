@@ -24,7 +24,9 @@ public interface TravelersService extends IBaseService {
 
 	public WriteResult deletePublish(String requireId);
 
-	public List<TravelersRequireBo> findListByKeyword(String keyWord, Class<TravelersRequireBo> clazz);
+	public List<TravelersRequireBo> findListByKeyword(String keyWord, int page, int limit, Class<TravelersRequireBo> clazz);
+
+	public List<Map> getRecommend(TravelersRequireBo require);
 
 
 

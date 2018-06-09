@@ -42,6 +42,6 @@ public interface IMarriageDao {
 
 	int findPublishNum(String id);
 
-	List<WaiterBo> findListByKeyword(String keyWord,Class clazz);
+	List<WaiterBo> findListByKeyword(String keyWord,int page, int limit, Class clazz);
 
 }

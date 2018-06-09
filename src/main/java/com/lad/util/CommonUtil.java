@@ -638,7 +638,6 @@ public class CommonUtil {
                         return need;  
                     }
 				}
-                  System.out.println(!need);
                 return !need;  
             }  
         }; 

@@ -1,5 +1,6 @@
 package com.lad.controller;
 
+import java.io.UnsupportedEncodingException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -66,19 +67,42 @@ public class MarriageController extends BaseContorller{
 	
 	
 	@GetMapping("/search")
-	public String search(String keyWord,HttpServletRequest request, HttpServletResponse response){
+	public String search(String keyWord,int page,int limit,HttpServletRequest request, HttpServletResponse response){
 		UserBo userBo = getUserLogin(request);
 		if (userBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
-
-		keyWord = "成";
-		System.out.println(keyWord);
-		List<WaiterBo> list = marriageService.findListByKeyword(keyWord,WaiterBo.class);
+		/*try {
+			System.out.println(request.getCharacterEncoding());
+			request.setCharacterEncoding("UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+		System.out.println(keyWord);*/
+//		keyWord = "成";
+		
+		List<WaiterBo> list = marriageService.findListByKeyword(keyWord,page,limit,WaiterBo.class);
+		
+		List resultList = new ArrayList<>();
+		for (WaiterBo waiterBo : list) {
+			waiterBo.setCares(null);
+			waiterBo.setCreateTime(null);
+			waiterBo.setCreateuid(null);
+			waiterBo.setDeleted(null);
+			waiterBo.setAge(CommonUtil.getAge((Date)waiterBo.getBirthday()));
+			waiterBo.setJob(null);
+			waiterBo.setPass(null);
+			waiterBo.setUpdateTime(null);
+			waiterBo.setUpdateuid(null);
+			String template = "yyyy-MM-dd";
+			DateFormat format = new SimpleDateFormat(template);
+			waiterBo.setBirthday(format.format(waiterBo.getBirthday()));
+			resultList.add(JSON.toJSONString(waiterBo));
+		}
 		
 		Map map = new HashMap<>();
 		map.put("ret", 0);
-		map.put("result", list);
+		map.put("result", resultList);
 		return JSONObject.fromObject(map).toString();
 	} 
 	
@@ -91,12 +115,29 @@ public class MarriageController extends BaseContorller{
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		List<WaiterBo> list = marriageService.getNewPublish(type,page,limit,userBo.getId());
-		if(list.size()==0){
+		List resultList = new ArrayList<>();
+		for (WaiterBo waiterBo : list) {
+			waiterBo.setCares(null);
+			waiterBo.setCreateTime(null);
+			waiterBo.setCreateuid(null);
+			waiterBo.setDeleted(null);
+			waiterBo.setAge(CommonUtil.getAge((Date)waiterBo.getBirthday()));
+			waiterBo.setJob(null);
+			waiterBo.setPass(null);
+			waiterBo.setUpdateTime(null);
+			waiterBo.setUpdateuid(null);
+			String template = "yyyy-MM-dd";
+			DateFormat format = new SimpleDateFormat(template);
+			waiterBo.setBirthday(format.format(waiterBo.getBirthday()));
+			resultList.add(JSON.toJSONString(waiterBo));
+		}
+		
+		if(resultList.size()==0){
 			return CommonUtil.toErrorResult(ERRORCODE.MARRIAGE_NEWPUBLISH_NULL.getIndex(), ERRORCODE.MARRIAGE_NEWPUBLISH_NULL.getReason());
 		}
 		Map map = new  HashMap<>();
 		map.put("ret", 0);
-		map.put("result", list);
+		map.put("result", resultList);
 		return JSONObject.fromObject(map).toString();
 	}
 	
@@ -173,7 +214,6 @@ public class MarriageController extends BaseContorller{
 		if(!(userBo.getId().equals(waiter.getCreateuid()))){
 			// 根据咨询的发布者id  查询是否为当前用户好友
 			List<FriendsBo> friendByFriendid = friendidService.getFriendByFriendid(waiter.getCreateuid());
-			System.out.println(friendByFriendid);
 			if(friendByFriendid!=null){
 				for (FriendsBo friendsBo : friendByFriendid) {
 					
@@ -333,7 +373,7 @@ public class MarriageController extends BaseContorller{
 	}
 	
 	@ApiOperation("取消发布")
-	@DeleteMapping("/publish-delete")
+	@PostMapping("/publish-delete")
 	public String deletePublish(String waiterId,HttpServletRequest request, HttpServletResponse response){
 		UserBo userBo = getUserLogin(request);
 		if (userBo == null) {
