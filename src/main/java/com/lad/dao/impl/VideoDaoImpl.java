@@ -1,7 +1,6 @@
 package com.lad.dao.impl;
 
 import com.lad.dao.IVideoDao;
-import com.lad.scrapybo.InforBo;
 import com.lad.scrapybo.VideoBo;
 import com.lad.util.CommonUtil;
 import com.lad.util.Constant;
@@ -71,7 +70,8 @@ public class VideoDaoImpl implements IVideoDao {
         GroupOperation groupOperation = Aggregation.group("module","className", "source")
                 .sum("visitNum").as("visitNum").first("url").as("firstUrl")
                 .first("_id").as("firstId").first("shareNum").as("firstShare")
-                .first("commnetNum").as("firstComment").first("thumpsubNum").as("firstThump");
+                .first("commnetNum").as("firstComment").first("thumpsubNum").as("firstThump")
+                .first("poster").as("firstPoster").count().as("totalNum");
         Aggregation aggregation = Aggregation.newAggregation(match, groupOperation,
                 Aggregation.sort(Sort.Direction.ASC, "className"));
         AggregationResults<VideoBo> results = mongoTemplateTwo.aggregate(aggregation, "video", VideoBo.class);

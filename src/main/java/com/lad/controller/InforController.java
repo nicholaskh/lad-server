@@ -298,6 +298,7 @@ public class InforController extends BaseContorller {
             classVo.setTitle(bo.getClassName());
             classVo.setSource(bo.getSource());
             classVo.setTotalVisit(bo.getVisitNum());
+            classVo.setTotalNum(bo.getTotalNum());
             classVos.add(classVo);
         }
     }
@@ -442,38 +443,7 @@ public class InforController extends BaseContorller {
             VideoVo videoVo = new VideoVo();
             BeanUtils.copyProperties(bo, videoVo);
             videoVo.setReadNum(bo.getVisitNum());
-            //缩略图
-            if (StringUtils.isEmpty(bo.getPoster())){
-                String url = bo.getUrl();
-                if (url.indexOf(',') > -1) {
-                    url = url.substring(0, url.indexOf(','));
-                }
-                String picName = FFmpegUtil.inforTransfer(url, Constant.INFOR_PICTURE_PATH, bo.getId());
-                if (StringUtils.isEmpty(picName)){
-                    picName = FFmpegUtil.inforTransfer(url,  Constant.INFOR_PICTURE_PATH, bo.getId());
-                }
-                if (!StringUtils.isEmpty(picName)){
-                    File file = null;
-                    try {
-                        file = new File(Constant.INFOR_PICTURE_PATH, picName);
-                    } catch (Exception e){
-                        logger.error(e);
-                    }
-                    if (file != null && file.exists()){
-                        String vedioPic = QiNiu.uploadToQiNiu(Constant.INFOR_PICTURE_PATH, picName);
-                        String path = Constant.QINIU_URL + vedioPic + "?v=" + CommonUtil.getRandom1();
-                        inforService.updateVideoPicById(bo.getId(), path);
-                        videoVo.setPicture(path);
-                        file.delete();
-                    }
-                } else {
-                    inforService.updateVideoPicById(bo.getId(), "noPic");
-                }
-            } else if (bo.getPoster().equals("noPic")) {
-                videoVo.setPicture("");
-            } else {
-                videoVo.setPicture(bo.getPoster());
-            }
+            videoVo.setPicture(bo.getPoster());
             videoVo.setInforid(bo.getId());
             videoVos.add(videoVo);
         }
@@ -1414,6 +1384,35 @@ public class InforController extends BaseContorller {
                     classVo.setThumpsubNum(bo.getFirstThump());
                     classVo.setCommentNum(bo.getFirstComment());
                     classVo.setUrl(bo.getFirstUrl());
+                    classVo.setTotalNum(bo.getTotalNum());
+                    //缩略图
+                    if (StringUtils.isEmpty(bo.getFirstPoster())){
+                        String picName = FFmpegUtil.inforTransfer(bo.getFirstUrl(), Constant.INFOR_PICTURE_PATH, bo.getFirstId());
+                        if (StringUtils.isEmpty(picName)){
+                            picName = FFmpegUtil.inforTransfer(bo.getFirstUrl(),  Constant.INFOR_PICTURE_PATH, bo.getFirstId());
+                        }
+                        if (!StringUtils.isEmpty(picName)){
+                            File file = null;
+                            try {
+                                file = new File(Constant.INFOR_PICTURE_PATH, picName);
+                            } catch (Exception e){
+                                logger.error(e);
+                            }
+                            if (file != null && file.exists()){
+                                String vedioPic = QiNiu.uploadToQiNiu(Constant.INFOR_PICTURE_PATH, picName);
+                                String path = Constant.QINIU_URL + vedioPic + "?v=" + CommonUtil.getRandom1();
+                                inforService.updateVideoPicById(bo.getId(), path);
+                                classVo.setPicture(path);
+                                file.delete();
+                            }
+                        } else {
+                            inforService.updateVideoPicById(bo.getId(), "noPic");
+                        }
+                    } else if (bo.getPoster().equals("noPic")) {
+                        classVo.setPicture("");
+                    } else {
+                        classVo.setPicture(bo.getFirstPoster());
+                    }
                     if (!"".equals(userid)) {
                         ThumbsupBo thumbsupBo = thumbsupService.findHaveOwenidAndVisitorid(bo.getFirstId(),userid);
                         classVo.setSelfSub(thumbsupBo != null);
@@ -1448,6 +1447,35 @@ public class InforController extends BaseContorller {
                 classVo.setThumpsubNum(bo.getFirstThump());
                 classVo.setCommentNum(bo.getFirstComment());
                 classVo.setUrl(bo.getFirstUrl());
+                classVo.setTotalNum(bo.getTotalNum());
+                //缩略图
+                if (StringUtils.isEmpty(bo.getFirstPoster())){
+                    String picName = FFmpegUtil.inforTransfer(bo.getFirstUrl(), Constant.INFOR_PICTURE_PATH, bo.getFirstId());
+                    if (StringUtils.isEmpty(picName)){
+                        picName = FFmpegUtil.inforTransfer(bo.getFirstUrl(),  Constant.INFOR_PICTURE_PATH, bo.getFirstId());
+                    }
+                    if (!StringUtils.isEmpty(picName)){
+                        File file = null;
+                        try {
+                            file = new File(Constant.INFOR_PICTURE_PATH, picName);
+                        } catch (Exception e){
+                            logger.error(e);
+                        }
+                        if (file != null && file.exists()){
+                            String vedioPic = QiNiu.uploadToQiNiu(Constant.INFOR_PICTURE_PATH, picName);
+                            String path = Constant.QINIU_URL + vedioPic + "?v=" + CommonUtil.getRandom1();
+                            inforService.updateVideoPicById(bo.getId(), path);
+                            classVo.setPicture(path);
+                            file.delete();
+                        }
+                    } else {
+                        inforService.updateVideoPicById(bo.getId(), "noPic");
+                    }
+                } else if (bo.getPoster().equals("noPic")) {
+                    classVo.setPicture("");
+                } else {
+                    classVo.setPicture(bo.getFirstPoster());
+                }
                 if (!"".equals(userid)) {
                     ThumbsupBo thumbsupBo = thumbsupService.findHaveOwenidAndVisitorid(bo.getFirstId(),userid);
                     classVo.setSelfSub(thumbsupBo != null);
@@ -1976,34 +2004,7 @@ public class InforController extends BaseContorller {
                         ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(bo.getId(), userid);
                         videoVo.setSelfSub(thumbsupBo != null);
                     }
-                    //缩略图
-                    if (StringUtils.isEmpty(bo.getPoster())){
-                        String picName = FFmpegUtil.inforTransfer(bo.getUrl(), Constant.INFOR_PICTURE_PATH, bo.getId());
-                        if (StringUtils.isEmpty(picName)){
-                            picName = FFmpegUtil.inforTransfer(bo.getUrl(),  Constant.INFOR_PICTURE_PATH, bo.getId());
-                        }
-                        if (!StringUtils.isEmpty(picName)){
-                            File file = null;
-                            try {
-                                file = new File(Constant.INFOR_PICTURE_PATH, picName);
-                            } catch (Exception e){
-                                logger.error(e);
-                            }
-                            if (file != null && file.exists()){
-                                String vedioPic = QiNiu.uploadToQiNiu(Constant.INFOR_PICTURE_PATH, picName);
-                                String path = Constant.QINIU_URL + vedioPic + "?v=" + CommonUtil.getRandom1();
-                                inforService.updateVideoPicById(bo.getId(), path);
-                                videoVo.setPicture(path);
-                                file.delete();
-                            }
-                        } else {
-                            inforService.updateVideoPicById(bo.getId(), "noPic");
-                        }
-                    } else if (bo.getPoster().equals("noPic")) {
-                        videoVo.setPicture("");
-                    } else {
-                        videoVo.setPicture(bo.getPoster());
-                    }
+                    videoVo.setPicture(bo.getPoster());
                     videoVo.setInforid(bo.getId());
                     videoVo.setThumpsubNum(bo.getThumpsubNum());
                     videoVo.setCommentNum(bo.getCommnetNum());
@@ -2121,34 +2122,7 @@ public class InforController extends BaseContorller {
                     ThumbsupBo thumbsupBo = thumbsupService.getByVidAndVisitorid(bo.getId(), userid);
                     videoVo.setSelfSub(thumbsupBo != null);
                 }
-                //缩略图
-                if (StringUtils.isEmpty(bo.getPoster())){
-                    String picName = FFmpegUtil.inforTransfer(bo.getUrl(), Constant.INFOR_PICTURE_PATH, bo.getId());
-                    if (StringUtils.isEmpty(picName)){
-                        picName = FFmpegUtil.inforTransfer(bo.getUrl(),  Constant.INFOR_PICTURE_PATH, bo.getId());
-                    }
-                    if (!StringUtils.isEmpty(picName)){
-                        File file = null;
-                        try {
-                            file = new File(Constant.INFOR_PICTURE_PATH, picName);
-                        } catch (Exception e){
-                            logger.error(e);
-                        }
-                        if (file != null && file.exists()){
-                            String vedioPic = QiNiu.uploadToQiNiu(Constant.INFOR_PICTURE_PATH, picName);
-                            String path = Constant.QINIU_URL + vedioPic + "?v=" + CommonUtil.getRandom1();
-                            inforService.updateVideoPicById(bo.getId(), path);
-                            videoVo.setPicture(path);
-                            file.delete();
-                        }
-                    } else {
-                        inforService.updateVideoPicById(bo.getId(), "noPic");
-                    }
-                } else if (bo.getPoster().equals("noPic")) {
-                    videoVo.setPicture("");
-                } else {
-                    videoVo.setPicture(bo.getPoster());
-                }
+                videoVo.setPicture(bo.getPoster());
                 videoVo.setInforid(bo.getId());
                 videoVo.setThumpsubNum(bo.getThumpsubNum());
                 videoVo.setCommentNum(bo.getCommnetNum());

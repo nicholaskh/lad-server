@@ -1,40 +1,40 @@
 package com.lad.controller;
 
+import com.alibaba.fastjson.JSON;
 import com.lad.util.CommonUtil;
 import com.lad.util.Constant;
 import com.lad.util.JPushUtil;
+import lombok.extern.log4j.Log4j2;
 import net.sf.json.JSONObject;
-import org.apache.log4j.Logger;
-import org.apache.log4j.spi.RootLogger;
-import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
-@Controller
+@Log4j2
+@RestController
 @RequestMapping("test")
 public class TestController extends BaseContorller {
 
-	private static Logger logger = RootLogger.getLogger(TestController.class);
 
-	@RequestMapping("/send")
-	@ResponseBody
-	public void setTag(HttpServletRequest request, HttpServletResponse response) {
+	@GetMapping("/send")
+	public String setTag(HttpServletRequest request, HttpServletResponse response) {
 		String code = CommonUtil.getRandom();
 		int res = CommonUtil.sendSMS2("15320542105", CommonUtil.buildCodeMsg(code));
-		logger.info("SMS  message : ====== "  + res);
+		Map<String, Object> map = new HashMap<>();
+		map.put("message", res);
+		return JSON.toJSONString(map);
 	}
 
-	@RequestMapping("/get-report")
-	@ResponseBody
+	@GetMapping("/get-report")
 	public String getSMSReport(int type, HttpServletRequest request, HttpServletResponse response) {
 		String res = "";
 		if (type == 0){
@@ -47,16 +47,14 @@ public class TestController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	@RequestMapping("/push-info")
-	@ResponseBody
+	@GetMapping("/push-info")
 	public String pushInfor(String userid, HttpServletRequest request, HttpServletResponse response) {
 		String time = CommonUtil.getCurrentDate(new Date());
 		JPushUtil.push("聚会通知", "通知我的测试信息，推送到人:" + time,"123..s", userid);
 		return Constant.COM_RESP;
 	}
 
-	@RequestMapping("/ff-pic")
-	@ResponseBody
+	@GetMapping("/ff-pic")
 	public String pic(HttpServletRequest request, HttpServletResponse response) {
 
 		String path = "/home/dongensi/";
@@ -98,6 +96,25 @@ public class TestController extends BaseContorller {
 		return outName;
 	}
 
+
+
+	@PostMapping("/upload")
+	public String upload(MultipartFile imfile) {
+		if (imfile != null) {
+			long time = Calendar.getInstance().getTimeInMillis();
+			String fileName = String.format("59c37cea31f0a51f8c9d2e79-%d-%s",time, imfile.getOriginalFilename());
+			log.info("===== start upload  imfile name : {}, imfile size: {}" , fileName, imfile.getSize());
+			String[] path = CommonUtil.uploadVedio(imfile, Constant.NOTE_PICTURE_PATH, fileName, 0);
+			long timeHas = System.currentTimeMillis()- time;
+			log.info("===== end upload  imfile path : {}, update time : {}" , path, timeHas);
+			Map<String, Object> map = new HashMap<>();
+			map.put("time", timeHas);
+			map.put("video", path[0]);
+			map.put("videoPic", path[1]);
+			return JSON.toJSONString(map);
+		}
+		return "error";
+	}
 
 
 }
