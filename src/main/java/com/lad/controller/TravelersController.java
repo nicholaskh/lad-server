@@ -75,7 +75,6 @@ public class TravelersController extends BaseContorller {
 
 		List<Map> recommend = travelersService.getRecommend(require);
 		
-
 		List result = new ArrayList<>();
 		if(recommend.size()>=1){
 			
@@ -117,6 +116,7 @@ public class TravelersController extends BaseContorller {
 		for (TravelersRequireBo travelersRequireBo : list) {
 			UserBo user = userService.getUser(travelersRequireBo.getCreateuid());
 			ShowResultVo showResult = new ShowResultVo();
+			showResult.setId(travelersRequireBo.getId());
 			// 设置昵称
 			showResult.setNickName(user.getUserName());
 			// 设置头像
@@ -220,6 +220,7 @@ public class TravelersController extends BaseContorller {
 		for (TravelersRequireBo travelersRequireBo : list) {
 			UserBo user = userService.getUser(travelersRequireBo.getCreateuid());
 			ShowResultVo showResult = new ShowResultVo();
+			showResult.setId(travelersRequireBo.getId());
 			// 设置昵称
 			showResult.setNickName(user.getUserName());
 			// 设置头像

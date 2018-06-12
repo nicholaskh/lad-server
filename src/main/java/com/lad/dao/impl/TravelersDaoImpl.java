@@ -22,7 +22,6 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 import com.lad.bo.BaseBo;
-import com.lad.bo.TravelersBaseBo;
 import com.lad.bo.TravelersRequireBo;
 import com.lad.dao.ITravelersDao;
 import com.lad.util.Constant;
@@ -35,10 +34,11 @@ public class TravelersDaoImpl implements ITravelersDao {
 	
 	@Override
 	public WriteResult deletePublish(String requireId) {
-		Query query = new Query(Criteria.where("_id").is(requireId));
+		Query query = new Query(Criteria.where("_id").is(requireId).and("deleted").is(Constant.ACTIVITY));
 		Update update = new Update();
 		update.set("deleted", Constant.DELETED);
-		return mongoTemplate.updateFirst(query, update, TravelersBaseBo.class);
+		TravelersRequireBo findOne = mongoTemplate.findOne(query, TravelersRequireBo.class);
+		return mongoTemplate.updateFirst(query, update, TravelersRequireBo.class);
 	}
 	
 	@Override
@@ -154,8 +154,13 @@ public class TravelersDaoImpl implements ITravelersDao {
 		String sex = require.getSex();
 		String age = require.getAge();
 		
+		List temp = new ArrayList<>();
 		List<Map> list = new ArrayList<>();
 		for (TravelersRequireBo other : find) {	
+			if(temp.contains(other.getId())){
+				continue;
+			}
+			
 			int match = 0;
 			if(destination!=null && other.getDestination()!=null){
 				if(destination.equals(other.getDestination())){
@@ -191,6 +196,7 @@ public class TravelersDaoImpl implements ITravelersDao {
 				}
 			}
 			
+			temp.add(other.getId());
 			Map map = new HashMap<>();
 			map.put("match", match);
 			map.put("result", other);

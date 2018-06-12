@@ -82,8 +82,13 @@ public class MarriageDaoImpl implements IMarriageDao {
 		List<WaiterBo> find = mongoTemplate.find(query, WaiterBo.class);
 		
 		List<Map> result = new ArrayList<>();
+		List tempList = new ArrayList<>();
 		for (WaiterBo waiterBo : find) {
+			if(tempList.contains(waiterBo.getId())){
+				continue;
+			}
 			Map map = CommonUtil.getMatch(mongoTemplate,requireBo, waiterBo);
+			tempList.add(waiterBo.getId());
 			result.add(map);
 		}
 		return result;
@@ -280,11 +285,11 @@ public class MarriageDaoImpl implements IMarriageDao {
 	}
 
 	@Override
-	public List<WaiterBo> findListByKeyword(String keyWord,int page,int limit,Class clazz) {
+	public List<WaiterBo> findListByKeyword(String keyWord,int type,int page,int limit,Class clazz) {
 		Criteria c = new Criteria();
 		c.orOperator(Criteria.where("nickName").regex( ".*"+keyWord+".*"),Criteria.where("nowin").regex(".*"+keyWord+".*"));
 		Criteria criertia = new Criteria();
-		criertia.andOperator(Criteria.where("deleted").is(Constant.ACTIVITY),c);
+		criertia.andOperator(Criteria.where("sex").is(type),Criteria.where("deleted").is(Constant.ACTIVITY),c);
 		Query query = new Query();
 		query.addCriteria(criertia).skip((page-1)*limit).limit(limit).with(new Sort(new Order(Direction.DESC,"createTime")));
 		return mongoTemplate.find(query, clazz);

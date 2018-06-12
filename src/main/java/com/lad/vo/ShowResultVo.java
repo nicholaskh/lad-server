@@ -10,6 +10,7 @@ import lombok.ToString;
 @Getter
 @ToString
 public class ShowResultVo {
+	private String id;
 	private String nickName;
 	private String headPicture;
 	private List images;

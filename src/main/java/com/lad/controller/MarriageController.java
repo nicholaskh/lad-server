@@ -67,7 +67,7 @@ public class MarriageController extends BaseContorller{
 	
 	
 	@GetMapping("/search")
-	public String search(String keyWord,int page,int limit,HttpServletRequest request, HttpServletResponse response){
+	public String search(String keyWord,int type,int page,int limit,HttpServletRequest request, HttpServletResponse response){
 		UserBo userBo = getUserLogin(request);
 		if (userBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
@@ -81,7 +81,7 @@ public class MarriageController extends BaseContorller{
 		System.out.println(keyWord);*/
 //		keyWord = "成";
 		
-		List<WaiterBo> list = marriageService.findListByKeyword(keyWord,page,limit,WaiterBo.class);
+		List<WaiterBo> list = marriageService.findListByKeyword(keyWord,type,page,limit,WaiterBo.class);
 		
 		List resultList = new ArrayList<>();
 		for (WaiterBo waiterBo : list) {

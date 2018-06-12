@@ -99,8 +99,8 @@ public class SpouseServiceImpl implements SpouseService {
 
 
 	@Override
-	public List<SpouseBaseBo> findListByKeyword(String keyWord,int page,int limit, Class<SpouseBaseBo> clazz) {
-		return spouseDao.findListByKeyword(keyWord,page,limit,clazz);
+	public List<SpouseBaseBo> findListByKeyword(String keyWord,String sex,int page,int limit, Class<SpouseBaseBo> clazz) {
+		return spouseDao.findListByKeyword(keyWord,sex,page,limit,clazz);
 	}
 
 

@@ -104,8 +104,16 @@ public class SpouseController  extends BaseContorller{
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		
-		List<SpouseBaseBo> list = spouseService.findListByKeyword(keyWord,page,limit,SpouseBaseBo.class);
+		SpouseBaseBo baseBo = spouseService.getSpouseByUserId(userBo.getId());
+
+		String sex = null;
+		if(baseBo!=null && baseBo.getSex()!=null){
+			sex = ("男".equals(baseBo.getSex()))?"女":"男";
+		}
 		
+		List<SpouseBaseBo> list = spouseService.findListByKeyword(keyWord,sex,page,limit,SpouseBaseBo.class);
+		
+
 		
 		// 遍历数据,过滤
 		List<String> list2 = new ArrayList<>();

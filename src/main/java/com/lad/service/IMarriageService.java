@@ -69,7 +69,7 @@ public interface IMarriageService extends IBaseService {
 
 	public int findPublishNum(String id);
 
-	public List<WaiterBo> findListByKeyword(String keyWord,int page, int limit, Class clazz);
+	public List<WaiterBo> findListByKeyword(String keyWord,int type,int page, int limit, Class clazz);
 
 
 	

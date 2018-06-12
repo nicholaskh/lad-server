@@ -127,12 +127,21 @@ public enum ERRORCODE {
 	MARRIAGE_PUBLISH_NULL(180002,"当前id错误,数据库找不到对应数据"),
 	MARRIAGE_QUIRE_NULL(180003,"无要求详情"),
 	MARRIAGE_WAITER_NULL(180004,"基础资料为空"),
-	MARRIAGE_REQUIRE_NULL(180005,"要求资料为空"),
+	MARRIAGE_REQUIRE_NULL(180005,"意向资料为空"),
 	MARRIAGE_HAS_CARE(180006,"你已经关注该用户"),
 	
 	SPOUSE_NUM_OUTOFLIMIT(190001,"每个账户下只能发布一条找老伴的消息"),
 	
-	PARAMS_ERROR(200001,"参数错误");
+	PARAMS_ERROR(200001,"参数错误"),
+	
+	No_SUCH_PUBLISH(210001,"数据库没有与传入id相匹配的数据,请检查你传入的requireId是否正确"),
+	INSERT_FAILD(210001,"意向添加失败,请检查参数"),
+	USER_AGREEMENT_FALSE(210002,"用户协议错误"),
+	PUBLISHNUM_BEYOND(210003,"每个用户只能发布一条消息"),
+	REQUIREID_NOMATCH(210004,"用户id与requireId不匹配,请检查你传入的requireId是否正确"),
+	UPDATE_NO_CHANGE(210005,"传入数据与原数据相比无变动")
+	;
+	
 
 
 

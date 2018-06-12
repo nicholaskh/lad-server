@@ -159,8 +159,8 @@ public class MarriageServiceImpl implements IMarriageService {
 	}
 
 	@Override
-	public List<WaiterBo> findListByKeyword(String keyWord,int page,int limit,Class clazz) {
-		return marriageDao.findListByKeyword(keyWord,page,limit,WaiterBo.class);
+	public List<WaiterBo> findListByKeyword(String keyWord,int type,int page,int limit,Class clazz) {
+		return marriageDao.findListByKeyword(keyWord,type,page,limit,WaiterBo.class);
 	}
 
 

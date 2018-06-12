@@ -151,12 +151,17 @@ public class SpouseDaoImpl implements ISpouseDao {
 	}
 
 	@Override
-	public List<SpouseBaseBo> findListByKeyword(String keyWord,int page,int limit,Class clazz) {
+	public List<SpouseBaseBo> findListByKeyword(String keyWord,String sex,int page,int limit,Class clazz) {
 		Criteria c = new Criteria();
 		c.orOperator(Criteria.where("nickName").regex(".*" + keyWord + ".*"),
 				Criteria.where("address").regex(".*" + keyWord + ".*"));
 		Criteria criertia = new Criteria();
-		criertia.andOperator(Criteria.where("deleted").is(Constant.ACTIVITY), c);
+		if(sex!=null){
+			criertia.andOperator(Criteria.where("sex").is(sex),Criteria.where("deleted").is(Constant.ACTIVITY), c);
+		}else{
+			criertia.andOperator(Criteria.where("deleted").is(Constant.ACTIVITY), c);
+		}
+		
 		Query query = new Query();
 		query.addCriteria(criertia).skip((page-1)*limit).limit(limit).with(new Sort(new Order(Direction.DESC,"createTime")));
 		return mongoTemplate.find(query, clazz);
@@ -212,8 +217,12 @@ public class SpouseDaoImpl implements ISpouseDao {
 		}		
 		
 		List<Map> list = new ArrayList<>();
+		
+		List tempList= new ArrayList<>();
 		for (SpouseBaseBo bo : find) {
-
+			if(tempList.contains(bo.getId())){
+				continue;
+			}
 			// 地址
 			int addressNum = 0;
 			if (bo.getAddress() != null) {
@@ -282,6 +291,8 @@ public class SpouseDaoImpl implements ISpouseDao {
 			
 			int match = (int)Math.rint((addressNum+hobbysNum+ageNum+salaryNum)*0.25);	
 			
+			
+			tempList.add(bo.getId());
 			if(match>=60){
 				Map map = new HashMap<>();
 				map.put("match", match);
