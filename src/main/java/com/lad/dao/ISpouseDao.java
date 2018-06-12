@@ -38,4 +38,6 @@ public interface ISpouseDao {
 
 	List<Map> getRecommend(SpouseRequireBo require);
 
+	int findPublishNum(String uid);
+
 }

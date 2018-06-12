@@ -38,4 +38,6 @@ public interface SpouseService extends IBaseService{
 
 	public List<Map> getRecommend(SpouseRequireBo require);
 
+	public int findPublishNum(String uid);
+
 }

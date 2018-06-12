@@ -72,6 +72,11 @@ public class OldFriendServiceImpl implements IOldFriendService {
 	public List<Map> getRecommend(OldFriendRequireBo require) {
 		return oldFriendDao.getRecommend(require);
 	}
+
+	@Override
+	public int findPublishNum(String uid) {
+		return oldFriendDao.findPublishNum(uid);
+	}
 	
 
 }

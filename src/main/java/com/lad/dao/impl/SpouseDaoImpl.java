@@ -303,4 +303,9 @@ public class SpouseDaoImpl implements ISpouseDao {
 
 		return list;
 	}
+
+	@Override
+	public int findPublishNum(String uid) {
+		return (int)mongoTemplate.count(new Query(Criteria.where("createuid").is(uid).and("deleted").is(Constant.ACTIVITY)), SpouseBaseBo.class);
+	}
 }

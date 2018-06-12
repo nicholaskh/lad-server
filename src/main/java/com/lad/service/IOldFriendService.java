@@ -31,6 +31,8 @@ public interface IOldFriendService  extends IBaseService{
 
 	List<Map> getRecommend(OldFriendRequireBo require);
 
+	int findPublishNum(String uid);
+
 	
 
 }

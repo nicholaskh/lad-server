@@ -110,6 +110,12 @@ public class SpouseServiceImpl implements SpouseService {
 	}
 
 
+	@Override
+	public int findPublishNum(String uid) {
+		return spouseDao.findPublishNum(uid);
+	}
+
+
 
 
 }

@@ -251,6 +251,11 @@ public class OldFriendDaoImpl implements IOldFriendDao {
 		
 		return result;
 	}
+
+	@Override
+	public int findPublishNum(String uid) {
+		return (int)mongoTemplate.count(new Query(Criteria.where("createuid").is(uid).and("deleted").is(Constant.ACTIVITY)), OldFriendRequireBo.class);
+	}
 	
 	
 	

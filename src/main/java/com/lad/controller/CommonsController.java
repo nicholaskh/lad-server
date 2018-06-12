@@ -19,6 +19,8 @@ import com.alibaba.fastjson.JSON;
 import com.lad.bo.OptionBo;
 import com.lad.bo.UserBo;
 import com.lad.service.IMarriageService;
+import com.lad.service.IOldFriendService;
+import com.lad.service.SpouseService;
 import com.lad.service.TravelersService;
 import com.lad.util.CommonUtil;
 import com.lad.util.ERRORCODE;
@@ -43,6 +45,12 @@ public class CommonsController extends BaseContorller{
 	@Autowired
 	public TravelersService travelersService;
 	
+	@Autowired
+	private SpouseService spouseService;
+	
+	@Autowired
+	private IOldFriendService oldFriendService;
+	
 	/**
 	 * 获取当前用户发布消息的条数
 	 * @param request
@@ -62,6 +70,10 @@ public class CommonsController extends BaseContorller{
 		map.put("marriageNum", marriageNum);
 		int travelersNum = travelersService.findPublishNum(userBo.getId());
 		map.put("travelersNum", travelersNum);
+		int spouseNum = spouseService.findPublishNum(userBo.getId());
+		map.put("spouseNum", spouseNum);
+		int oldFriendNum = oldFriendService.findPublishNum(userBo.getId());
+		map.put("oldFriendNum", oldFriendNum);
 		return JSONObject.fromObject(map).toString();
 	}
 	
