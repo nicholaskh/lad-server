@@ -2,10 +2,7 @@ package com.lad.scrapybo;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-
-import java.io.Serializable;
 
 /**
  * 功能描述：
@@ -28,11 +25,14 @@ public class VideoBo extends BaseInforBo {
     private String firstUrl;
 
     private String firstId;
+    
+    private String firstPoster;
 
     private int firstShare;
 
     private int firstComment;
 
     private int firstThump;
-
+    //当前合集总集数
+    private int totalNum;
 }
