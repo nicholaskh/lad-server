@@ -6,8 +6,13 @@ import com.lad.util.Constant;
 import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.geo.Distance;
+import org.springframework.data.geo.GeoResults;
+import org.springframework.data.geo.Metrics;
+import org.springframework.data.geo.Point;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.NearQuery;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
@@ -224,5 +229,16 @@ public class PartyDaoImpl implements IPartyDao {
         query.addCriteria(new Criteria("circleid").is(circleid));
         query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
         return mongoTemplate.count(query, PartyBo.class);
+    }
+
+    public GeoResults<PartyBo> findNearParty(double[] position, int maxDistance, int limit){
+        Point point = new Point(position[0],position[1]);
+        NearQuery near =NearQuery.near(point);
+        Distance distance = new Distance(maxDistance/1000, Metrics.KILOMETERS);
+        near.maxDistance(distance);
+        Query query = new Query();
+        query.limit(limit);
+        near.query(query);
+        return mongoTemplate.geoNear(near, PartyBo.class);
     }
 }

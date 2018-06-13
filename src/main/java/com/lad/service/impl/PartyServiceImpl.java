@@ -9,6 +9,7 @@ import com.lad.dao.IPartyUserDao;
 import com.lad.service.IPartyService;
 import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.geo.GeoResults;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -201,5 +202,10 @@ public class PartyServiceImpl implements IPartyService {
     @Override
     public long getCirclePartyNum(String circleid) {
         return partyDao.findNumByCircleid(circleid);
+    }
+
+    @Override
+    public GeoResults<PartyBo> findNearParty(double[] position, int maxDistance, int limit) {
+        return partyDao.findNearParty(position, maxDistance, limit);
     }
 }

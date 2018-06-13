@@ -29,7 +29,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -1432,7 +1431,6 @@ public class CircleController extends BaseContorller {
 	@PostMapping("/near-circle")
 	public String nearPeopel(double px, double py, HttpServletRequest request, HttpServletResponse
 			response) {
-		HttpSession session = request.getSession();
 		double[] position = new double[]{px, py};
 		//未登录情况
 		UserBo userBo = getUserLogin(request);

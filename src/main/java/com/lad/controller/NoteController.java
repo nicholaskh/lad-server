@@ -20,6 +20,8 @@ import org.apache.logging.log4j.Logger;
 import org.redisson.api.RLock;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.geo.GeoResult;
+import org.springframework.data.geo.GeoResults;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,6 +31,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -1408,6 +1411,43 @@ public class NoteController extends BaseContorller {
 				ERRORCODE.FORMAT_ERROR.getReason());
 	}
 
+
+	@ApiOperation("附近的帖子列表,默认10千米范围")
+	@ApiImplicitParams({@ApiImplicitParam(name = "px", value = "当前人位置经度", required = true, paramType = "query",
+			dataType = "double"),
+			@ApiImplicitParam(name = "py", value = "当前人位置纬度",  required = true,paramType = "query",
+					dataType = "double"),
+			@ApiImplicitParam(name = "limit", value = "显示条数",  required = true,paramType = "query",
+					dataType = "int")})
+	@PostMapping("/near-notes")
+	public String nearPeopel(double px, double py, int limit, HttpServletRequest request, HttpServletResponse
+			response) {
+		double[] position = new double[]{px, py};
+		//未登录情况
+		UserBo userBo = getUserLogin(request);
+		String userid = userBo != null ? userBo.getId() : "";
+		GeoResults<NoteBo> noteBos = noteService.findNearNote(position, 10000, limit);
+		DecimalFormat df = new DecimalFormat("###.00");
+		List<NoteVo> noteVoList = new LinkedList<>();
+		for(GeoResult<NoteBo> result : noteBos) {
+			NoteBo noteBo = result.getContent();
+			NoteVo noteVo = new NoteVo();
+			if (noteBo.getCreateuid().equals(userid)) {
+				boToVo(noteBo, noteVo, userBo, userid);
+			} else {
+				UserBo user = userService.getUser(noteBo.getCreateuid());
+				boToVo(noteBo, noteVo, user, userid);
+			}
+			double dis = Double.parseDouble(df.format(result.getDistance().getValue()));
+			noteVo.setDistance(dis);
+			noteVo.setMyThumbsup(hasThumbsup(userid, noteBo.getId()));
+			noteVoList.add(noteVo);
+		}
+		Map<String, Object> map = new HashMap<>();
+		map.put("ret", 0);
+		map.put("noteVoList", noteVoList);
+		return JSONObject.fromObject(map).toString();
+	}
 
 
 

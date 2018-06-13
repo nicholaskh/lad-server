@@ -2,6 +2,7 @@ package com.lad.dao;
 
 import com.lad.bo.NoteBo;
 import com.mongodb.WriteResult;
+import org.springframework.data.geo.GeoResults;
 
 import java.util.Date;
 import java.util.LinkedList;
@@ -230,6 +231,14 @@ public interface INoteDao extends IBaseDao {
 	 * @return
 	 */
 	List<NoteBo> findTypeNotes(String type, int page, int limit);
-	
+
+	/**
+	 * 附近的帖子
+	 * @param position
+	 * @param maxDistance
+	 * @param limit
+	 * @return
+	 */
+	GeoResults<NoteBo> findNearNote(double[] position, int maxDistance, int limit);
 
 }
