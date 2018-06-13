@@ -5,7 +5,10 @@ import com.lad.bo.*;
 import com.lad.redis.RedisServer;
 import com.lad.scrapybo.*;
 import com.lad.service.*;
-import com.lad.util.*;
+import com.lad.util.CommonUtil;
+import com.lad.util.Constant;
+import com.lad.util.ERRORCODE;
+import com.lad.util.MyException;
 import com.lad.vo.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -23,7 +26,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -1385,34 +1387,34 @@ public class InforController extends BaseContorller {
                     classVo.setCommentNum(bo.getFirstComment());
                     classVo.setUrl(bo.getFirstUrl());
                     classVo.setTotalNum(bo.getTotalNum());
-                    //缩略图
-                    if (StringUtils.isEmpty(bo.getFirstPoster())){
-                        String picName = FFmpegUtil.inforTransfer(bo.getFirstUrl(), Constant.INFOR_PICTURE_PATH, bo.getFirstId());
-                        if (StringUtils.isEmpty(picName)){
-                            picName = FFmpegUtil.inforTransfer(bo.getFirstUrl(),  Constant.INFOR_PICTURE_PATH, bo.getFirstId());
-                        }
-                        if (!StringUtils.isEmpty(picName)){
-                            File file = null;
-                            try {
-                                file = new File(Constant.INFOR_PICTURE_PATH, picName);
-                            } catch (Exception e){
-                                logger.error(e);
-                            }
-                            if (file != null && file.exists()){
-                                String vedioPic = QiNiu.uploadToQiNiu(Constant.INFOR_PICTURE_PATH, picName);
-                                String path = Constant.QINIU_URL + vedioPic + "?v=" + CommonUtil.getRandom1();
-                                inforService.updateVideoPicById(bo.getId(), path);
-                                classVo.setPicture(path);
-                                file.delete();
-                            }
-                        } else {
-                            inforService.updateVideoPicById(bo.getId(), "noPic");
-                        }
-                    } else if (bo.getPoster().equals("noPic")) {
-                        classVo.setPicture("");
-                    } else {
-                        classVo.setPicture(bo.getFirstPoster());
-                    }
+//                    //缩略图
+//                    if (StringUtils.isEmpty(bo.getFirstPoster())){
+//                        String picName = FFmpegUtil.inforTransfer(bo.getFirstUrl(), Constant.INFOR_PICTURE_PATH, bo.getFirstId());
+//                        if (StringUtils.isEmpty(picName)){
+//                            picName = FFmpegUtil.inforTransfer(bo.getFirstUrl(),  Constant.INFOR_PICTURE_PATH, bo.getFirstId());
+//                        }
+//                        if (!StringUtils.isEmpty(picName)){
+//                            File file = null;
+//                            try {
+//                                file = new File(Constant.INFOR_PICTURE_PATH, picName);
+//                            } catch (Exception e){
+//                                logger.error(e);
+//                            }
+//                            if (file != null && file.exists()){
+//                                String vedioPic = QiNiu.uploadToQiNiu(Constant.INFOR_PICTURE_PATH, picName);
+//                                String path = Constant.QINIU_URL + vedioPic + "?v=" + CommonUtil.getRandom1();
+//                                inforService.updateVideoPicById(bo.getId(), path);
+//                                classVo.setPicture(path);
+//                                file.delete();
+//                            }
+//                        } else {
+//                            inforService.updateVideoPicById(bo.getId(), "noPic");
+//                        }
+//                    } else if (bo.getPoster().equals("noPic")) {
+//                        classVo.setPicture("");
+//                    } else {
+//                        classVo.setPicture(bo.getFirstPoster());
+//                    }
                     if (!"".equals(userid)) {
                         ThumbsupBo thumbsupBo = thumbsupService.findHaveOwenidAndVisitorid(bo.getFirstId(),userid);
                         classVo.setSelfSub(thumbsupBo != null);
@@ -1449,33 +1451,33 @@ public class InforController extends BaseContorller {
                 classVo.setUrl(bo.getFirstUrl());
                 classVo.setTotalNum(bo.getTotalNum());
                 //缩略图
-                if (StringUtils.isEmpty(bo.getFirstPoster())){
-                    String picName = FFmpegUtil.inforTransfer(bo.getFirstUrl(), Constant.INFOR_PICTURE_PATH, bo.getFirstId());
-                    if (StringUtils.isEmpty(picName)){
-                        picName = FFmpegUtil.inforTransfer(bo.getFirstUrl(),  Constant.INFOR_PICTURE_PATH, bo.getFirstId());
-                    }
-                    if (!StringUtils.isEmpty(picName)){
-                        File file = null;
-                        try {
-                            file = new File(Constant.INFOR_PICTURE_PATH, picName);
-                        } catch (Exception e){
-                            logger.error(e);
-                        }
-                        if (file != null && file.exists()){
-                            String vedioPic = QiNiu.uploadToQiNiu(Constant.INFOR_PICTURE_PATH, picName);
-                            String path = Constant.QINIU_URL + vedioPic + "?v=" + CommonUtil.getRandom1();
-                            inforService.updateVideoPicById(bo.getId(), path);
-                            classVo.setPicture(path);
-                            file.delete();
-                        }
-                    } else {
-                        inforService.updateVideoPicById(bo.getId(), "noPic");
-                    }
-                } else if (bo.getPoster().equals("noPic")) {
-                    classVo.setPicture("");
-                } else {
-                    classVo.setPicture(bo.getFirstPoster());
-                }
+//                if (StringUtils.isEmpty(bo.getFirstPoster())){
+//                    String picName = FFmpegUtil.inforTransfer(bo.getFirstUrl(), Constant.INFOR_PICTURE_PATH, bo.getFirstId());
+//                    if (StringUtils.isEmpty(picName)){
+//                        picName = FFmpegUtil.inforTransfer(bo.getFirstUrl(),  Constant.INFOR_PICTURE_PATH, bo.getFirstId());
+//                    }
+//                    if (!StringUtils.isEmpty(picName)){
+//                        File file = null;
+//                        try {
+//                            file = new File(Constant.INFOR_PICTURE_PATH, picName);
+//                        } catch (Exception e){
+//                            logger.error(e);
+//                        }
+//                        if (file != null && file.exists()){
+//                            String vedioPic = QiNiu.uploadToQiNiu(Constant.INFOR_PICTURE_PATH, picName);
+//                            String path = Constant.QINIU_URL + vedioPic + "?v=" + CommonUtil.getRandom1();
+//                            inforService.updateVideoPicById(bo.getId(), path);
+//                            classVo.setPicture(path);
+//                            file.delete();
+//                        }
+//                    } else {
+//                        inforService.updateVideoPicById(bo.getId(), "noPic");
+//                    }
+//                } else if (bo.getPoster().equals("noPic")) {
+//                    classVo.setPicture("");
+//                } else {
+//                    classVo.setPicture(bo.getFirstPoster());
+//                }
                 if (!"".equals(userid)) {
                     ThumbsupBo thumbsupBo = thumbsupService.findHaveOwenidAndVisitorid(bo.getFirstId(),userid);
                     classVo.setSelfSub(thumbsupBo != null);
