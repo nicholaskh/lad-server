@@ -71,6 +71,8 @@ public interface IMarriageService extends IBaseService {
 
 	public List<WaiterBo> findListByKeyword(String keyWord,int type,int page, int limit, Class clazz);
 
+	public int findPublishGirlNum(String uid);
+
 
 	
 }

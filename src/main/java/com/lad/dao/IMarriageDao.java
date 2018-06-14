@@ -44,4 +44,6 @@ public interface IMarriageDao {
 
 	List<WaiterBo> findListByKeyword(String keyWord,int type,int page, int limit, Class clazz);
 
+	int findPublishGirlNum(String uid);
+
 }

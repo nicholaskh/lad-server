@@ -41,7 +41,7 @@ public class MarriageDaoImpl implements IMarriageDao {
 	public int findPublishNum(String id) {
 		Query query = new Query();
 		Criteria criteria = new Criteria();
-		criteria.andOperator(Criteria.where("createuid").is(id),Criteria.where("deleted").is(Constant.ACTIVITY));
+		criteria.andOperator(Criteria.where("createuid").is(id),Criteria.where("deleted").is(Constant.ACTIVITY),Criteria.where("sex").is(1));
 		query.addCriteria(criteria);
 		return (int)mongoTemplate.count(query, WaiterBo.class);
 	}
@@ -292,5 +292,10 @@ public class MarriageDaoImpl implements IMarriageDao {
 		Query query = new Query();
 		query.addCriteria(criertia).skip((page-1)*limit).limit(limit).with(new Sort(new Order(Direction.DESC,"createTime")));
 		return mongoTemplate.find(query, clazz);
+	}
+
+	@Override
+	public int findPublishGirlNum(String uid) {
+		return (int)mongoTemplate.count(new Query(Criteria.where("createuid").is(uid).and("deleted").is(Constant.ACTIVITY).and("sex").is(0)), WaiterBo.class);
 	}
 }

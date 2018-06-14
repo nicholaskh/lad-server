@@ -64,10 +64,13 @@ public class CommonsController extends BaseContorller{
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 		
-		int marriageNum = marriageService.findPublishNum(userBo.getId());
+		
 		Map map = new HashMap<>();
 		map.put("ret", 0);
-		map.put("marriageNum", marriageNum);
+		int marriageBoyNum = marriageService.findPublishNum(userBo.getId());
+		map.put("marriageBoyNum", marriageBoyNum);
+		int marriageGirlNum = marriageService.findPublishGirlNum(userBo.getId());
+		map.put("marriageGirlNum", marriageGirlNum);
 		int travelersNum = travelersService.findPublishNum(userBo.getId());
 		map.put("travelersNum", travelersNum);
 		int spouseNum = spouseService.findPublishNum(userBo.getId());

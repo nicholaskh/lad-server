@@ -163,6 +163,11 @@ public class MarriageServiceImpl implements IMarriageService {
 		return marriageDao.findListByKeyword(keyWord,type,page,limit,WaiterBo.class);
 	}
 
+	@Override
+	public int findPublishGirlNum(String uid) {
+		return marriageDao.findPublishGirlNum(uid);
+	}
+
 
 
 

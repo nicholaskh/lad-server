@@ -395,14 +395,17 @@ public class OldFriendController extends BaseContorller {
 		WriteResult result = oldFriendService.updateByParams(params, requireId);
 
 		Map map = new HashMap<>();
-		if (result.isUpdateOfExisting()) {
+		map.put("ret", 0);
+		map.put("uid", userBo.getId());
+		map.put("requireId", requireId);
+		/*if (result.isUpdateOfExisting()) {
 			map.put("ret", 0);
 			map.put("uid", userBo.getId());
 			map.put("requireId", requireId);
 		} else {
 			map.put("ret", -1);
 			map.put("message", "修改失败");
-		}
+		}*/
 		return JSON.toJSONString(map);
 	}
 
