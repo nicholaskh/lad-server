@@ -2,6 +2,7 @@ package com.lad.dao;
 
 import com.lad.bo.PartyBo;
 import com.mongodb.WriteResult;
+import org.springframework.data.geo.GeoResults;
 
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -136,5 +137,15 @@ public interface IPartyDao {
      * @return
      */
     WriteResult updatePartyStatus(String id, int status);
+
+
+    /**
+     * 附近的聚会
+     * @param position
+     * @param maxDistance
+     * @param limit
+     * @return
+     */
+    GeoResults<PartyBo> findNearParty(double[] position, int maxDistance, int limit);
 
 }

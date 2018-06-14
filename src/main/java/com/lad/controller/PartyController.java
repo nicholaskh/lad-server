@@ -16,6 +16,8 @@ import org.apache.logging.log4j.Logger;
 import org.redisson.api.RLock;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.geo.GeoResult;
+import org.springframework.data.geo.GeoResults;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -27,6 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.beans.BeanInfo;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -113,6 +116,7 @@ public class PartyController extends BaseContorller {
         partyBo.setStatus(1);
         partyBo.setCreateuid(userId);
         LinkedList<String> partyUsers = partyBo.getUsers();
+        
         partyUsers.add(userId);
         partyBo.setPartyUserNum(1);
         partyBo.setForward(0);
@@ -617,6 +621,7 @@ public class PartyController extends BaseContorller {
                     updatePartyStatus(partyBo.getId(), status);
                 }
             }
+            listVo.setJoin(true);
             listVo.setPartyid(partyBo.getId());
             listVo.setHasNotice(partyNoticeBo != null);
             listVo.setUserNum(partyBo.getPartyUserNum());
@@ -649,6 +654,7 @@ public class PartyController extends BaseContorller {
                 listVo.setFromUserid(createid);
                 String name = "";
                 if (null != userBo ) {
+                    listVo.setJoin(forward.getUsers().contains(userBo.getId()));
                     if (!userBo.getId().equals(createid)) {
                         FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(userBo.getId(), createid);
                         if (friendsBo != null && StringUtils.isNotEmpty(friendsBo.getBackname())) {
@@ -673,6 +679,7 @@ public class PartyController extends BaseContorller {
                 listVo.setPartyid(partyBo.getId());
                 listVo.setHasNotice(partyNoticeBo != null);
                 listVo.setUserNum(partyBo.getPartyUserNum());
+                listVo.setJoin(partyBo.getUsers().contains(userBo.getId()));
             }
             partyListVos.add(listVo);
         }
@@ -1596,6 +1603,59 @@ public class PartyController extends BaseContorller {
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("ret", 0);
         map.put("partyid", partyBo.getId());
+        return JSONObject.fromObject(map).toString();
+    }
+
+
+
+    @ApiOperation("附近聚会列表,默认10千米范围")
+    @ApiImplicitParams({@ApiImplicitParam(name = "px", value = "当前人位置经度", required = true, paramType = "query",
+            dataType = "double"),
+            @ApiImplicitParam(name = "py", value = "当前人位置纬度",  required = true,paramType = "query",
+                    dataType = "double"),
+            @ApiImplicitParam(name = "limit", value = "显示条数",  required = true,paramType = "query",
+                    dataType = "int")})
+    @PostMapping("/near-partys")
+    public String nearPeopel(double px, double py, int limit, HttpServletRequest request, HttpServletResponse
+            response) {
+        double[] position = new double[]{px, py};
+        //未登录情况
+        UserBo userBo = getUserLogin(request);
+        String userid = userBo != null ? userBo.getId() : "";
+        GeoResults<PartyBo> partyBos = partyService.findNearParty(position, 10000, limit);
+        List<PartyListVo> listVos = new LinkedList<>();
+        DecimalFormat df = new DecimalFormat("###.00");
+        for(GeoResult<PartyBo> result : partyBos) {
+            PartyBo partyBo = result.getContent();
+            //判断用户是否已经删除这个信息
+            PartyNoticeBo partyNoticeBo = partyService.findPartyNotice(partyBo.getId());
+            PartyListVo listVo = new PartyListVo();
+            BeanUtils.copyProperties(partyBo, listVo);
+            if (partyBo.getStatus() != 3) {
+                int status = getPartyStatus(partyBo.getStartTime(), partyBo.getAppointment());
+                //人数以报满
+                if (status == 1 && partyBo.getUserLimit() <= partyBo.getPartyUserNum() && partyBo.getUserLimit()
+                        !=0 ) {
+                    if (partyBo.getStatus() != 2) {
+                        updatePartyStatus(partyBo.getId(), 2);
+                        listVo.setStatus(2);
+                    }
+                } else if (status != partyBo.getStatus()){
+                    listVo.setStatus(status);
+                    updatePartyStatus(partyBo.getId(), status);
+                }
+            }
+            listVo.setJoin(partyBo.getUsers().contains(userid));
+            double dis = Double.parseDouble(df.format(result.getDistance().getValue()));
+            listVo.setDistance(dis);
+            listVo.setPartyid(partyBo.getId());
+            listVo.setHasNotice(partyNoticeBo != null);
+            listVo.setUserNum(partyBo.getPartyUserNum());
+            listVos.add(listVo);
+        }
+        Map<String, Object> map = new HashMap<>();
+        map.put("ret", 0);
+        map.put("partyListVos", listVos);
         return JSONObject.fromObject(map).toString();
     }
 

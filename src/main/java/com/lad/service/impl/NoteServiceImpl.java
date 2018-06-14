@@ -6,6 +6,7 @@ import com.lad.dao.INoteDao;
 import com.lad.service.INoteService;
 import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.geo.GeoResults;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -163,5 +164,10 @@ public class NoteServiceImpl implements INoteService {
 	@Override
 	public List<NoteBo> selectByNoteType(String circleid, String type, int page, int limit) {
 		return noteDao.selectByNoteType(circleid, type, page, limit);
+	}
+
+	@Override
+	public GeoResults<NoteBo> findNearNote(double[] position, int maxDistance, int limit) {
+		return noteDao.findNearNote(position, maxDistance, limit);
 	}
 }

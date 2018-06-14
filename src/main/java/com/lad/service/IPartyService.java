@@ -4,6 +4,7 @@ import com.lad.bo.PartyBo;
 import com.lad.bo.PartyNoticeBo;
 import com.lad.bo.PartyUserBo;
 import com.mongodb.WriteResult;
+import org.springframework.data.geo.GeoResults;
 
 import java.util.List;
 
@@ -250,4 +251,13 @@ public interface IPartyService {
      * @return
      */
     PartyNoticeBo findPartyNotice(String partyid);
+
+    /**
+     * 附近的聚会
+     * @param position
+     * @param maxDistance
+     * @param limit
+     * @return
+     */
+    GeoResults<PartyBo> findNearParty(double[] position, int maxDistance, int limit);
 }

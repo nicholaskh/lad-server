@@ -1,5 +1,8 @@
 package com.lad.vo;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.LinkedHashSet;
 
 /**
@@ -8,6 +11,8 @@ import java.util.LinkedHashSet;
  * Version: 1.0
  * Time:2017/10/2
  */
+@Getter
+@Setter
 public class PartyListVo extends BaseVo {
 
     private String partyid;
@@ -56,187 +61,7 @@ public class PartyListVo extends BaseVo {
 
     private String view;
 
-    public String getPartyid() {
-        return partyid;
-    }
+    private double distance;
 
-    public void setPartyid(String partyid) {
-        this.partyid = partyid;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getBackPic() {
-        return backPic;
-    }
-
-    public void setBackPic(String backPic) {
-        this.backPic = backPic;
-    }
-
-    public LinkedHashSet<String> getPhotos() {
-        return photos;
-    }
-
-    public void setPhotos(LinkedHashSet<String> photos) {
-        this.photos = photos;
-    }
-
-    public String getVideo() {
-        return video;
-    }
-
-    public void setVideo(String video) {
-        this.video = video;
-    }
-
-    public String getVideoPic() {
-        return videoPic;
-    }
-
-    public void setVideoPic(String videoPic) {
-        this.videoPic = videoPic;
-    }
-
-    public LinkedHashSet<String> getStartTime() {
-        return startTime;
-    }
-
-    public void setStartTime(LinkedHashSet<String> startTime) {
-        this.startTime = startTime;
-    }
-
-    public String getAddrInfo() {
-        return addrInfo;
-    }
-
-    public void setAddrInfo(String addrInfo) {
-        this.addrInfo = addrInfo;
-    }
-
-    public String getLandmark() {
-        return landmark;
-    }
-
-    public void setLandmark(String landmark) {
-        this.landmark = landmark;
-    }
-
-    public int getStatus() {
-        return status;
-    }
-
-    public void setStatus(int status) {
-        this.status = status;
-    }
-
-    public int getUserNum() {
-        return userNum;
-    }
-
-    public void setUserNum(int userNum) {
-        this.userNum = userNum;
-    }
-
-    public boolean isHasNotice() {
-        return hasNotice;
-    }
-
-    public void setHasNotice(boolean hasNotice) {
-        this.hasNotice = hasNotice;
-    }
-
-    public boolean isForward() {
-        return isForward;
-    }
-
-    public void setForward(boolean forward) {
-        isForward = forward;
-    }
-
-    public String getFromUserid() {
-        return fromUserid;
-    }
-
-    public void setFromUserid(String fromUserid) {
-        this.fromUserid = fromUserid;
-    }
-
-    public String getFromUserName() {
-        return fromUserName;
-    }
-
-    public void setFromUserName(String fromUserName) {
-        this.fromUserName = fromUserName;
-    }
-
-    public String getFromUserPic() {
-        return fromUserPic;
-    }
-
-    public void setFromUserPic(String fromUserPic) {
-        this.fromUserPic = fromUserPic;
-    }
-
-    public String getFromUserSign() {
-        return fromUserSign;
-    }
-
-    public void setFromUserSign(String fromUserSign) {
-        this.fromUserSign = fromUserSign;
-    }
-
-    public String getFromUserSex() {
-        return fromUserSex;
-    }
-
-    public void setFromUserSex(String fromUserSex) {
-        this.fromUserSex = fromUserSex;
-    }
-
-    public String getView() {
-        return view;
-    }
-
-    public void setView(String view) {
-        this.view = view;
-    }
-
-    public String getSourceCirid() {
-        return sourceCirid;
-    }
-
-    public void setSourceCirid(String sourceCirid) {
-        this.sourceCirid = sourceCirid;
-    }
-
-    public String getSourceCirName() {
-        return sourceCirName;
-    }
-
-    public void setSourceCirName(String sourceCirName) {
-        this.sourceCirName = sourceCirName;
-    }
-
-    public int getFromUserLevel() {
-        return fromUserLevel;
-    }
-
-    public void setFromUserLevel(int fromUserLevel) {
-        this.fromUserLevel = fromUserLevel;
-    }
-
-    public String getFromUserBirth() {
-        return fromUserBirth;
-    }
-
-    public void setFromUserBirth(String fromUserBirth) {
-        this.fromUserBirth = fromUserBirth;
-    }
+    private boolean isJoin;
 }

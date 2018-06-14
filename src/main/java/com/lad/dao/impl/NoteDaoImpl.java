@@ -8,12 +8,17 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.geo.Distance;
+import org.springframework.data.geo.GeoResults;
+import org.springframework.data.geo.Metrics;
+import org.springframework.data.geo.Point;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.core.aggregation.GroupOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.NearQuery;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
@@ -380,5 +385,17 @@ public class NoteDaoImpl implements INoteDao {
 		query.skip((page -1) * limit);
 		query.limit(limit);
 		return mongoTemplate.find(query, NoteBo.class);
+	}
+
+
+	public GeoResults<NoteBo> findNearNote(double[] position, int maxDistance, int limit){
+		Point point = new Point(position[0],position[1]);
+		NearQuery near =NearQuery.near(point);
+		Distance distance = new Distance(maxDistance/1000, Metrics.KILOMETERS);
+		near.maxDistance(distance);
+		Query query = new Query();
+		query.limit(limit);
+		near.query(query);
+		return mongoTemplate.geoNear(near, NoteBo.class);
 	}
 }
