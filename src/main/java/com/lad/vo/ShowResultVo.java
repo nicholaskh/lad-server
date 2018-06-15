@@ -18,6 +18,9 @@ public class ShowResultVo {
 	private String sex;
 	private Object age;
 	
+	private String uid;
+	private boolean friend;
+	
 	// 驴友
 	private String days;
 	private String destination;

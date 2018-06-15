@@ -25,10 +25,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.alibaba.fastjson.JSON;
 import com.lad.bo.CareAndPassBo;
+import com.lad.bo.FriendsBo;
 import com.lad.bo.TravelersRequireBo;
 import com.lad.bo.UserBo;
 import com.lad.bo.UserTasteBo;
 import com.lad.service.CareAndPassService;
+import com.lad.service.IFriendsService;
 import com.lad.service.IUserService;
 import com.lad.service.TravelersService;
 import com.lad.util.CommonUtil;
@@ -56,6 +58,9 @@ public class TravelersController extends BaseContorller {
 
 	@Autowired
 	private CareAndPassService careAndPassService;
+	
+	@Autowired
+	private IFriendsService friendsService;
 
 	@GetMapping("/recommend")
 	public String recommend(String requireId, HttpServletRequest request, HttpServletResponse response) {
@@ -81,8 +86,7 @@ public class TravelersController extends BaseContorller {
 			Map resultOne = new HashMap<>();
 			for (Map recMap : recommend) {
 				TravelersRequireBo resultBo = (TravelersRequireBo)recMap.get("result");
-				ShowResultVo showResultVo = getShowResultVo(resultBo);
-				System.out.println(showResultVo);
+				ShowResultVo showResultVo = getShowResultVo(userBo,resultBo);
 				resultOne.put("match", recMap.get("match"));
 				resultOne.put("baseData", showResultVo);
 				resultOne.put("require", resultBo);
@@ -445,7 +449,7 @@ public class TravelersController extends BaseContorller {
 		Map<String, Object> map = new HashMap<>();
 		
 		if (requireBo != null) {
-			ShowResultVo showResult = getShowResultVo(requireBo);
+			ShowResultVo showResult = getShowResultVo(userBo,requireBo);
 
 			// showResult.setRequire(JSON.toJSONString(requireBo));
 
@@ -574,7 +578,7 @@ public class TravelersController extends BaseContorller {
 		return JSONObject.fromObject(map2).toString();
 	}
 	
-	private ShowResultVo getShowResultVo(TravelersRequireBo requireBo) {
+	private ShowResultVo getShowResultVo(UserBo userBo,TravelersRequireBo requireBo) {
 		DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 		requireBo.setAssembleTime(format.format(requireBo.getAssembleTime()));
 
@@ -601,6 +605,18 @@ public class TravelersController extends BaseContorller {
 			showResult.setAge(CommonUtil.getAge(birth));
 		}
 
+		
+		if(!(user.getId().equals(userBo.getId()))){
+			showResult.setUid(user.getId());
+			FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(userBo.getId(),user.getId());
+			if(friendsBo!=null){
+				showResult.setFriend(true);
+			}else{
+				showResult.setFriend(false);
+			}
+		}
+		
+		
 		// 设置居住地
 		showResult.setAddress(user.getCity());
 

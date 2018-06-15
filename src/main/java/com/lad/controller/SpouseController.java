@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.alibaba.fastjson.JSON;
 import com.lad.bo.CareAndPassBo;
+import com.lad.bo.FriendsBo;
 import com.lad.bo.RequireBo;
 import com.lad.bo.SpouseBaseBo;
 import com.lad.bo.SpouseRequireBo;
@@ -34,12 +35,14 @@ import com.lad.bo.TravelersRequireBo;
 import com.lad.bo.UserBo;
 import com.lad.bo.WaiterBo;
 import com.lad.service.CareAndPassService;
+import com.lad.service.IFriendsService;
 import com.lad.service.SpouseService;
 import com.lad.util.CommonUtil;
 import com.lad.util.Constant;
 import com.lad.util.ERRORCODE;
 import com.lad.vo.CareResultVo;
 import com.lad.vo.RequireVo;
+import com.lad.vo.ShowResultVo;
 import com.lad.vo.SpouseBaseVo;
 import com.lad.vo.SpouseRequireVo;
 import com.lad.vo.WaiterVo;
@@ -59,6 +62,10 @@ public class SpouseController  extends BaseContorller{
 	
 	@Autowired
 	private CareAndPassService careAndPassService;
+	
+	
+	@Autowired
+	private IFriendsService friendsService;
 	
 	
 	@GetMapping("/recommend")
@@ -81,6 +88,8 @@ public class SpouseController  extends BaseContorller{
 		SpouseRequireBo require = spouseService.findRequireById(baseId);
 		
 		List<Map> recommend = spouseService.getRecommend(require);
+		
+
 		
 		
 		map.put("ret", 0);
@@ -534,6 +543,9 @@ public class SpouseController  extends BaseContorller{
 		}
 		
 		
+		
+		
+		
 		Map<String,Object> map = new HashMap<>();
 		SpouseBaseBo baseBo = spouseService.findBaseById(spouseId);
 		if(baseBo == null){
@@ -550,6 +562,21 @@ public class SpouseController  extends BaseContorller{
 		}else{
 			map.put("require", ERRORCODE.MARRIAGE_QUIRE_NULL.getReason());
 		}
+		
+		if(!(baseBo.getCreateuid().equals(userBo.getId()))){
+			ShowResultVo result = new ShowResultVo();
+			result.setUid(baseBo.getCreateuid());
+			FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(userBo.getId(),baseBo.getCreateuid());
+			if(friendsBo!=null){
+				result.setFriend(true);
+			}else{
+				result.setFriend(false);
+			}
+			map.put("friend", result);
+		}else{
+			map.put("friend", "本人");
+		}
+		
 		map.put("ret", 0);
 		return JSON.toJSONString(map);
 	}
