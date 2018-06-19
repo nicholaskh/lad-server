@@ -1412,7 +1412,7 @@ public class NoteController extends BaseContorller {
 	}
 
 
-	@ApiOperation("附近的帖子列表,默认10千米范围")
+	@ApiOperation("附近的帖子列表,默认5千米范围")
 	@ApiImplicitParams({@ApiImplicitParam(name = "px", value = "当前人位置经度", required = true, paramType = "query",
 			dataType = "double"),
 			@ApiImplicitParam(name = "py", value = "当前人位置纬度",  required = true,paramType = "query",
@@ -1426,7 +1426,7 @@ public class NoteController extends BaseContorller {
 		//未登录情况
 		UserBo userBo = getUserLogin(request);
 		String userid = userBo != null ? userBo.getId() : "";
-		GeoResults<NoteBo> noteBos = noteService.findNearNote(position, 10000, limit);
+		GeoResults<NoteBo> noteBos = noteService.findNearNote(position, 5000, limit);
 		DecimalFormat df = new DecimalFormat("###.00");
 		List<NoteVo> noteVoList = new LinkedList<>();
 		for(GeoResult<NoteBo> result : noteBos) {
@@ -1441,6 +1441,37 @@ public class NoteController extends BaseContorller {
 			double dis = Double.parseDouble(df.format(result.getDistance().getValue()));
 			noteVo.setDistance(dis);
 			noteVo.setMyThumbsup(hasThumbsup(userid, noteBo.getId()));
+			noteVoList.add(noteVo);
+		}
+		Map<String, Object> map = new HashMap<>();
+		map.put("ret", 0);
+		map.put("noteVoList", noteVoList);
+		return JSONObject.fromObject(map).toString();
+	}
+
+	@ApiOperation("我的新帖子")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "page", value = "页码",  required = true,paramType = "query",
+					dataType = "int"),
+			@ApiImplicitParam(name = "limit", value = "显示条数",  required = true,paramType = "query",
+					dataType = "int")})
+	@PostMapping("/my-new-notes")
+	public String myNewNote(int page, int limit, HttpServletRequest request, HttpServletResponse
+			response) {
+		//未登录情况
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(), ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		String userid = userBo.getId();
+		List<NoteBo> noteBos = noteService.selectByUserid("", userid, page, limit);
+		List<NoteVo> noteVoList = new LinkedList<>();
+		for(NoteBo noteBo : noteBos) {
+			NoteVo noteVo = new NoteVo();
+			boToVo(noteBo, noteVo, userBo, userid);
+			noteVo.setMyThumbsup(hasThumbsup(userid, noteBo.getId()));
+			CircleBo circleBo = circleService.selectById(noteBo.getCircleId());
+			noteVo.setCirName(circleBo != null ? circleBo.getName() : "");
 			noteVoList.add(noteVo);
 		}
 		Map<String, Object> map = new HashMap<>();
