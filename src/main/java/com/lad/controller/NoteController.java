@@ -1426,7 +1426,7 @@ public class NoteController extends BaseContorller {
 		//未登录情况
 		UserBo userBo = getUserLogin(request);
 		String userid = userBo != null ? userBo.getId() : "";
-		GeoResults<NoteBo> noteBos = noteService.findNearNote(position, 5000, limit);
+		GeoResults<NoteBo> noteBos = noteService.findNearNote(position, 5000, limit,page);
 		DecimalFormat df = new DecimalFormat("###.00");
 		List<NoteVo> noteVoList = new LinkedList<>();
 		for(GeoResult<NoteBo> result : noteBos) {
