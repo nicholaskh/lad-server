@@ -38,7 +38,6 @@ public class TravelersDaoImpl implements ITravelersDao {
 		Query query = new Query(Criteria.where("_id").is(requireId).and("deleted").is(Constant.ACTIVITY));
 		Update update = new Update();
 		update.set("deleted", Constant.DELETED);
-		TravelersRequireBo findOne = mongoTemplate.findOne(query, TravelersRequireBo.class);
 		return mongoTemplate.updateFirst(query, update, TravelersRequireBo.class);
 	}
 
@@ -95,8 +94,7 @@ public class TravelersDaoImpl implements ITravelersDao {
 		Query query = new Query();
 		Criteria criteria = new Criteria();
 
-
-		criteria.andOperator(Criteria.where("deleted").is(Constant.ACTIVITY),Criteria.where("createuid").ne(id));
+		criteria.andOperator(Criteria.where("deleted").is(Constant.ACTIVITY), Criteria.where("createuid").ne(id));
 		query.addCriteria(criteria);
 		query.skip((page - 1) * limit);
 		query.limit(limit);
@@ -136,8 +134,8 @@ public class TravelersDaoImpl implements ITravelersDao {
 	@Override
 	public List<Map> getRecommend(TravelersRequireBo require) {
 		// 随机取100个实体
-		Query query = new Query(Criteria.where("deleted").is(Constant.ACTIVITY)
-				.and("createuid").ne(require.getCreateuid()));
+		Query query = new Query(
+				Criteria.where("deleted").is(Constant.ACTIVITY).and("createuid").ne(require.getCreateuid()));
 		int count = (int) mongoTemplate.count(query, "waiters");
 		Random r = new Random();
 		int length = (count - 99) > 0 ? (count - 99) : 1;
@@ -168,7 +166,7 @@ public class TravelersDaoImpl implements ITravelersDao {
 			age = require.getAge();
 		}
 
-		List temp = new ArrayList<>();
+		List<String> temp = new ArrayList<>();
 		List<Map> list = new ArrayList<>();
 		for (TravelersRequireBo other : find) {
 			if (temp.contains(other.getId())) {
@@ -177,45 +175,45 @@ public class TravelersDaoImpl implements ITravelersDao {
 
 			int match = 0;
 			// 目的地
-			if("不限".equals(destination)){
+			if ("不限".equals(destination)) {
 				match += 25;
-			}else if (other.getDestination() != null) {
+			} else if (other.getDestination() != null) {
 				if (destination.equals(other.getDestination())) {
 					match += 25;
 				}
 			}
 
 			// 时段
-			if("不限".equals(times)){
+			if ("不限".equals(times)) {
 				match += 25;
-			}else if (other.getTimes() != null) {
+			} else if (other.getTimes() != null) {
 				if (times.equals(other.getTimes())) {
 					match += 25;
 				}
 			}
-			
+
 			// 旅行方式
-			if("不限".equals(type)){
+			if ("不限".equals(type)) {
 				match += 20;
-			}else if (other.getType() != null) {
+			} else if (other.getType() != null) {
 				if (type.equals(other.getType())) {
 					match += 20;
 				}
 			}
 
 			// 驴友性别
-			if("不限".equals(sex)){
+			if ("不限".equals(sex)) {
 				match += 15;
-			}else if (other.getSex() != null) {
+			} else if (other.getSex() != null) {
 				if (sex.equals((String) other.getSex())) {
 					match += 15;
 				}
 			}
 
 			// 驴友年龄
-			if("不限".equals(age)){
+			if ("不限".equals(age)) {
 				match += 15;
-			}else if (other.getAge() != null) {
+			} else if (other.getAge() != null) {
 				if (age.equals((String) other.getAge())) {
 					match += 15;
 				}
@@ -233,7 +231,6 @@ public class TravelersDaoImpl implements ITravelersDao {
 			 */
 
 		}
-
 		return list;
 	}
 

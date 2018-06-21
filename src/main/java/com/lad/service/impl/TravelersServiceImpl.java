@@ -41,7 +41,6 @@ public class TravelersServiceImpl implements TravelersService {
 	 */
 	@Override
 	public TravelersRequireBo getRequireById(String requireId) {
-		
 		return travelersDao.getRequireById(requireId);
 	}
 

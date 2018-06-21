@@ -5,10 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
@@ -26,7 +23,7 @@ import com.mongodb.WriteResult;
 public class ExposeDao extends BaseDao<ExposeBo> {
 
 	/**
-	 * 更具参数匹配
+	 * 根据参数匹配
 	 * 
 	 * @param page
 	 * @param limit
@@ -55,8 +52,7 @@ public class ExposeDao extends BaseDao<ExposeBo> {
 	}
 
 	/**
-	 * 更具参数匹配
-	 * 
+	 * 根据参数匹配
 	 * @param params
 	 * @param page
 	 * @param limit
@@ -75,8 +71,7 @@ public class ExposeDao extends BaseDao<ExposeBo> {
 	}
 
 	/**
-	 * 更具参数匹配
-	 * 
+	 * 根据参数匹配
 	 * @param params
 	 * @return
 	 */
@@ -90,8 +85,7 @@ public class ExposeDao extends BaseDao<ExposeBo> {
 	}
 
 	/**
-	 * 更具参数匹配
-	 * 
+	 * 根据参数匹配
 	 * @param params
 	 * @return
 	 */

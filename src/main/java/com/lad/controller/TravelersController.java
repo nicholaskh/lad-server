@@ -80,11 +80,14 @@ public class TravelersController extends BaseContorller {
 
 		List<Map> recommend = travelersService.getRecommend(require);
 
-		List result = new ArrayList<>();
+		
 		if (recommend.size() >= 1) {
-			Map resultOne = new HashMap<>();
+			List result = new ArrayList<>();
+			
 			for (Map recMap : recommend) {
+				Map resultOne = new HashMap<>();
 				TravelersRequireBo resultBo = (TravelersRequireBo) recMap.get("result");
+				
 				ShowResultVo showResultVo = getShowResultVo(userBo, resultBo);
 				resultOne.put("match", recMap.get("match"));
 				resultOne.put("baseData", JSON.toJSONString(showResultVo));
@@ -93,7 +96,6 @@ public class TravelersController extends BaseContorller {
 				resultOne.put("require", JSON.toJSONString(resultBo));
 				result.add(resultOne);
 			}
-
 			map.put("ret", 0);
 			map.put("recommend", result);
 		} else {
@@ -631,6 +633,8 @@ public class TravelersController extends BaseContorller {
 
 		ShowResultVo showResult = new ShowResultVo();
 
+		System.out.println(requireBo);
+		
 		if (requireBo.getCreateuid() != null) {
 			// 编辑基础资料字段
 			UserBo user = userService.getUser(requireBo.getCreateuid());

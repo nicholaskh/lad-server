@@ -10,7 +10,7 @@ import lombok.ToString;
 
 @Setter
 @Getter
-@ToString
+@ToString				
 @Document(collection = "travelersRequire")
 public class TravelersRequireBo extends BaseBo {
 	private String destination;	// 目的地

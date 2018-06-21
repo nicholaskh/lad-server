@@ -67,11 +67,11 @@ public class OldFriendController extends BaseContorller {
 
 		List<Map> recommend = oldFriendService.getRecommend(require);
 
-		List result = new ArrayList<>();
+		
 		if (recommend.size() >= 1) {
-			
-			Map resultOne = new HashMap<>();
+			List result = new ArrayList<>();
 			for (Map recMap : recommend) {
+				Map resultOne = new HashMap<>();
 				OldFriendRequireBo resultBo = (OldFriendRequireBo) recMap.get("requireBo");
 				ShowResultVo showResultVo = getShowResultVo(resultBo);
 				resultOne.put("match", recMap.get("match"));
