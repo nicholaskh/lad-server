@@ -288,4 +288,6 @@ public interface IUserService extends IBaseService {
 	WriteResult removeUser(String id);
 
 	public UserBo findUserById(String id);
+
+	public WriteResult updateAddress(UserBo userBo);
 }

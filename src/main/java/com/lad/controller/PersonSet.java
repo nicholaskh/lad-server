@@ -55,6 +55,25 @@ public class PersonSet extends BaseContorller {
 		map.put("ret", 0);
 		return JSONObject.fromObject(map).toString();
 	}
+	
+	@ApiOperation("修改个人用户名称")
+	@PostMapping("/address")
+	public String address(String address, HttpServletRequest request, HttpServletResponse response) {
+		if (StringUtils.isEmpty(address)) {
+			return CommonUtil.toErrorResult(ERRORCODE.USER_USERNAME.getIndex(), ERRORCODE.USER_USERNAME.getReason());
+		}
+		UserBo userBo = getUserLogin(request);
+		if (userBo == null) {
+			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
+					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
+		}
+		userBo.setAddress(address);
+		userService.updateAddress(userBo);
+		updateUserSession(request, userService);
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("ret", 0);
+		return JSONObject.fromObject(map).toString();
+	}
 
 	@ApiOperation("修改个人出生日期")
 	@PostMapping("/birthday")

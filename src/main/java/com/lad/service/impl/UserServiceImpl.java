@@ -390,4 +390,10 @@ public class UserServiceImpl implements IUserService{
 	public UserBo findUserById(String id) {
 		return userDao.findUserById(id);
 	}
+
+	@Override
+	public WriteResult updateAddress(UserBo userBo) {
+		// TODO Auto-generated method stub
+		return userDao.updateAddress(userBo);
+	}
 }

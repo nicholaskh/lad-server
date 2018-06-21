@@ -237,7 +237,6 @@ public class ChatroomController extends BaseContorller {
 		}
 
 		/**
-		 * TODO 发通知成功，后面失败了如何处理
 		 *
 		 * 之所以先发通知，是因为调用了IMUtil.unSubscribe这个后，订阅的关系都解除了，就没法基于群聊发通知了，被踢出的人就不能收到消息
 		 */
@@ -335,7 +334,6 @@ public class ChatroomController extends BaseContorller {
 		}
 
 		/**
-		 * TODO 发通知成功，后面失败了如何处理
 		 *
 		 * 之所以先发通知，是因为调用了IMUtil.unSubscribe这个后，订阅的关系都解除了，就没法基于群聊发通知了，被踢出的人就不能收到消息
 		 * 目前先这样处理，之后需要添加基于个人的发送通知功能

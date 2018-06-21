@@ -141,6 +141,16 @@ public class UserDaoImpl implements IUserDao {
         update.set("updateTime", new Date());
         return mongoTemplate.updateFirst(query, update, UserBo.class);
     }
+    
+    public WriteResult updateAddress(UserBo userBo) {
+        Query query = new Query();
+        query.addCriteria(new Criteria("phone").is(userBo.getPhone()));
+        query.addCriteria(new Criteria("deleted").is(0));
+        Update update = new Update();
+        update.set("address", userBo.getAddress());
+        update.set("updateTime", new Date());
+        return mongoTemplate.updateFirst(query, update, UserBo.class);
+    }
 
     public WriteResult updateSex(UserBo userBo) {
         Query query = new Query();

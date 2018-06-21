@@ -32,7 +32,6 @@ import net.sf.json.JSONObject;
 
 /**
  * 通过改接口获取一些比较通用的数据
- * @author 向鹏
  *
  */
 @RestController
