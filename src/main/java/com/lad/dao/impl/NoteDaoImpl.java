@@ -335,10 +335,13 @@ public class NoteDaoImpl implements INoteDao {
 	@Override
 	public List<NoteBo> selectByUserid(String circleid, String userid, int page, int limit) {
 		Query query = new Query();
-		Criteria criteria = new Criteria("circleId").is(circleid).and("deleted").is(Constant.ACTIVITY);
+		Criteria criteria = new Criteria("deleted").is(Constant.ACTIVITY);
+		if (!StringUtils.isEmpty(circleid)) {
+			criteria.and("circleId").is(circleid);
+		}
 		criteria.and("createuid").is(userid);
 		query.addCriteria(criteria);
-		query.with(new Sort(Sort.Direction.DESC, "_id"));
+		query.with(new Sort(Sort.Direction.DESC, "createTime"));
 		page = page < 1 ? 1 : page;
 		query.skip((page -1) * limit);
 		query.limit(limit);
