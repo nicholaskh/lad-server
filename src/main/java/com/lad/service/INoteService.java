@@ -240,6 +240,6 @@ public interface INoteService extends IBaseService {
 	 * @param limit
 	 * @return
 	 */
-	GeoResults<NoteBo> findNearNote(double[] position, int maxDistance, int limit);
+	GeoResults<NoteBo> findNearNote(double[] position, int maxDistance, int limit,int page);
 }
 

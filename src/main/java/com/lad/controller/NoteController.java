@@ -1420,13 +1420,13 @@ public class NoteController extends BaseContorller {
 			@ApiImplicitParam(name = "limit", value = "显示条数",  required = true,paramType = "query",
 					dataType = "int")})
 	@PostMapping("/near-notes")
-	public String nearPeopel(double px, double py, int limit, HttpServletRequest request, HttpServletResponse
+	public String nearPeopel(double px, double py, int limit, int page, HttpServletRequest request, HttpServletResponse
 			response) {
 		double[] position = new double[]{px, py};
 		//未登录情况
 		UserBo userBo = getUserLogin(request);
 		String userid = userBo != null ? userBo.getId() : "";
-		GeoResults<NoteBo> noteBos = noteService.findNearNote(position, 10000, limit);
+		GeoResults<NoteBo> noteBos = noteService.findNearNote(position, 10000, limit,page);
 		DecimalFormat df = new DecimalFormat("###.00");
 		List<NoteVo> noteVoList = new LinkedList<>();
 		for(GeoResult<NoteBo> result : noteBos) {

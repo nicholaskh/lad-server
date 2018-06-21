@@ -167,7 +167,7 @@ public class NoteServiceImpl implements INoteService {
 	}
 
 	@Override
-	public GeoResults<NoteBo> findNearNote(double[] position, int maxDistance, int limit) {
-		return noteDao.findNearNote(position, maxDistance, limit);
+	public GeoResults<NoteBo> findNearNote(double[] position, int maxDistance, int limit,int page) {
+		return noteDao.findNearNote(position, maxDistance, limit,page);
 	}
 }

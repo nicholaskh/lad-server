@@ -360,16 +360,28 @@ public class MarriageController extends BaseContorller{
 			
 			for (Object Object : list) {
 				WaiterBo waiter = marriageService.findWaiterById(Object.toString());
-				list3.add(JSON.toJSONString(waiter));
+
+				if(waiter!=null){
+					
+					list3.add(JSON.toJSONString(waiter));
+				}
 			}
-			re.setAddTime(key);
-			re.setString(list3);
-			list2.add(re);
+			
+			if(list3.size()>0){
+				re.setAddTime(key);
+				re.setString(list3);
+				list2.add(re);
+			}
 		}
 		
-		map.put("ret", 0);
-		map.put("result", list2);
-		return JSONObject.fromObject(map).toString().replace("\\", "");
+		if(list2.size()>0){
+			map.put("ret", 0);
+			map.put("result", list2);
+		}else{
+			map.put("ret", -1);
+			map.put("result", "该账号下无关注或关注的发布已取消");
+		}
+		return JSON.toJSONString(map).replace("\\", "");
 	}
 	
 	@ApiOperation("取消发布")

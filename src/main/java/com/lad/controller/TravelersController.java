@@ -58,7 +58,7 @@ public class TravelersController extends BaseContorller {
 
 	@Autowired
 	private CareAndPassService careAndPassService;
-	
+
 	@Autowired
 	private IFriendsService friendsService;
 
@@ -72,37 +72,36 @@ public class TravelersController extends BaseContorller {
 		Map map = new HashMap<>();
 		// 通过基础id获取需求
 		TravelersRequireBo require = travelersService.getRequireById(requireId);
-		if(require==null){
+		if (require == null) {
 			map.put("ret", -1);
 			map.put("message", "请填写您的要求");
 			return JSONObject.fromObject(map).toString();
 		}
 
 		List<Map> recommend = travelersService.getRecommend(require);
-		
+
 		List result = new ArrayList<>();
-		if(recommend.size()>=1){
-			
+		if (recommend.size() >= 1) {
 			Map resultOne = new HashMap<>();
 			for (Map recMap : recommend) {
-				TravelersRequireBo resultBo = (TravelersRequireBo)recMap.get("result");
-				ShowResultVo showResultVo = getShowResultVo(userBo,resultBo);
+				TravelersRequireBo resultBo = (TravelersRequireBo) recMap.get("result");
+				ShowResultVo showResultVo = getShowResultVo(userBo, resultBo);
 				resultOne.put("match", recMap.get("match"));
-				resultOne.put("baseData", showResultVo);
-				resultOne.put("require", resultBo);
+				resultOne.put("baseData", JSON.toJSONString(showResultVo));
+				resultBo.setCreateTime(null);
+				resultBo.setDeleted(null);
+				resultOne.put("require", JSON.toJSONString(resultBo));
 				result.add(resultOne);
 			}
-			
-			
-			
+
 			map.put("ret", 0);
 			map.put("recommend", result);
-		}else{
-			map.put("ret",-1);
+		} else {
+			map.put("ret", -1);
 			map.put("message", "未找到匹配者");
 		}
 
-		return JSONObject.fromObject(map).toString();
+		return JSONObject.fromObject(map).toString().replace("\\", "").replace("\"{", "{").replace("}\"", "}");
 	}
 
 	@GetMapping("/search")
@@ -114,40 +113,79 @@ public class TravelersController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 
+//		keyWord="爱";
+		
 		List<TravelersRequireBo> list = travelersService.findListByKeyword(keyWord, page, limit,
 				TravelersRequireBo.class);
 		List resultList = new ArrayList();
+
+		// 从后台搜索出符合条件的实体,遍历获取发布者信息
 		for (TravelersRequireBo travelersRequireBo : list) {
-			UserBo user = userService.getUser(travelersRequireBo.getCreateuid());
-			ShowResultVo showResult = new ShowResultVo();
-			showResult.setId(travelersRequireBo.getId());
-			// 设置昵称
-			showResult.setNickName(user.getUserName());
-			// 设置头像
-			showResult.setHeadPicture(user.getHeadPictureName());
-			// 设置兴趣
-			UserTasteBo hobbys = userService.findByUserId(user.getId());
-			if (hobbys != null) {
-				hobbys.setId(null);
-				hobbys.setUserid(null);
-				hobbys.setDeleted(null);
-				hobbys.setUpdateTime(null);
-				hobbys.setUpdateuid(null);
-				hobbys.setCreateTime(null);
+			if (travelersRequireBo.getCreateuid() != null) {
+				UserBo user = userService.getUser(travelersRequireBo.getCreateuid());
+
+				ShowResultVo showResult = new ShowResultVo();
+
+				// id不可能为null
+				showResult.setId(travelersRequireBo.getId());
+
+				if (user != null) {
+					// 设置昵称
+					if (user.getUserName() != null) {
+						showResult.setNickName(user.getUserName());
+					} else {
+						showResult.setNickName("");
+					}
+
+					// 设置头像
+					if (user.getHeadPictureName() != null) {
+						showResult.setHeadPicture(user.getHeadPictureName());
+					} else {
+						showResult.setHeadPicture("");
+					}
+
+					// 设置兴趣
+					UserTasteBo hobbys = userService.findByUserId(user.getId());
+					if (hobbys != null) {
+						hobbys.setId(null);
+						hobbys.setUserid(null);
+						hobbys.setDeleted(null);
+						hobbys.setUpdateTime(null);
+						hobbys.setUpdateuid(null);
+						hobbys.setCreateTime(null);
+						hobbys.setCreateuid(null);
+						showResult.setHobbys(JSON.toJSONString(hobbys));
+					} else {
+						showResult.setHobbys("[]");
+					}
+				} else {
+					showResult.setErrorMsg("当前发布的发布者不存在或已注销账号");
+				}
+
+				if (travelersRequireBo.getDestination() != null) {
+					showResult.setDestination(travelersRequireBo.getDestination());
+				} else {
+					showResult.setDestination("");
+				}
+				if (travelersRequireBo.getTimes() != null) {
+					showResult.setTimes(travelersRequireBo.getTimes());
+				} else {
+					showResult.setTimes("");
+				}
+				if (travelersRequireBo.getType() != null) {
+					showResult.setType(travelersRequireBo.getType());
+				} else {
+					showResult.setType("");
+				}
+
+				resultList.add(JSON.toJSONString(showResult));
 			}
-			showResult.setHobbys(JSON.toJSONString(hobbys));
-
-			showResult.setDestination(travelersRequireBo.getDestination());
-			showResult.setDays(travelersRequireBo.getDays());
-			showResult.setType(travelersRequireBo.getType());
-
-			resultList.add(showResult);
 		}
 
 		Map map = new HashMap<>();
 		map.put("ret", 0);
 		map.put("result", resultList);
-		return JSONObject.fromObject(map).toString();
+		return JSONObject.fromObject(map).toString().replace("\\", "").replace("\"{", "{").replace("}\"", "}");
 	}
 
 	@PostMapping("/delete")
@@ -163,10 +201,10 @@ public class TravelersController extends BaseContorller {
 		return Constant.COM_RESP;
 	}
 
-	@ApiOperation("修改基础资料")
+	@ApiOperation("修改意向资料")
 	@PostMapping("/require-update")
 	public String updateTravelers(@RequestParam String requireDate, String requireId, HttpServletRequest request,
-			HttpServletResponse response) {
+			HttpServletResponse response) throws ParseException {
 		UserBo userBo = getUserLogin(request);
 		if (userBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
@@ -185,10 +223,15 @@ public class TravelersController extends BaseContorller {
 		Map<String, Object> params = new HashMap<>();
 
 		while (iterator.hasNext()) {
-			Entry<String, Object> next = iterator.next();
-			params.put(next.getKey(), next.getValue());
-		}
 
+			Entry<String, Object> next = iterator.next();
+			// 如果记过不为值或者不为空
+			if (next.getValue() != null && !next.getValue().toString().isEmpty()) {
+				params.put(next.getKey(), next.getValue());
+			}
+
+		}
+		params.put("updateTime", new Date());
 		travelersService.updateByIdAndParams(requireId, params);
 
 		return Constant.COM_RESP;
@@ -214,39 +257,67 @@ public class TravelersController extends BaseContorller {
 		// 从后台获取数据
 		List<TravelersRequireBo> list = travelersService.getNewTravelers(page, limit, userBo.getId());
 
-		if(list.size()<=0){
+		if (list.size() <= 0) {
 			map.put("ret", -1);
 			map.put("message", "sorry,最近没有找驴友的消息发布");
 			return JSONObject.fromObject(map).toString().replace("\\", "").replace("\"{", "{").replace("}\"", "}");
 		}
-		
+
 		List resultList = new ArrayList();
 		for (TravelersRequireBo travelersRequireBo : list) {
 			UserBo user = userService.getUser(travelersRequireBo.getCreateuid());
 			ShowResultVo showResult = new ShowResultVo();
 			showResult.setId(travelersRequireBo.getId());
-			// 设置昵称
-			showResult.setNickName(user.getUserName());
-			// 设置头像
-			showResult.setHeadPicture(user.getHeadPictureName());
-			// 设置兴趣
-			UserTasteBo hobbys = userService.findByUserId(user.getId());
-			if (hobbys != null) {
-				hobbys.setId(null);
-				hobbys.setUserid(null);
-				hobbys.setDeleted(null);
-				hobbys.setUpdateTime(null);
-				hobbys.setUpdateuid(null);
-				hobbys.setCreateTime(null);
-				hobbys.setCreateuid(null);
+			if (user != null) {
+				// 设置昵称
+				if (user.getUserName() != null) {
+					showResult.setNickName(user.getUserName());
+				} else {
+					showResult.setNickName("");
+				}
+
+				// 设置头像
+				if (user.getHeadPictureName() != null) {
+					showResult.setHeadPicture(user.getHeadPictureName());
+				} else {
+					showResult.setHeadPicture("");
+				}
+
+				// 设置兴趣
+				UserTasteBo hobbys = userService.findByUserId(user.getId());
+				if (hobbys != null) {
+					hobbys.setId(null);
+					hobbys.setUserid(null);
+					hobbys.setDeleted(null);
+					hobbys.setUpdateTime(null);
+					hobbys.setUpdateuid(null);
+					hobbys.setCreateTime(null);
+					hobbys.setCreateuid(null);
+					showResult.setHobbys(JSON.toJSONString(hobbys));
+				} else {
+					showResult.setHobbys("[]");
+				}
+
+			} else {
+				showResult.setErrorMsg("当前发布的发布者不存在或已注销账号");
 			}
-			showResult.setHobbys(JSON.toJSONString(hobbys));
 
-			showResult.setDestination(travelersRequireBo.getDestination());
-			showResult.setDays(travelersRequireBo.getDays());
-			showResult.setType(travelersRequireBo.getType());
-
-			resultList.add(showResult);
+			if (travelersRequireBo.getDestination() != null) {
+				showResult.setDestination(travelersRequireBo.getDestination());
+			} else {
+				showResult.setDestination("");
+			}
+			if (travelersRequireBo.getTimes() != null) {
+				showResult.setTimes(travelersRequireBo.getTimes());
+			} else {
+				showResult.setTimes("");
+			}
+			if (travelersRequireBo.getType() != null) {
+				showResult.setType(travelersRequireBo.getType());
+			} else {
+				showResult.setType("");
+			}
+			resultList.add(JSON.toJSONString(showResult));
 		}
 		map.put("ret", 0);
 		map.put("result", resultList);
@@ -361,8 +432,6 @@ public class TravelersController extends BaseContorller {
 					requireBo.setCreateTime(null);
 					requireBo.setDeleted(null);
 
-					DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-					requireBo.setAssembleTime(format.format(requireBo.getAssembleTime()));
 					requireContainer.add(JSON.toJSONString(requireBo));
 				}
 				result.setString(requireContainer);
@@ -443,29 +512,25 @@ public class TravelersController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
-		
+
 		// 编辑需求字段
 		TravelersRequireBo requireBo = travelersService.getRequireById(requireId);
 		Map<String, Object> map = new HashMap<>();
-		
-		if (requireBo != null) {
-			ShowResultVo showResult = getShowResultVo(userBo,requireBo);
 
-			// showResult.setRequire(JSON.toJSONString(requireBo));
+		if (requireBo != null) {
+			ShowResultVo showResult = getShowResultVo(userBo, requireBo);
 
 			map.put("ret", 0);
 			map.put("result", showResult);
 			requireBo.setDeleted(null);
 			requireBo.setCreateTime(null);
 			map.put("require", JSON.toJSONString(requireBo));
-		}else{
+		} else {
 			map.put("ret", -1);
 			map.put("message", "id错误");
 		}
 		return JSON.toJSONString(map).replace("\\", "").replace("\"{", "{").replace("}\"", "}");
 	}
-
-
 
 	/**
 	 * 查询当前账户下的发布信息
@@ -487,7 +552,7 @@ public class TravelersController extends BaseContorller {
 
 		// 用户要求
 		List<TravelersRequireBo> requires = travelersService.getRequireList(userBo.getId());
-		if(requires.size()<=0){
+		if (requires.size() <= 0) {
 			map.put("ret", -1);
 			map.put("message", "当前账号无发布旅游需求");
 			return JSONObject.fromObject(map).toString().replace("\\", "").replace("\"{", "{").replace("}\"", "}");
@@ -538,36 +603,20 @@ public class TravelersController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 
-		TravelersRequireVo requireVo = null;
+		TravelersRequireBo requireBo = null;
 		try {
 			JSONObject fromObject = JSONObject.fromObject(requireDate);
-			requireVo = (TravelersRequireVo) JSONObject.toBean(fromObject, TravelersRequireVo.class);
+			requireBo = (TravelersRequireBo) JSONObject.toBean(fromObject, TravelersRequireBo.class);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return e.toString();
 		}
 
-		/* =================存储要求======================= */
-		// 设置要求的实体参数
-		TravelersRequireBo requireBo = new TravelersRequireBo();
-		BeanUtils.copyProperties(requireVo, requireBo);
-
-		// 设置集合时间
-		DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-		Date parse = null;
-		try {
-			parse = format.parse(requireVo.getAssembleTime());
-
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
-		requireBo.setAssembleTime(parse);
 		// 插入需求,并返回需求id
 		requireBo.setCreateuid(userBo.getId());
 
 		if (requireBo.getImages() == null) {
-			List<String> list = new ArrayList<String>();
-			requireBo.setImages(list);
+			requireBo.setImages(new ArrayList<String>());
 		}
 
 		travelersService.insert(requireBo);
@@ -577,67 +626,97 @@ public class TravelersController extends BaseContorller {
 		map2.put("requireId", requireBo.getId());
 		return JSONObject.fromObject(map2).toString();
 	}
-	
-	private ShowResultVo getShowResultVo(UserBo userBo,TravelersRequireBo requireBo) {
-		DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-		requireBo.setAssembleTime(format.format(requireBo.getAssembleTime()));
 
-		// 编辑基础资料字段
-		UserBo user = userService.getUser(requireBo.getCreateuid());
+	private ShowResultVo getShowResultVo(UserBo userBo, TravelersRequireBo requireBo) {
+
 		ShowResultVo showResult = new ShowResultVo();
-		// 设置头像
-		showResult.setHeadPicture(user.getHeadPictureName());
-		// 设置昵称
-		showResult.setNickName(user.getUserName());
-		// 设置性别
-		showResult.setSex(user.getSex());
-		// 设置年龄
-		format = new SimpleDateFormat("yyyy年MM月dd日");
-		Date birth = null;
-		try {
-			if(user.getBirthDay()!=null){
-				birth = format.parse(user.getBirthDay());
+
+		if (requireBo.getCreateuid() != null) {
+			// 编辑基础资料字段
+			UserBo user = userService.getUser(requireBo.getCreateuid());
+
+			if (user != null) {
+				// 设置头像
+				if (user.getHeadPictureName() != null) {
+					showResult.setHeadPicture(user.getHeadPictureName());
+				} else {
+					showResult.setHeadPicture("");
+				}
+				// 设置昵称
+				if (user.getUserName() != null) {
+					showResult.setNickName(user.getUserName());
+				} else {
+					showResult.setNickName("");
+				}
+				// 设置性别
+				if (user.getSex() != null) {
+					showResult.setSex(user.getSex());
+				} else {
+					showResult.setSex("");
+				}
+
+				// 设置年龄
+				DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+				format = new SimpleDateFormat("yyyy年MM月dd日");
+				Date birth = null;
+				try {
+					if (user.getBirthDay() != null) {
+						birth = format.parse(user.getBirthDay());
+					}
+				} catch (ParseException e) {
+					e.printStackTrace();
+				}
+				if (birth != null) {
+					showResult.setAge(CommonUtil.getAge(birth));
+				}else{
+					showResult.setAge("");
+				}
+
+				if (!(user.getId().equals(userBo.getId()))) {
+					showResult.setUid(user.getId());
+					FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(userBo.getId(), user.getId());
+					if (friendsBo != null) {
+						showResult.setFriend(true);
+					} else {
+						showResult.setFriend(false);
+					}
+				}
+
+				// 设置居住地
+				if (user.getCity() != null) {
+					showResult.setAddress(user.getCity());
+				} else {
+					showResult.setAddress("");
+				}
+
+				// 设置兴趣
+				UserTasteBo hobbys = userService.findByUserId(user.getId());
+				if (hobbys != null) {
+					hobbys.setId(null);
+					hobbys.setUserid(null);
+					hobbys.setDeleted(null);
+					hobbys.setUpdateTime(null);
+					hobbys.setUpdateuid(null);
+					hobbys.setCreateTime(null);
+					hobbys.setCreateuid(null);
+					showResult.setHobbys(JSON.toJSONString(hobbys));
+				} else {
+					showResult.setHobbys(new ArrayList<>());
+				}
+
+			} else {
+				showResult.setErrorMsg("当前发布的发布者不存在或已注销账号");
 			}
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
-		if (birth != null) {
-			showResult.setAge(CommonUtil.getAge(birth));
+
 		}
 
-		
-		if(!(user.getId().equals(userBo.getId()))){
-			showResult.setUid(user.getId());
-			FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(userBo.getId(),user.getId());
-			if(friendsBo!=null){
-				showResult.setFriend(true);
-			}else{
-				showResult.setFriend(false);
-			}
-		}
-		
-		
-		// 设置居住地
-		showResult.setAddress(user.getCity());
-
-		// 设置兴趣
-		UserTasteBo hobbys = userService.findByUserId(user.getId());
-		if (hobbys != null) {
-			hobbys.setId(null);
-			hobbys.setUserid(null);
-			hobbys.setDeleted(null);
-			hobbys.setUpdateTime(null);
-			hobbys.setUpdateuid(null);
-			hobbys.setCreateTime(null);
-			hobbys.setCreateuid(null);
-		}
-		showResult.setHobbys(JSON.toJSONString(hobbys));
 		// 设置照片
-		List images = new ArrayList();
-		if(requireBo.getImages()!=null){
-			images = requireBo.getImages();
+		if (requireBo.getImages() != null) {
+			showResult.setImages(requireBo.getImages());
+		} else {
+			showResult.setImages(new ArrayList());
 		}
-		showResult.setImages(requireBo.getImages());
+
 		return showResult;
 	}
 

@@ -205,7 +205,7 @@ public class PartyServiceImpl implements IPartyService {
     }
 
     @Override
-    public GeoResults<PartyBo> findNearParty(double[] position, int maxDistance, int limit) {
-        return partyDao.findNearParty(position, maxDistance, limit);
+    public GeoResults<PartyBo> findNearParty(double[] position, int maxDistance, int limit,int page) {
+        return partyDao.findNearParty(position, maxDistance, limit,page);
     }
 }

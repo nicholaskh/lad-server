@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.lad.bo.BaseBo;
-import com.lad.bo.TravelersBaseBo;
 import com.lad.bo.TravelersRequireBo;
 import com.lad.dao.ITravelersDao;
 import com.lad.service.TravelersService;

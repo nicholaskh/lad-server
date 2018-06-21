@@ -231,12 +231,14 @@ public class PartyDaoImpl implements IPartyDao {
         return mongoTemplate.count(query, PartyBo.class);
     }
 
-    public GeoResults<PartyBo> findNearParty(double[] position, int maxDistance, int limit){
+    public GeoResults<PartyBo> findNearParty(double[] position, int maxDistance, int limit,int page){
         Point point = new Point(position[0],position[1]);
         NearQuery near =NearQuery.near(point);
         Distance distance = new Distance(maxDistance/1000, Metrics.KILOMETERS);
         near.maxDistance(distance);
         Query query = new Query();
+		page = page < 1 ? 1 : page;
+		query.skip((page -1) * limit);
         query.limit(limit);
         near.query(query);
         return mongoTemplate.geoNear(near, PartyBo.class);

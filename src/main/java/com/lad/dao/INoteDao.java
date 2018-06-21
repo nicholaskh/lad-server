@@ -239,6 +239,6 @@ public interface INoteDao extends IBaseDao {
 	 * @param limit
 	 * @return
 	 */
-	GeoResults<NoteBo> findNearNote(double[] position, int maxDistance, int limit);
+	GeoResults<NoteBo> findNearNote(double[] position, int maxDistance, int limit,int page);
 
 }

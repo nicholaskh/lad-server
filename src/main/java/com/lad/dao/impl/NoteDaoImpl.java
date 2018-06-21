@@ -388,12 +388,14 @@ public class NoteDaoImpl implements INoteDao {
 	}
 
 
-	public GeoResults<NoteBo> findNearNote(double[] position, int maxDistance, int limit){
+	public GeoResults<NoteBo> findNearNote(double[] position, int maxDistance, int limit,int page){
 		Point point = new Point(position[0],position[1]);
 		NearQuery near =NearQuery.near(point);
 		Distance distance = new Distance(maxDistance/1000, Metrics.KILOMETERS);
 		near.maxDistance(distance);
 		Query query = new Query();
+		int skip = page-1<0?0:page-1;
+		query.skip(skip*limit);
 		query.limit(limit);
 		near.query(query);
 		return mongoTemplate.geoNear(near, NoteBo.class);

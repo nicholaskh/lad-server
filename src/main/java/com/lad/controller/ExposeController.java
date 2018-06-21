@@ -56,7 +56,6 @@ public class ExposeController extends BaseContorller {
     @Autowired
     private AsyncController asyncController;
 
-
     @ApiOperation("发表曝光信息")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "title", value = "曝光标题", required = true, paramType = "query",
@@ -469,12 +468,14 @@ public class ExposeController extends BaseContorller {
     @PostMapping("/get-exposes")
     public String getComments(String title, String exposeType, int page, int limit,
                               HttpServletRequest request, HttpServletResponse response) {
+    	// 获取userId
         UserBo userBo = getUserLogin(request);
         String userid = "";
         boolean isLogin = userBo != null;
         if (isLogin) {
             userid = userBo.getId();
         }
+        // 获取曝光类型
         List<String> types = null;
         if (!StringUtils.isEmpty(exposeType)) {
             types = new ArrayList<>();

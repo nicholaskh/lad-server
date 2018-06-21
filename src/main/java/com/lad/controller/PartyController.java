@@ -1616,13 +1616,13 @@ public class PartyController extends BaseContorller {
             @ApiImplicitParam(name = "limit", value = "显示条数",  required = true,paramType = "query",
                     dataType = "int")})
     @PostMapping("/near-partys")
-    public String nearPeopel(double px, double py, int limit, HttpServletRequest request, HttpServletResponse
+    public String nearPeopel(double px, double py, int limit,int page, HttpServletRequest request, HttpServletResponse
             response) {
         double[] position = new double[]{px, py};
         //未登录情况
         UserBo userBo = getUserLogin(request);
         String userid = userBo != null ? userBo.getId() : "";
-        GeoResults<PartyBo> partyBos = partyService.findNearParty(position, 10000, limit);
+        GeoResults<PartyBo> partyBos = partyService.findNearParty(position, 10000, limit,page);
         List<PartyListVo> listVos = new LinkedList<>();
         DecimalFormat df = new DecimalFormat("###.00");
         for(GeoResult<PartyBo> result : partyBos) {

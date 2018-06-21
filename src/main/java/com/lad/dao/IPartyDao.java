@@ -146,6 +146,6 @@ public interface IPartyDao {
      * @param limit
      * @return
      */
-    GeoResults<PartyBo> findNearParty(double[] position, int maxDistance, int limit);
+    GeoResults<PartyBo> findNearParty(double[] position, int maxDistance, int limit,int page);
 
 }
