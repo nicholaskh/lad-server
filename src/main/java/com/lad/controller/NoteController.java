@@ -118,6 +118,7 @@ public class NoteController extends BaseContorller {
 		noteBo.setCreateuid(userBo.getId());
 		noteBo.setVisitcount(1);
 		noteBo.setTemp(1);
+		noteBo.setCreateDate(CommonUtil.getCurrentDate(new Date()));
 		LinkedList<String> photos = new LinkedList<>();
 		String userId =  userBo.getId();
 		if (pictures != null) {
@@ -1204,6 +1205,7 @@ public class NoteController extends BaseContorller {
 		noteBo.setCreateuid(userBo.getId());
 		noteBo.setLandmark(landmark);
 		noteBo.setSourceid(noteid);
+		noteBo.setCreateDate(CommonUtil.getCurrentDate(new Date()));
 		noteBo.setForward(1);
 		noteService.insert(noteBo);
 		addCircleShow(noteBo);
@@ -1259,6 +1261,7 @@ public class NoteController extends BaseContorller {
 		noteBo.setCreateuid(userBo.getId());
 		noteBo.setLandmark(landmark);
 		noteBo.setSourceid(old.getId());
+		noteBo.setCreateDate(CommonUtil.getCurrentDate(new Date()));
 		noteBo.setForward(1);
 		noteService.insert(noteBo);
 		addCircleShow(noteBo);
@@ -1480,6 +1483,37 @@ public class NoteController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
+
+	@ApiOperation("每日新帖子")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "page", value = "页码",  required = true,paramType = "query",
+					dataType = "int"),
+			@ApiImplicitParam(name = "limit", value = "显示条数",  required = true,paramType = "query",
+					dataType = "int")})
+	@PostMapping("/day-new-notes")
+	public String dayNewNotes(int page, int limit, HttpServletRequest request, HttpServletResponse
+			response) {
+		//未登录情况
+		UserBo userBo = getUserLogin(request);
+		String userid = userBo == null ? "" : userBo.getId();
+		List<CircleBo> circleBos = circleService.findHotCircles(1,10);
+		List<String> circleids = new LinkedList<>();
+		circleBos.forEach(circleBo -> circleids.add(circleBo.getId()));
+		List<NoteBo> noteBos = noteService.dayNewNotes(circleids, page, limit);
+		List<NoteVo> noteVoList = new LinkedList<>();
+		for(NoteBo noteBo : noteBos) {
+			NoteVo noteVo = new NoteVo();
+			boToVo(noteBo, noteVo, userBo, userid);
+			noteVo.setMyThumbsup(hasThumbsup(userid, noteBo.getId()));
+			CircleBo circleBo = circleService.selectById(noteBo.getCircleId());
+			noteVo.setCirName(circleBo != null ? circleBo.getName() : "");
+			noteVoList.add(noteVo);
+		}
+		Map<String, Object> map = new HashMap<>();
+		map.put("ret", 0);
+		map.put("noteVoList", noteVoList);
+		return JSONObject.fromObject(map).toString();
+	}
 
 
 
