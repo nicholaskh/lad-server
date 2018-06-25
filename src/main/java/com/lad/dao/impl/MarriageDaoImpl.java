@@ -153,7 +153,6 @@ public class MarriageDaoImpl implements IMarriageDao {
 	@Override
 	public WaiterBo findWaiterById(String caresId) {
 		
-		//{"createTime","deleted","waiterId","updateTime","updateuid","createuid","pass"};
 		BasicDBObject cirteria = new BasicDBObject();
 		cirteria.put("_id", caresId);
 		cirteria.put("deleted", Constant.ACTIVITY);
@@ -161,16 +160,13 @@ public class MarriageDaoImpl implements IMarriageDao {
 		BasicDBObject filter = new BasicDBObject();
 		filter.put("createTime", false);
 		filter.put("deleted", false);
-		filter.put("waiterId", false);
 		filter.put("updateTime", false);
 		filter.put("updateuid", false);
-		filter.put("createuid", false);
 		filter.put("pass", false);
 		filter.put("cares", false);
 
 		
 		Query query = new BasicQuery(cirteria,filter);
-//		Query query = new Query(Criteria.where("_id").is(caresId));
 		return mongoTemplate.findOne(query, WaiterBo.class);
 	}
 
@@ -297,5 +293,27 @@ public class MarriageDaoImpl implements IMarriageDao {
 	@Override
 	public int findPublishGirlNum(String uid) {
 		return (int)mongoTemplate.count(new Query(Criteria.where("createuid").is(uid).and("deleted").is(Constant.ACTIVITY).and("sex").is(0)), WaiterBo.class);
+	}
+
+	@Override
+	public List<WaiterBo> getBoysByUserId(String userId) {
+		Query query = new Query();
+		Criteria criteria = new Criteria();
+		criteria.andOperator(Criteria.where("createuid").is(userId),Criteria.where("deleted").is(0),Criteria.where("sex").is(1));
+		query.addCriteria(criteria);
+		
+		query.with(new Sort(new Sort.Order(Sort.Direction.DESC,"updateTime")));
+		
+		return mongoTemplate.find(query, WaiterBo.class);
+	}
+
+	@Override
+	public List<WaiterBo> getGirlsByUserId(String userId) {
+		Query query = new Query();
+		Criteria criteria = new Criteria();
+		criteria.andOperator(Criteria.where("createuid").is(userId),Criteria.where("deleted").is(0),Criteria.where("sex").is(0));
+		query.addCriteria(criteria);
+		query.with(new Sort(new Sort.Order(Sort.Direction.DESC,"updateTime")));
+		return mongoTemplate.find(query, WaiterBo.class);
 	}
 }

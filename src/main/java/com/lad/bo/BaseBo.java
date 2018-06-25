@@ -19,7 +19,7 @@ public class BaseBo implements Serializable {
 	private String updateuid;
 
 	//0  未删除 ； 1 删除
-	private Integer deleted = 0;
+	private int deleted = 0;
 
 	public String getId() {
 		return id;

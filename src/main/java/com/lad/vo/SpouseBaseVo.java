@@ -13,7 +13,7 @@ public class SpouseBaseVo extends BaseVo{
 	private String nickName;
 	private String sex;
 	private String birthday;
-	private Integer marriaged;	// 0,没有;1,爱过;-1,不限
+	private int marriaged;	// 0,没有;1,爱过;-1,不限
 	private String salary;		// 收入
 	private String address;		// 居住地
 	private List<String> images;// 照片地址

@@ -512,7 +512,7 @@ public class CommonUtil {
 		if(requireBo.getNowin()!=null && requireBo.getNowin()!="" && requireBo.getNowin().equals(waiterBo.getNowin())){
 			baseNum+=20;
 		}
-		if(requireBo.getMarriaged()!=null  && requireBo.getMarriaged().equals(waiterBo.getMarriaged())){
+		if(requireBo.getMarriaged()==waiterBo.getMarriaged()){
 			baseNum+=20;
 		}
 		

@@ -15,5 +15,7 @@ public class TravelersRequireVo extends BaseVo {
 	private String type;		// 旅行方式
 	private String sex;			// 驴友性别
 	private String age;			// 驴友年龄
+	private String createuid;
+	private int expired;		// 是否过期
 	private List<String> images;	
 }

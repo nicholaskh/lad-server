@@ -134,7 +134,6 @@ public class OldFriendController extends BaseContorller {
 				if (hobbys != null) {
 					hobbys.setId(null);
 					hobbys.setUserid(null);
-					hobbys.setDeleted(null);
 					hobbys.setUpdateTime(null);
 					hobbys.setUpdateuid(null);
 					hobbys.setCreateTime(null);
@@ -227,7 +226,6 @@ public class OldFriendController extends BaseContorller {
 				if (hobbys != null) {
 					hobbys.setId(null);
 					hobbys.setUserid(null);
-					hobbys.setDeleted(null);
 					hobbys.setUpdateTime(null);
 					hobbys.setUpdateuid(null);
 					hobbys.setCreateTime(null);
@@ -336,13 +334,11 @@ public class OldFriendController extends BaseContorller {
 			UserTasteBo hobbys = userService.findByUserId(user.getId());
 			if (hobbys != null) {
 				hobbys.setCreateTime(null);
-				hobbys.setDeleted(null);
 				hobbys.setId(null);
 				hobbys.setUserid(null);
 				result.setHobbys(hobbys);
 			} else {
 				hobbys = new UserTasteBo();
-				hobbys.setDeleted(null);
 				hobbys.setCreateTime(null);
 				result.setHobbys(hobbys);
 			}
@@ -603,14 +599,12 @@ public class OldFriendController extends BaseContorller {
 		UserTasteBo hobbys = userService.findByUserId(userBo.getId());
 		if (hobbys != null) {
 			hobbys.setCreateTime(null);
-			hobbys.setDeleted(null);
 			hobbys.setId(null);
 			hobbys.setUserid(null);
 			result.setHobbys(hobbys);
 		} else {
 			hobbys = new UserTasteBo();
 			hobbys.setCreateTime(null);
-			hobbys.setDeleted(null);
 			result.setHobbys(hobbys);
 		}
 		if (requireBo.getImages() != null) {
@@ -680,7 +674,6 @@ public class OldFriendController extends BaseContorller {
 		if (hobbys != null) {
 			hobbys.setId(null);
 			hobbys.setUserid(null);
-			hobbys.setDeleted(null);
 			hobbys.setUpdateTime(null);
 			hobbys.setUpdateuid(null);
 			hobbys.setCreateTime(null);

@@ -69,8 +69,8 @@ public class TravelersDaoImpl implements ITravelersDao {
 		criteria.put("deleted", Constant.ACTIVITY);
 		BasicDBObject filter = new BasicDBObject();
 		filter.put("destination", true);
-		filter.put("days", true);
 		filter.put("type", true);
+		filter.put("times", true);
 		Query query = new BasicQuery(criteria, filter);
 		return mongoTemplate.find(query, TravelersRequireBo.class);
 	}

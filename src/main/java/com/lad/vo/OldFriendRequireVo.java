@@ -16,5 +16,4 @@ public class OldFriendRequireVo extends  BaseVo{
 	private String address;
 	private List<String> hobbys;
 	private List<String> images;
-//	private boolean agree;
 }

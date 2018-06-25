@@ -166,7 +166,6 @@ public class SpouseController  extends BaseContorller{
 		}
 		
 		spouseBo.setCreateTime(null);
-		spouseBo.setDeleted(null);
 
 		DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
 		spouseBo.setBirthday(format.format(spouseBo.getBirthday()));
@@ -175,7 +174,6 @@ public class SpouseController  extends BaseContorller{
 		SpouseRequireBo requireBo = spouseService.findRequireById(spouseBo.getId());
 		requireBo.setCreateTime(null);
 		requireBo.setCreateuid(null);
-		requireBo.setDeleted(null);
 		requireBo.setBaseId(null);
 		map.put("ret", 0);
 		map.put("RequireDate", JSON.toJSONString(requireBo));		
@@ -412,7 +410,6 @@ public class SpouseController  extends BaseContorller{
 					// 根据requireI遍历出require
 					SpouseBaseBo requireBo = spouseService.findBaseById(entityValue);
 					requireBo.setCreateTime(null);
-					requireBo.setDeleted(null);
 					
 					DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
 					requireBo.setBirthday(format.format(requireBo.getBirthday()));

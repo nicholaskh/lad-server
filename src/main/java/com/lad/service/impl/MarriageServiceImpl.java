@@ -76,35 +76,7 @@ public class MarriageServiceImpl implements IMarriageService {
 	public List<WaiterBo> getPublishById(String userId) {
 		return marriageDao.getPublishById(userId);
 	}
-
-	@Override
-	public Map<String, Object> getPublishDescById(String WaiterId) {
-		return null;
-	}
-
-//	@Override
-//	public String insertPublish(WaiterBo wb, RequireBo rb) {
-//		String rbid = marriageDao.insert(rb);
-//		wb.setRequireId(rbid);
-//		String wbid = marriageDao.insert(wb);
-//		
-//		return wbid;
-//	}
-
-	@Override
-	public WriteResult updateWaiter(WaiterVo wv) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public WriteResult updateRequire(RequireVo rv) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
-
+	
 	@Override
 	public List<OptionBo> getOptions(OptionVo ov) {
 		return marriageDao.getOptions(ov);
@@ -115,36 +87,6 @@ public class MarriageServiceImpl implements IMarriageService {
 		return marriageDao.getRecommend(waiterId);
 	}
 
-	@Override
-	public List<WaiterBo> addUnRecommend(String WaiterId, String unRecommendId) {
-		return null;
-	}
-
-	@Override
-	public List<WaiterBo> addCare(String WaiterId, String CareId) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public WriteResult deleteCare(String WaiterId, String CareId) {
-		return null;
-	}
-
-	@Override
-	public List<WaiterBo> getCares(String WaiterId) {
-		return null;
-	}
-
-	@Override
-	public List<String> insertImage(File[] image) {
-		return null;
-	}
-
-	@Override
-	public String getNickName() {
-		return null;
-	}
 
 	@Override
 	public Map<String, List> getCareMap(String waiterId) {
@@ -166,6 +108,16 @@ public class MarriageServiceImpl implements IMarriageService {
 	@Override
 	public int findPublishGirlNum(String uid) {
 		return marriageDao.findPublishGirlNum(uid);
+	}
+
+	@Override
+	public List<WaiterBo> getBoysByUserId(String userId) {
+		return marriageDao.getBoysByUserId(userId);
+	}
+
+	@Override
+	public List<WaiterBo> getGirlsByUserId(String userId) {
+		return marriageDao.getGirlsByUserId(userId);
 	}
 
 

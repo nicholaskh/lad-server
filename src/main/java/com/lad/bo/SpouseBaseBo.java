@@ -1,6 +1,5 @@
 package com.lad.bo;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -18,8 +17,8 @@ public class SpouseBaseBo extends BaseBo {
 	private String nickName;
 	private String sex;
 	private Object birthday;
-	private Integer age;
-	private Integer marriaged;	// 0,没有;1,爱过;-1,不限
+	private int age;
+	private int marriaged;	// 0,没有;1,爱过;-1,不限
 	private String salary;		// 收入
 	private String address;		// 居住地
 	private List<String> images;// 照片地址

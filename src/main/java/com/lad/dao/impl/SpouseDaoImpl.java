@@ -183,8 +183,7 @@ public class SpouseDaoImpl implements ISpouseDao {
 		// 年龄要求
 		int minAge = 0;
 		int maxAge = 150;
-		if (require.getAge() != null) {
-			
+		if (require.getAge() != null&&!("不限".equals(require.getAge()))) {
 			String[] age = require.getAge().split("-");
 			minAge = Integer.valueOf(age[0].replaceAll("\\D*", ""));
 			maxAge = Integer.valueOf(age[1].replaceAll("\\D+", ""));
@@ -255,7 +254,7 @@ public class SpouseDaoImpl implements ISpouseDao {
 
 			if ("不限".equals(require.getAge())) {
 				ageNum = 100;
-			} else if (bo.getAge() != null) {
+			} else {
 				int boage = bo.getAge();
 
 				if (boage >= minAge && boage <= maxAge) {

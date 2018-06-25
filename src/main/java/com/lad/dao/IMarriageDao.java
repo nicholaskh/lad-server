@@ -46,4 +46,8 @@ public interface IMarriageDao {
 
 	int findPublishGirlNum(String uid);
 
+	List<WaiterBo> getBoysByUserId(String userId);
+
+	List<WaiterBo> getGirlsByUserId(String userId);
+
 }

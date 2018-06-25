@@ -21,7 +21,7 @@
     </context:component-scan>
 
     <!-- mongo对象 -->
-    <!-- <mongo:mongo-client id="mongo" replica-set="${mongo.hostport}" credentials="${mongo.username}:${mongo.password}@${mongo.databaseName}">
+   <!--  <mongo:mongo-client id="mongo" replica-set="${mongo.hostport}" credentials="${mongo.username}:${mongo.password}@${mongo.databaseName}">
         <mongo:client-options connections-per-host="${mongo.connectionsPerHost}"
                               threads-allowed-to-block-for-connection-multiplier="${mongo.threadsAllowedToBlockForConnectionMultiplier}"
                               connect-timeout="${mongo.connectTimeout}"
