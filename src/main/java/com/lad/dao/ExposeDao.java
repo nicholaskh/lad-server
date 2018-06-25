@@ -97,6 +97,4 @@ public class ExposeDao extends BaseDao<ExposeBo> {
 		update.set("updateTime", new Date());
 		return getMongoTemplate().updateFirst(query, update, ExposeBo.class);
 	}
-
-
 }

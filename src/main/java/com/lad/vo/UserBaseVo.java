@@ -32,5 +32,7 @@ public class UserBaseVo implements Serializable {
     private int level;
 
     private int role;
+    
+    private String address;
 
 }

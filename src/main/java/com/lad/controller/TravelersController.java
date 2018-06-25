@@ -4,6 +4,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -15,6 +16,7 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.beanutils.BeanComparator;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -80,14 +82,13 @@ public class TravelersController extends BaseContorller {
 
 		List<Map> recommend = travelersService.getRecommend(require);
 
-		
 		if (recommend.size() >= 1) {
 			List result = new ArrayList<>();
-			
+
 			for (Map recMap : recommend) {
 				Map resultOne = new HashMap<>();
 				TravelersRequireBo resultBo = (TravelersRequireBo) recMap.get("result");
-				
+
 				ShowResultVo showResultVo = getShowResultVo(userBo, resultBo);
 				resultOne.put("match", recMap.get("match"));
 				resultOne.put("baseData", JSON.toJSONString(showResultVo));
@@ -97,6 +98,9 @@ public class TravelersController extends BaseContorller {
 				result.add(resultOne);
 			}
 			map.put("ret", 0);
+			Comparator<? super Map> c = new BeanComparator("match").reversed();
+			result.sort(c);
+
 			map.put("recommend", result);
 		} else {
 			map.put("ret", -1);
@@ -115,8 +119,8 @@ public class TravelersController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 
-//		keyWord="爱";
-		
+		// keyWord="爱";
+
 		List<TravelersRequireBo> list = travelersService.findListByKeyword(keyWord, page, limit,
 				TravelersRequireBo.class);
 		List resultList = new ArrayList();
@@ -633,8 +637,6 @@ public class TravelersController extends BaseContorller {
 
 		ShowResultVo showResult = new ShowResultVo();
 
-		System.out.println(requireBo);
-		
 		if (requireBo.getCreateuid() != null) {
 			// 编辑基础资料字段
 			UserBo user = userService.getUser(requireBo.getCreateuid());
@@ -672,8 +674,8 @@ public class TravelersController extends BaseContorller {
 				}
 				if (birth != null) {
 					showResult.setAge(CommonUtil.getAge(birth));
-				}else{
-					showResult.setAge("");
+				} else {
+					showResult.setAge(0);
 				}
 
 				if (!(user.getId().equals(userBo.getId()))) {

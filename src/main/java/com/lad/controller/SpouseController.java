@@ -4,6 +4,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -16,6 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.swing.text.html.parser.Entity;
 
+import org.apache.commons.beanutils.BeanComparator;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -77,7 +79,6 @@ public class SpouseController  extends BaseContorller{
 		Map map = new HashMap<>();
 		// 获取自身的需求的基础id
 		SpouseBaseBo spouseBaseBo = spouseService.getSpouseByUserId(userBo.getId());
-		System.out.println(userBo.getId());
 		if(spouseBaseBo==null){
 			map.put("ret", -1);
 			map.put("result", "当前账号无发布消息");
@@ -93,6 +94,11 @@ public class SpouseController  extends BaseContorller{
 		
 		
 		map.put("ret", 0);
+		
+		Comparator<? super Map> c = new BeanComparator("match").reversed();
+		recommend.sort(c);
+		
+		
 		map.put("result", recommend);
 		return JSONObject.fromObject(map).toString();
 	}

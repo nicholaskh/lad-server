@@ -3,13 +3,12 @@ package com.lad.dao.impl;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Map.Entry;
+import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -22,7 +21,6 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 import com.lad.bo.OldFriendRequireBo;
-import com.lad.bo.TravelersRequireBo;
 import com.lad.bo.UserBo;
 import com.lad.bo.UserTasteBo;
 import com.lad.dao.IOldFriendDao;

@@ -4,6 +4,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -13,6 +14,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.beanutils.BeanComparator;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -82,6 +84,9 @@ public class OldFriendController extends BaseContorller {
 				result.add(resultOne);
 			}
 			map.put("ret", 0);
+			
+			Comparator<? super Map> c = new BeanComparator("match").reversed();
+			result.sort(c);
 			map.put("recommend", result);
 		} else {
 			map.put("ret", -1);
@@ -143,10 +148,10 @@ public class OldFriendController extends BaseContorller {
 						showResult.setAge(CommonUtil.getAge(parse));
 					} catch (Exception e) {
 
-						showResult.setAge("");
+						showResult.setAge(0);
 					}
 				} else {
-					showResult.setAge("");
+					showResult.setAge(0);
 				}
 
 				if (user.getSex() != null) {
@@ -187,8 +192,8 @@ public class OldFriendController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 
-		System.out.println(keyWord);
-		keyWord = "相师";
+//		System.out.println(keyWord);
+//		keyWord = "相师";
 		List<UserBo> list = oldFriendService.findListByKeyword(keyWord, page, limit, userBo.getId());
 
 		Map map = new HashMap<>();
@@ -235,7 +240,7 @@ public class OldFriendController extends BaseContorller {
 						Date parse = format.parse(birthDay);
 						showResult.setAge(CommonUtil.getAge(parse));
 					} catch (Exception e) {
-						showResult.setAge("");
+						showResult.setAge(0);
 					}
 				}
 
@@ -309,7 +314,7 @@ public class OldFriendController extends BaseContorller {
 					Date parse = format.parse(birthDay);
 					result.setAge(CommonUtil.getAge(parse));
 				} catch (Exception e) {
-					result.setAge("");
+					result.setAge(0);
 				}
 			}
 			if (user.getCity() != null) {
@@ -586,7 +591,7 @@ public class OldFriendController extends BaseContorller {
 				Date parse = format.parse(birthDay);
 				result.setAge(CommonUtil.getAge(parse));
 			} catch (Exception e) {
-				result.setAge("");
+				result.setAge(0);
 			}
 		}
 		if (userBo.getCity() != null) {
@@ -657,10 +662,10 @@ public class OldFriendController extends BaseContorller {
 				Date parse = format.parse(birthDay);
 				showResult.setAge(CommonUtil.getAge(parse));
 			} catch (Exception e) {
-				showResult.setAge("");
+				showResult.setAge(0);
 			}
 		} else {
-			showResult.setAge("");
+			showResult.setAge(0);
 		}
 
 		// 设置居住地

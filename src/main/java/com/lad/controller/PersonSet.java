@@ -56,7 +56,7 @@ public class PersonSet extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 	
-	@ApiOperation("修改个人用户名称")
+	@ApiOperation("修改个人用户地址")
 	@PostMapping("/address")
 	public String address(String address, HttpServletRequest request, HttpServletResponse response) {
 		if (StringUtils.isEmpty(address)) {

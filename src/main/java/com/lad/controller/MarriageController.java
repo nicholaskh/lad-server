@@ -6,6 +6,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -18,6 +19,7 @@ import java.util.Map.Entry;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.beanutils.BeanComparator;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -161,18 +163,14 @@ public class MarriageController extends BaseContorller{
 		}
 		
 		List<Map> list = marriageService.getRecommend(waiterId);
-		// 过滤字段
-		/*for (Map map : list) {
-			WaiterBo object = (WaiterBo)map.get("waiter");
-			String[] params = {"createTime","deleted","waiterId","updateTime","updateuid","createuid","cares"};
-			map.put("waiter", CommonUtil.fieldFilter(object, false, params));
-			System.out.println(CommonUtil.fieldFilter(object, false, params));
-		}*/
+
 		Map map = new HashMap<>();
 		map.put("ret", 0);
 		if(list.size() == 0){
 			map.put("result", "数据为空");
 		}else{
+			Comparator<? super Map> c = new BeanComparator("match").reversed();
+			list.sort(c);
 			map.put("result", list);
 		}
 		return JSONObject.fromObject(map).toString();
