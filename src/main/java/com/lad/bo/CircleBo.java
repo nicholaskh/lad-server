@@ -73,7 +73,7 @@ public class CircleBo extends BaseBo {
 
 
 	//圈子热度=发帖+活动+阅读+点赞+分享
-	private long hotNum;
+	private double hotNum;
 
 	//省市区 ，直辖市 省市一样
 	private String province;

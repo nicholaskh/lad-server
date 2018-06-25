@@ -241,4 +241,13 @@ public interface INoteDao extends IBaseDao {
 	 */
 	GeoResults<NoteBo> findNearNote(double[] position, int maxDistance, int limit,int page);
 
+
+	/**
+	 * top10圈子中，每日新帖
+	 * @param page
+	 * @param limit
+	 * @return
+	 */
+	List<NoteBo> dayNewNotes(List<String> circleids, int page, int limit);
+
 }

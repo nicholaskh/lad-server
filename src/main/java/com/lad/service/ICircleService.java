@@ -439,4 +439,11 @@ public interface ICircleService extends IBaseService {
 	 */
 	WriteResult updateCircleTypeTimes(String id);
 
+
+	/**
+	 * 热门圈子
+	 * @return
+	 */
+	List<CircleBo> findHotCircles(int page, int limit);
+
 }

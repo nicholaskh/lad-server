@@ -234,4 +234,11 @@ public interface ICircleDao extends IBaseDao {
 	List<CircleBo> selectByRegexName(String showType);
 
 
+
+	/**
+	 * 热门圈子
+	 * @return
+	 */
+	List<CircleBo> findHotCircles(int page, int limit);
+
 }

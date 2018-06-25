@@ -457,7 +457,7 @@ public class ExposeController extends BaseContorller {
      * 曝光信息列表获取
      * @return
      */
-    @ApiOperation("曝光信息列表获取，title和exposeType为空表示获取所有的")
+    @ApiOperation("曝光信息列表获取及搜索，title和exposeType为空表示获取所有的")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "title", value = "曝光标题关键字", required = true, paramType = "query",
                     dataType = "string"),

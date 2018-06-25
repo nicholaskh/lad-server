@@ -53,7 +53,7 @@ public class NoteDaoImpl implements INoteDao {
 		query.addCriteria(new Criteria("_id").is(noteId).and("deleted").is(0));
 		Update update = new Update();
 		update.inc("visitcount", 1);
-		update.inc("temp",1);
+		update.inc("temp",0.05);
 		return mongoTemplate.updateFirst(query, update, NoteBo.class);
 	}
 
@@ -62,7 +62,7 @@ public class NoteDaoImpl implements INoteDao {
 		Update update = new Update();
 		query.addCriteria(new Criteria("_id").is(noteId).and("deleted").is(0));
 		update.inc("commentcount", commentcount);
-		update.inc("temp", commentcount);
+		update.inc("temp", commentcount * 0.35);
 		return mongoTemplate.updateFirst(query, update, NoteBo.class);
 	}
 
@@ -71,7 +71,7 @@ public class NoteDaoImpl implements INoteDao {
 		Update update = new Update();
 		query.addCriteria(new Criteria("_id").is(noteId).and("deleted").is(0));
 		update.inc("transcount", transcount);
-		update.inc("temp", transcount);
+		update.inc("temp", transcount * 0.45);
 		return mongoTemplate.updateFirst(query, update, NoteBo.class);
 	}
 
@@ -81,7 +81,7 @@ public class NoteDaoImpl implements INoteDao {
 		Update update = new Update();
 		query.addCriteria(new Criteria("_id").is(noteId).and("deleted").is(0));
 		update.inc("thumpsubcount", thumpsubcount);
-		update.inc("temp",thumpsubcount);
+		update.inc("temp",thumpsubcount * 0.15);
 		return mongoTemplate.updateFirst(query, update, NoteBo.class);
 	}
 
@@ -308,7 +308,6 @@ public class NoteDaoImpl implements INoteDao {
 		query.addCriteria(new Criteria("_id").is(noteId).and("deleted").is(0));
 		Update update = new Update();
 		update.inc("collectcount", 1);
-		update.inc("temp",1);
 		return mongoTemplate.updateFirst(query, update, NoteBo.class);
 	}
 
@@ -402,5 +401,21 @@ public class NoteDaoImpl implements INoteDao {
 		query.limit(limit);
 		near.query(query);
 		return mongoTemplate.geoNear(near, NoteBo.class);
+	}
+
+	@Override
+	public List<NoteBo> dayNewNotes(List<String> circleids, int page, int limit) {
+
+		Query query = new Query();
+		Criteria criteria = new Criteria("deleted").is(Constant.ACTIVITY);
+		if (!CommonUtil.isEmpty(circleids)) {
+			criteria.and("circleId").in(circleids);
+		}
+		query.with(new Sort(Sort.Direction.DESC, "createTime", "temp"));
+		query.addCriteria(criteria);
+		page = page < 1 ? 1 : page;
+		query.skip((page -1) * limit);
+		query.limit(limit);
+		return mongoTemplate.find(query, NoteBo.class);
 	}
 }

@@ -331,7 +331,6 @@ public class CircleDaoImpl implements ICircleDao {
 			case Constant.CIRCLE_VISIT :
 				update.inc("visitNum", num);
 				update.inc("total", num);
-				update.inc("hotNum", num);
 				break;
 				//圈子评论数量
 			case Constant.CIRCLE_COMMENT:
@@ -342,24 +341,24 @@ public class CircleDaoImpl implements ICircleDao {
 			case Constant.CIRCLE_TRANS:
 				update.inc("transmitNum", num);
 				update.inc("total", num);
-				update.inc("hotNum", num);
+				update.inc("hotNum", num * 0.2);
 				break;
 				//圈子点赞数量
 			case Constant.CIRCLE_THUMP:
 				update.inc("thumpNum", num);
 				update.inc("total", num);
-				update.inc("hotNum", num);
+				update.inc("hotNum", num * 0.1);
 				break;
 				//圈子阅读数量包含帖子的阅读
 			case Constant.CIRCLE_NOTE_VISIT:
 				update.inc("visitNum", num);
 				update.inc("total", num);
-				update.inc("hotNum", num);
+				update.inc("hotNum", num * 0.05);
 				break;
-				//圈子内帖子阅读数量
+				//圈子内帖子数量
 			case Constant.CIRCLE_NOTE:
 				update.inc("noteNum", num);
-				update.inc("hotNum", num);
+				update.inc("hotNum", num * 0.25);
 				break;
 				//圈子聚会数量
 			case Constant.CIRCLE_PARTY_VISIT:
@@ -369,15 +368,15 @@ public class CircleDaoImpl implements ICircleDao {
 				//圈子聚会点赞数量
 			case Constant.CIRCLE_PARTY_THUMP:
 				update.inc("partyThump", num);
-				update.inc("hotNum", num);
+				update.inc("hotNum", num * 0.4);
 				break;
 				//圈子聚会分享数量
 			case Constant.CIRCLE_PARTY_SHARE:
 				update.inc("partyShare", num);
-				update.inc("hotNum", num);
+				update.inc("hotNum", num * 0.2);
 				break;
 			default:
-				update.inc("hotNum", num);
+				update.inc("hotNum", 0);
 				break;
 		}
 		return mongoTemplate.updateFirst(query, update, CircleBo.class);
@@ -483,6 +482,17 @@ public class CircleDaoImpl implements ICircleDao {
 		Query query = new Query(new Criteria("takeShow").is(true).and("deleted").is(Constant.ACTIVITY)
 				.and("name").regex(pattern));
 		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
+		return mongoTemplate.find(query, CircleBo.class);
+	}
+
+	@Override
+	public List<CircleBo> findHotCircles(int page, int limit) {
+		Query query = new Query();
+		query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "hotNum")));
+		page = page < 1 ? 1 : page;
+		query.skip((page - 1)*limit);
+		query.limit(limit);
 		return mongoTemplate.find(query, CircleBo.class);
 	}
 }

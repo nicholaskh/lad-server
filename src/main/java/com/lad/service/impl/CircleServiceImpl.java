@@ -384,4 +384,9 @@ public class CircleServiceImpl implements ICircleService {
 	public WriteResult updateCircleTypeTimes(String id) {
 		return circleTypeDao.updateCircleTypeTimes(id);
 	}
+
+	@Override
+	public List<CircleBo> findHotCircles(int page, int limit) {
+		return circleDao.findHotCircles(page, limit);
+	}
 }

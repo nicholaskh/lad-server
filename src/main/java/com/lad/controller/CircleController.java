@@ -1136,9 +1136,7 @@ public class CircleController extends BaseContorller {
 		}
 		updateHistory(userBo.getId(), circleid, locationService, circleService);
 		List<String> topList = userBo.getCircleTops();
-		if (topList.contains(circleid)) {
-			topList.remove(circleid);
-		}
+		topList.remove(circleid);
 		topList.add(0,circleid);
 		userService.updateTopCircles(userBo.getId(), topList);
 		return Constant.COM_RESP;
@@ -2590,6 +2588,15 @@ public class CircleController extends BaseContorller {
 		map.put("ret", 0);
 		map.put("col-time", CommonUtil.time2str(chatBo.getCreateTime()));
 		return JSONObject.fromObject(map).toString();
+	}
+
+
+	@ApiOperation("热门圈子")
+	@PostMapping("/hot-circles")
+	public String hotCircles(int page, int limit, HttpServletRequest request, HttpServletResponse response) {
+		UserBo userBo = getUserLogin(request);
+		List<CircleBo> circleBoList = circleService.findHotCircles(page, limit);
+		return bo2vos(circleBoList, userBo);
 	}
 
 
