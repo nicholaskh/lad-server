@@ -96,6 +96,14 @@ public class OldFriendController extends BaseContorller {
 		return JSON.toJSONString(map).replace("\\", "").replace("\"{", "{").replace("}\"", "}");
 	}
 
+	/**
+	 * 最新推荐
+	 * @param page
+	 * @param limit
+	 * @param request
+	 * @param response
+	 * @return
+	 */
 	@GetMapping("/getNew")
 	public String getNew(int page, int limit, HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo = getUserLogin(request);
@@ -163,12 +171,6 @@ public class OldFriendController extends BaseContorller {
 				} else {
 					showResult.setAddress("");
 				}
-				/*
-				 * if(requireBo.getImages()!=null){
-				 * showResult.setImages(requireBo.getImages()); }else{ List
-				 * imageList = new ArrayList<>();
-				 * showResult.setImages(imageList); }
-				 */
 
 				resultList.add(showResult);
 			}

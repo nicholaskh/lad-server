@@ -4,6 +4,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -90,24 +91,43 @@ public class TravelersController extends BaseContorller {
 				Map resultOne = new HashMap<>();
 				TravelersRequireBo resultBo = (TravelersRequireBo) recMap.get("result");
 
-				ShowResultVo showResultVo = getShowResultVo(userBo, resultBo);
 				resultOne.put("match", recMap.get("match"));
-				resultOne.put("baseData", JSON.toJSONString(showResultVo));
-				resultBo.setCreateTime(null);
-				resultOne.put("require", JSON.toJSONString(resultBo));
+				resultOne.put("baseData", getShowResultVo(userBo, resultBo));
+
+				
+				TravelersRequireVo requireVo = new TravelersRequireVo();
+				BeanUtils.copyProperties(resultBo, requireVo);
+				
+				if (resultBo.getTimes() != null) {
+					List<Date> times = resultBo.getTimes();
+					DateFormat format = new SimpleDateFormat("yyyy-MM");
+					String voDate = "";
+					for (int i = 0; i < times.size(); i++) {
+						
+						if(i>=1){
+							voDate+="/"+format.format(times.get(i));
+						}else{
+							voDate+=format.format(times.get(i));
+						}
+					}
+					requireVo.setTimes(voDate);
+				} else {
+					requireVo.setTimes("");
+				}
+				
+				resultOne.put("require", requireVo);
 				result.add(resultOne);
 			}
 			map.put("ret", 0);
 			Comparator<? super Map> c = new BeanComparator("match").reversed();
 			result.sort(c);
-
 			map.put("recommend", result);
 		} else {
 			map.put("ret", -1);
 			map.put("message", "未找到匹配者");
 		}
 
-		return JSONObject.fromObject(map).toString().replace("\\", "").replace("\"{", "{").replace("}\"", "}");
+		return JSON.toJSONString(map).replace("\\", "").replace("\"{", "{").replace("}\"", "}");
 	}
 
 	// 关键字搜索 根据目的地搜索
@@ -119,8 +139,6 @@ public class TravelersController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
-
-		// keyWord="爱";
 
 		List<TravelersRequireBo> list = travelersService.findListByKeyword(keyWord, page, limit,
 				TravelersRequireBo.class);
@@ -156,7 +174,6 @@ public class TravelersController extends BaseContorller {
 					if (hobbys != null) {
 						hobbys.setId(null);
 						hobbys.setUserid(null);
-						
 						hobbys.setUpdateTime(null);
 						hobbys.setUpdateuid(null);
 						hobbys.setCreateTime(null);
@@ -175,7 +192,18 @@ public class TravelersController extends BaseContorller {
 					showResult.setDestination("");
 				}
 				if (travelersRequireBo.getTimes() != null) {
-					showResult.setTimes(travelersRequireBo.getTimes());
+					List<Date> times = travelersRequireBo.getTimes();
+					DateFormat format = new SimpleDateFormat("yyyy-MM");
+					String voDate = "";
+					for (int i = 0; i < times.size(); i++) {
+						
+						if(i>=1){
+							voDate+="/"+format.format(times.get(i));
+						}else{
+							voDate+=format.format(times.get(i));
+						}
+					}
+					showResult.setTimes(voDate);
 				} else {
 					showResult.setTimes("");
 				}
@@ -234,6 +262,28 @@ public class TravelersController extends BaseContorller {
 			Entry<String, Object> next = iterator.next();
 			// 如果记过不为值或者不为空
 			if (next.getValue() != null && !next.getValue().toString().isEmpty()) {
+				if("times".equals(next.getKey())){
+					// 将传入字符串格式化为Date
+					DateFormat format = new SimpleDateFormat("yyyy-MM");
+					// 切割
+					String[] split = fromObject.get("times").toString().split("/");
+					
+					List<Date> timesList = new ArrayList<>(2);
+					for (int i = 0; i < 2; i++) {
+						// 需要考虑到前端数据只有一个月的情况
+						try {
+							if(split.length==1){
+								timesList.add(format.parse(split[0]));
+							}else if(split.length==2){
+								timesList.add(format.parse(split[i]));
+							}
+						} catch (ParseException e) {
+							return "日期格式错误";
+						}
+					}
+					params.put("times",timesList);
+					continue;
+				}
 				params.put(next.getKey(), next.getValue());
 			}
 
@@ -295,7 +345,6 @@ public class TravelersController extends BaseContorller {
 				if (hobbys != null) {
 					hobbys.setId(null);
 					hobbys.setUserid(null);
-					
 					hobbys.setUpdateTime(null);
 					hobbys.setUpdateuid(null);
 					hobbys.setCreateTime(null);
@@ -315,7 +364,18 @@ public class TravelersController extends BaseContorller {
 				showResult.setDestination("");
 			}
 			if (travelersRequireBo.getTimes() != null) {
-				showResult.setTimes(travelersRequireBo.getTimes());
+				List<Date> times = travelersRequireBo.getTimes();
+				DateFormat format = new SimpleDateFormat("yyyy-MM");
+				String voDate = "";
+				for (int i = 0; i < times.size(); i++) {
+					
+					if(i>=1){
+						voDate+="/"+format.format(times.get(i));
+					}else{
+						voDate+=format.format(times.get(i));
+					}
+				}
+				showResult.setTimes(voDate);
 			} else {
 				showResult.setTimes("");
 			}
@@ -353,15 +413,24 @@ public class TravelersController extends BaseContorller {
 			
 			TravelersRequireVo travelersRequireVo = new TravelersRequireVo();
 			
-			// 获取最后时间
-			String[] timesArr = requireBo.getTimes().split("/");
-			long endTime = Long.valueOf(timesArr[timesArr.length-1].replaceAll("-", ""));
-			// 现在时间
 			DateFormat format = new SimpleDateFormat("yyyy-MM");
+			List<Date> timesArr = requireBo.getTimes();
+			// 判断是否过期
+			long endTime = Long.valueOf(format.format(timesArr.get(timesArr.size()-1)).replaceAll("-", ""));			
 			long nowTime = Long.valueOf(format.format(new Date()).replaceAll("-", ""));
 			travelersRequireVo.setExpired(nowTime>endTime?1:0);
 			
 			BeanUtils.copyProperties(requireBo, travelersRequireVo);
+			// 设置返回时间
+			String voDate = "";
+			for (int i = 0; i < timesArr.size(); i++) {
+				if(i>=1){
+					voDate+="/"+format.format(timesArr.get(i));
+				}else{
+					voDate+=format.format(timesArr.get(i));
+				}
+			}
+			travelersRequireVo.setTimes(voDate);
 
 			map.put("require", JSON.toJSONString(travelersRequireVo));
 		} else {
@@ -386,11 +455,12 @@ public class TravelersController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 
-		List<TravelersRequireVo> list = new ArrayList<>();
+
 		Map map = new HashMap<>();
 
 		// 用户要求
 		List<TravelersRequireBo> requires = travelersService.getRequireList(userBo.getId());
+		List<TravelersRequireVo> list = new ArrayList<>();
 		if (requires.size() <= 0) {
 			map.put("ret", -1);
 			map.put("message", "当前账号无发布旅游需求");
@@ -399,12 +469,12 @@ public class TravelersController extends BaseContorller {
 
 		for (TravelersRequireBo travelersRequireBo : requires) {
 			TravelersRequireVo travelersRequireVo = new TravelersRequireVo();
-			
-			// 获取最后时间
-			String[] timesArr = travelersRequireBo.getTimes().split("/");
-			long endTime = Long.valueOf(timesArr[timesArr.length-1].replaceAll("-", ""));
-			// 现在时间
 			DateFormat format = new SimpleDateFormat("yyyy-MM");
+			// 获取最后时间
+			List<Date> timesArr = travelersRequireBo.getTimes();
+			long endTime = Long.valueOf(format.format(timesArr.get(timesArr.size()-1)).replaceAll("-", ""));
+			// 现在时间
+			
 			long nowTime = Long.valueOf(format.format(new Date()).replaceAll("-", ""));
 			travelersRequireVo.setExpired(nowTime>endTime?1:0);
 			
@@ -453,14 +523,34 @@ public class TravelersController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 
-		TravelersRequireBo requireBo = null;
-		try {
-			JSONObject fromObject = JSONObject.fromObject(requireDate);
-			requireBo = (TravelersRequireBo) JSONObject.toBean(fromObject, TravelersRequireBo.class);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return e.toString();
+
+		JSONObject fromObject = JSONObject.fromObject(requireDate);
+		TravelersRequireVo requireVo = (TravelersRequireVo) JSONObject.toBean(fromObject, TravelersRequireVo.class);
+		TravelersRequireBo requireBo = new TravelersRequireBo();
+		BeanUtils.copyProperties(requireVo, requireBo);
+		
+		// 设置出发时段
+		
+		// 将传入字符串格式化为Date
+		DateFormat format = new SimpleDateFormat("yyyy-MM");
+		// 切割
+		String[] split = fromObject.get("times").toString().split("/");
+		
+		List<Date> timesList = new ArrayList<>(2);
+		for (int i = 0; i < 2; i++) {
+			// 需要考虑到前端数据只有一个月的情况
+			try {
+				if(split.length==1){
+					timesList.add(format.parse(split[0]));
+				}else if(split.length==2){
+					timesList.add(format.parse(split[i]));
+				}
+			} catch (ParseException e) {
+				return "日期格式错误";
+			}
 		}
+
+		requireBo.setTimes(timesList);
 
 		// 插入需求,并返回需求id
 		requireBo.setCreateuid(userBo.getId());

@@ -92,14 +92,16 @@ public class TravelersDaoImpl implements ITravelersDao {
 	@Override
 	public List<TravelersRequireBo> getNewTravelers(int page, int limit, String id) {
 		Query query = new Query();
+		// 过滤时间 开始时间>当前时间 =没开始;结束时间>现在时间=没结束
+		Criteria orcriteria = new Criteria();
+		orcriteria.orOperator(Criteria.where("times.0").gte(new Date()), Criteria.where("times.1").gte(new Date()));
 		Criteria criteria = new Criteria();
-
-		criteria.andOperator(Criteria.where("deleted").is(Constant.ACTIVITY), Criteria.where("createuid").ne(id));
+		criteria.andOperator(Criteria.where("deleted").is(Constant.ACTIVITY), Criteria.where("createuid").ne(id),
+				orcriteria);
 		query.addCriteria(criteria);
 		query.skip((page - 1) * limit);
 		query.limit(limit);
 		query.with(new Sort(new Order(Direction.DESC, "createTime")));
-
 		return mongoTemplate.find(query, TravelersRequireBo.class);
 	}
 
@@ -120,10 +122,14 @@ public class TravelersDaoImpl implements ITravelersDao {
 	@Override
 	public List<TravelersRequireBo> findListByKeyword(String keyWord, int page, int limit,
 			Class<TravelersRequireBo> clazz) {
-		Query query = new Query();
+
+		// 过滤时间 开始时间>当前时间 =没开始;结束时间>现在时间=没结束
+		Criteria orcriteria = new Criteria();
+		orcriteria.orOperator(Criteria.where("times.0").gte(new Date()), Criteria.where("times.1").gte(new Date()));
 		Criteria criteria = new Criteria();
 		criteria.andOperator(Criteria.where("destination").regex(".*" + keyWord + ".*"),
-				Criteria.where("deleted").is(Constant.ACTIVITY));
+				Criteria.where("deleted").is(Constant.ACTIVITY), orcriteria);
+		Query query = new Query();
 		query.addCriteria(criteria);
 		query.skip((page - 1) * limit);
 		query.limit(limit);
@@ -134,8 +140,15 @@ public class TravelersDaoImpl implements ITravelersDao {
 	@Override
 	public List<Map> getRecommend(TravelersRequireBo require) {
 		// 随机取100个实体
-		Query query = new Query(
-				Criteria.where("deleted").is(Constant.ACTIVITY).and("createuid").ne(require.getCreateuid()));
+		// 过滤时间 开始时间>当前时间 =没开始;结束时间>现在时间=没结束
+		Criteria orcriteria = new Criteria();
+		orcriteria.orOperator(Criteria.where("times.0").gte(new Date()), Criteria.where("times.1").gte(new Date()));
+		// 过滤id和已删除数据
+		Criteria criteria = new Criteria();
+		criteria.andOperator(Criteria.where("deleted").is(Constant.ACTIVITY),
+				Criteria.where("createuid").ne(require.getCreateuid()), orcriteria);
+		Query query = new Query(criteria);
+
 		int count = (int) mongoTemplate.count(query, "waiters");
 		Random r = new Random();
 		int length = (count - 99) > 0 ? (count - 99) : 1;
@@ -149,10 +162,11 @@ public class TravelersDaoImpl implements ITravelersDao {
 		if (require.getDestination() != null) {
 			destination = require.getDestination();
 		}
-		String times = "不限";
-		if (require.getTimes() != null) {
-			times = require.getTimes();
-		}
+		DateFormat format = new SimpleDateFormat("yyyy-MM");
+		List<Date> times = require.getTimes();
+		long myStart = Long.valueOf(format.format(times.get(0)).replaceAll("-", ""));
+		long myEnd = Long.valueOf(format.format(times.get(1)).replaceAll("-", ""));
+
 		String type = "不限";
 		if (require.getType() != null) {
 			type = require.getType();
@@ -168,6 +182,7 @@ public class TravelersDaoImpl implements ITravelersDao {
 
 		List<String> temp = new ArrayList<>();
 		List<Map> list = new ArrayList<>();
+
 		for (TravelersRequireBo other : find) {
 			if (temp.contains(other.getId())) {
 				continue;
@@ -184,12 +199,14 @@ public class TravelersDaoImpl implements ITravelersDao {
 			}
 
 			// 时段
-			if ("不限".equals(times)) {
+			List<Date> OtherTimes = other.getTimes();
+
+			long othStart = Long.valueOf(format.format(OtherTimes.get(0)).replaceAll("-", ""));
+			long othEnd = Long.valueOf(format.format(OtherTimes.get(1)).replaceAll("-", ""));
+			// 交集或包含
+			if ((othStart >= myStart && othStart <= myEnd) || (othEnd >= myStart && othEnd <= myEnd)
+					|| (othStart <= myStart && othEnd >= myEnd)) {
 				match += 25;
-			} else if (other.getTimes() != null) {
-				if (times.equals(other.getTimes())) {
-					match += 25;
-				}
 			}
 
 			// 旅行方式
@@ -219,17 +236,13 @@ public class TravelersDaoImpl implements ITravelersDao {
 				}
 			}
 
-			temp.add(other.getId());
-			Map map = new HashMap<>();
-			map.put("match", match);
-			map.put("result", other);
-			list.add(map);
-
-			/*
-			 * if(match>60){ Map map = new HashMap<>(); map.put("match", match);
-			 * map.put("result", other); list.add(map); }
-			 */
-
+			if (match > 0) {
+				temp.add(other.getId());
+				Map map = new HashMap<>();
+				map.put("match", match);
+				map.put("result", other);
+				list.add(map);
+			}
 		}
 		return list;
 	}

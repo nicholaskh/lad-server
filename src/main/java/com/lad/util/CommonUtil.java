@@ -615,8 +615,11 @@ public class CommonUtil {
 		matchNum = (int) (baseNum +Math.round(otherNum*0.6));
 		
 		Map map = new HashMap<>();
-		map.put("match", matchNum);
-		map.put("waiter", waiterBo);
+		if(matchNum>0){
+			map.put("match", matchNum);
+			map.put("waiter", waiterBo);
+		}
+
 		return map;
 	}
 	
