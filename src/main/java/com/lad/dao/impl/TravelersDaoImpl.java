@@ -3,13 +3,17 @@ package com.lad.dao.impl;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
@@ -27,6 +31,8 @@ import com.lad.dao.ITravelersDao;
 import com.lad.util.Constant;
 import com.mongodb.BasicDBObject;
 import com.mongodb.WriteResult;
+
+import net.sf.json.JSONObject;
 
 @Repository("travelersDao")
 public class TravelersDaoImpl implements ITravelersDao {
@@ -46,6 +52,7 @@ public class TravelersDaoImpl implements ITravelersDao {
 		Query query = new Query();
 		Criteria criteria = new Criteria();
 		criteria.andOperator(Criteria.where("createuid").is(id), Criteria.where("deleted").is(Constant.ACTIVITY));
+		query.addCriteria(criteria);
 		return (int) mongoTemplate.count(query, TravelersRequireBo.class);
 	}
 
@@ -94,11 +101,26 @@ public class TravelersDaoImpl implements ITravelersDao {
 		Query query = new Query();
 		// 过滤时间 开始时间>当前时间 =没开始;结束时间>现在时间=没结束
 		Criteria orcriteria = new Criteria();
-		orcriteria.orOperator(Criteria.where("times.0").gte(new Date()), Criteria.where("times.1").gte(new Date()));
+		DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		
+		Logger logger = LoggerFactory.getLogger(getClass());
+		logger.error(format.format(getFirsrtDay()));
+		
+		
+		orcriteria.orOperator(Criteria.where("times.0").gte(getFirsrtDay()), Criteria.where("times.1").gte(getFirsrtDay()));
 		Criteria criteria = new Criteria();
 		criteria.andOperator(Criteria.where("deleted").is(Constant.ACTIVITY), Criteria.where("createuid").ne(id),
 				orcriteria);
 		query.addCriteria(criteria);
+		
+		
+		Iterator<Map.Entry<String, Object>> iterator = JSONObject.fromObject(query).entrySet().iterator();
+		while(iterator.hasNext()){
+			Entry<String, Object> next = iterator.next();
+			logger.error(next.getKey()+"------我是分隔符-----"+next.getValue());
+		}
+		
+		
 		query.skip((page - 1) * limit);
 		query.limit(limit);
 		query.with(new Sort(new Order(Direction.DESC, "createTime")));
@@ -125,7 +147,7 @@ public class TravelersDaoImpl implements ITravelersDao {
 
 		// 过滤时间 开始时间>当前时间 =没开始;结束时间>现在时间=没结束
 		Criteria orcriteria = new Criteria();
-		orcriteria.orOperator(Criteria.where("times.0").gte(new Date()), Criteria.where("times.1").gte(new Date()));
+		orcriteria.orOperator(Criteria.where("times.0").gte(getFirsrtDay()), Criteria.where("times.1").gte(getFirsrtDay()));
 		Criteria criteria = new Criteria();
 		criteria.andOperator(Criteria.where("destination").regex(".*" + keyWord + ".*"),
 				Criteria.where("deleted").is(Constant.ACTIVITY), orcriteria);
@@ -142,7 +164,7 @@ public class TravelersDaoImpl implements ITravelersDao {
 		// 随机取100个实体
 		// 过滤时间 开始时间>当前时间 =没开始;结束时间>现在时间=没结束
 		Criteria orcriteria = new Criteria();
-		orcriteria.orOperator(Criteria.where("times.0").gte(new Date()), Criteria.where("times.1").gte(new Date()));
+		orcriteria.orOperator(Criteria.where("times.0").gte(getFirsrtDay()), Criteria.where("times.1").gte(getFirsrtDay()));
 		// 过滤id和已删除数据
 		Criteria criteria = new Criteria();
 		criteria.andOperator(Criteria.where("deleted").is(Constant.ACTIVITY),
@@ -245,6 +267,15 @@ public class TravelersDaoImpl implements ITravelersDao {
 			}
 		}
 		return list;
+	}
+	
+	private Date getFirsrtDay(){
+		Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.DAY_OF_MONTH, 1);
+		cal.set(Calendar.HOUR_OF_DAY,0);
+		cal.set(Calendar.MINUTE,0);
+		cal.set(Calendar.SECOND,0);
+		return cal.getTime();
 	}
 
 }

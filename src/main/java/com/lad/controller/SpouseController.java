@@ -106,7 +106,7 @@ public class SpouseController  extends BaseContorller{
 	
 	
 	/**
-	 * 
+	 * 关键字搜索
 	 * @param keyWord
 	 * @param request
 	 * @param response
