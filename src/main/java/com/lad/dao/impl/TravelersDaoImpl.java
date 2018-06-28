@@ -87,6 +87,8 @@ public class TravelersDaoImpl implements ITravelersDao {
 	 */
 	@Override
 	public String insert(BaseBo baseBo) {
+		Logger logger = LoggerFactory.getLogger(getClass());
+		logger.error("这里是添加时的实体类================"+baseBo);
 		mongoTemplate.insert(baseBo);
 		return baseBo.getId();
 	}
@@ -100,27 +102,15 @@ public class TravelersDaoImpl implements ITravelersDao {
 	public List<TravelersRequireBo> getNewTravelers(int page, int limit, String id) {
 		Query query = new Query();
 		// 过滤时间 开始时间>当前时间 =没开始;结束时间>现在时间=没结束
-		Criteria orcriteria = new Criteria();
-		DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		
-		Logger logger = LoggerFactory.getLogger(getClass());
-		logger.error(format.format(getFirsrtDay()));
-		
-		
+		Criteria orcriteria = new Criteria();	
 		orcriteria.orOperator(Criteria.where("times.0").gte(getFirsrtDay()), Criteria.where("times.1").gte(getFirsrtDay()));
 		Criteria criteria = new Criteria();
 		criteria.andOperator(Criteria.where("deleted").is(Constant.ACTIVITY), Criteria.where("createuid").ne(id),
 				orcriteria);
 		query.addCriteria(criteria);
 		
-		
-		Iterator<Map.Entry<String, Object>> iterator = JSONObject.fromObject(query).entrySet().iterator();
-		while(iterator.hasNext()){
-			Entry<String, Object> next = iterator.next();
-			logger.error(next.getKey()+"------我是分隔符-----"+next.getValue());
-		}
-		
-		
+		Logger logger = LoggerFactory.getLogger(getClass());
+		logger.error("这里是查看最新的query================"+query);
 		query.skip((page - 1) * limit);
 		query.limit(limit);
 		query.with(new Sort(new Order(Direction.DESC, "createTime")));
@@ -272,9 +262,6 @@ public class TravelersDaoImpl implements ITravelersDao {
 	private Date getFirsrtDay(){
 		Calendar cal = Calendar.getInstance();
 		cal.set(Calendar.DAY_OF_MONTH, 1);
-		cal.set(Calendar.HOUR_OF_DAY,0);
-		cal.set(Calendar.MINUTE,0);
-		cal.set(Calendar.SECOND,0);
 		return cal.getTime();
 	}
 
