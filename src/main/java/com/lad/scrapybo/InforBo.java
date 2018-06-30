@@ -1,12 +1,11 @@
 package com.lad.scrapybo;
 
-import lombok.Getter;
-import lombok.Setter;
-import org.springframework.data.annotation.Id;
+import java.util.LinkedList;
+
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.io.Serializable;
-import java.util.LinkedList;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * 功能描述： 咨询

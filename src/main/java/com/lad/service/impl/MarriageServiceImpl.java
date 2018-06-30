@@ -3,6 +3,7 @@ package com.lad.service.impl;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -43,10 +44,6 @@ public class MarriageServiceImpl implements IMarriageService {
 		return marriageDao.insertPublish(bb);
 	}
 
-	@Override
-	public List<String> getUnrecommendList(String waiterId) {
-		return marriageDao.getUnrecommendList(waiterId);
-	}
 	
 	@Override
 	public WaiterBo findWaiterById(String caresId) {
@@ -59,8 +56,8 @@ public class MarriageServiceImpl implements IMarriageService {
 	}
 	
 	@Override
-	public List<String> getPassList(String waiterId) {
-		return marriageDao.getPassList(waiterId);
+	public Set<String> getPass(String waiterId) {
+		return marriageDao.getPass(waiterId);
 	}
 	
 	@Override
@@ -89,13 +86,13 @@ public class MarriageServiceImpl implements IMarriageService {
 
 
 	@Override
-	public Map<String, List> getCareMap(String waiterId) {
+	public Map<String, Set<String>> getCareMap(String waiterId) {
 		
 		return marriageDao.getCareMap(waiterId);
 	}
 
 	@Override
-	public WriteResult updateCare(String waiterId, Map<String, List> map) {
+	public WriteResult updateCare(String waiterId, Map<String, Set<String>> map) {
 		return marriageDao.updateCare(waiterId, map);
 		
 	}
@@ -118,6 +115,16 @@ public class MarriageServiceImpl implements IMarriageService {
 	@Override
 	public List<WaiterBo> getGirlsByUserId(String userId) {
 		return marriageDao.getGirlsByUserId(userId);
+	}
+
+	@Override
+	public List<OptionBo> getHobbysSupOptions() {
+		return marriageDao.getHobbysSupOptions();
+	}
+
+	@Override
+	public List<OptionBo> getHobbysSonOptions(String id) {
+		return marriageDao.getHobbysSonOptions(id);
 	}
 
 

@@ -2,6 +2,7 @@ package com.lad.service.impl;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -47,13 +48,6 @@ public class SpouseServiceImpl implements SpouseService {
 	}
 
 	/**
-	 * 获取不在推荐列表
-	 */
-	@Override
-	public List<String> getPassList(String spouseId) {
-		return spouseDao.getPassList(spouseId);
-	}
-	/**
 	 * 添加找老伴消息
 	 */
 	@Override
@@ -74,17 +68,6 @@ public class SpouseServiceImpl implements SpouseService {
 	@Override
 	public SpouseRequireBo findRequireById(String baseId) {
 		return spouseDao.findRequireById(baseId);
-	}
-	
-	@Override
-	public Map<String, List> getCareMap(String spouseId) {
-		return spouseDao.getCareMap(spouseId);
-	}
-
-
-	@Override
-	public WriteResult updateCare(String spouseId, Map<String, List> map) {
-		return spouseDao.updateCare(spouseId, map);
 	}
 
 	@Override

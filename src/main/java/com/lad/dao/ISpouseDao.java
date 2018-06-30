@@ -2,6 +2,7 @@ package com.lad.dao;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.lad.bo.BaseBo;
 import com.lad.bo.SpouseBaseBo;
@@ -16,13 +17,6 @@ public interface ISpouseDao {
 	SpouseBaseBo findBaseById(String baseId);
 
 	SpouseRequireBo findRequireById(String baseId);
-
-
-	Map<String, List> getCareMap(String spouseId);
-
-	WriteResult updateCare(String spouseId, Map<String, List> map);
-
-	List<String> getPassList(String spouseId);
 
 	WriteResult updateByParams(String spouseId, Map<String, Object> params, Class class1);
 

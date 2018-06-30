@@ -76,4 +76,10 @@ public interface IShowService {
 
 
     long findByKeyword(String keyword, String userid, int type);
+
+
+	int findPublishZhaoNum(String id);
+
+
+	int findPublishJieNum(String id);
 }

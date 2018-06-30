@@ -1,20 +1,20 @@
 package com.lad.controller;
 
-import java.io.UnsupportedEncodingException;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Map.Entry;
+import java.util.Random;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -22,18 +22,14 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.beanutils.BeanComparator;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.alibaba.fastjson.JSON;
 import com.lad.bo.FriendsBo;
-import com.lad.bo.OptionBo;
 import com.lad.bo.RequireBo;
 import com.lad.bo.UserBo;
 import com.lad.bo.WaiterBo;
@@ -42,18 +38,13 @@ import com.lad.service.IMarriageService;
 import com.lad.util.CommonUtil;
 import com.lad.util.Constant;
 import com.lad.util.ERRORCODE;
-import com.lad.util.MyException;
-import com.lad.vo.BaseVo;
 import com.lad.vo.CareResultVo;
-import com.lad.vo.OptionVo;
 import com.lad.vo.RequireVo;
 import com.lad.vo.WaiterVo;
 import com.mongodb.WriteResult;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 @Api("儿媳/女婿接口")
@@ -76,8 +67,7 @@ public class MarriageController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
-		// keyWord = "成";
-
+//		 keyWord = "成";
 		List<WaiterBo> list = marriageService.findListByKeyword(keyWord, type, page, limit, WaiterBo.class);
 
 		List resultList = new ArrayList<>();
@@ -122,7 +112,6 @@ public class MarriageController extends BaseContorller {
 
 	/**
 	 * 推荐
-	 * 
 	 * @param request
 	 * @param response
 	 * @return
@@ -153,7 +142,7 @@ public class MarriageController extends BaseContorller {
 			list.sort(c);
 			map.put("result", list);
 		}
-		return JSONObject.fromObject(map).toString();
+		return JSON.toJSONString(map).replace("\\", "").replace("\"{", "{").replace("}\"", "}");
 	}
 
 	@ApiOperation("查询发布详情")
@@ -176,6 +165,10 @@ public class MarriageController extends BaseContorller {
 		map.put("waiter", waiterVo);
 
 		RequireBo require = marriageService.findRequireById(waiterId);
+		if(require==null){
+			return CommonUtil.toErrorResult(ERRORCODE.MARRIAGE_REQUIRE_NULL.getIndex(),
+					ERRORCODE.MARRIAGE_REQUIRE_NULL.getReason());
+		}
 
 		RequireVo requireVo = new RequireVo();
 		BeanUtils.copyProperties(require, requireVo);
@@ -186,9 +179,6 @@ public class MarriageController extends BaseContorller {
 		}
 		map.put("chatroomid", "非好友");
 
-		System.out.println(userBo.getId());
-		System.out.println(waiter.getCreateuid());
-		System.out.println(userBo.getId().equals(waiter.getCreateuid()));
 		// 查看两者是否为好友
 		if (!(userBo.getId().equals(waiter.getCreateuid()))) {
 			// 根据咨询的发布者id 查询是否为当前用户好友
@@ -218,32 +208,23 @@ public class MarriageController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
-		// 获取当前用户的黑名单列表
-		List<String> list = null;
-		if (waiterId != null && waiterId != "") {
-			list = getPassList(waiterId);
-		} else {
+		System.out.println(waiterId);
+		if (waiterId == null || waiterId == "") {
 			return CommonUtil.toErrorResult(ERRORCODE.MARRIAGE_PUBLISH_NULL.getIndex(),
 					ERRORCODE.MARRIAGE_PUBLISH_NULL.getReason());
 		}
-		if (list == null) {
-			list = new ArrayList<String>();
-			list.add(passId);
-		}
-
-		if (list != null && !(list.contains(passId))) {
-			// 将用户添加到黑名单
-			list.add(passId);
-		}
-
-		// 更新数据库
+		
+		// 获取当前用户的黑名单列表		
+		Set<String> pass = marriageService.getPass(waiterId);
+		pass.add(passId);
+		
 		Map<String, Object> params = new HashMap<>();
-		params.put("pass", list);
+		params.put("pass", pass);
 		WriteResult result = marriageService.updateByParams(waiterId, params, WaiterBo.class);
 
 		return Constant.COM_RESP;
 	}
-
+	
 	@ApiOperation("添加关注")
 	@PostMapping("/care-insert")
 	public String addCare(String waiterId, String careId, HttpServletRequest request, HttpServletResponse response) {
@@ -253,32 +234,22 @@ public class MarriageController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 
-		Map<String, List> map = marriageService.getCareMap(waiterId);
-		if (map == null) {
-			map = new HashMap<String, List>();
-		}
-		// 设置时间
-		Date date = new Date();
-		DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-		String time = format.format(date);
-
+		Map<String, Set<String>> map = marriageService.getCareMap(waiterId);
+		
+		String time = CommonUtil.getDateStr(new Date(), "yyyy-MM-dd");
 		// 如果原map中包含今天的关注,则添加到今天的关注
-		List<String> list = new ArrayList<>();
+		Set<String> set = new HashSet<>();
 		for (String key : map.keySet()) {
 			if (time.equals(key)) {
-				list = map.get(key);
-				if (list.contains(careId)) {
-					return CommonUtil.toErrorResult(ERRORCODE.MARRIAGE_HAS_CARE.getIndex(),
-							ERRORCODE.MARRIAGE_HAS_CARE.getReason());
-				}
-				list.add(careId);
+				set = map.get(key);
+				set.add(careId);
 				marriageService.updateCare(waiterId, map);
 				return Constant.COM_RESP;
 			}
 		}
 
-		list.add(careId);
-		map.put(time, list);
+		set.add(careId);
+		map.put(time, set);
 		marriageService.updateCare(waiterId, map);
 		return Constant.COM_RESP;
 	}
@@ -292,24 +263,19 @@ public class MarriageController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 
-		Map<String, List> map = marriageService.getCareMap(waiterId);
+		Map<String, Set<String>> careMap = marriageService.getCareMap(waiterId);
 
-		if (map == null) {
-			map = new HashMap<String, List>();
-
-		}
-
-		for (Entry<String, List> entity : map.entrySet()) {
-			List list = entity.getValue();
-			if (list.contains(careId)) {
-				list.remove(careId);
-				if (list.size() == 0) {
-					map.remove(entity.getKey());
+		for (Entry<String, Set<String>> entity : careMap.entrySet()) {
+			Set<String> set = entity.getValue();
+			if (set.contains(careId)) {
+				set.remove(careId);
+				if (set.size() == 0) {
+					careMap.remove(entity.getKey());
 				}
 				break;
 			}
 		}
-		WriteResult updateCare = marriageService.updateCare(waiterId, map);
+		WriteResult updateCare = marriageService.updateCare(waiterId, careMap);
 
 		return Constant.COM_RESP;
 	}
@@ -324,40 +290,33 @@ public class MarriageController extends BaseContorller {
 		}
 
 		Map map = new HashMap<>();
-		Map<String, List> careMap = marriageService.getCareMap(waiterId);
+		Map<String, Set<String>> careMap = marriageService.getCareMap(waiterId);
 
-		// 要将result设置为一个list,设置该list进行接收
-		List list2 = new ArrayList();
+		List resultList = new ArrayList();
 
-		// 循环时间,key为日期
 		for (String key : careMap.keySet()) {
-			// 每个日期下的数据保存到一个CareResultVo试题中
 			CareResultVo re = new CareResultVo();
+			// 获取当天的关注列表
+			Set<String> set = careMap.get(key);
+			List waiterContainer = new ArrayList<>();
 
-			// 获取日期下的关注者集合id
-			List list = careMap.get(key);
-			// 要将关注着集合中的数据从id转换为实体,因此设置该集合用以接收这些实体
-			List list3 = new ArrayList<>();
-
-			for (Object Object : list) {
-				WaiterBo waiter = marriageService.findWaiterById(Object.toString());
-
+			for (String wid : set) {
+				WaiterBo waiter = marriageService.findWaiterById(wid);
 				if (waiter != null) {
-
-					list3.add(JSON.toJSONString(waiter));
+					waiterContainer.add(waiter);
 				}
 			}
 
-			if (list3.size() > 0) {
+			if (waiterContainer.size() > 0) {
 				re.setAddTime(key);
-				re.setString(list3);
-				list2.add(re);
+				re.setString(waiterContainer);
+				resultList.add(re);
 			}
 		}
 
-		if (list2.size() > 0) {
+		if (resultList.size() > 0) {
 			map.put("ret", 0);
-			map.put("result", list2);
+			map.put("result", resultList);
 		} else {
 			map.put("ret", -1);
 			map.put("result", "该账号下无关注或关注的发布已取消");
@@ -460,54 +419,22 @@ public class MarriageController extends BaseContorller {
 		}
 
 		WaiterBo waiterBo = (WaiterBo) JSONObject.toBean(fromObject, WaiterBo.class);
-		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-		try {
-			Date birthday = format.parse(fromObject.get("birthday").toString());
-			waiterBo.setBirthday(birthday);
-			waiterBo.setAge(CommonUtil.getAge(birthday));
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
 
+		String[] brithStrArr = fromObject.get("birthday").toString().toString().split("-");
+		Calendar cal = Calendar.getInstance();
+		cal.set(Integer.valueOf(brithStrArr[0]), Integer.valueOf(brithStrArr[1]), Integer.valueOf(brithStrArr[2]), 0, 0, 0);
+
+		waiterBo.setBirthday(cal.getTime());
+		waiterBo.setAge(CommonUtil.getAge(cal.getTime()));
 		waiterBo.setCreateuid(userBo.getId());
-
-		// 设置图片地址
-		if (waiterBo.getImages() == null) {
-			List<String> list = new ArrayList<>();
-			waiterBo.setImages(list);
-		}
-
-		// 设置兴趣
-		if (waiterBo.getHobbys() == null) {
-			List<String> list = new ArrayList<>();
-			waiterBo.setHobbys(list);
-		}
-
-		// 设置关心的人,初始为空
-		Map<String, List> cares = new HashMap<String, List>();
-		waiterBo.setCares(cares);
-		// 设置不再推荐的人,初始为空
-		List<String> pass = new ArrayList<>();
-		waiterBo.setPass(pass);
-
+		
+		
 		fromObject = JSONObject.fromObject(rv);
 		RequireBo requireBo = (RequireBo) JSONObject.toBean(fromObject, RequireBo.class);
-
-		if (requireBo.getHobbys() == null) {
-			List<String> list = new ArrayList<>();
-			requireBo.setHobbys(list);
-		}
-		if (requireBo.getJob() == null) {
-			List<String> list = new ArrayList<>();
-			requireBo.setJob(list);
-		}
 		requireBo.setSex(1 - waiterBo.getSex());
-
 		requireBo.setCreateTime(null);
 
-
 		// 插入需求,并返回需求id
-
 		String waiterId = marriageService.insertPublish(waiterBo);
 		requireBo.setWaiterId(waiterId);
 		marriageService.insertPublish(requireBo);
@@ -528,13 +455,13 @@ public class MarriageController extends BaseContorller {
 
 		while (iterator.hasNext()) {
 			Map.Entry<String, Object> entry = iterator.next();
-			if (entry.getValue() != null && !("birthday".equals(entry.getValue()))) {
+			if (entry.getValue() != null && !("birthday".equals(entry.getKey()))) {
 				params.put(entry.getKey(), entry.getValue());
 			}
 		}
 
 		// 处理时间
-		if ("WaiterBo".equals(split[split.length - 1])) {
+		if (fromObject.containsKey("birthday")) {
 			String birthdayStr = fromObject.getString("birthday");
 			SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
 			if (birthdayStr != null) {
@@ -547,19 +474,13 @@ public class MarriageController extends BaseContorller {
 				}
 			}
 		}
-
+		params.put("updateTime", new Date());
 		WriteResult result = null;
 		if (params.size() > 0) {
 			result = marriageService.updateByParams(id, params, clazz);
 		}
 		return result;
 
-	}
-
-	private List<String> getPassList(String waiterId) {
-		List<String> list = new ArrayList<String>();
-		list = marriageService.getPassList(waiterId);
-		return list;
 	}
 
 	@GetMapping("/getNickName")

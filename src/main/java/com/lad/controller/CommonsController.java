@@ -2,8 +2,10 @@ package com.lad.controller;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -20,6 +22,7 @@ import com.lad.bo.OptionBo;
 import com.lad.bo.UserBo;
 import com.lad.service.IMarriageService;
 import com.lad.service.IOldFriendService;
+import com.lad.service.IShowService;
 import com.lad.service.SpouseService;
 import com.lad.service.TravelersService;
 import com.lad.util.CommonUtil;
@@ -50,6 +53,28 @@ public class CommonsController extends BaseContorller{
 	@Autowired
 	private IOldFriendService oldFriendService;
 	
+    @Autowired
+    private IShowService showService;
+    
+    @GetMapping("getHobOptions")
+    public String getHobbysOptions(){
+    	List<OptionBo> supOptions= marriageService.getHobbysSupOptions();
+    	Map<String,Set<String>> map = new HashMap<>();
+    	
+    	for (OptionBo supOption : supOptions) {
+    		List<OptionBo> sonOptions = marriageService.getHobbysSonOptions(supOption.getId());
+    		Set<String> sonOptionSet = new LinkedHashSet<>();
+    		for (OptionBo sonOption : sonOptions) {
+    			sonOptionSet.add(sonOption.getValue());
+			}
+    		map.put(supOption.getValue(), sonOptionSet);
+		}
+    	Map result = new HashMap<>();
+    	result.put("ret", 0);
+    	result.put("result", map);
+    	return JSON.toJSONString(result);
+    }
+	
 	/**
 	 * 获取当前用户发布消息的条数
 	 * @param request
@@ -61,9 +86,7 @@ public class CommonsController extends BaseContorller{
 		UserBo userBo = getUserLogin(request);
 		if (userBo == null) {
 			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-		}
-		
-		
+		}	
 		Map map = new HashMap<>();
 		map.put("ret", 0);
 		int marriageBoyNum = marriageService.findPublishNum(userBo.getId());
@@ -76,6 +99,10 @@ public class CommonsController extends BaseContorller{
 		map.put("spouseNum", spouseNum);
 		int oldFriendNum = oldFriendService.findPublishNum(userBo.getId());
 		map.put("oldFriendNum", oldFriendNum);
+		int showZhaoNum = showService.findPublishZhaoNum(userBo.getId());
+		map.put("showZhaoNum", showZhaoNum);
+		int showJieNum = showService.findPublishJieNum(userBo.getId());
+		map.put("showJieNum", showJieNum);
 		return JSONObject.fromObject(map).toString();
 	}
 	

@@ -9,6 +9,7 @@ import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -264,20 +265,22 @@ public class TravelersController extends BaseContorller {
 			if (next.getValue() != null && !next.getValue().toString().isEmpty()) {
 				if ("times".equals(next.getKey())) {
 					String[] split = fromObject.get("times").toString().split("/");
-					// [2018-06,2018-06]
 					List<Date> timesList = new ArrayList<>(2);
-
 					if (split.length == 1) {
 						Calendar cal = Calendar.getInstance();
 						String[] split2 = split[0].split("-");
-						cal.set(Integer.valueOf(split2[0]), Integer.valueOf(split2[1]) - 1, 15, 0, 0, 0);
+						cal.set(Calendar.YEAR, Integer.valueOf(split2[0]));
+						cal.set(Calendar.MONTH, Integer.valueOf(split2[1]) - 1);
+						cal.set(Calendar.DAY_OF_MONTH, 25);
 						timesList.add(cal.getTime());
 						timesList.add(cal.getTime());
 					} else if (split.length == 2) {
 						for (int i = 0; i < 2; i++) {
 							Calendar cal = Calendar.getInstance();
 							String[] split2 = split[i].split("-");
-							cal.set(Integer.valueOf(split2[0]), Integer.valueOf(split2[1]) - 1, 15, 0, 0, 0);
+							cal.set(Calendar.YEAR, Integer.valueOf(split2[0]));
+							cal.set(Calendar.MONTH, Integer.valueOf(split2[1]) - 1);
+							cal.set(Calendar.DAY_OF_MONTH, 25);
 							timesList.add(cal.getTime());
 
 						}
@@ -535,8 +538,8 @@ public class TravelersController extends BaseContorller {
 			Calendar cal = Calendar.getInstance();
 			String[] split2 = split[0].split("-");
 			cal.set(Calendar.YEAR, Integer.valueOf(split2[0]));
-			cal.set(Calendar.MONTH, Integer.valueOf(split2[1])-1);
-			cal.set(Calendar.DAY_OF_MONTH, 25);			
+			cal.set(Calendar.MONTH, Integer.valueOf(split2[1]) - 1);
+			cal.set(Calendar.DAY_OF_MONTH, 25);
 			timesList.add(cal.getTime());
 			timesList.add(cal.getTime());
 		} else if (split.length == 2) {
@@ -544,7 +547,7 @@ public class TravelersController extends BaseContorller {
 				Calendar cal = Calendar.getInstance();
 				String[] split2 = split[i].split("-");
 				cal.set(Calendar.YEAR, Integer.valueOf(split2[0]));
-				cal.set(Calendar.MONTH, Integer.valueOf(split2[1])-1);
+				cal.set(Calendar.MONTH, Integer.valueOf(split2[1]) - 1);
 				cal.set(Calendar.DAY_OF_MONTH, 25);
 				timesList.add(cal.getTime());
 
@@ -676,14 +679,14 @@ public class TravelersController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 
-		List<String> passRoster = careAndPassService.findTravelersPassList(requireId);
+		Set<String> passRoster = careAndPassService.findTravelersPassList(requireId);
 
 		// 如果存在这个记录
 		if (passRoster != null) {
 			if (!passRoster.contains(passId)) {
 				passRoster.add(passId);
-				Map<String, List<String>> careMap = careAndPassService.findTravelersCareMap(requireId);
-				for (Entry<String, List<String>> entity : careMap.entrySet()) {
+				Map<String, Set<String>> careMap = careAndPassService.findTravelersCareMap(requireId);
+				for (Entry<String, Set<String>> entity : careMap.entrySet()) {
 					if (entity.getValue().contains(passId)) {
 						entity.getValue().remove(passId);
 						// 多线程情况下有安全隐患
@@ -701,10 +704,10 @@ public class TravelersController extends BaseContorller {
 			// 设置主id
 			care.setMainId(requireId);
 			// 设置关注名单
-			Map<String, List<String>> careRoster = new HashMap<>();
+			Map<String, Set<String>> careRoster = new HashMap<>();
 			care.setCareRoster(careRoster);
 			// 设置黑名单list
-			List<String> passList = new ArrayList<String>();
+			Set<String> passList = new HashSet<>();
 			passList.add(passId);
 			care.setPassRoster(passList);
 			// 设置创建者id
@@ -730,13 +733,13 @@ public class TravelersController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 
-		Map<String, List<String>> careMap = careAndPassService.findTravelersCareMap(requireId);
+		Map<String, Set<String>> careMap = careAndPassService.findTravelersCareMap(requireId);
 
 		if (careMap == null) {
-			careMap = new HashMap<String, List<String>>();
+			careMap = new HashMap<String, Set<String>>();
 		}
 
-		for (Entry<String, List<String>> entrySet : careMap.entrySet()) {
+		for (Entry<String, Set<String>> entrySet : careMap.entrySet()) {
 			if (entrySet.getValue().contains(careId)) {
 				entrySet.getValue().remove(careId);
 				if (entrySet.getValue().size() == 0) {
@@ -765,9 +768,9 @@ public class TravelersController extends BaseContorller {
 		// 设置壮哉CareResultVo的容器
 		List<CareResultVo> resultContainer = new ArrayList<>();
 		if (care != null) {
-			Map<String, List<String>> roster = care.getCareRoster();
+			Map<String, Set<String>> roster = care.getCareRoster();
 			CareResultVo result = new CareResultVo();
-			for (Entry<String, List<String>> entity : roster.entrySet()) {
+			for (Entry<String, Set<String>> entity : roster.entrySet()) {
 				result.setAddTime(entity.getKey());
 				// 设置list装载遍历出的实体数据
 				List<String> requireContainer = new ArrayList<>();
@@ -804,10 +807,10 @@ public class TravelersController extends BaseContorller {
 		String time = format.format(new Date());
 
 		if (careAndPassBo != null) {
-			Map<String, List<String>> careRoster = careAndPassBo.getCareRoster();
+			Map<String, Set<String>> careRoster = careAndPassBo.getCareRoster();
 
 			// 判断是否已关注该用户
-			for (Entry<String, List<String>> entity : careRoster.entrySet()) {
+			for (Entry<String, Set<String>> entity : careRoster.entrySet()) {
 				if (entity.getValue().contains(careId)) {
 					return "您已关注该用户";
 				}
@@ -817,7 +820,7 @@ public class TravelersController extends BaseContorller {
 			if (careRoster.containsKey(time)) {
 				careRoster.get(time).add(careId);
 			} else {
-				List<String> careList = new ArrayList<String>();
+				Set<String> careList = new HashSet<>();
 				careList.add(careId);
 				careRoster.put(time, careList);
 			}
@@ -828,13 +831,13 @@ public class TravelersController extends BaseContorller {
 			// 设置主id
 			care.setMainId(requireId);
 			// 设置关注名单
-			Map<String, List<String>> careRoster = new HashMap<>();
-			List<String> careList = new ArrayList<String>();
+			Map<String, Set<String>> careRoster = new HashMap<>();
+			Set<String> careList = new HashSet<>();
 			careList.add(careId);
 			careRoster.put(time, careList);
 			care.setCareRoster(careRoster);
 			// 设置黑名单list
-			List<String> passList = new ArrayList<String>();
+			Set<String> passList = new HashSet<>();
 			care.setPassRoster(passList);
 			// 设置创建者id
 			care.setCreateuid(userBo.getId());

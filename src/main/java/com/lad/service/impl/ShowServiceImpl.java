@@ -115,4 +115,14 @@ public class ShowServiceImpl implements IShowService {
     public long findByKeyword(String keyword, String userid, int type) {
         return showDao.findByList(keyword, userid, type);
     }
+
+	@Override
+	public int findPublishZhaoNum(String id) {
+		return showDao.findPublishZhaoNum(id);
+	}
+
+	@Override
+	public int findPublishJieNum(String id) {
+		return showDao.findPublishJieNum(id);
+	}
 }

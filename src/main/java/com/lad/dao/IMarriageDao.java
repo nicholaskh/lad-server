@@ -2,6 +2,7 @@ package com.lad.dao;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.lad.bo.BaseBo;
 import com.lad.bo.OptionBo;
@@ -20,11 +21,9 @@ public interface IMarriageDao {
 
 	WriteResult deletePublish(String pubId);
 
-	List<String> getPassList(String waiterId);
+	Set<String> getPass(String waiterId);
 
 	WaiterBo findWaiterById(String caresId);
-
-	List<String> getUnrecommendList(String waiterId);
 
 	RequireBo findRequireById(String waiterId);
 
@@ -36,9 +35,9 @@ public interface IMarriageDao {
 	
 	List<WaiterBo> getNewPublic(int type,int page,int limit,String uid);
 
-	Map<String, List> getCareMap(String waiterId);
+	Map<String, Set<String>> getCareMap(String waiterId);
 
-	WriteResult updateCare(String waiterId, Map<String, List> map);
+	WriteResult updateCare(String waiterId, Map<String, Set<String>> map);
 
 	int findPublishNum(String id);
 
@@ -49,5 +48,9 @@ public interface IMarriageDao {
 	List<WaiterBo> getBoysByUserId(String userId);
 
 	List<WaiterBo> getGirlsByUserId(String userId);
+
+	List<OptionBo> getHobbysSupOptions();
+
+	List<OptionBo> getHobbysSonOptions(String id);
 
 }

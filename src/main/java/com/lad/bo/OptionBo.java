@@ -11,11 +11,10 @@ import lombok.ToString;
 @ToString
 @Document(collection = "options")
 public class OptionBo extends BaseBo{
-//	private String id;		// 当前选项id(具体的选项)
 	private String value;	
 	private String field;	// 属于哪一个字段
 	private String supId;	// 上级id(可选,涉及多级联动的选项需要填写该字段)
 	private String template;// 使用模板(涉及范围选项需要填写该字段)
-	private Integer sort;	// 排序
-	private Integer status; // 状态,是否启用
+	private int sort;	// 排序
+	private int status; // 状态,是否启用
 }

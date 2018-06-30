@@ -1,7 +1,12 @@
 package com.lad.vo;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -24,6 +29,6 @@ public class WaiterVo extends BaseVo {
 	private String job;			// 职业
 	private String salary;		// 收入
 	private String nowin;		// 居住地
-	private List<String> images;// 照片地址,保存url的list;
-	private List<String> hobbys;// 兴趣,list
+	private List<String> images = new ArrayList<>();// 照片地址,保存url的list;
+	private Map<String,Set<String>> hobbys = new HashMap<>();// 兴趣,list
 }

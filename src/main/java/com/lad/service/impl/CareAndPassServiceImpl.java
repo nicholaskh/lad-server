@@ -2,6 +2,7 @@ package com.lad.service.impl;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,17 +17,17 @@ public class CareAndPassServiceImpl implements CareAndPassService {
 	private CareAndPassDao careAndPassDao;
 	
 	@Override
-	public Map<String, List<String>> findMarriageCareMap(String mainId) {
+	public Map<String, Set<String>> findMarriageCareMap(String mainId) {
 		return careAndPassDao.findMarriageCareMap(mainId);
 	}
 
 	@Override
-	public Map<String, List<String>> findSpouseCareMap(String mainId) {
+	public Map<String, Set<String>> findSpouseCareMap(String mainId) {
 		return careAndPassDao.findSpouseCareMap(mainId);
 	}
 
 	@Override
-	public Map<String, List<String>> findTravelersCareMap(String mainId) {
+	public Map<String, Set<String>> findTravelersCareMap(String mainId) {
 		return careAndPassDao.findTravelersCareMap(mainId);
 	}
 	
@@ -71,28 +72,28 @@ public class CareAndPassServiceImpl implements CareAndPassService {
 	}
 
 	@Override
-	public WriteResult updateCare(String situation, String mainId, Map<String, List<String>> careRoster) {
+	public WriteResult updateCare(String situation, String mainId, Map<String, Set<String>> careRoster) {
 		return careAndPassDao.updateCare(situation,mainId, careRoster);
 	}
 	
 	@Override
-	public WriteResult updatePass(String situation, String mainId, List<String> passRoster) {
+	public WriteResult updatePass(String situation, String mainId, Set<String> passRoster) {
 		return careAndPassDao.updatePass(situation, mainId, passRoster);
 	}
 	
 
 	@Override
-	public List<String> findMarriagePassList(String mainId) {
+	public Set<String> findMarriagePassList(String mainId) {
 		return careAndPassDao.findMarriagePassList(mainId);
 	}
 
 	@Override
-	public List<String> findSpousePassList(String mainId) {
+	public Set<String> findSpousePassList(String mainId) {
 		return careAndPassDao.findSpousePassList(mainId);
 	}
 
 	@Override
-	public List<String> findTravelersPassList(String mainId) {
+	public Set<String> findTravelersPassList(String mainId) {
 		return careAndPassDao.findTravelersPassList(mainId);
 	}
 

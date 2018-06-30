@@ -2,6 +2,7 @@ package com.lad.dao.impl;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -25,36 +26,36 @@ public class CareAndPassDaoImpl implements CareAndPassDao {
 	
 	
 	@Override
-	public Map<String, List<String>> findMarriageCareMap(String mainId) {
+	public Map<String, Set<String>> findMarriageCareMap(String mainId) {
 		return getCareQuery(Constant.MARRIAGE, mainId).getCareRoster();
 	}
 
 
 	@Override
-	public Map<String, List<String>> findSpouseCareMap(String mainId) {
+	public Map<String, Set<String>> findSpouseCareMap(String mainId) {
 		return getCareQuery(Constant.SPOUSE, mainId).getCareRoster();
 	}
 
 
 	@Override
-	public Map<String, List<String>> findTravelersCareMap(String mainId) {		
+	public Map<String, Set<String>> findTravelersCareMap(String mainId) {		
 		return getCareQuery(Constant.TRAVELERS, mainId).getCareRoster();
 	}
 	
 	@Override
-	public List<String> findMarriagePassList(String mainId) {
+	public Set<String> findMarriagePassList(String mainId) {
 		return getPassQuery(Constant.MARRIAGE,mainId).getPassRoster();
 	}
 
 
 	@Override
-	public List<String> findSpousePassList(String mainId) {
+	public Set<String> findSpousePassList(String mainId) {
 		return getPassQuery(Constant.SPOUSE,mainId).getPassRoster();
 	}
 
 
 	@Override
-	public List<String> findTravelersPassList(String mainId) {
+	public Set<String> findTravelersPassList(String mainId) {
 		return getPassQuery(Constant.TRAVELERS,mainId).getPassRoster();
 	}
 	
@@ -123,7 +124,7 @@ public class CareAndPassDaoImpl implements CareAndPassDao {
 	 * @param roster
 	 */
 	@Override
-	public WriteResult updateCare(String situation, String mainId, Map<String, List<String>> careRoster) {
+	public WriteResult updateCare(String situation, String mainId, Map<String, Set<String>> careRoster) {
 		Query query = new Query();
 		Criteria criteria = new Criteria();
 		criteria.andOperator(Criteria.where("mainId").is(mainId),Criteria.where("situation").is(situation),Criteria.where("deleted").is(Constant.ACTIVITY));
@@ -135,7 +136,7 @@ public class CareAndPassDaoImpl implements CareAndPassDao {
 	}
 	
 	@Override
-	public WriteResult updatePass(String situation, String mainId, List<String> passRoster) {
+	public WriteResult updatePass(String situation, String mainId, Set<String> passRoster) {
 		Query query = new Query();
 		Criteria criteria = new Criteria();
 		criteria.andOperator(Criteria.where("mainId").is(mainId),Criteria.where("situation").is(situation),Criteria.where("deleted").is(Constant.ACTIVITY));
@@ -159,7 +160,6 @@ public class CareAndPassDaoImpl implements CareAndPassDao {
 		filter.put("_id", true);
 		filter.put("careRoster", true);
 		Query query = new BasicQuery(criteria,filter);
-		System.out.println(mongoTemplate.findOne(query, CareAndPassBo.class));
 		return mongoTemplate.findOne(query, CareAndPassBo.class);
 	}
 	

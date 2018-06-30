@@ -1,8 +1,12 @@
 package com.lad.bo;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -26,8 +30,8 @@ public class WaiterBo extends BaseBo{
 	private String job;			// 职业
 	private String salary;		// 收入
 	private String nowin;		// 居住地
-	private List<String> images;// 照片地址,保存url的list;
-	private List<String> hobbys;// 兴趣,list
-	private Map<String,List> cares; // 感兴趣的人,保存id的list;
-	private List<String> pass;	// 不感兴趣的人,保存id的list;
+	private List<String> images = new ArrayList<>();// 照片地址,保存url的list;
+	private Map<String,Set<String>> hobbys = new HashMap<>();// 兴趣,list
+	private Map<String,Set<String>> cares; // 感兴趣的人,保存id的list;
+	private Set<String> pass = new HashSet<>();	// 不感兴趣的人,保存id的list;
 }

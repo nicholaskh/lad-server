@@ -269,4 +269,12 @@ public class ShowDao extends BaseDao<ShowBo>{
         query.limit(limit);
         return getMongoTemplate().find(query, ShowBo.class);
     }
+
+	public int findPublishZhaoNum(String id) {
+		return (int)getMongoTemplate().count(new Query(Criteria.where("type").is(ShowBo.NEED).and("deleted").is(Constant.ACTIVITY).and("createuid").is(id)), ShowBo.class);
+	}
+
+	public int findPublishJieNum(String id) {
+		return (int)getMongoTemplate().count(new Query(Criteria.where("type").is(ShowBo.PROVIDE).and("deleted").is(Constant.ACTIVITY).and("createuid").is(id)), ShowBo.class);
+	}
 }

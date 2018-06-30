@@ -8,7 +8,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.Map.Entry;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
@@ -20,12 +22,14 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
+import com.fasterxml.jackson.databind.util.BeanUtil;
 import com.lad.bo.BaseBo;
 import com.lad.bo.OptionBo;
 import com.lad.bo.SpouseBaseBo;
 import com.lad.bo.SpouseRequireBo;
 import com.lad.dao.ISpouseDao;
 import com.lad.util.Constant;
+import com.lad.vo.SpouseBaseVo;
 import com.mongodb.BasicDBObject;
 import com.mongodb.WriteResult;
 
@@ -79,30 +83,6 @@ public class SpouseDaoImpl implements ISpouseDao {
 		query.limit(limit);
 		query.with(new Sort(new Order(Direction.DESC,"createTime")));
 		return mongoTemplate.find(query, SpouseBaseBo.class);
-	}
-
-	@Override
-	public List<String> getPassList(String spouseId) {
-		SpouseBaseBo findOne = mongoTemplate.findOne(new Query(Criteria.where("_id").is(spouseId)), SpouseBaseBo.class);
-		return findOne.getPass();
-	}
-
-	@Override
-	public WriteResult updateCare(String spouseId, Map<String, List> map) {
-		Query query = new Query();
-		Criteria criteria = Criteria.where("_id").is(spouseId);
-		query.addCriteria(criteria);
-		Update update = new Update();
-
-		update.set("care", map);
-		WriteResult updateFirst = mongoTemplate.updateFirst(query, update, SpouseBaseBo.class);
-		return updateFirst;
-	}
-
-	@Override
-	public Map<String, List> getCareMap(String spouseId) {
-		SpouseBaseBo findOne = mongoTemplate.findOne(new Query(Criteria.where("_id").is(spouseId).and("deleted").is(Constant.ACTIVITY)), SpouseBaseBo.class);
-		return findOne.getCare();
 	}
 
 	@Override
@@ -209,11 +189,7 @@ public class SpouseDaoImpl implements ISpouseDao {
 		}
 
 		// 兴趣爱好
-		List<String> hobbys = new ArrayList();
-		hobbys.add("不限");
-		if (require.getHobbys() != null) {
-			hobbys = require.getHobbys();
-		}		
+		Map<String, Set<String>> myHobbys = require.getHobbys();
 		
 		List<Map> list = new ArrayList<>();
 		
@@ -233,21 +209,23 @@ public class SpouseDaoImpl implements ISpouseDao {
 			// 兴趣
 			int temp = 0;
 			int hobbysNum = 0;
-			if (hobbys.contains("不限")) {
-				hobbysNum = 100;
-			} else {
-				for (String string : bo.getHobbys()) {
-					if (hobbys.contains(string)) {
-						temp++;
+			int myHobNum = 0;
+			for (Entry<String, Set<String>> myHobby  : myHobbys.entrySet()) {
+				myHobNum+=myHobby.getValue().size();
+				Set<String> requireSet = bo.getHobbys().get(myHobby.getKey());
+				for (String hob : myHobby.getValue()) {
+					if(requireSet.contains(hob)){
+						temp++;						
 					}
 				}
-
-				if (temp == 1) {
-					hobbysNum = 60;
-				} else if (temp > 1) {
-					hobbysNum = temp / hobbys.size() * 40 + 60;
-				}
 			}
+
+			if (temp == 1) {
+				hobbysNum = 60;
+			} else if (temp > 1) {
+				hobbysNum = temp / myHobNum * 40 + 60;
+			}
+
 
 			// 年龄
 			int ageNum = 0;
@@ -295,7 +273,9 @@ public class SpouseDaoImpl implements ISpouseDao {
 			if(match>=60){
 				Map map = new HashMap<>();
 				map.put("match", match);
-				map.put("spouseBo", bo);
+				SpouseBaseVo baseVo = new SpouseBaseVo();
+				BeanUtils.copyProperties(bo, baseVo);
+				map.put("spouseBo", baseVo);
 				list.add(map);
 			}
 		}
@@ -307,4 +287,5 @@ public class SpouseDaoImpl implements ISpouseDao {
 	public int findPublishNum(String uid) {
 		return (int)mongoTemplate.count(new Query(Criteria.where("createuid").is(uid).and("deleted").is(Constant.ACTIVITY)), SpouseBaseBo.class);
 	}
+
 }
