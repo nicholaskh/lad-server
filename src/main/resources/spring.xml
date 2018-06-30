@@ -70,5 +70,5 @@
         <property name="connectionFactory" ref="jedisConnectionFactory"/>
     </bean>
    
-   <!-- <bean class="com.lad.InitProgram" init-method="init"/>-->
+   <bean class="com.lad.init.InitProgram" init-method="init"/>
 </beans>

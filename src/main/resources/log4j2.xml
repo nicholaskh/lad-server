@@ -31,6 +31,19 @@
 					onMismatch="DENY" />
 			</Filters>
 		</RollingFile>
+		
+		<RollingFile name="TimeTaskinfo"
+			fileName="/opt/apps/lad-server/log/TimeTaskinfos.log" filePattern="/opt/apps/lad-server/log/errors-%d{yyyy-MM-dd}.log">
+			<PatternLayout pattern="%d %p %C{1.} [%t] %m%n" />
+			<Policies>
+				<TimeBasedTriggeringPolicy interval="1" />
+			</Policies>
+			<!-- log文件只打印error级别信息 -->
+			<Filters>
+				<ThresholdFilter level="info" onMatch="ACCEPT"
+					onMismatch="DENY" />
+			</Filters>
+		</RollingFile>
 	</Appenders>
 	<Loggers>
 		<!-- 输出info级别信息 -->
@@ -39,5 +52,10 @@
 			<AppenderRef ref="RollingFile" />
 			<AppenderRef ref="RollingFileError" />
 		</Root>
+
+		<Logger name="com.lad.init" additivity="false">
+			<AppenderRef ref="Console" />
+			<AppenderRef ref="TimeTaskinfo" />
+		</Logger>
 	</Loggers>
 </Configuration>
