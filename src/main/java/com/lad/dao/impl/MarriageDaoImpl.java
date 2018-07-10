@@ -292,7 +292,7 @@ public class MarriageDaoImpl implements IMarriageDao {
 			if (tempList.contains(waiterBo.getId())) {
 				continue;
 			}
-			Map map = getMatch(mongoTemplate, requireBo, waiterBo);
+			Map map = getMatch(requireBo, waiterBo);
 			tempList.add(waiterBo.getId());
 			result.add(map);
 		}
@@ -307,7 +307,7 @@ public class MarriageDaoImpl implements IMarriageDao {
 	 * @param waiterBo
 	 * @return
 	 */
-	private Map getMatch(MongoTemplate mongoTemplate, RequireBo requireBo, WaiterBo waiterBo) {
+	private Map getMatch(RequireBo requireBo, WaiterBo waiterBo) {
 		int matchNum = 0;
 
 		// 基础条件匹配
@@ -334,9 +334,11 @@ public class MarriageDaoImpl implements IMarriageDao {
 			for (Entry<String, Set<String>> hobbys : waiterBo.getHobbys().entrySet()) {
 				myHobNum += hobbys.getValue().size();
 				Set<String> requireSet = requireBo.getHobbys().get(hobbys.getKey());
-				for (String string : hobbys.getValue()) {
-					if (requireSet.contains(string)) {
-						hobbyMacthNum++;
+				if (requireSet != null) {
+					for (String string : hobbys.getValue()) {
+						if (requireSet.contains(string)) {
+							hobbyMacthNum++;
+						}
 					}
 				}
 			}

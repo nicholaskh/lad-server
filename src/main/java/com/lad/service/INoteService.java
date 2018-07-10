@@ -250,5 +250,7 @@ public interface INoteService extends IBaseService {
 	 * @return
 	 */
 	List<NoteBo> dayNewNotes(List<String> circleids, int page, int limit);
+
+	public List<NoteBo> dayHotNotes(int page, int limit);
 }
 

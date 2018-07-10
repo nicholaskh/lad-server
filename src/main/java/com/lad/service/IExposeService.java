@@ -74,4 +74,6 @@ public interface IExposeService {
      * @return
      */
     WriteResult updateCounts(String id, int numType, int num);
+
+	void updateVisitNum(String exposeid, int i);
 }

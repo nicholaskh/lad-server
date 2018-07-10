@@ -6,6 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+
 public class IMUtil {
 
 	private static Logger logger = LogManager.getLogger(IMUtil.class);
@@ -109,6 +110,7 @@ public class IMUtil {
 	public static String getToken(){
 		ImAssistant assistent = ImAssistant.init(Constant.PUSHD_IP, Constant.PUSHD_POST);
 		if (assistent == null) {
+			logger.error("assistent为null");
 			return null;
 		}
 

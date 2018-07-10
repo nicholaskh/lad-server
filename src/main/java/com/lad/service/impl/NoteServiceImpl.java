@@ -175,4 +175,9 @@ public class NoteServiceImpl implements INoteService {
 	public List<NoteBo> dayNewNotes(List<String> circleids, int page, int limit) {
 		return noteDao.dayNewNotes(circleids, page, limit);
 	}
+
+	@Override
+	public List<NoteBo> dayHotNotes( int page, int limit) {
+		return noteDao.dayHotNotes(page, limit);
+	}
 }

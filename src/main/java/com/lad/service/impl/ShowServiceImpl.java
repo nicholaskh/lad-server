@@ -125,4 +125,9 @@ public class ShowServiceImpl implements IShowService {
 	public int findPublishJieNum(String id) {
 		return showDao.findPublishJieNum(id);
 	}
+
+	@Override
+	public List<ShowBo> findByList(String[] matchField, String keyword, String userid, int type, int page, int limit) {
+		return showDao.findByList(matchField,keyword,null,ShowBo.NEED,page,limit);
+	}
 }

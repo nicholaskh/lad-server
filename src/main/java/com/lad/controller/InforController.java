@@ -85,7 +85,6 @@ public class InforController extends BaseContorller {
         Map<String, Object> map = new LinkedHashMap<>();
 
         RMapCache<String, Object> cache = redisServer.getCacheMap(Constant.TEST_CACHE);
-        logger.info(cache.get("securityTypes"));
         initCache(cache);
         map.put(Constant.HEALTH_NAME, cache.get(Constant.HEALTH_NAME));
         map.put(Constant.SECRITY_NAME, cache.get(Constant.SECRITY_NAME));

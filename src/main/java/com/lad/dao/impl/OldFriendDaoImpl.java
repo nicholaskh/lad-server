@@ -5,10 +5,13 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -151,9 +154,10 @@ public class OldFriendDaoImpl implements IOldFriendDao {
 
 		}
 		// 兴趣要求
-		List<String> hobbysRequire = new ArrayList<>();
+
+		Map<String, Set<String>> hobbysRequire = new HashMap<String,Set<String>>();
 		if (require.getHobbys() != null) {
-			hobbysRequire = require.getHobbys();
+			hobbysRequire  = require.getHobbys();
 		}
 
 		// 居住地要求
@@ -221,19 +225,56 @@ public class OldFriendDaoImpl implements IOldFriendDao {
 			UserTasteBo tasteBo = mongoTemplate.findOne(new Query(Criteria.where("userid").is(user.getId())),
 					UserTasteBo.class);
 			int hobbyNum = 0;
-			for (String hobby : hobbysRequire) {
-				if (tasteBo.getLifes().contains(hobby)) {
-					hobbyNum++;
-				} else if (tasteBo.getSports().contains(hobby)) {
-					hobbyNum++;
-				} else if (tasteBo.getMusics().contains(hobby)) {
-					hobbyNum++;
-				} else if (tasteBo.getTrips().contains(hobby)) {
-					hobbyNum++;
+			LinkedHashSet<String> lifes = tasteBo.getLifes();
+			LinkedHashSet<String> sports = tasteBo.getSports();
+			LinkedHashSet<String> musics = tasteBo.getMusics();
+			LinkedHashSet<String> trips = tasteBo.getTrips();
+			int requireSize = 0;
+			for (String key : hobbysRequire.keySet()) {
+				if("生活".equals(key)){
+					Iterator<String> iterator = hobbysRequire.get(key).iterator();
+					requireSize+=hobbysRequire.get(key).size();
+					while(iterator.hasNext()){
+						String next = iterator.next();
+						if(lifes.contains(next)){
+							hobbyNum+=1;
+						}
+					}
+				}
+				if("运动".equals(key)){
+					Iterator<String> iterator = hobbysRequire.get(key).iterator();
+					requireSize+=hobbysRequire.get(key).size();
+					while(iterator.hasNext()){
+						String next = iterator.next();
+						if(sports.contains(next)){
+							hobbyNum+=1;
+						}
+					}
+				}
+				if("旅行足迹".equals(key)){
+					Iterator<String> iterator = hobbysRequire.get(key).iterator();
+					requireSize+=hobbysRequire.get(key).size();
+					while(iterator.hasNext()){
+						String next = iterator.next();
+						if(trips.contains(next)){
+							hobbyNum+=1;
+						}
+					}
+				}
+				if("音乐".equals(key)){
+					Iterator<String> iterator = hobbysRequire.get(key).iterator();
+					requireSize+=hobbysRequire.get(key).size();
+					while(iterator.hasNext()){
+						String next = iterator.next();
+						if(musics.contains(next)){
+							hobbyNum+=1;
+						}
+					}
 				}
 			}
+			
 			if (hobbyNum >= 1) {
-				match += (60 + (hobbyNum - 1) / (hobbysRequire.size() - 1) * 40) * 0.25;
+				match += (60 + (hobbyNum - 1) / requireSize - 1 * 40) * 0.25;
 			}
 
 			if (match > 0) {

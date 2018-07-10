@@ -1006,9 +1006,9 @@ public class AsyncController extends BaseContorller {
             addMessage(messageService, path, content, "演出通知", userid, useridArr);
         }
         //更新过期招演信息
-        if (!showids.isEmpty()) {
+        /*if (!showids.isEmpty()) {
             service.updateShowStatus(showids, 1);
-        }
+        }*/
     }
 
 
@@ -1045,6 +1045,7 @@ public class AsyncController extends BaseContorller {
      */
     @Async
     public void addShowTypes(String showType, String createuid){
+    	System.out.println("111");
         CircleTypeBo circleTypeBo = circleService.findByName(showType, 1, CircleTypeBo.SHOW_TYPE);
         if (circleTypeBo == null) {
             circleTypeBo = new CircleTypeBo();

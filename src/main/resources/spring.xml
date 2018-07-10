@@ -55,7 +55,7 @@
         <constructor-arg ref="mongo" />
         <constructor-arg name="databaseName" value="${mongo.databaseName2}" />
     </bean>
-
+	<!-- redis相关配置 -->
     <bean id="jedisPoolConfig"  class="redis.clients.jedis.JedisPoolConfig">
     </bean>
 

@@ -9,11 +9,11 @@ import org.springframework.data.mongodb.core.mapping.Document;
  */
 @Document(collection = "circleHistory")
 public class CircleHistoryBo extends BaseBo {
-
+	//访问用户id
     private String userid;
-
+    //圈子id
     private String circleid;
-
+    //圈子地址
     private double[] position;
     //访问记录类型， 0圈子访问， 1 圈子操作
     private int type;

@@ -223,6 +223,7 @@ public class ExposeController extends BaseContorller {
         Map<String, Object> map = new HashMap<>();
         map.put("ret", 0);
         map.put("exposeVo", vo);
+        exposeService.updateVisitNum(exposeid,expose.getVisitNum()+1);
         return JSONObject.fromObject(map).toString();
     }
 

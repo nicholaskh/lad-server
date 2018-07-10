@@ -160,8 +160,10 @@ public class MarriageController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.MARRIAGE_PUBLISH_NULL.getIndex(),
 					ERRORCODE.MARRIAGE_PUBLISH_NULL.getReason());
 		}
+
 		WaiterVo waiterVo = new WaiterVo();
 		BeanUtils.copyProperties(waiter, waiterVo);
+		waiterVo.setBirthday((Date)waiter.getBirthday());
 		map.put("waiter", waiterVo);
 
 		RequireBo require = marriageService.findRequireById(waiterId);
@@ -412,8 +414,8 @@ public class MarriageController extends BaseContorller {
 		}
 
 		JSONObject fromObject = JSONObject.fromObject(wv);
-		String agree = (String) fromObject.get("agree");
-		if (!"true".equals(agree)) {
+		boolean agree = (Boolean)fromObject.get("agree");
+		if (!agree) {
 			return CommonUtil.toErrorResult(ERRORCODE.USER_AGREEMENT_FALSE.getIndex(),
 					ERRORCODE.USER_AGREEMENT_FALSE.getReason());
 		}

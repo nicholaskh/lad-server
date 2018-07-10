@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -183,7 +184,7 @@ public class SpouseController extends BaseContorller {
 	 */
 	@ApiOperation("修改要求")
 	@PostMapping("/require-update")
-	public String updateRequire(@RequestParam String requireData, String requireId, HttpServletRequest request,
+	public String updateRequire(@RequestParam String requireData,String requireId, HttpServletRequest request,
 			HttpServletResponse response) {
 		UserBo userBo = getUserLogin(request);
 		if (userBo == null) {
@@ -210,7 +211,7 @@ public class SpouseController extends BaseContorller {
 	 */
 	@ApiOperation("修改基础资料")
 	@PostMapping("/base-update")
-	public String updateSpouse(@RequestParam String baseData, String spouseId, HttpServletRequest request,
+	public String updateSpouse(@RequestParam String baseData,String spouseId, HttpServletRequest request,
 			HttpServletResponse response) {
 		UserBo userBo = getUserLogin(request);
 		if (userBo == null) {

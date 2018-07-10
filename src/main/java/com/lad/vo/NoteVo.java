@@ -43,6 +43,8 @@ public class NoteVo extends BaseVo {
     private boolean isMyThumbsup;
 
     private String type;
+    
+    private boolean read;
 
     //精华  管理员操作
     private int essence;
@@ -57,6 +59,8 @@ public class NoteVo extends BaseVo {
 
     ///当前帖子所在圈子的帖子数量
     private int cirNoteNum;
+    ///当前帖子所在圈子的人数
+    private int cirUserNum;
     ///当前帖子所在圈子的阅读数量
     private int cirVisitNum;
     //视频缩略图

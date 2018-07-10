@@ -80,7 +80,7 @@ public class ShowController extends BaseContorller {
         ShowBo showBo = null;
         try {
             JSONObject jsonObject = JSONObject.fromObject(showVoJson);
-            showBo = (ShowBo)JSONObject.toBean(jsonObject, ShowBo.class);
+			showBo = (ShowBo) JSONObject.toBean(jsonObject, ShowBo.class);
         } catch (Exception e) {
             return CommonUtil.toErrorResult(ERRORCODE.FORMAT_ERROR.getIndex(),
                     ERRORCODE.FORMAT_ERROR.getReason());
@@ -118,6 +118,8 @@ public class ShowController extends BaseContorller {
         showService.insert(showBo);
         int recomType = showBo.getType() == ShowBo.NEED ? ShowBo.PROVIDE : ShowBo.NEED;
         long num = showService.findByKeyword(showBo.getShowType(), userid, recomType);
+        System.out.println(showBo.getShowType());
+        System.out.println(userid);
         asyncController.addShowTypes(showBo.getShowType(), userid);
         if (showBo.getType() == ShowBo.NEED) {
             asyncController.pushShowToCreate(showService, showBo);
@@ -505,6 +507,7 @@ public class ShowController extends BaseContorller {
         //圈子是否发表过接演出信息
         List<ShowBo> showBos = showService.findByCircleid(circleid, 0, ShowBo.PROVIDE);
         LinkedHashSet<String> showTypes = new LinkedHashSet<>();
+        // 获取发不过的所有演出类型
         if (!CommonUtil.isEmpty(showBos) ){
             showBos.forEach(showBo -> showTypes.add(showBo.getShowType()));
         } else {

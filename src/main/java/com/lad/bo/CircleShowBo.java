@@ -23,11 +23,11 @@ public class CircleShowBo implements Serializable {
     private int inforType;
 
     private String targetid;
-
+    //圈子id
     private String circleid;
-
+    //创建时间
     private Date createTime;
-
+    //创建者id
     private String createuid;
 
     public String getId() {

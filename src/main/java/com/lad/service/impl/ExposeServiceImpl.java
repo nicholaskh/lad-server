@@ -56,4 +56,9 @@ public class ExposeServiceImpl implements IExposeService {
     public WriteResult updateCounts(String id, int numType, int num) {
         return exposeDao.updateCounts(id, numType, num);
     }
+
+	@Override
+	public void updateVisitNum(String exposeid, int i) {
+		exposeDao.updateVisitNum(exposeid,i);
+	}
 }

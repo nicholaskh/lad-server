@@ -418,4 +418,17 @@ public class NoteDaoImpl implements INoteDao {
 		query.limit(limit);
 		return mongoTemplate.find(query, NoteBo.class);
 	}
+
+	@Override
+	public List<NoteBo> dayHotNotes(int page, int limit) {
+		Query query = new Query();
+		Criteria criteria = new Criteria("deleted").is(Constant.ACTIVITY);
+
+		query.with(new Sort(Sort.Direction.DESC, "temp", "createTime"));
+		query.addCriteria(criteria);
+		page = page < 1 ? 1 : page;
+		query.skip((page -1) * limit);
+		query.limit(limit);
+		return mongoTemplate.find(query, NoteBo.class);
+	}
 }

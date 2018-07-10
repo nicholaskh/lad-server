@@ -10,16 +10,14 @@ import org.springframework.data.mongodb.core.mapping.Document;
  */
 @Document(collection = "circleDynamic")
 public class CircleDynamicBo extends BaseBo {
-
+	//用户id
     private String userid;
-
+    //圈子id
     private String circleid;
-
     //动态信息类型
     private int type;
 
     private String targetid;
-
 
     public String getUserid() {
         return userid;

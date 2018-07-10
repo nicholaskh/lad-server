@@ -82,4 +82,7 @@ public interface IShowService {
 
 
 	int findPublishJieNum(String id);
+
+
+	List<ShowBo> findByList(String[] matchField, String keyword, String userid, int type, int page, int limit);
 }

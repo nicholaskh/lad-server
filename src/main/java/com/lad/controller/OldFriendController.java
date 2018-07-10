@@ -1,7 +1,6 @@
 package com.lad.controller;
 
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -26,7 +25,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.alibaba.fastjson.JSON;
 import com.lad.bo.FriendsBo;
 import com.lad.bo.OldFriendRequireBo;
-import com.lad.bo.TravelersRequireBo;
 import com.lad.bo.UserBo;
 import com.lad.bo.UserTasteBo;
 import com.lad.service.IFriendsService;
@@ -37,7 +35,6 @@ import com.lad.util.ERRORCODE;
 import com.lad.vo.OldFriendRequireVo;
 import com.lad.vo.ShowResultVo;
 import com.mongodb.WriteResult;
-import com.mongodb.diagnostics.logging.Logger;
 
 import net.sf.json.JSONObject;
 
@@ -52,6 +49,13 @@ public class OldFriendController extends BaseContorller {
 	@Autowired
 	private IFriendsService friendsService;
 
+	/**
+	 * 匹配推荐
+	 * @param requireId
+	 * @param request
+	 * @param response
+	 * @return
+	 */
 	@GetMapping("/recommend")
 	public String recommend(String requireId, HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo = getUserLogin(request);
@@ -184,6 +188,15 @@ public class OldFriendController extends BaseContorller {
 		return JSON.toJSONString(map).replace("\\", "").replace("\"{", "{").replace("}\"", "}");
 	}
 
+	/**
+	 * 关键字搜索
+	 * @param keyWord
+	 * @param page
+	 * @param limit
+	 * @param request
+	 * @param response
+	 * @return
+	 */
 	@GetMapping("/search")
 	public String search(String keyWord, int page, int limit, HttpServletRequest request,
 			HttpServletResponse response) {
@@ -254,13 +267,6 @@ public class OldFriendController extends BaseContorller {
 				} else {
 					showResult.setAddress("");
 				}
-				/*
-				 * if(requireBo.getImages()!=null){
-				 * showResult.setImages(requireBo.getImages()); }else{ List
-				 * imageList = new ArrayList<>();
-				 * showResult.setImages(imageList); }
-				 */
-
 				resultList.add(showResult);
 			}
 			map.put("ret", 0);
@@ -273,6 +279,13 @@ public class OldFriendController extends BaseContorller {
 		return JSON.toJSONString(map).replace("\\", "").replace("\"{", "{").replace("}\"", "}");
 	}
 
+	/**
+	 * 获取详情
+	 * @param requireId
+	 * @param request
+	 * @param response
+	 * @return
+	 */
 	@GetMapping("/getDesc")
 	public String getDesc(String requireId, HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo = getUserLogin(request);
@@ -317,14 +330,13 @@ public class OldFriendController extends BaseContorller {
 					result.setAge(0);
 				}
 			}
-			if (user.getCity() != null) {
+			if (user.getAddress() != null) {
 				result.setAddress(user.getCity());
 			} else {
 				result.setAddress("");
 			}
-
+			result.setUid(user.getId());
 			if (!(user.getId().equals(userBo.getId()))) {
-				result.setUid(user.getId());
 				FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(userBo.getId(), user.getId());
 				if (friendsBo != null) {
 					result.setFriend(true);
@@ -391,11 +403,7 @@ public class OldFriendController extends BaseContorller {
 				params.put(entity.getKey(), entity.getValue());
 			}
 			if ("hobbys".equals(entity.getKey())) {
-				List newlist = (List) entity.getValue();
-				if (newlist.size() == oldRequireBo.getHobbys().size() && newlist.containsAll(oldRequireBo.getHobbys())
-						&& oldRequireBo.getHobbys().containsAll(newlist)) {
-					continue;
-				}
+				System.out.println(entity.getValue().getClass());
 				params.put(entity.getKey(), entity.getValue());
 			}
 			if ("images".equals(entity.getKey())) {
@@ -418,11 +426,6 @@ public class OldFriendController extends BaseContorller {
 		map.put("ret", 0);
 		map.put("uid", userBo.getId());
 		map.put("requireId", requireId);
-		/*
-		 * if (result.isUpdateOfExisting()) { map.put("ret", 0); map.put("uid",
-		 * userBo.getId()); map.put("requireId", requireId); } else {
-		 * map.put("ret", -1); map.put("message", "修改失败"); }
-		 */
 		return JSON.toJSONString(map);
 	}
 
@@ -538,20 +541,6 @@ public class OldFriendController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
-	/*
-	 * @Autowired private IUserService userService;
-	 * 
-	 * @PostMapping("/insert") public String insert(@RequestParam String
-	 * baseData,HttpServletRequest request, HttpServletResponse response){
-	 * UserBo userBo = getUserLogin(request); if (userBo == null) { return
-	 * CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.
-	 * ACCOUNT_OFF_LINE.getReason()); } JSONObject fromObject =
-	 * JSONObject.fromObject(baseData); try {
-	 * BeanUtils.copyProperties(fromObject, userBo); } catch (Exception e) {
-	 * e.printStackTrace(); } System.out.println(userBo);
-	 * 
-	 * return null; }
-	 */
 	@GetMapping("/getBase")
 	public String getBase(String requireId, HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo = getUserLogin(request);

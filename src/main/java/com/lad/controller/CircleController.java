@@ -1,21 +1,21 @@
 package com.lad.controller;
 
-import com.alibaba.fastjson.JSON;
-import com.lad.bo.*;
-import com.lad.redis.RedisServer;
-import com.lad.scrapybo.BroadcastBo;
-import com.lad.scrapybo.InforBo;
-import com.lad.scrapybo.SecurityBo;
-import com.lad.scrapybo.VideoBo;
-import com.lad.service.*;
-import com.lad.util.*;
-import com.lad.vo.*;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,14 +24,81 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.geo.GeoResult;
 import org.springframework.data.geo.GeoResults;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.text.DecimalFormat;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
+import com.alibaba.fastjson.JSON;
+import com.lad.bo.CircleAddBo;
+import com.lad.bo.CircleBo;
+import com.lad.bo.CircleHistoryBo;
+import com.lad.bo.CircleNoticeBo;
+import com.lad.bo.CircleTypeBo;
+import com.lad.bo.CollectBo;
+import com.lad.bo.CommentBo;
+import com.lad.bo.DynamicBo;
+import com.lad.bo.FeedbackBo;
+import com.lad.bo.FriendsBo;
+import com.lad.bo.LocationBo;
+import com.lad.bo.MessageBo;
+import com.lad.bo.NoteBo;
+import com.lad.bo.PartyBo;
+import com.lad.bo.ReasonBo;
+import com.lad.bo.RedstarBo;
+import com.lad.bo.SearchBo;
+import com.lad.bo.ShowBo;
+import com.lad.bo.ThumbsupBo;
+import com.lad.bo.UserBo;
+import com.lad.redis.RedisServer;
+import com.lad.scrapybo.BroadcastBo;
+import com.lad.scrapybo.InforBo;
+import com.lad.scrapybo.SecurityBo;
+import com.lad.scrapybo.VideoBo;
+import com.lad.service.IChatroomService;
+import com.lad.service.ICircleService;
+import com.lad.service.ICollectService;
+import com.lad.service.ICommentService;
+import com.lad.service.IDynamicService;
+import com.lad.service.IFeedbackService;
+import com.lad.service.IFriendsService;
+import com.lad.service.IInforService;
+import com.lad.service.ILocationService;
+import com.lad.service.IMessageService;
+import com.lad.service.INoteService;
+import com.lad.service.IPartyService;
+import com.lad.service.IReasonService;
+import com.lad.service.ISearchService;
+import com.lad.service.IShowService;
+import com.lad.service.IThumbsupService;
+import com.lad.service.IUserService;
+import com.lad.util.CommonUtil;
+import com.lad.util.Constant;
+import com.lad.util.ERRORCODE;
+import com.lad.util.JPushUtil;
+import com.lad.util.MyException;
+import com.lad.vo.CircleDisVo;
+import com.lad.vo.CircleHeadVo;
+import com.lad.vo.CircleHisVo;
+import com.lad.vo.CircleVo;
+import com.lad.vo.FriendsVo;
+import com.lad.vo.NoteVo;
+import com.lad.vo.PartyListVo;
+import com.lad.vo.UserApplyVo;
+import com.lad.vo.UserBaseVo;
+import com.lad.vo.UserCircleVo;
+import com.lad.vo.UserNoteVo;
+import com.lad.vo.UserShowVo;
+import com.lad.vo.UserStarVo;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 @Api(value = "CircleController", description = "圈子相关接口")
 @RestController
@@ -93,8 +160,21 @@ public class CircleController extends BaseContorller {
 
 	@Autowired
 	private AsyncController asyncController;
+	
+    @Autowired
+    private IShowService showService;
 
 	private String titlePush = "圈子通知";
+	
+	
+	@ApiOperation("圈子中的演出关键字搜索接口(依据类型和公司)")
+	@PostMapping("/show-keyword-search")
+	public String showSearch(String keyword,int page,int limit,HttpServletRequest request, HttpServletResponse response){
+//		findByList(String[] matchField, String keyword, String userid, int type, int page, int limit)
+		String[] fields = {"showType","company"};
+		List<ShowBo> result = showService.findByList(fields,keyword,null,ShowBo.NEED,page,limit);
+		return JSON.toJSONString(result);
+	}
 
 	/**
 	 * 圈子添加成员时锁

@@ -2,6 +2,8 @@ package com.lad.bo;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
+
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.LinkedHashSet;
@@ -14,6 +16,7 @@ import java.util.LinkedHashSet;
  */
 @Getter
 @Setter
+@ToString
 @Document(collection = "show")
 public class ShowBo extends BaseBo {
     /**

@@ -96,7 +96,7 @@ public class InitProgram {
 						}
 						map.put("更新的数据总数",addNum);
 						map.put("更新的数据详情",addNews);
-						logger.error(JSON.toJSONString(map));
+						logger.info(JSON.toJSONString(map));
 						Thread.sleep(timeInterval);
 					} catch (Exception e) {
 						try {

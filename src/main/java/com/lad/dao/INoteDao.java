@@ -250,4 +250,12 @@ public interface INoteDao extends IBaseDao {
 	 */
 	List<NoteBo> dayNewNotes(List<String> circleids, int page, int limit);
 
+	/**
+	 * 每日热帖
+	 * @param page
+	 * @param limit
+	 * @return
+	 */
+	public List<NoteBo> dayHotNotes(int page, int limit);
+
 }

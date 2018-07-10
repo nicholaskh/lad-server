@@ -14,6 +14,7 @@ import org.springframework.util.StringUtils;
 
 import com.lad.bo.ExposeBo;
 import com.lad.util.CommonUtil;
+import com.lad.util.Constant;
 import com.mongodb.WriteResult;
 
 /**
@@ -96,5 +97,12 @@ public class ExposeDao extends BaseDao<ExposeBo> {
 		params.forEach((key, value) -> update.set(key, value));
 		update.set("updateTime", new Date());
 		return getMongoTemplate().updateFirst(query, update, ExposeBo.class);
+	}
+
+	public void updateVisitNum(String exposeid, int i) {
+		Query query = new Query(Criteria.where("_id").is(exposeid).and("deleted").is(Constant.ACTIVITY));
+		Update update = new Update();
+		update.set("visitNum", i);
+		getMongoTemplate().updateFirst(query, update, ExposeBo.class);
 	}
 }
