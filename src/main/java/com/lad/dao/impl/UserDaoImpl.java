@@ -390,4 +390,9 @@ public class UserDaoImpl implements IUserDao {
 		Query query = new BasicQuery(criteria,filter);
 		return mongoTemplate.findOne(query, UserBo.class);
 	}
+
+	@Override
+	public List<UserBo> findAllUser() {
+		return mongoTemplate.find(new Query(Criteria.where("deleted").is(Constant.ACTIVITY)), UserBo.class);
+	}
 }

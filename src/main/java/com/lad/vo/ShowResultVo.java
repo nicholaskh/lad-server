@@ -18,10 +18,10 @@ public class ShowResultVo {
 	private String sex;
 	private Object age;
 	private String errorMsg;
-	
+
 	private String uid;
 	private boolean friend;
-	
+
 	// 驴友
 	private String times;
 	private String destination;
@@ -29,4 +29,5 @@ public class ShowResultVo {
 	private String address;
 	private String require;
 	private String birthday;
+	private boolean myself;
 }

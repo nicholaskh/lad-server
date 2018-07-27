@@ -4,9 +4,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.data.mongodb.core.query.Criteria;
+
 import com.lad.bo.BaseBo;
 import com.lad.bo.OptionBo;
 import com.lad.bo.RequireBo;
+import com.lad.bo.UserBo;
 import com.lad.bo.WaiterBo;
 import com.lad.vo.OptionVo;
 import com.mongodb.WriteResult;
@@ -31,7 +34,7 @@ public interface IMarriageDao {
 
 	List<OptionBo> getOptions();
 
-	List<Map> getRecommend(String waiterId);
+	List<Map> getRecommend(String waiterId, String uid);
 	
 	List<WaiterBo> getNewPublic(int type,int page,int limit,String uid);
 
@@ -52,5 +55,25 @@ public interface IMarriageDao {
 	List<OptionBo> getHobbysSupOptions();
 
 	List<OptionBo> getHobbysSonOptions(String id);
+	/**
+	 * 查询所有职位选项,添加伪数据时使用
+	 * @return
+	 */
+	List<OptionBo> getJobOptions();
+	/**
+	 * 查询所有薪资选项,添加伪数据时使用
+	 * @return
+	 */
+	List<OptionBo> getSalaryOptions();
+	/**
+	 * 根据条件查询,添加模拟数据是是用那个
+	 * @param criteria
+	 * @return
+	 */
+	List<WaiterBo> findUserCriteria(Criteria criteria);
+
+	WriteResult deleteMany(Criteria criteria,Class clazz);
+
+	WaiterBo findWaiterByNickName(String nickName, String uid);
 
 }

@@ -1,9 +1,8 @@
 package com.lad.dao.impl;
 
-import com.lad.bo.PartyBo;
-import com.lad.dao.IPartyDao;
-import com.lad.util.Constant;
-import com.mongodb.WriteResult;
+import java.util.LinkedHashSet;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.geo.Distance;
@@ -17,8 +16,10 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
-import java.util.LinkedHashSet;
-import java.util.List;
+import com.lad.bo.PartyBo;
+import com.lad.dao.IPartyDao;
+import com.lad.util.Constant;
+import com.mongodb.WriteResult;
 
 /**
  * 功能描述：
@@ -95,6 +96,7 @@ public class PartyDaoImpl implements IPartyDao {
         query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
         query.with(new Sort(new Sort.Order(Sort.Direction.ASC, "status")));
         query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
+        
         page = page < 1 ? 1 : page;
         query.skip((page -1)*limit);
         query.limit(limit);
@@ -236,8 +238,9 @@ public class PartyDaoImpl implements IPartyDao {
         NearQuery near =NearQuery.near(point);
         Distance distance = new Distance(maxDistance/1000, Metrics.KILOMETERS);
         near.maxDistance(distance);
-        Query query = new Query();
+        Query query = new Query(Criteria.where("deleted").is(Constant.ACTIVITY));
 		page = page < 1 ? 1 : page;
+		System.out.println(query);
 		query.skip((page -1) * limit);
         query.limit(limit);
         near.query(query);

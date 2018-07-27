@@ -2,12 +2,15 @@ package com.lad.bo;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import lombok.ToString;
+
 /**
- * 功能描述：圈子访问历史
+ * 功能描述：个人的圈子操作记录
  * Version: 1.0
  * Time:2017/8/16
  */
 @Document(collection = "circleHistory")
+@ToString
 public class CircleHistoryBo extends BaseBo {
 	//访问用户id
     private String userid;

@@ -1,6 +1,35 @@
 package com.lad.controller;
 
-import com.lad.bo.*;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.lad.bo.CircleBo;
+import com.lad.bo.CircleTypeBo;
+import com.lad.bo.FriendsBo;
+import com.lad.bo.ShowBo;
+import com.lad.bo.UserBo;
 import com.lad.service.ICircleService;
 import com.lad.service.IFriendsService;
 import com.lad.service.IShowService;
@@ -10,18 +39,14 @@ import com.lad.util.Constant;
 import com.lad.util.ERRORCODE;
 import com.lad.vo.ShowVo;
 import com.lad.vo.UserBaseVo;
-import io.swagger.annotations.*;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.json.JSONObject;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.util.*;
 
 /**
  * 功能描述：
@@ -421,9 +446,16 @@ public class ShowController extends BaseContorller {
             return CommonUtil.toErrorResult(ERRORCODE.SHOW_NULL.getIndex(),
                     ERRORCODE.SHOW_NULL.getReason());
         }
+        int type = -1;
+        if(showBo.getType() == 1){
+        	type=2;
+        }
+        if(showBo.getType() == 2){
+        	type=1;
+        }
         String userid = userBo == null ? "" : userBo.getId();
         List<ShowVo> showVos = new LinkedList<>();
-        List<ShowBo> showBos = showService.findByKeyword(showBo.getShowType(), userid, -1, page, limit);
+        List<ShowBo> showBos = showService.findByKeyword(showBo.getShowType(), userid, type, page, limit);
         bo2vos(showBos, showVos, userBo);
         Map<String, Object> map = new HashMap<>();
         map.put("ret", 0);
@@ -506,17 +538,22 @@ public class ShowController extends BaseContorller {
         }
         //圈子是否发表过接演出信息
         List<ShowBo> showBos = showService.findByCircleid(circleid, 0, ShowBo.PROVIDE);
+        Logger logger = LoggerFactory.getLogger(ShowController.class);
         LinkedHashSet<String> showTypes = new LinkedHashSet<>();
-        // 获取发不过的所有演出类型
+        // 获取发布过的所有演出类型
         if (!CommonUtil.isEmpty(showBos) ){
-            showBos.forEach(showBo -> showTypes.add(showBo.getShowType()));
+            for (ShowBo showbo : showBos) {
+            	showTypes.add(showbo.getShowType());
+			}
         } else {
             //因为圈子标题比类型长，所以数据库匹配不行，需要圈子名称去匹配所有类型
             String cirName = circleBo.getName();
+            //获取演出分类列表
             List<CircleTypeBo> circleTypeBos = circleService.selectByLevel(1, CircleTypeBo.SHOW_TYPE);
             if (circleTypeBos != null){
                 circleTypeBos.forEach(typeBo -> {
                     String regex = String.format("^.*%s.*$", typeBo.getCategory());
+                    //如果分类名不等于"其他"并且圈子名包含表演分类名,则将演出类型封装到list
                     if (!"其他".equals(typeBo.getCategory()) && cirName.matches(regex)){
                         showTypes.add(typeBo.getCategory());
                     }

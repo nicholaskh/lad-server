@@ -142,10 +142,6 @@ public class CommonsController extends BaseContorller{
 	@PostMapping("/options-search")
 	public String getOptions(
 			@RequestBody @ApiParam(name = "optionVo", value = "封装前端请求参数的实体", required = true) OptionVo ov,HttpServletRequest request, HttpServletResponse response){
-		UserBo userBo = getUserLogin(request);
-		if (userBo == null) {
-			return CommonUtil.toErrorResult(ERRORCODE.ACCOUNT_OFF_LINE.getIndex(),ERRORCODE.ACCOUNT_OFF_LINE.getReason());
-		}
 		List<OptionBo> options = marriageService.getOptions(ov);
 		if(options ==null){
 			return "无对应选项";
@@ -154,4 +150,16 @@ public class CommonsController extends BaseContorller{
 		return jsonString;
 	}
 	
+	
+	@GetMapping("job-options")
+	public String getJobOptions(){
+		List<OptionBo> jobOptions = marriageService.getJobOptions();
+		return JSON.toJSONString(jobOptions);
+	}
+	
+	@GetMapping("salary-options")
+	public String getSalaryOptions(){
+		List<OptionBo> salOptions = marriageService.getSalaryOptions();
+		return JSON.toJSONString(salOptions);
+	}
 }

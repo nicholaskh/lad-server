@@ -2,6 +2,7 @@ package com.lad.service;
 
 import com.lad.bo.CityBo;
 import com.mongodb.BasicDBObject;
+import com.mongodb.CommandResult;
 
 import java.util.List;
 
@@ -44,4 +45,7 @@ public interface ICityService {
      * @return
      */
     List<BasicDBObject> findCitys(String province);
+    List<String> getProvince();
+	List<String> getCity(String provice);
+	List<String> getDistrit(String city);
 }

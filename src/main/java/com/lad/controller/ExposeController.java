@@ -100,6 +100,7 @@ public class ExposeController extends BaseContorller {
             expose.setPicType("video");
             logger.info("user {} expose add video path: {},  videoPic: {} ", userid, paths[0], paths[1]);
         }
+        expose.setSource(Constant.APP_NAME);
         exposeService.insert(expose);
         Map<String, Object> map = new HashMap<>();
         map.put("ret", 0);

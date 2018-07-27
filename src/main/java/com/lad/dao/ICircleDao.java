@@ -1,6 +1,8 @@
 package com.lad.dao;
 
+import com.lad.bo.CircleAddBo;
 import com.lad.bo.CircleBo;
+import com.mongodb.CommandResult;
 import com.mongodb.WriteResult;
 import org.springframework.data.geo.GeoResults;
 
@@ -15,19 +17,15 @@ public interface ICircleDao extends IBaseDao {
 
 	public List<CircleBo> selectByuserid(String userid);
 
-	public List<CircleBo> selectByType(String tag, String sub_tag,
-			String category);
+	public List<CircleBo> selectByType(String tag, String sub_tag, String category);
 
 	WriteResult updateUsers(String circleBoId, HashSet<String> users);
 
-	WriteResult updateUsersApply(String circleBoId,
-			HashSet<String> usersApply);
+	WriteResult updateUsersApply(String circleBoId, HashSet<String> usersApply);
 
-	WriteResult updateApplyAgree(String circleBoId, HashSet<String> users,
-								 HashSet<String> usersApply);
+	WriteResult updateApplyAgree(String circleBoId, HashSet<String> users, HashSet<String> usersApply);
 
-	WriteResult updateUsersRefuse(String circleBoId,HashSet<String> usersApply,
-			HashSet<String> usersRefuse);
+	WriteResult updateUsersRefuse(String circleBoId, HashSet<String> usersApply, HashSet<String> usersRefuse);
 
 	public WriteResult updateHeadPicture(String circleBoId, String headPicture);
 
@@ -35,6 +33,7 @@ public interface ICircleDao extends IBaseDao {
 
 	/**
 	 * 根据创建者查询
+	 * 
 	 * @param createid
 	 * @return
 	 */
@@ -42,26 +41,32 @@ public interface ICircleDao extends IBaseDao {
 
 	/**
 	 * 更新管理员
-	 * @param circleBo  更新管理员
+	 * 
+	 * @param circleBo
+	 *            更新管理员
 	 * @return
 	 */
 	WriteResult updateMaster(CircleBo circleBo);
 
 	/**
 	 * 更新群主
-	 * @param circleBo  更新为群主的用户
+	 * 
+	 * @param circleBo
+	 *            更新为群主的用户
 	 * @return
 	 */
 	WriteResult updateCreateUser(CircleBo circleBo);
 
 	/**
 	 * 返回用户数最多前十圈子
+	 * 
 	 * @return
 	 */
 	List<CircleBo> selectUsersPre(String userid);
 
 	/**
 	 * 我的圈子
+	 * 
 	 * @param userid
 	 * @param limit
 	 * @return
@@ -70,25 +75,36 @@ public interface ICircleDao extends IBaseDao {
 
 	/**
 	 * 关键字搜索
+	 * 
 	 * @param keyword
 	 * @return
 	 */
-	List<CircleBo> findBykeyword(String keyword,String city, int page, int limit);
+	List<CircleBo> findBykeyword(String keyword, String city, int page, int limit);
 
 	WriteResult updateTotal(String circleid, int total);
 
-
 	/**
 	 * 根据分类查询
+	 * 
 	 * @return
 	 */
-	List<CircleBo> findByType(String tag, String sub_tag, String city, int page,int limit);
+	List<CircleBo> findByType(String tag, String sub_tag, String city, int page, int limit);
 
-	//查询附近的圈子
-	GeoResults<CircleBo> findNearCircle(String userid, double[] position, int maxDistance, int limit);
+	/**
+	 * 查询附近的圈子
+	 * 
+	 * @param userid
+	 * @param position
+	 * @param maxDistance
+	 * @param page
+	 * @param limit
+	 * @return
+	 */
+	GeoResults<CircleBo> findNearCircle(String userid, double[] position, int maxDistance, int page, int limit);
 
 	/**
 	 * 查找创建圈子数量
+	 * 
 	 * @param createuid
 	 * @return
 	 */
@@ -96,6 +112,7 @@ public interface ICircleDao extends IBaseDao {
 
 	/**
 	 * 更新公告
+	 * 
 	 * @param circleBo
 	 * @return
 	 */
@@ -103,6 +120,7 @@ public interface ICircleDao extends IBaseDao {
 
 	/**
 	 * 更新圈子名称
+	 * 
 	 * @param circleid
 	 * @param name
 	 * @return
@@ -111,6 +129,7 @@ public interface ICircleDao extends IBaseDao {
 
 	/**
 	 * 更新圈子开放
+	 * 
 	 * @param circleid
 	 * @param isOpen
 	 * @return
@@ -119,15 +138,16 @@ public interface ICircleDao extends IBaseDao {
 
 	/**
 	 * 更新圈子验证
+	 * 
 	 * @param circleid
 	 * @param isVerify
 	 * @return
 	 */
 	WriteResult updateisVerify(String circleid, boolean isVerify);
 
-
 	/**
 	 * 更新圈子热度及人员信息
+	 * 
 	 * @param circleid
 	 * @param num
 	 * @param type
@@ -137,6 +157,7 @@ public interface ICircleDao extends IBaseDao {
 
 	/**
 	 * 根据城市，搜索城市下相关圈子
+	 * 
 	 * @param province
 	 * @param city
 	 * @param district
@@ -148,6 +169,7 @@ public interface ICircleDao extends IBaseDao {
 
 	/**
 	 * 根据圈子类型查找相关圈子
+	 * 
 	 * @param tag
 	 * @param sub_tag
 	 * @param page
@@ -158,15 +180,16 @@ public interface ICircleDao extends IBaseDao {
 
 	/**
 	 * 查找圈子类型下是否有相同名称的圈子
+	 * 
 	 * @param tag
 	 * @param sub_tag
 	 * @return
 	 */
 	CircleBo findByTagAndName(String name, String tag, String sub_tag);
 
-
 	/**
 	 * 猜你喜欢圈子，在附近圈子之外
+	 * 
 	 * @param userid
 	 * @param position
 	 * @param minDistance
@@ -174,9 +197,9 @@ public interface ICircleDao extends IBaseDao {
 	 */
 	List<CircleBo> selectUsersLike(String userid, String city, double[] position, int minDistance);
 
-
 	/**
 	 * 猜你喜欢圈子,更具好友的兴趣类型经常查询
+	 * 
 	 * @param userid
 	 * @param tag
 	 * @param subTag
@@ -186,22 +209,23 @@ public interface ICircleDao extends IBaseDao {
 
 	/**
 	 * 查找圈子，包括已删除的
+	 * 
 	 * @param circleid
 	 * @return
 	 */
 	CircleBo selectByIdIgnoreDel(String circleid);
 
-
 	/**
 	 * 查找圈子指定集合里面的圈子
+	 * 
 	 * @param circleids
 	 * @return
 	 */
 	List<CircleBo> findCirclesInList(List<String> circleids);
 
-
 	/**
 	 * 根据省市区搜索相关圈子
+	 * 
 	 * @param cityName
 	 * @param page
 	 * @param limit
@@ -211,6 +235,7 @@ public interface ICircleDao extends IBaseDao {
 
 	/**
 	 * 根据城市搜索
+	 * 
 	 * @param city
 	 * @param page
 	 * @param limit
@@ -220,25 +245,31 @@ public interface ICircleDao extends IBaseDao {
 
 	/**
 	 * 更新圈子承接演出信息
+	 * 
 	 * @param circleid
 	 * @param takeShow
 	 * @return
 	 */
 	WriteResult updateTakeShow(String circleid, boolean takeShow);
 
-
 	/**
 	 * 根据演出类型模糊匹配圈子名称搜索圈子
+	 * 
 	 * @return
 	 */
 	List<CircleBo> selectByRegexName(String showType);
 
-
-
 	/**
 	 * 热门圈子
+	 * 
 	 * @return
 	 */
-	List<CircleBo> findHotCircles(int page, int limit);
+	List<CircleBo> findHotCircles(String city, int page, int limit);
+
+	public List<CircleBo> findHotCircles(int page, int limit);
+
+	public List<CircleAddBo> findApplyCircleAddByUid(String uid);
+
+	public CommandResult findNearCircleByCommond(String userid, double[] position, int i, int page, int limit);
 
 }

@@ -1,5 +1,6 @@
 package com.lad.bo;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +21,7 @@ public class CareAndPassBo extends BaseBo {
 	private String mainId;
 	
 	// 被动实体id集合
-	private Map<String,Set<String>> careRoster; // 感兴趣的人,保存id的list;
+	private Map<String,Set<String>> careRoster = new HashMap<String,Set<String>>(); // 感兴趣的人,保存id的list;
 	// 拉黑
 	private Set<String> passRoster = new HashSet<>();	// 不感兴趣的人,保存id的list;
 			

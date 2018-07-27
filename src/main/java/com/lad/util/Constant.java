@@ -410,5 +410,8 @@ public class Constant {
 	
 	// 找驴友
 	public static final String TRAVELERS = "找驴友";
+	
+	// 天天老友
+	public static final String APP_NAME  = "天天老友";
 
 }

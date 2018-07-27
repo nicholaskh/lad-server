@@ -8,6 +8,7 @@ import org.springframework.data.geo.GeoResults;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 public interface INoteService extends IBaseService {
 	public NoteBo insert(NoteBo noteBo);
@@ -128,7 +129,7 @@ public interface INoteService extends IBaseService {
 	 * @param circleid
 	 * @return
 	 */
-	long finyNotesNum(String circleid);
+	long findNotesNum(String circleid);
 
 
 	int selectPeopleNum(String circleid);
@@ -252,5 +253,7 @@ public interface INoteService extends IBaseService {
 	List<NoteBo> dayNewNotes(List<String> circleids, int page, int limit);
 
 	public List<NoteBo> dayHotNotes(int page, int limit);
+
+	public List<NoteBo> dayHotNotes(Set<String> circleSet, int page, int limit);
 }
 

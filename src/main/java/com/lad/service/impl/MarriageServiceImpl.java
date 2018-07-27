@@ -1,11 +1,11 @@
 package com.lad.service.impl;
 
-import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Service;
 
 import com.lad.bo.BaseBo;
@@ -15,8 +15,6 @@ import com.lad.bo.WaiterBo;
 import com.lad.dao.IMarriageDao;
 import com.lad.service.IMarriageService;
 import com.lad.vo.OptionVo;
-import com.lad.vo.RequireVo;
-import com.lad.vo.WaiterVo;
 import com.mongodb.WriteResult;
 @Service("marriageService")
 public class MarriageServiceImpl implements IMarriageService {
@@ -80,8 +78,8 @@ public class MarriageServiceImpl implements IMarriageService {
 	}
 
 	@Override
-	public List<Map> getRecommend(String waiterId) {
-		return marriageDao.getRecommend(waiterId);
+	public List<Map> getRecommend(String waiterId,String uid) {
+		return marriageDao.getRecommend(waiterId,uid);
 	}
 
 
@@ -127,23 +125,36 @@ public class MarriageServiceImpl implements IMarriageService {
 		return marriageDao.getHobbysSonOptions(id);
 	}
 
+	/**
+	 * 查询所有职位选项,添加伪数据时使用
+	 * @return
+	 */
+	@Override
+	public List<OptionBo> getJobOptions() {
+		return marriageDao.getJobOptions();
+	}
 
+	@Override
+	public List<OptionBo> getSalaryOptions() {
+		return marriageDao.getSalaryOptions();
+	}
+	/**
+	 * 根据条件查询,添加模拟数据是是用那个
+	 * @param criteria
+	 * @return
+	 */
+	@Override
+	public List<WaiterBo> findUserCriteria(Criteria criteria) {
+		return marriageDao.findUserCriteria(criteria);
+	}
 
+	@Override
+	public WriteResult deleteMany(Criteria criteria,Class clazz) {
+		return marriageDao.deleteMany(criteria,clazz);
+	}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	@Override
+	public WaiterBo findWaiterByNickName(String nickName, String uid) {
+		return marriageDao.findWaiterByNickName(nickName,uid);
+	}
 }

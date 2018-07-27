@@ -688,12 +688,16 @@ public class ChatroomController extends BaseContorller {
 	@PostMapping("/facetoface-create")
 	public String faceToFaceCreate(@RequestParam int seq, @RequestParam double px, @RequestParam double py,
 			HttpServletRequest request, HttpServletResponse response) {
-		UserBo userBo;
+		org.slf4j.Logger logger2 = org.slf4j.LoggerFactory.getLogger(ChatroomController.class);
+		logger2.error("===========px:"+px+";py:"+py+"===========");
+
+		UserBo userBo;		
 		try {
 			userBo = checkSession(request, userService);
 		} catch (MyException e) {
 			return e.getMessage();
 		}
+		logger2.error("=============当前用户为:"+userBo.getUserName()+"==============================");
 		RLock lock = redisServer.getRLock(Constant.CHAT_LOCK);
 		boolean isNew = false;
 		double[] position = new double[]{px,py};

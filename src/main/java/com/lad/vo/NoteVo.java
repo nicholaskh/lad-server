@@ -15,35 +15,35 @@ import java.util.List;
 @Getter
 @Setter
 public class NoteVo extends BaseVo {
-
+	//用户名
     private String username;
-
+    //性别
     private String sex;
-
+    //头像
     private String headPictureName;
-
+    //生日
     private String birthDay;
-
+    //用户等级
     private int userLevel;
-
+    //帖子id
     private String nodeid;
-
+    //标题
     private String subject;
-
+    //内容
     private String content;
-
+    //访问人数
     private Long visitCount;
-
+    //点赞人数
     private Long thumpsubCount;
-
+    //评论人数
     private Long commontCount;
-
+    //转发量
     private Long transCount;
-
+    //我是否点赞
     private boolean isMyThumbsup;
-
+    //type
     private String type;
-    
+    //我是否读
     private boolean read;
 
     //精华  管理员操作

@@ -2,12 +2,13 @@ package com.lad.dao.impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Random;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -19,12 +20,15 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.StringUtils;
 
 import com.lad.bo.BaseBo;
+import com.lad.bo.CareAndPassBo;
 import com.lad.bo.OptionBo;
 import com.lad.bo.RequireBo;
 import com.lad.bo.WaiterBo;
 import com.lad.dao.IMarriageDao;
+import com.lad.util.CommonUtil;
 import com.lad.util.Constant;
 import com.lad.vo.OptionVo;
 import com.lad.vo.WaiterVo;
@@ -33,6 +37,7 @@ import com.mongodb.DBObject;
 import com.mongodb.WriteResult;
 
 @Repository("marriageDao")
+@SuppressWarnings("all")
 public class MarriageDaoImpl implements IMarriageDao {
 
 	@Autowired
@@ -72,7 +77,7 @@ public class MarriageDaoImpl implements IMarriageDao {
 	public List<OptionBo> getOptions() {
 
 		DBObject dbObject = new BasicDBObject();
-		dbObject.put("deleted", 1); // 查询条件
+		dbObject.put("deleted", 0); // 查询条件
 
 		BasicDBObject fieldsObject = new BasicDBObject();
 		// 指定返回的字段
@@ -83,6 +88,7 @@ public class MarriageDaoImpl implements IMarriageDao {
 		fieldsObject.put("supId", true);
 
 		Query query = new BasicQuery(dbObject, fieldsObject);
+		query.with(new Sort(Sort.Direction.ASC, "sort"));
 		return mongoTemplate.find(query, OptionBo.class);
 	}
 
@@ -161,6 +167,7 @@ public class MarriageDaoImpl implements IMarriageDao {
 		Criteria criteria = new Criteria();
 		criteria.andOperator(Criteria.where("createuid").is(userId), Criteria.where("deleted").is(0));
 		query.addCriteria(criteria);
+		query.with(new Sort(new Order(Direction.DESC, "createTime")));
 		List<WaiterBo> find = mongoTemplate.find(query, WaiterBo.class);
 		return find;
 	}
@@ -252,7 +259,7 @@ public class MarriageDaoImpl implements IMarriageDao {
 				Criteria.where("sex").is(1));
 		query.addCriteria(criteria);
 
-		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "updateTime")));
+		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "createTime")));
 
 		return mongoTemplate.find(query, WaiterBo.class);
 	}
@@ -264,37 +271,70 @@ public class MarriageDaoImpl implements IMarriageDao {
 		criteria.andOperator(Criteria.where("createuid").is(userId), Criteria.where("deleted").is(0),
 				Criteria.where("sex").is(0));
 		query.addCriteria(criteria);
-		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "updateTime")));
+		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "createTime")));
 		return mongoTemplate.find(query, WaiterBo.class);
 	}
 
 	/**
 	 * 推荐
 	 */
-	public List<Map> getRecommend(String waiterId) {
-		// 查找waiter的需求
+	public List<Map> getRecommend(String waiterId, String uid) {
+
+		// 查询关于与黑名单
+		CareAndPassBo careAndPass = mongoTemplate.findOne(new Query(Criteria.where("mainId").is(waiterId)),
+				CareAndPassBo.class);
+		Set<String> skipId = new LinkedHashSet<>();
+		if (careAndPass != null) {
+			// 将黑名单加入跳过列表
+			Set<String> passRoster = careAndPass.getPassRoster();
+			if (passRoster != null) {
+				skipId.addAll(passRoster);
+			}
+			Map<String, Set<String>> careRoster = careAndPass.getCareRoster();
+			if (careRoster != null) {
+				for (String key : careRoster.keySet()) {
+					skipId.addAll(careRoster.get(key));
+				}
+			}
+		}
+
+		// 查找当前匹配者的需求
 		Query waiter = new Query(Criteria.where("waiterId").is(waiterId).and("deleted").is(Constant.ACTIVITY));
 		RequireBo requireBo = mongoTemplate.findOne(waiter, RequireBo.class);
 
 		// 随机取100个实体
-		Query query = new Query(Criteria.where("sex").is(requireBo.getSex()));
-		int count = (int) mongoTemplate.count(query, "waiters");
-		Random r = new Random();
-		int length = (count - 99) > 0 ? (count - 99) : 1;
-		int skip = r.nextInt(length);
-		query.skip(skip);
-		query.limit(100);
-		List<WaiterBo> find = mongoTemplate.find(query, WaiterBo.class);
+		Query query = new Query(Criteria.where("sex").is(requireBo.getSex()).and("deleted").is(Constant.ACTIVITY)
+				.and("createuid").ne(uid).and("waiterId").nin(skipId));
 
+		int count = (int) mongoTemplate.count(query, WaiterBo.class);
 		List<Map> result = new ArrayList<>();
 		List tempList = new ArrayList<>();
+
+		// 不足20条数据重新循环,如果数据库数据量是在不足,则返回
+		/*
+		 * int x = 1; while (result.size() < 20 && tempList.size() < count) {
+		 * List<WaiterBo> find = CommonUtil.randomQuery(mongoTemplate, query,
+		 * WaiterBo.class); Logger logger =
+		 * LoggerFactory.getLogger(MarriageDaoImpl.class);
+		 * logger.error("{第"+x+"从从数据库获取数据,随机抓取的25条消息}"); x++; for (WaiterBo
+		 * waiterBo : find) { if (tempList.contains(waiterBo.getId())) {
+		 * continue; } Map map = getMatch(requireBo, waiterBo); if
+		 * (!StringUtils.isEmpty(map)) { result.add(map); } if (result.size() >=
+		 * 20) { break; } tempList.add(waiterBo.getId()); } }
+		 */
+		List<WaiterBo> find = CommonUtil.randomQuery(mongoTemplate, query, WaiterBo.class);
 		for (WaiterBo waiterBo : find) {
 			if (tempList.contains(waiterBo.getId())) {
 				continue;
 			}
 			Map map = getMatch(requireBo, waiterBo);
+			if (!StringUtils.isEmpty(map)) {
+				result.add(map);
+			}
+			if (result.size() >= 20) {
+				break;
+			}
 			tempList.add(waiterBo.getId());
-			result.add(map);
 		}
 		return result;
 	}
@@ -308,132 +348,127 @@ public class MarriageDaoImpl implements IMarriageDao {
 	 * @return
 	 */
 	private Map getMatch(RequireBo requireBo, WaiterBo waiterBo) {
-		int matchNum = 0;
+		/**
+		 * 总匹配度 = 基础分(40分)+其他分(60分) 基础分 = 地址(20分)+婚史(20分) 其他分 =
+		 * 工作(0.1)+兴趣(0.1)+学历(0.1)+收入(0.3)+身高(0.3)+年龄(0.1)
+		 */
 
+		int matchNum = 100;
 		// 基础条件匹配
-		int baseNum = 0;
-		if (requireBo.getNowin() != null && requireBo.getNowin() != ""
-				&& requireBo.getNowin().equals(waiterBo.getNowin())) {
-			baseNum += 20;
+		String requireAddress = requireBo.getNowin();
+		String waiterAddress = waiterBo.getNowin();
+		if (!StringUtils.isEmpty(requireAddress) && !StringUtils.isEmpty(waiterAddress)) {
+			if (!"不限".equals(requireAddress) && !requireAddress.equals(waiterAddress)) {
+				matchNum -= 20;
+			}
 		}
-		if (requireBo.getMarriaged() == waiterBo.getMarriaged()) {
-			baseNum += 20;
+
+		int requireMarriaged = requireBo.getMarriaged();
+		int WaiterMarriaged = waiterBo.getMarriaged();
+		if (requireMarriaged != 0 && requireMarriaged != WaiterMarriaged) {
+			matchNum -= 20;
 		}
 
 		// 其他条件匹配
-		int otherNum = 0;
-
 		// 工作匹配
-		if (requireBo.getJob() != null && requireBo.getJob().contains(waiterBo.getJob())) {
-			otherNum += 10;
+		Set<String> requireJob = requireBo.getJob();
+		String waiterJob = waiterBo.getJob();
+		if (!StringUtils.isEmpty(requireJob) && !StringUtils.isEmpty(waiterJob)) {
+			if (!requireJob.contains("不限") && !requireJob.contains(waiterJob)) {
+				matchNum -= 6;
+			}
 		}
+
 		// 兴趣匹配
-		int hobbyMacthNum = 0;
-		int myHobNum = 0;
-		if (waiterBo.getHobbys() != null) {
-			for (Entry<String, Set<String>> hobbys : waiterBo.getHobbys().entrySet()) {
-				myHobNum += hobbys.getValue().size();
-				Set<String> requireSet = requireBo.getHobbys().get(hobbys.getKey());
-				if (requireSet != null) {
-					for (String string : hobbys.getValue()) {
-						if (requireSet.contains(string)) {
-							hobbyMacthNum++;
-						}
-					}
+		Map<String, Set<String>> requireHobbys = requireBo.getHobbys();
+		Map<String, Set<String>> waiterHobbys = waiterBo.getHobbys();
+
+		Set<String> requireHobbysSet = new LinkedHashSet<>();
+		Logger logger = LoggerFactory.getLogger(MarriageDaoImpl.class);
+
+		for (String key : requireHobbys.keySet()) {
+			requireHobbysSet.addAll(requireHobbys.get(key));
+		}
+		logger.error("{找儿媳匹配推荐}----{" + requireHobbysSet.toString() + "}");
+		Set<String> waiterHobbysSet = new LinkedHashSet<>();
+		if (requireHobbysSet.size() > 0) {
+			for (String key : waiterHobbys.keySet()) {
+				waiterHobbysSet.addAll(waiterHobbys.get(key));
+			}
+			// 未匹配集合
+			Set<String> notContain = new LinkedHashSet<>(requireHobbysSet);
+			for (String string : waiterHobbysSet) {
+				if (requireHobbysSet.contains(string)) {
+					notContain.remove(string);
 				}
 			}
-			if (hobbyMacthNum >= 1) {
-				int round = Math.round(hobbyMacthNum / myHobNum * 40);
-				otherNum += Math.round((round + 60) * 0.1);
-			}
-		}
 
+			matchNum -= Math.floor(notContain.size() * 6 / requireHobbysSet.size());
+		}
 		// 学历匹配
-		int educationMatch = 0;
-		// 如果学历不限,或者基础资料学历大于要求学历
-		Integer requireEducation = requireBo.getEducation();
-		Integer waiterEducation = waiterBo.getEducation();
-		if (requireEducation != null && waiterEducation != null) {
-			if (requireEducation == 0 || waiterEducation - requireEducation >= 0) {
-				educationMatch = 100;
-			}
+		int requireEducation = requireBo.getEducation();
+		int waiterEducation = waiterBo.getEducation();
+		if (waiterEducation == 0) {
+			matchNum -= 6;
+		} else if (requireEducation != 0 && requireEducation > waiterEducation) {
+			matchNum -= 6;
 		}
 
-		otherNum += educationMatch * 0.1;
-
-		// 收入匹配
-		int salaryNum = 0;
-
-		Query salarQuery = new Query(Criteria.where("value").is(waiterBo.getSalary()));
-		OptionBo waiterOptoins = mongoTemplate.findOne(salarQuery, OptionBo.class);
-		salarQuery = new Query(Criteria.where("value").is(requireBo.getSalary()));
-		OptionBo requireOptoins = mongoTemplate.findOne(salarQuery, OptionBo.class);
-
-		if (waiterOptoins != null && requireOptoins != null) {
-			Integer waiterSort = waiterOptoins.getSort();
-			Integer requireSort = requireOptoins.getSort();
-			if (requireSort == 0 || waiterSort - requireSort >= 0) {
-				salaryNum = 100;
-			}
+		// 收入匹配,高位不限,如果最高收入低于最低要求,则不匹配
+		String regex = "\\D+";
+		int minSalaryRequire = 0;
+		String requireSalary = requireBo.getSalary();
+		if ("3000元以下".equals(requireSalary) || "不限".equals(requireSalary)) {
+			minSalaryRequire = 0;
+		} else if ("25000元以上".equals(requireSalary)) {
+			minSalaryRequire = 25000;
+		} else {
+			String[] split = requireSalary.split("-");
+			minSalaryRequire = Integer.valueOf(split[0].replaceAll(regex, ""));
+		}
+		int maxSalaryProvide = 0;
+		String waiterSalary = waiterBo.getSalary();
+		if ("3000元以下".equals(waiterSalary) || "不限".equals(waiterSalary)) {
+			maxSalaryProvide = 3000;
+		} else if ("25000元以上".equals(waiterSalary)) {
+			maxSalaryProvide = 250000;
+		} else {
+			String[] split = waiterSalary.split("-");
+			maxSalaryProvide = Integer.valueOf(split[1].replaceAll(regex, ""));
+		}
+		if (maxSalaryProvide < minSalaryRequire) {
+			matchNum -= 18;
 		}
 
-		otherNum += salaryNum * 0.3;
-
-		// 身高匹配
-		int hightMatch = 0;
-		Integer waiterHight = waiterBo.getHight();
-		if (waiterHight != null) {
-			String[] split = requireBo.getHight().replace("厘米", "").split("-");
-			int minHight = Integer.valueOf(split[0]);
-			int maxHight = Integer.valueOf(split[1]);
-
-			if (waiterHight >= minHight && waiterHight <= maxHight) {
-				hightMatch = 100;
-			}
-			if (waiterHight < minHight) {
-				hightMatch = (100 - 50 * (minHight - waiterHight) / 10 > 0) ? (100 - 50 * (minHight - waiterHight) / 10)
-						: 0;
-			}
-			if (waiterHight > maxHight) {
-				hightMatch = (100 - 30 * (waiterHight - maxHight) / 10 > 0) ? (100 - 50 * (minHight - waiterHight) / 10)
-						: 0;
-			}
+		// 身高匹配 请求者身高小于最低要求则减分,大于最高要求减分
+		// 修改过需求,不限更改为xx米以上或xx米以下,对应数据库数据为100厘米-xx厘米,xx厘米-250厘米
+		// minhr: minHightRequire 最低要求
+		int minhr = Integer.valueOf(requireBo.getHight().split("-")[0].replaceAll(regex, ""));
+		// maxhr: maxHightRequire 最高要求
+		int maxhr = Integer.valueOf(requireBo.getHight().split("-")[1].replaceAll(regex, ""));
+		// wh = waiterHight
+		int wh = waiterBo.getHight();
+		if (wh < minhr || wh > maxhr) {
+			matchNum -= 18;
 		}
 
-		otherNum += hightMatch * 0.3;
-
-		// 年龄匹配
-		int ageMatch = 0;
-		Integer waiterAge = waiterBo.getAge();
-		if (waiterAge != null) {
-			String[] split2 = requireBo.getAge().replace("岁", "").split("-");
-			int minAge = Integer.valueOf(split2[0]);
-			int maxAge = Integer.valueOf(split2[1]);
-
-			if (waiterAge >= minAge && waiterAge <= maxAge) {
-				ageMatch = 100;
-			}
-			if (waiterAge < minAge) {
-				ageMatch = (100 - 30 * (minAge - waiterAge) / 10 > 0) ? (100 - 30 * (minAge - waiterAge) / 10) : 0;
-			}
-			if (waiterAge > maxAge) {
-				ageMatch = (100 - 50 * (waiterAge - maxAge) / 10 > 0) ? (100 - 50 * (waiterAge - maxAge) / 10) : 0;
-			}
+		// 年龄匹配,同上
+		int minar = Integer.valueOf(requireBo.getAge().split("-")[0].replaceAll(regex, ""));
+		int maxar = Integer.valueOf(requireBo.getAge().split("-")[1].replaceAll(regex, ""));
+		int wa = waiterBo.getAge();
+		if (wa < minar || wa > maxar) {
+			matchNum -= 6;
 		}
-
-		otherNum += ageMatch * 0.3;
-
-		matchNum = (int) (baseNum + Math.round(otherNum * 0.6));
 
 		Map map = new HashMap<>();
 		WaiterVo waiterVo = new WaiterVo();
 		BeanUtils.copyProperties(waiterBo, waiterVo);
-		if (matchNum > 0) {
+		if (matchNum > 60) {
 			map.put("match", matchNum);
 			map.put("waiter", waiterVo);
+			return map;
 		}
-
-		return map;
+		return null;
 	}
 
 	@Override
@@ -448,5 +483,46 @@ public class MarriageDaoImpl implements IMarriageDao {
 		return mongoTemplate.find(new Query(
 				Criteria.where("field").is("marriageHobbys").and("supId").is(id).and("deleted").is(Constant.ACTIVITY)),
 				OptionBo.class);
+	}
+
+	/**
+	 * 查询所有职位选项,添加伪数据时使用
+	 * 
+	 * @return
+	 */
+	@Override
+	public List<OptionBo> getJobOptions() {
+		return mongoTemplate.find(new Query(Criteria.where("field").is("job").and("deleted").is(Constant.ACTIVITY)),
+				OptionBo.class);
+	}
+
+	@Override
+	public List<OptionBo> getSalaryOptions() {
+		return mongoTemplate.find(new Query(Criteria.where("field").is("salary").and("deleted").is(Constant.ACTIVITY)),
+				OptionBo.class);
+	}
+
+	/**
+	 * 根据条件查询,添加模拟数据是是用那个
+	 * 
+	 * @param criteria
+	 * @return
+	 */
+	@Override
+	public List<WaiterBo> findUserCriteria(Criteria criteria) {
+		Query query = new Query(criteria);
+		return mongoTemplate.find(query, WaiterBo.class);
+	}
+
+	@Override
+	public WriteResult deleteMany(Criteria criteria, Class clazz) {
+		return mongoTemplate.remove(new Query(criteria), clazz);
+	}
+
+	@Override
+	public WaiterBo findWaiterByNickName(String nickName, String uid) {
+		return mongoTemplate.findOne(new Query(
+				Criteria.where("nickName").is(nickName).and("createuid").is(uid).and("deleted").is(Constant.ACTIVITY)),
+				WaiterBo.class);
 	}
 }

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -24,6 +25,7 @@ import org.springframework.stereotype.Repository;
 
 import com.fasterxml.jackson.databind.util.BeanUtil;
 import com.lad.bo.BaseBo;
+import com.lad.bo.CareAndPassBo;
 import com.lad.bo.OptionBo;
 import com.lad.bo.SpouseBaseBo;
 import com.lad.bo.SpouseRequireBo;
@@ -72,16 +74,16 @@ public class SpouseDaoImpl implements ISpouseDao {
 		Query query = new Query();
 		Criteria criteria = new Criteria();
 
-		if(sex!=null){
-			criteria.andOperator(Criteria.where("deleted").is(Constant.ACTIVITY),Criteria.where("sex").is(sex), Criteria.where("createuid").ne(uid));
-		}else{
-			criteria.andOperator(Criteria.where("deleted").is(Constant.ACTIVITY),Criteria.where("createuid").ne(uid));
+		if (sex != null) {
+			criteria.andOperator(Criteria.where("deleted").is(Constant.ACTIVITY), Criteria.where("sex").is(sex));
+		} else {
+			criteria.andOperator(Criteria.where("deleted").is(Constant.ACTIVITY));
 		}
 
 		query.addCriteria(criteria);
 		query.skip((page - 1) * limit);
 		query.limit(limit);
-		query.with(new Sort(new Order(Direction.DESC,"createTime")));
+		query.with(new Sort(new Order(Direction.DESC, "createTime")));
 		return mongoTemplate.find(query, SpouseBaseBo.class);
 	}
 
@@ -93,12 +95,15 @@ public class SpouseDaoImpl implements ISpouseDao {
 
 	@Override
 	public SpouseBaseBo findBaseById(String baseId) {
-		return mongoTemplate.findOne(new Query(Criteria.where("_id").is(baseId).and("deleted").is(Constant.ACTIVITY)), SpouseBaseBo.class);
+		return mongoTemplate.findOne(new Query(Criteria.where("_id").is(baseId).and("deleted").is(Constant.ACTIVITY)),
+				SpouseBaseBo.class);
 	}
 
 	@Override
 	public SpouseRequireBo findRequireById(String baseId) {
-		return mongoTemplate.findOne(new Query(Criteria.where("baseId").is(baseId).and("deleted").is(Constant.ACTIVITY)), SpouseRequireBo.class);
+		return mongoTemplate.findOne(
+				new Query(Criteria.where("baseId").is(baseId).and("deleted").is(Constant.ACTIVITY)),
+				SpouseRequireBo.class);
 	}
 
 	@Override
@@ -131,56 +136,80 @@ public class SpouseDaoImpl implements ISpouseDao {
 	}
 
 	@Override
-	public List<SpouseBaseBo> findListByKeyword(String keyWord,String sex,int page,int limit,Class clazz) {
+	public List<SpouseBaseBo> findListByKeyword(String keyWord, String sex, int page, int limit, Class clazz) {
 		Criteria c = new Criteria();
 		c.orOperator(Criteria.where("nickName").regex(".*" + keyWord + ".*"),
 				Criteria.where("address").regex(".*" + keyWord + ".*"));
 		Criteria criertia = new Criteria();
-		if(sex!=null){
-			criertia.andOperator(Criteria.where("sex").is(sex),Criteria.where("deleted").is(Constant.ACTIVITY), c);
-		}else{
+		if (sex != null) {
+			criertia.andOperator(Criteria.where("sex").is(sex), Criteria.where("deleted").is(Constant.ACTIVITY), c);
+		} else {
 			criertia.andOperator(Criteria.where("deleted").is(Constant.ACTIVITY), c);
 		}
-		
+
 		Query query = new Query();
-		query.addCriteria(criertia).skip((page-1)*limit).limit(limit).with(new Sort(new Order(Direction.DESC,"createTime")));
+		query.addCriteria(criertia).skip((page - 1) * limit).limit(limit)
+				.with(new Sort(new Order(Direction.DESC, "createTime")));
 		return mongoTemplate.find(query, clazz);
 	}
 
 	@Override
-	public List<Map> getRecommend(SpouseRequireBo require) {
+	public List<Map> getRecommend(SpouseRequireBo require, String uid,String baseId) {
+		// 查询关于与黑名单
+		CareAndPassBo careAndPass = mongoTemplate.findOne(new Query(Criteria.where("mainId").is(baseId)), CareAndPassBo.class);
+		Set<String> skipId = new LinkedHashSet<>();
+		if(careAndPass!=null){
+			// 将黑名单加入跳过列表
+			Set<String> passRoster = careAndPass.getPassRoster();
+			if(passRoster!=null){
+				skipId.addAll(passRoster);
+			}
+			Map<String, Set<String>> careRoster = careAndPass.getCareRoster();
+			if(careRoster!=null){
+				for (String key : careRoster.keySet()) {
+					skipId.addAll(careRoster.get(key));
+				}
+			}
+		}
 
+		
 		// 随机取100个实体
-		Query query = new Query(Criteria.where("sex").is(require.getSex()).and("deleted").is(Constant.ACTIVITY));
-		int count = (int) mongoTemplate.count(query, "waiters");
-		Random r = new Random();
-		int length = (count - 99) > 0 ? (count - 99) : 1;
-		int skip = r.nextInt(length);
-		query.skip(skip);
-		query.limit(100);
+		Query query = new Query(Criteria.where("sex").is(require.getSex()).and("deleted").is(Constant.ACTIVITY)
+				.and("createuid").ne(uid).and("_id").nin(skipId));
+		int count = (int) mongoTemplate.count(query, SpouseBaseBo.class);
+		if(count<100){
+			query.with(new Sort(Sort.Direction.DESC,"_id"));
+		}else{
+			Random r = new Random();
+			int length = (count - 99) > 0 ? (count - 99) : 1;
+			int skip = r.nextInt(length);
+			query.skip(skip);
+			query.limit(100);
+		}
+
 		List<SpouseBaseBo> find = mongoTemplate.find(query, SpouseBaseBo.class);
 
 		// 年龄要求
 		int minAge = 0;
 		int maxAge = 150;
-		if (require.getAge() != null&&!("不限".equals(require.getAge()))) {
+		if (require.getAge() != null && !("不限".equals(require.getAge()))) {
 			String[] age = require.getAge().split("-");
 			minAge = Integer.valueOf(age[0].replaceAll("\\D*", ""));
 			maxAge = Integer.valueOf(age[1].replaceAll("\\D+", ""));
 		}
 
 		// 月收入要求
-		
-		List<OptionBo> optionBos = mongoTemplate.find(new Query(Criteria.where("field").is("salary").and("deleted").is(Constant.ACTIVITY)), OptionBo.class);
+
+		List<OptionBo> optionBos = mongoTemplate.find(
+				new Query(Criteria.where("field").is("salary").and("deleted").is(Constant.ACTIVITY)), OptionBo.class);
 		int salary = 0;
-		if(require.getSalary()!=null){
+		if (require.getSalary() != null) {
 			for (OptionBo optionBo : optionBos) {
-				if(require.getSalary().equals(optionBo.getValue())){
+				if (require.getSalary().equals(optionBo.getValue())) {
 					salary = optionBo.getSort();
 				}
 			}
 		}
-
 
 		// 居住地 同省:50分 同市80分 同县100
 		String address = "不限";
@@ -190,12 +219,12 @@ public class SpouseDaoImpl implements ISpouseDao {
 
 		// 兴趣爱好
 		Map<String, Set<String>> myHobbys = require.getHobbys();
-		
+
 		List<Map> list = new ArrayList<>();
-		
-		List tempList= new ArrayList<>();
+
+		List tempList = new ArrayList<>();
 		for (SpouseBaseBo bo : find) {
-			if(tempList.contains(bo.getId())){
+			if (tempList.contains(bo.getId())) {
 				continue;
 			}
 			// 地址
@@ -210,12 +239,12 @@ public class SpouseDaoImpl implements ISpouseDao {
 			int temp = 0;
 			int hobbysNum = 0;
 			int myHobNum = 0;
-			for (Entry<String, Set<String>> myHobby  : myHobbys.entrySet()) {
-				myHobNum+=myHobby.getValue().size();
+			for (Entry<String, Set<String>> myHobby : myHobbys.entrySet()) {
+				myHobNum += myHobby.getValue().size();
 				Set<String> requireSet = bo.getHobbys().get(myHobby.getKey());
 				for (String hob : myHobby.getValue()) {
-					if(requireSet.contains(hob)){
-						temp++;						
+					if (requireSet.contains(hob)) {
+						temp++;
 					}
 				}
 			}
@@ -225,7 +254,6 @@ public class SpouseDaoImpl implements ISpouseDao {
 			} else if (temp > 1) {
 				hobbysNum = temp / myHobNum * 40 + 60;
 			}
-
 
 			// 年龄
 			int ageNum = 0;
@@ -248,29 +276,28 @@ public class SpouseDaoImpl implements ISpouseDao {
 
 			// 月收入
 			int salaryNum = 0;
-			
+
 			int boSalary = 0;
-			if(bo.getSalary()!=null){
+			if (bo.getSalary() != null) {
 				for (OptionBo string : optionBos) {
-					if(bo.getSalary().equals(string)){
+					if (bo.getSalary().equals(string)) {
 						boSalary = string.getSort();
 					}
 				}
 			}
-			
-			if(salary == 0 ){
+
+			if (salary == 0) {
 				salaryNum = 100;
-			}else if(salary <= boSalary){
+			} else if (salary <= boSalary) {
 				salaryNum = 100;
-			}else if(salary>boSalary){
-				salaryNum = 100-(salary-boSalary)*15;
+			} else if (salary > boSalary) {
+				salaryNum = 100 - (salary - boSalary) * 15;
 			}
-			
-			int match = (int)Math.rint((addressNum+hobbysNum+ageNum+salaryNum)*0.25);	
-			
-			
+
+			int match = (int) Math.rint((addressNum + hobbysNum + ageNum + salaryNum) * 0.25);
+
 			tempList.add(bo.getId());
-			if(match>=60){
+			if (match >= 0) {
 				Map map = new HashMap<>();
 				map.put("match", match);
 				SpouseBaseVo baseVo = new SpouseBaseVo();
@@ -285,7 +312,17 @@ public class SpouseDaoImpl implements ISpouseDao {
 
 	@Override
 	public int findPublishNum(String uid) {
-		return (int)mongoTemplate.count(new Query(Criteria.where("createuid").is(uid).and("deleted").is(Constant.ACTIVITY)), SpouseBaseBo.class);
+		return (int) mongoTemplate.count(
+				new Query(Criteria.where("createuid").is(uid).and("deleted").is(Constant.ACTIVITY)),
+				SpouseBaseBo.class);
+	}
+
+	@Override
+	public WriteResult updateRequireSex(String requireId, String requireSex, Class clazz) {
+		Update update = new Update();
+		update.set("sex", requireSex);
+		Query query = new Query(Criteria.where("baseId").is(requireId));
+		return mongoTemplate.updateFirst(query, update, clazz);
 	}
 
 }

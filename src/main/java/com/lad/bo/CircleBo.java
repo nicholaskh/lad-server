@@ -2,6 +2,8 @@ package com.lad.bo;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
+
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
@@ -13,6 +15,7 @@ import java.util.LinkedHashSet;
  */
 @Getter
 @Setter
+@ToString
 @Document(collection = "circle")
 public class CircleBo extends BaseBo {
 	private double[] position;

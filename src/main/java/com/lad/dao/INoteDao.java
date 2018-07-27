@@ -7,6 +7,7 @@ import org.springframework.data.geo.GeoResults;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 public interface INoteDao extends IBaseDao {
 	public NoteBo insert(NoteBo noteBo);
@@ -110,7 +111,7 @@ public interface INoteDao extends IBaseDao {
 	 * @param circleid
 	 * @return
 	 */
-	long finyNotesNum(String circleid);
+	long findNotesNum(String circleid);
 
 	/**
 	 * 更新总数
@@ -257,5 +258,7 @@ public interface INoteDao extends IBaseDao {
 	 * @return
 	 */
 	public List<NoteBo> dayHotNotes(int page, int limit);
+
+	public List<NoteBo> dayHotNotes(Set<String> circleSet, int page, int limit);
 
 }

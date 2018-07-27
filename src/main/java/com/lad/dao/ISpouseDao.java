@@ -2,7 +2,6 @@ package com.lad.dao;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import com.lad.bo.BaseBo;
 import com.lad.bo.SpouseBaseBo;
@@ -20,7 +19,7 @@ public interface ISpouseDao {
 
 	WriteResult updateByParams(String spouseId, Map<String, Object> params, Class class1);
 
-	List<SpouseBaseBo> getNewSpouse(String sex,int page,int limit,String uid);
+	List<SpouseBaseBo> getNewSpouse(String sex, int page, int limit, String uid);
 
 	WriteResult deletePublish(String spouseId);
 
@@ -28,10 +27,12 @@ public interface ISpouseDao {
 
 	int getNum(String id);
 
-	List<SpouseBaseBo> findListByKeyword(String keyWord,String sex, int page, int limit, Class clazz);
+	List<SpouseBaseBo> findListByKeyword(String keyWord, String sex, int page, int limit, Class clazz);
 
-	List<Map> getRecommend(SpouseRequireBo require);
+	List<Map> getRecommend(SpouseRequireBo require, String uid, String baseId);
 
 	int findPublishNum(String uid);
+
+	WriteResult updateRequireSex(String requireId, String requireSex, Class clazz);
 
 }

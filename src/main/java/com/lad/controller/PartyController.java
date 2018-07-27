@@ -1,19 +1,29 @@
 package com.lad.controller;
 
-import com.lad.bo.*;
-import com.lad.redis.RedisServer;
-import com.lad.service.*;
-import com.lad.util.*;
-import com.lad.vo.*;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
-import net.sf.json.JSONObject;
+import java.beans.BeanInfo;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.redisson.api.RLock;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.geo.GeoResult;
@@ -24,14 +34,49 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.beans.BeanInfo;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
-import java.text.DecimalFormat;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
+import com.alibaba.fastjson.JSON;
+import com.lad.bo.ChatroomBo;
+import com.lad.bo.ChatroomUserBo;
+import com.lad.bo.CircleBo;
+import com.lad.bo.CircleShowBo;
+import com.lad.bo.CollectBo;
+import com.lad.bo.CommentBo;
+import com.lad.bo.DynamicBo;
+import com.lad.bo.FriendsBo;
+import com.lad.bo.PartyBo;
+import com.lad.bo.PartyNoticeBo;
+import com.lad.bo.PartyUserBo;
+import com.lad.bo.ThumbsupBo;
+import com.lad.bo.UserBo;
+import com.lad.redis.RedisServer;
+import com.lad.service.IChatroomService;
+import com.lad.service.ICircleService;
+import com.lad.service.ICollectService;
+import com.lad.service.ICommentService;
+import com.lad.service.IDynamicService;
+import com.lad.service.IFriendsService;
+import com.lad.service.IMessageService;
+import com.lad.service.IPartyService;
+import com.lad.service.IThumbsupService;
+import com.lad.service.IUserService;
+import com.lad.util.CommonUtil;
+import com.lad.util.Constant;
+import com.lad.util.ERRORCODE;
+import com.lad.util.IMUtil;
+import com.lad.util.JPushUtil;
+import com.lad.util.MyException;
+import com.lad.vo.CommentVo;
+import com.lad.vo.PartyComment;
+import com.lad.vo.PartyListVo;
+import com.lad.vo.PartyUserDetail;
+import com.lad.vo.PartyUserVo;
+import com.lad.vo.PartyVo;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+import net.sf.json.JSONObject;
 
 /**
  * 功能描述：
@@ -91,6 +136,11 @@ public class PartyController extends BaseContorller {
                           MultipartFile[] photos, MultipartFile video,
                           HttpServletRequest request, HttpServletResponse response){
 
+    	
+    	org.slf4j.Logger logger2 = LoggerFactory.getLogger(PartyController.class);
+    	
+    	
+    	
         logger.info("partyJson : {}",partyJson);
         UserBo userBo;
         try {
@@ -102,6 +152,9 @@ public class PartyController extends BaseContorller {
         try {
             JSONObject jsonObject = JSONObject.fromObject(partyJson);
             partyBo = (PartyBo)JSONObject.toBean(jsonObject, PartyBo.class);
+            
+            logger2.error("手机a创建聚会时的坐标:"+Arrays.toString(partyBo.getPosition()));
+            
         } catch (Exception e) {
             return CommonUtil.toErrorResult(ERRORCODE.PARTY_ERROR.getIndex(),
                     ERRORCODE.PARTY_ERROR.getReason());
@@ -284,8 +337,7 @@ public class PartyController extends BaseContorller {
 
     @ApiOperation("聚会详情信息")
     @PostMapping("/party-info")
-    public String manageParty(@RequestParam String partyid,
-                         HttpServletRequest request, HttpServletResponse response){
+    public String manageParty(@RequestParam String partyid,HttpServletRequest request, HttpServletResponse response){
 
         PartyBo partyBo = partyService.findById(partyid);
         if (partyBo == null) {
@@ -575,6 +627,7 @@ public class PartyController extends BaseContorller {
             return e.getMessage();
         }
         List<PartyBo> partyBos = partyService.findByCreate(userBo.getId(), page, limit);
+        System.out.println(JSON.toJSONString(partyBos));
         List<PartyListVo> partyListVos = new ArrayList<>();
         bo2listVo(partyBos, partyListVos, userBo);
         Map<String, Object> map = new HashMap<>();
@@ -1619,6 +1672,9 @@ public class PartyController extends BaseContorller {
     public String nearPeopel(double px, double py, int limit,int page, HttpServletRequest request, HttpServletResponse
             response) {
         double[] position = new double[]{px, py};
+        
+        org.slf4j.Logger logger = LoggerFactory.getLogger(PartyController.class);
+        logger.error("调用附近聚会时的坐标:"+Arrays.toString(position));
         //未登录情况
         UserBo userBo = getUserLogin(request);
         String userid = userBo != null ? userBo.getId() : "";
@@ -1627,6 +1683,7 @@ public class PartyController extends BaseContorller {
         DecimalFormat df = new DecimalFormat("###.00");
         for(GeoResult<PartyBo> result : partyBos) {
             PartyBo partyBo = result.getContent();
+            logger.error("数据库查询结果第一手资料:"+JSON.toJSONString(partyBo));
             //判断用户是否已经删除这个信息
             PartyNoticeBo partyNoticeBo = partyService.findPartyNotice(partyBo.getId());
             PartyListVo listVo = new PartyListVo();

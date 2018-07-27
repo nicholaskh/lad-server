@@ -76,6 +76,7 @@ public class TravelersDaoImpl implements ITravelersDao {
 		filter.put("type", true);
 		filter.put("times", true);
 		Query query = new BasicQuery(criteria, filter);
+		query.with(new Sort(new Order(Direction.DESC, "createTime")));
 		return mongoTemplate.find(query, TravelersRequireBo.class);
 	}
 
@@ -84,8 +85,6 @@ public class TravelersDaoImpl implements ITravelersDao {
 	 */
 	@Override
 	public String insert(BaseBo baseBo) {
-		Logger logger = LoggerFactory.getLogger(getClass());
-		logger.error("这里是添加时的实体类================" + baseBo);
 		mongoTemplate.insert(baseBo);
 		return baseBo.getId();
 	}
@@ -107,7 +106,6 @@ public class TravelersDaoImpl implements ITravelersDao {
 		query.addCriteria(criteria);
 
 		Logger logger = LoggerFactory.getLogger(getClass());
-		logger.error("这里是查看最新的query================" + query);
 		query.skip((page - 1) * limit);
 		query.limit(limit);
 		query.with(new Sort(new Order(Direction.DESC, "createTime")));
@@ -159,13 +157,20 @@ public class TravelersDaoImpl implements ITravelersDao {
 		criteria.andOperator(Criteria.where("deleted").is(Constant.ACTIVITY),
 				Criteria.where("createuid").ne(require.getCreateuid()), orcriteria);
 		Query query = new Query(criteria);
+		
+		
+		
 
-		int count = (int) mongoTemplate.count(query, "waiters");
-		Random r = new Random();
-		int length = (count - 99) > 0 ? (count - 99) : 1;
-		int skip = r.nextInt(length);
-		query.skip(skip);
-		query.limit(100);
+		int count = (int) mongoTemplate.count(query, TravelersRequireBo.class);
+		if(count<100){
+			query.with(new Sort(Sort.Direction.DESC,"_id"));
+		}else{
+			Random r = new Random();
+			int length = (count - 99) > 0 ? (count - 99) : 1;
+			int skip = r.nextInt(length);
+			query.skip(skip);
+			query.limit(100);
+		}
 		List<TravelersRequireBo> find = mongoTemplate.find(query, TravelersRequireBo.class);
 
 		// 我的意向

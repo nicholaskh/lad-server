@@ -9,7 +9,7 @@ import com.lad.bo.SpouseBaseBo;
 import com.lad.bo.SpouseRequireBo;
 import com.mongodb.WriteResult;
 
-public interface SpouseService extends IBaseService{
+public interface SpouseService extends IBaseService {
 	public void test();
 
 	public String insert(BaseBo baseBo);
@@ -17,10 +17,10 @@ public interface SpouseService extends IBaseService{
 	public SpouseBaseBo findBaseById(String baseId);
 
 	public SpouseRequireBo findRequireById(String baseId);
-	
+
 	public WriteResult updateByParams(String spouseId, Map<String, Object> params, Class class1);
 
-	public List<SpouseBaseBo> getNewSpouse(String sex,int page,int limit,String uid);
+	public List<SpouseBaseBo> getNewSpouse(String sex, int page, int limit, String uid);
 
 	public WriteResult deletePublish(String spouseId);
 
@@ -28,10 +28,13 @@ public interface SpouseService extends IBaseService{
 
 	public int getNum(String id);
 
-	public List<SpouseBaseBo> findListByKeyword(String keyWord, String sex, int page, int limit, Class<SpouseBaseBo> clazz);
+	public List<SpouseBaseBo> findListByKeyword(String keyWord, String sex, int page, int limit,
+			Class<SpouseBaseBo> clazz);
 
-	public List<Map> getRecommend(SpouseRequireBo require);
+	public List<Map> getRecommend(SpouseRequireBo require, String uid, String baseId);
 
 	public int findPublishNum(String uid);
+
+	public WriteResult updateRequireSex(String requireId, String requireSex, Class clazz);
 
 }

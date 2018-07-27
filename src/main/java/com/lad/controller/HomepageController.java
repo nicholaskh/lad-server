@@ -11,6 +11,8 @@ import com.lad.vo.*;
 import net.sf.json.JSONObject;
 import org.redisson.api.RLock;
 import org.redisson.api.RMapCache;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -341,6 +343,7 @@ public class HomepageController extends BaseContorller {
 	public String addMyInterest(String interests, int type, HttpServletRequest request, HttpServletResponse
 			response) {
 		UserBo userBo;
+
 		try {
 			userBo = checkSession(request, userService);
 		} catch (MyException e) {
@@ -348,8 +351,10 @@ public class HomepageController extends BaseContorller {
 		}
 		UserTasteBo tasteBo = userService.findByUserId(userBo.getId());
 		LinkedHashSet<String> taste = new LinkedHashSet<>();
-		String[] ins = CommonUtil.getIds(interests);
-		taste.addAll(Arrays.asList(ins));
+		if(interests.length()>=1){
+			String[] ins = CommonUtil.getIds(interests);
+			taste.addAll(Arrays.asList(ins));
+		}
 		if (tasteBo == null) {
 			tasteBo = new UserTasteBo();
 			tasteBo.setUserid(userBo.getId());

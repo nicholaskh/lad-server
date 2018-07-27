@@ -4,6 +4,8 @@ import com.lad.bo.CityBo;
 import com.lad.dao.ICityDao;
 import com.lad.service.ICityService;
 import com.mongodb.BasicDBObject;
+import com.mongodb.CommandResult;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -45,4 +47,19 @@ public class CityServiceImpl implements ICityService {
     public List<BasicDBObject> findCitys(String province) {
         return cityDao.findCitys(province);
     }
+
+	@Override
+	public List<String> getProvince() {
+		return cityDao.getProvince();
+	}
+
+	@Override
+	public List<String> getCity(String provice) {
+		return cityDao.getCity(provice);
+	}
+
+	@Override
+	public List<String> getDistrit(String city) {
+		return cityDao.getDistrit(city);
+	}
 }

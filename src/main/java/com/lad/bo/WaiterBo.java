@@ -31,6 +31,6 @@ public class WaiterBo extends BaseBo{
 	private String nowin;		// 居住地
 	private List<String> images = new ArrayList<>();// 照片地址,保存url的list;
 	private Map<String,Set<String>> hobbys = new HashMap<>();// 兴趣,list
-	private Map<String,Set<String>> cares; // 感兴趣的人,保存id的list;
+	private Map<String,Set<String>> cares = new  HashMap<String,Set<String>>(); // 感兴趣的人,保存id的list;
 	private Set<String> pass = new HashSet<>();	// 不感兴趣的人,保存id的list;
 }

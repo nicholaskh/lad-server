@@ -393,7 +393,11 @@ public class UserServiceImpl implements IUserService{
 
 	@Override
 	public WriteResult updateAddress(UserBo userBo) {
-		// TODO Auto-generated method stub
 		return userDao.updateAddress(userBo);
+	}
+
+	@Override
+	public List<UserBo> findAllUser() {
+		return userDao.findAllUser();
 	}
 }

@@ -26,6 +26,7 @@ import org.springframework.stereotype.Repository;
 import com.lad.bo.OldFriendRequireBo;
 import com.lad.bo.UserBo;
 import com.lad.bo.UserTasteBo;
+import com.lad.controller.OldFriendController;
 import com.lad.dao.IOldFriendDao;
 import com.lad.util.CommonUtil;
 import com.lad.util.Constant;
@@ -104,7 +105,7 @@ public class OldFriendDaoImpl implements IOldFriendDao {
 
 	@Override
 	public List<OldFriendRequireBo> findNewPublish(int page, int limit, String id) {
-		Query query = new Query(Criteria.where("deleted").is(Constant.ACTIVITY).and("createuid").ne(id));
+		Query query = new Query(Criteria.where("deleted").is(Constant.ACTIVITY));
 		query.with(new Sort((new Order(Direction.DESC, "createTime"))));
 		return mongoTemplate.find(query,OldFriendRequireBo.class);
 	}
@@ -128,12 +129,19 @@ public class OldFriendDaoImpl implements IOldFriendDao {
 		// 随机取100个实体
 		Query query = new Query(
 				Criteria.where("deleted").is(Constant.ACTIVITY).and("createuid").ne(require.getCreateuid()));
-		int count = (int) mongoTemplate.count(query, "waiters");
-		Random r = new Random();
-		int length = (count - 99) > 0 ? (count - 99) : 1;
-		int skip = r.nextInt(length);
-		query.skip(skip);
-		query.limit(100);
+		int count = (int) mongoTemplate.count(query, OldFriendRequireBo.class);
+		
+		
+		if(count<100){
+			query.with(new Sort(Sort.Direction.DESC,"_id"));
+		}else{
+			Random r = new Random();
+			int length = (count - 99) > 0 ? (count - 99) : 1;
+			int skip = r.nextInt(length);
+			query.skip(skip);
+			query.limit(100);
+		}
+
 		List<OldFriendRequireBo> find = mongoTemplate.find(query, OldFriendRequireBo.class);
 
 		// 性别要求
@@ -169,7 +177,7 @@ public class OldFriendDaoImpl implements IOldFriendDao {
 		List<String> temp = new ArrayList<>();
 
 		List<Map> result = new ArrayList<>();
-
+		System.out.println(find);
 		for (OldFriendRequireBo bo : find) {
 			if (temp.contains(bo.getId())) {
 				continue;

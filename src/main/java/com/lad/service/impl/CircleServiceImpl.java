@@ -3,6 +3,7 @@ package com.lad.service.impl;
 import com.lad.bo.*;
 import com.lad.dao.*;
 import com.lad.service.ICircleService;
+import com.mongodb.CommandResult;
 import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.geo.GeoResults;
@@ -18,7 +19,7 @@ public class CircleServiceImpl implements ICircleService {
 
 	@Autowired
 	private ICircleDao circleDao;
-	
+
 	@Autowired
 	private ICircleHistoryDao circleHistoryDao;
 
@@ -59,8 +60,7 @@ public class CircleServiceImpl implements ICircleService {
 		return circleDao.updateApplyAgree(circleBoId, users, usersApply);
 	}
 
-	public WriteResult updateUsersRefuse(String circleBoId, HashSet<String> usersApply,
-										 HashSet<String> usersRefuse) {
+	public WriteResult updateUsersRefuse(String circleBoId, HashSet<String> usersApply, HashSet<String> usersRefuse) {
 		return circleDao.updateUsersRefuse(circleBoId, usersApply, usersRefuse);
 	}
 
@@ -68,8 +68,7 @@ public class CircleServiceImpl implements ICircleService {
 		return circleDao.updateHeadPicture(circleBoId, headPicture);
 	}
 
-	public List<CircleBo> selectByType(String tag, String sub_tag,
-			String category) {
+	public List<CircleBo> selectByType(String tag, String sub_tag, String category) {
 		return circleDao.selectByType(tag, sub_tag, category);
 	}
 
@@ -107,25 +106,23 @@ public class CircleServiceImpl implements ICircleService {
 		return circleDao.updateCreateUser(circleBo);
 	}
 
-
 	@Override
 	public List<CircleBo> findBykeyword(String keyword, String city, int page, int limit) {
 		return circleDao.findBykeyword(keyword, city, page, limit);
 	}
 
 	@Override
-	public GeoResults<CircleBo> findNearCircle(String userid, double[] position, int maxDistance, int limit) {
-		return circleDao.findNearCircle(userid, position, maxDistance, limit);
+	public GeoResults<CircleBo> findNearCircle(String userid, double[] position, int maxDistance, int page, int limit) {
+		return circleDao.findNearCircle(userid, position, maxDistance, page, limit);
 	}
 
 	@Override
-	public List<CircleBo> findByType(String tag, String sub_tag ,String city,int page,int limit) {
+	public List<CircleBo> findByType(String tag, String sub_tag, String city, int page, int limit) {
 		return circleDao.findByType(tag, sub_tag, city, page, limit);
 	}
 
 	@Override
-	public List<CircleHistoryBo> findNearPeople(String circleid, String userid, double[] position, double
-			maxDistance) {
+	public List<CircleHistoryBo> findNearPeople(String circleid, String userid, double[] position, double maxDistance) {
 		return circleHistoryDao.findNear(circleid, userid, position, maxDistance);
 	}
 
@@ -143,7 +140,6 @@ public class CircleServiceImpl implements ICircleService {
 	public CircleHistoryBo findByUserIdAndCircleId(String userid, String circleid) {
 		return circleHistoryDao.findByUserIdAndCircleId(userid, circleid);
 	}
-
 
 	@Async
 	public WriteResult updateTotal(String circleid, int total) {
@@ -184,7 +180,6 @@ public class CircleServiceImpl implements ICircleService {
 	public List<CircleTypeBo> findAllCircleTypes() {
 		return circleTypeDao.findAll();
 	}
-
 
 	@Override
 	public WriteResult updateOpen(String circleid, boolean isOpen) {
@@ -286,14 +281,13 @@ public class CircleServiceImpl implements ICircleService {
 		return circleHistoryDao.deleteHisBitch(ids);
 	}
 
-
 	@Override
 	public CircleNoticeBo addNotice(CircleNoticeBo noticeBo) {
 		return circleNoticeDao.addNotice(noticeBo);
 	}
 
 	@Override
-	public List<CircleNoticeBo> findCircleNotice(String targetid, int noticeType,int page, int limit) {
+	public List<CircleNoticeBo> findCircleNotice(String targetid, int noticeType, int page, int limit) {
 		return circleNoticeDao.findCircleNotice(targetid, noticeType, page, limit);
 	}
 
@@ -308,8 +302,7 @@ public class CircleServiceImpl implements ICircleService {
 	}
 
 	@Override
-	public WriteResult updateNoticeRead(String id, LinkedHashSet<String> readUsers, LinkedHashSet<String>
-			unReadUsers) {
+	public WriteResult updateNoticeRead(String id, LinkedHashSet<String> readUsers, LinkedHashSet<String> unReadUsers) {
 		return circleNoticeDao.updateNoticeRead(id, readUsers, unReadUsers);
 	}
 
@@ -348,15 +341,14 @@ public class CircleServiceImpl implements ICircleService {
 		return circleNoticeDao.unReadNotice(userid, targetid, noticeType, page, limit);
 	}
 
-
 	@Override
 	public List<CircleNoticeBo> findNoticeByIds(String... ids) {
 		return circleNoticeDao.findNoticeByIds(ids);
 	}
 
 	@Override
-	public GeoResults<CircleHistoryBo> findNearPeopleDis(String cirlcid, String userid, double[] position, double
-			maxDistance) {
+	public GeoResults<CircleHistoryBo> findNearPeopleDis(String cirlcid, String userid, double[] position,
+			double maxDistance) {
 		return circleHistoryDao.findNearPeople(cirlcid, userid, position, maxDistance);
 	}
 
@@ -386,7 +378,22 @@ public class CircleServiceImpl implements ICircleService {
 	}
 
 	@Override
+	public List<CircleBo> findHotCircles(String city, int page, int limit) {
+		return circleDao.findHotCircles(city, page, limit);
+	}
+
+	@Override
 	public List<CircleBo> findHotCircles(int page, int limit) {
 		return circleDao.findHotCircles(page, limit);
+	}
+
+	@Override
+	public List<CircleAddBo> findApplyCircleAddByUid(String uid) {
+		return circleDao.findApplyCircleAddByUid(uid);
+	}
+
+	@Override
+	public CommandResult findNearCircleByCommond(String userid, double[] position, int i, int page, int limit) {
+		return circleDao.findNearCircleByCommond(userid, position, i, page, limit);
 	}
 }

@@ -139,7 +139,8 @@ public enum ERRORCODE {
 	USER_AGREEMENT_FALSE(210002,"用户协议错误"),
 	PUBLISHNUM_BEYOND(210003,"每个用户只能发布一条消息"),
 	REQUIREID_NOMATCH(210004,"用户id与requireId不匹配,请检查你传入的requireId是否正确"),
-	UPDATE_NO_CHANGE(210005,"传入数据与原数据相比无变动")
+	UPDATE_NO_CHANGE(210005,"传入数据与原数据相比无变动"),
+	USERNAME_REPEAT(210006,"用户名重复")
 	;
 	
 

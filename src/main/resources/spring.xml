@@ -4,11 +4,11 @@
        xmlns:context="http://www.springframework.org/schema/context"
        xmlns:mongo="http://www.springframework.org/schema/data/mongo"
        xsi:schemaLocation="http://www.springframework.org/schema/context
-          http://www.springframework.org/schema/context/spring-context-4.3.xsd
+          http://www.springframework.org/schema/context/spring-context.xsd
           http://www.springframework.org/schema/data/mongo
-          http://www.springframework.org/schema/data/mongo/spring-mongo-1.10.xsd
+          http://www.springframework.org/schema/data/mongo/spring-mongo.xsd
           http://www.springframework.org/schema/beans
-          http://www.springframework.org/schema/beans/spring-beans-4.3.xsd">
+          http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 	<!--引入配置属性文件 -->
    	<!--  <context:property-placeholder location="classpath:config.properties" /> -->
@@ -40,8 +40,6 @@
                               socket-keep-alive="${mongo.socketKeepAlive}"
                               socket-timeout="${mongo.socketTimeout}" />
     </mongo:mongo-client>
-
-
 
     <mongo:db-factory dbname="database" mongo-ref="mongo"/>
 

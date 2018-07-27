@@ -2,6 +2,8 @@ package com.lad.bo;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import lombok.ToString;
+
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 
@@ -12,6 +14,7 @@ import java.util.LinkedList;
  * Time:2017/8/18
  */
 @Document(collection = "party")
+@ToString
 public class PartyBo extends BaseBo {
 
     private String title;

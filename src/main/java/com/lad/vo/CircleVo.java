@@ -34,9 +34,9 @@ public class CircleVo extends BaseVo {
 	private int top = 0;
 
 	private String description;
-
+	//访问量
 	private long visitNum;
-
+	//是否加入
 	private int userAdd;
 
 	private int unReadNum;

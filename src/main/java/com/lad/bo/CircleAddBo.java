@@ -20,7 +20,7 @@ public class CircleAddBo implements Serializable {
     private String userid;
 
     private String circleid;
-
+    // 0.拒绝;1.同意
     private int status;
 
     public String getId() {

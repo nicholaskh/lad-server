@@ -1,13 +1,18 @@
 package com.lad.dao.impl;
 
-import com.lad.bo.CircleBo;
-import com.lad.dao.ICircleDao;
-import com.lad.util.Constant;
-import com.mongodb.WriteResult;
+import java.util.HashSet;
+import java.util.List;
+import java.util.regex.Pattern;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.geo.*;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.domain.Sort.Order;
+import org.springframework.data.geo.Distance;
+import org.springframework.data.geo.GeoResults;
+import org.springframework.data.geo.Metrics;
+import org.springframework.data.geo.Point;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.NearQuery;
@@ -15,9 +20,12 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.regex.Pattern;
+import com.lad.bo.CircleAddBo;
+import com.lad.bo.CircleBo;
+import com.lad.dao.ICircleDao;
+import com.lad.util.Constant;
+import com.mongodb.CommandResult;
+import com.mongodb.WriteResult;
 
 @Repository("circleDao")
 public class CircleDaoImpl implements ICircleDao {
@@ -54,7 +62,7 @@ public class CircleDaoImpl implements ICircleDao {
 		return mongoTemplate.updateFirst(query, update, CircleBo.class);
 	}
 
-	public WriteResult updateUsersApply(String circleBoId,HashSet<String> usersApply) {
+	public WriteResult updateUsersApply(String circleBoId, HashSet<String> usersApply) {
 		Query query = new Query();
 		query.addCriteria(new Criteria("_id").is(circleBoId));
 		query.addCriteria(new Criteria("deleted").is(0));
@@ -75,8 +83,7 @@ public class CircleDaoImpl implements ICircleDao {
 		return mongoTemplate.updateFirst(query, update, CircleBo.class);
 	}
 
-	public WriteResult updateUsersRefuse(String circleBoId, HashSet<String> usersApply,
-										 HashSet<String> usersRefuse) {
+	public WriteResult updateUsersRefuse(String circleBoId, HashSet<String> usersApply, HashSet<String> usersRefuse) {
 		Query query = new Query();
 		query.addCriteria(new Criteria("_id").is(circleBoId));
 		query.addCriteria(new Criteria("deleted").is(0));
@@ -95,8 +102,7 @@ public class CircleDaoImpl implements ICircleDao {
 		return mongoTemplate.updateFirst(query, update, CircleBo.class);
 	}
 
-	public List<CircleBo> selectByType(String tag, String sub_tag,
-			String category) {
+	public List<CircleBo> selectByType(String tag, String sub_tag, String category) {
 		Query query = new Query();
 		query.addCriteria(new Criteria("tag").is(tag));
 		query.addCriteria(new Criteria("sub_tag").is(sub_tag));
@@ -132,12 +138,12 @@ public class CircleDaoImpl implements ICircleDao {
 
 	public List<CircleBo> findBykeyword(String keyword, String city, int page, int limit) {
 
-		Pattern pattern = Pattern.compile("^.*"+keyword+".*$", Pattern.CASE_INSENSITIVE);
+		Pattern pattern = Pattern.compile("^.*" + keyword + ".*$", Pattern.CASE_INSENSITIVE);
 		Criteria cr = new Criteria();
 		Criteria name = new Criteria("name").regex(pattern);
 		Criteria tag = new Criteria("tag").is(keyword);
 		Criteria sub_tag = new Criteria("sub_tag").is(keyword);
-		cr.orOperator(name,tag,sub_tag);
+		cr.orOperator(name, tag, sub_tag);
 		if (StringUtils.isNotEmpty(city)) {
 			Criteria cr2 = new Criteria();
 			Criteria pro = new Criteria("province").is(city);
@@ -146,9 +152,9 @@ public class CircleDaoImpl implements ICircleDao {
 			cr.andOperator(cr2.orOperator(pro, ci, dist));
 		}
 		Query query = new Query(cr);
-		query.with(new Sort(new Sort.Order(Sort.Direction.DESC,"hotNum")));
+		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "hotNum")));
 		page = page < 1 ? 1 : page;
-		query.skip((page-1)*limit);
+		query.skip((page - 1) * limit);
 		query.limit(limit);
 		return mongoTemplate.find(query, CircleBo.class);
 	}
@@ -170,7 +176,7 @@ public class CircleDaoImpl implements ICircleDao {
 		query.addCriteria(new Criteria("_id").is(circleBo.getId()));
 		query.addCriteria(new Criteria("deleted").is(0));
 		Update update = new Update();
-		//创建者默认为群主，后续修改需要更改群主字段
+		// 创建者默认为群主，后续修改需要更改群主字段
 		update.set("createuid", circleBo.getCreateuid());
 		update.set("usernum", circleBo.getUsers().size());
 		update.set("updateTime", circleBo.getUpdateTime());
@@ -182,7 +188,7 @@ public class CircleDaoImpl implements ICircleDao {
 		Query query = new Query();
 		query.addCriteria(new Criteria("deleted").is(0));
 		query.addCriteria(new Criteria("users").nin(userid));
-		query.with(new Sort(new Sort.Order(Sort.Direction.DESC,"usernum")));
+		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "usernum")));
 		query.limit(10);
 		return mongoTemplate.find(query, CircleBo.class);
 	}
@@ -192,7 +198,7 @@ public class CircleDaoImpl implements ICircleDao {
 		query.addCriteria(new Criteria("users").in(userid).and("deleted").is(0));
 		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
 		page = page < 1 ? 1 : page;
-		query.skip((page -1) * limit);
+		query.skip((page - 1) * limit);
 		query.limit(limit);
 		return mongoTemplate.find(query, CircleBo.class);
 	}
@@ -207,7 +213,7 @@ public class CircleDaoImpl implements ICircleDao {
 	}
 
 	@Override
-	public List<CircleBo> findByType(String tag, String sub_tag, String city, int page,int limit) {
+	public List<CircleBo> findByType(String tag, String sub_tag, String city, int page, int limit) {
 		Query query = new Query();
 		Criteria criteria = new Criteria("deleted").is(Constant.ACTIVITY);
 		if (StringUtils.isNotEmpty(tag)) {
@@ -224,24 +230,29 @@ public class CircleDaoImpl implements ICircleDao {
 		}
 		query.addCriteria(criteria);
 		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "hotNum")));
-		if (page <= 0){
+		if (page <= 0) {
 			page = 1;
 		}
-		query.skip((page - 1)*limit);
+		query.skip((page - 1) * limit);
 		query.limit(limit);
 		return mongoTemplate.find(query, CircleBo.class);
 	}
 
-	public GeoResults<CircleBo> findNearCircle(String userid, double[] position, int maxDistance, int limit){
-		Point point = new Point(position[0],position[1]);
-		NearQuery near =NearQuery.near(point);
-		Distance distance = new Distance(maxDistance/1000, Metrics.KILOMETERS);
+	public GeoResults<CircleBo> findNearCircle(String userid, double[] position, int maxDistance, int page, int limit) {
+		Point point = new Point(position[0], position[1]);
+		NearQuery near = NearQuery.near(point);
+		Distance distance = new Distance(maxDistance / 1000, Metrics.KILOMETERS);
 		near.maxDistance(distance);
 		Query query = new Query();
-		if (StringUtils.isNotEmpty(userid)){
+		if (StringUtils.isNotEmpty(userid)) {
 			query.addCriteria(new Criteria("users").nin(userid));
 		}
+		/*query.with(new Sort(new Order(Direction.DESC,"_id")));*/
+		int skip = (page-1)*limit;
+		skip = (page-1)*limit<0?0:(page-1)*limit;
+		query.skip(skip);
 		query.limit(limit);
+		query.with(new Sort(new Order(Direction.DESC, "createTime")));
 		near.query(query);
 		return mongoTemplate.geoNear(near, CircleBo.class);
 	}
@@ -249,12 +260,11 @@ public class CircleDaoImpl implements ICircleDao {
 	public List<CircleBo> selectUsersLike(String userid, String city, double[] position, int minDistance) {
 		Query query = new Query();
 		query.addCriteria(new Criteria("deleted").is(0));
-		if (StringUtils.isNotEmpty(userid)){
+		if (StringUtils.isNotEmpty(userid)) {
 			query.addCriteria(new Criteria("users").nin(userid));
 		}
-		Point point = new Point(position[0],position[1]);
-		Criteria criteria = Criteria.where("position").nearSphere(point)
-				.minDistance(minDistance/6378137.0);
+		Point point = new Point(position[0], position[1]);
+		Criteria criteria = Criteria.where("position").nearSphere(point).minDistance(minDistance / 6378137.0);
 		if (StringUtils.isNotEmpty(city)) {
 			Criteria cr = new Criteria();
 			Criteria pro = new Criteria("province").is(city);
@@ -263,7 +273,7 @@ public class CircleDaoImpl implements ICircleDao {
 			criteria.orOperator(pro, ci, dist);
 		}
 		query.addCriteria(criteria);
-		query.with(new Sort(new Sort.Order(Sort.Direction.DESC,"usernum")));
+		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "usernum")));
 		query.limit(10);
 		return mongoTemplate.find(query, CircleBo.class);
 	}
@@ -274,9 +284,9 @@ public class CircleDaoImpl implements ICircleDao {
 		Criteria ci = new Criteria("city").is(city);
 		Criteria dist = new Criteria("district").is(city);
 		Query query = new Query(cr.orOperator(pro, ci, dist));
-		query.with(new Sort(new Sort.Order(Sort.Direction.DESC,"hotNum")));
+		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "hotNum")));
 		page = page < 1 ? 1 : page;
-		query.skip((page-1)*limit);
+		query.skip((page - 1) * limit);
 		query.limit(limit);
 		return mongoTemplate.find(query, CircleBo.class);
 	}
@@ -326,58 +336,58 @@ public class CircleDaoImpl implements ICircleDao {
 		Query query = new Query();
 		query.addCriteria(new Criteria("_id").is(circleid));
 		Update update = new Update();
-		switch (type){
-			//圈子阅读数量
-			case Constant.CIRCLE_VISIT :
-				update.inc("visitNum", num);
-				update.inc("total", num);
-				break;
-				//圈子评论数量
-			case Constant.CIRCLE_COMMENT:
-				update.inc("commentNum", num);
-				update.inc("total", num);
-				break;
-				//圈子转发数量
-			case Constant.CIRCLE_TRANS:
-				update.inc("transmitNum", num);
-				update.inc("total", num);
-				update.inc("hotNum", num * 0.2);
-				break;
-				//圈子点赞数量
-			case Constant.CIRCLE_THUMP:
-				update.inc("thumpNum", num);
-				update.inc("total", num);
-				update.inc("hotNum", num * 0.1);
-				break;
-				//圈子阅读数量包含帖子的阅读
-			case Constant.CIRCLE_NOTE_VISIT:
-				update.inc("visitNum", num);
-				update.inc("total", num);
-				update.inc("hotNum", num * 0.05);
-				break;
-				//圈子内帖子数量
-			case Constant.CIRCLE_NOTE:
-				update.inc("noteNum", num);
-				update.inc("hotNum", num * 0.25);
-				break;
-				//圈子聚会数量
-			case Constant.CIRCLE_PARTY_VISIT:
-				update.inc("partyVisit", num);
-				update.inc("hotNum", num);
-				break;
-				//圈子聚会点赞数量
-			case Constant.CIRCLE_PARTY_THUMP:
-				update.inc("partyThump", num);
-				update.inc("hotNum", num * 0.4);
-				break;
-				//圈子聚会分享数量
-			case Constant.CIRCLE_PARTY_SHARE:
-				update.inc("partyShare", num);
-				update.inc("hotNum", num * 0.2);
-				break;
-			default:
-				update.inc("hotNum", 0);
-				break;
+		switch (type) {
+		// 圈子阅读数量
+		case Constant.CIRCLE_VISIT:
+			update.inc("visitNum", num);
+			update.inc("total", num);
+			break;
+		// 圈子评论数量
+		case Constant.CIRCLE_COMMENT:
+			update.inc("commentNum", num);
+			update.inc("total", num);
+			break;
+		// 圈子转发数量
+		case Constant.CIRCLE_TRANS:
+			update.inc("transmitNum", num);
+			update.inc("total", num);
+			update.inc("hotNum", num * 0.2);
+			break;
+		// 圈子点赞数量
+		case Constant.CIRCLE_THUMP:
+			update.inc("thumpNum", num);
+			update.inc("total", num);
+			update.inc("hotNum", num * 0.1);
+			break;
+		// 圈子阅读数量包含帖子的阅读
+		case Constant.CIRCLE_NOTE_VISIT:
+			update.inc("visitNum", num);
+			update.inc("total", num);
+			update.inc("hotNum", num * 0.05);
+			break;
+		// 圈子内帖子数量
+		case Constant.CIRCLE_NOTE:
+			update.inc("noteNum", num);
+			update.inc("hotNum", num * 0.25);
+			break;
+		// 圈子聚会数量
+		case Constant.CIRCLE_PARTY_VISIT:
+			update.inc("partyVisit", num);
+			update.inc("hotNum", num);
+			break;
+		// 圈子聚会点赞数量
+		case Constant.CIRCLE_PARTY_THUMP:
+			update.inc("partyThump", num);
+			update.inc("hotNum", num * 0.4);
+			break;
+		// 圈子聚会分享数量
+		case Constant.CIRCLE_PARTY_SHARE:
+			update.inc("partyShare", num);
+			update.inc("hotNum", num * 0.2);
+			break;
+		default:
+			update.inc("hotNum", 0);
+			break;
 		}
 		return mongoTemplate.updateFirst(query, update, CircleBo.class);
 	}
@@ -396,10 +406,10 @@ public class CircleDaoImpl implements ICircleDao {
 			query.addCriteria(new Criteria("district").is(district));
 		}
 		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "hotNum")));
-		if (page <= 0){
+		if (page <= 0) {
 			page = 1;
 		}
-		query.skip((page - 1)*limit);
+		query.skip((page - 1) * limit);
 		query.limit(limit);
 		return mongoTemplate.find(query, CircleBo.class);
 	}
@@ -422,7 +432,7 @@ public class CircleDaoImpl implements ICircleDao {
 		}
 		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "hotNum")));
 		page = page < 1 ? 1 : page;
-		query.skip((page - 1)*limit);
+		query.skip((page - 1) * limit);
 		query.limit(limit);
 		return mongoTemplate.find(query, CircleBo.class);
 	}
@@ -438,7 +448,7 @@ public class CircleDaoImpl implements ICircleDao {
 		query.addCriteria(criteria);
 		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "hotNum")));
 		page = page < 1 ? 1 : page;
-		query.skip((page - 1)*limit);
+		query.skip((page - 1) * limit);
 		query.limit(limit);
 		return mongoTemplate.find(query, CircleBo.class);
 	}
@@ -478,21 +488,44 @@ public class CircleDaoImpl implements ICircleDao {
 
 	@Override
 	public List<CircleBo> selectByRegexName(String showType) {
-		Pattern pattern = Pattern.compile("^.*"+showType+".*$", Pattern.CASE_INSENSITIVE);
-		Query query = new Query(new Criteria("takeShow").is(true).and("deleted").is(Constant.ACTIVITY)
-				.and("name").regex(pattern));
+		Pattern pattern = Pattern.compile("^.*" + showType + ".*$", Pattern.CASE_INSENSITIVE);
+		Query query = new Query(
+				new Criteria("takeShow").is(true).and("deleted").is(Constant.ACTIVITY).and("name").regex(pattern));
 		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
 		return mongoTemplate.find(query, CircleBo.class);
 	}
 
 	@Override
-	public List<CircleBo> findHotCircles(int page, int limit) {
+	public List<CircleBo> findHotCircles(String city, int page, int limit) {
 		Query query = new Query();
-		query.addCriteria(new Criteria("deleted").is(Constant.ACTIVITY));
+		Criteria criteria = new Criteria("deleted").is(Constant.ACTIVITY);
+		if (!org.springframework.util.StringUtils.isEmpty(city)) {
+			criteria.and("city").is(city);
+		}
+		query.addCriteria(criteria);
 		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "hotNum")));
 		page = page < 1 ? 1 : page;
-		query.skip((page - 1)*limit);
+		query.skip((page - 1) * limit);
 		query.limit(limit);
 		return mongoTemplate.find(query, CircleBo.class);
+	}
+
+	@Override
+	public List<CircleBo> findHotCircles(int page, int limit) {
+		return findHotCircles(null, page, limit);
+	}
+
+	@Override
+	public List<CircleAddBo> findApplyCircleAddByUid(String uid) {
+		Query query = new Query(Criteria.where("userid").is(uid).and("status").is(1));
+		query.with(new Sort(Direction.DESC, "_id"));
+		return mongoTemplate.find(query, CircleAddBo.class);
+	}
+
+	@Override
+	public CommandResult findNearCircleByCommond(String userid, double[] position, int i, int page, int limit) {
+		String jsonCommand = "{geoNear:\"circle\",near:{type:\"Point\",coordinates:["+position[0]+","+position[1]+"]},spherical:true,minDistance:0,maxDistance:"+i+"}";
+		CommandResult executeCommand = mongoTemplate.executeCommand(jsonCommand);
+		return executeCommand;
 	}
 }

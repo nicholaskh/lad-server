@@ -88,14 +88,20 @@ public class SpouseServiceImpl implements SpouseService {
 
 
 	@Override
-	public List<Map> getRecommend(SpouseRequireBo require) {
-		return spouseDao.getRecommend(require);
+	public List<Map> getRecommend(SpouseRequireBo require,String uid,String baseId) {
+		return spouseDao.getRecommend(require,uid,baseId);
 	}
 
 
 	@Override
 	public int findPublishNum(String uid) {
 		return spouseDao.findPublishNum(uid);
+	}
+
+
+	@Override
+	public WriteResult updateRequireSex(String requireId, String requireSex, Class clazz) {
+		return spouseDao.updateRequireSex(requireId, requireSex, clazz);
 	}
 
 

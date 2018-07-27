@@ -2,6 +2,7 @@ package com.lad.dao;
 
 import com.lad.bo.CityBo;
 import com.mongodb.BasicDBObject;
+import com.mongodb.CommandResult;
 
 import java.util.List;
 
@@ -49,4 +50,10 @@ public interface ICityDao {
      * @return
      */
     List<BasicDBObject> findCitys(String province);
+
+    List<String> getProvince();
+
+	List<String> getCity(String provice);
+
+	List<String> getDistrit(String city);
 }

@@ -1,6 +1,7 @@
 package com.lad.service;
 
 import com.lad.bo.*;
+import com.mongodb.CommandResult;
 import com.mongodb.WriteResult;
 import org.springframework.data.geo.GeoResults;
 
@@ -73,7 +74,7 @@ public interface ICircleService extends IBaseService {
 	/**
 	 * 查询附近的圈子
 	 */
-	GeoResults<CircleBo> findNearCircle(String userid, double[] position, int maxDistance, int limit);
+	GeoResults<CircleBo> findNearCircle(String userid, double[] position, int maxDistance, int page, int limit);
 
 	/**
 	 * 根据分类查询
@@ -210,6 +211,8 @@ public interface ICircleService extends IBaseService {
 	 * @return
 	 */
 	CircleAddBo insertCircleAdd(CircleAddBo addBo);
+	
+	List<CircleAddBo> findApplyCircleAddByUid(String uid);
 
 	/**
 	 *根据用户和圈子查找用户添加记录g
@@ -444,6 +447,10 @@ public interface ICircleService extends IBaseService {
 	 * 热门圈子
 	 * @return
 	 */
+	List<CircleBo> findHotCircles(String city,int page, int limit);
+
 	List<CircleBo> findHotCircles(int page, int limit);
 
+	public CommandResult findNearCircleByCommond(String userid, double[] position, int i, int page, int limit);
+	
 }

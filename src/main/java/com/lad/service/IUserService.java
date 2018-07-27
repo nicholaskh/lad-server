@@ -290,4 +290,10 @@ public interface IUserService extends IBaseService {
 	public UserBo findUserById(String id);
 
 	public WriteResult updateAddress(UserBo userBo);
+
+	/**
+	 * 查看所有用户,用于编写伪数据
+	 * @return
+	 */
+	public List<UserBo> findAllUser();
 }

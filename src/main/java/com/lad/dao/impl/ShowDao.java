@@ -3,7 +3,6 @@ package com.lad.dao.impl;
 import java.util.LinkedHashSet;
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -51,9 +50,6 @@ public class ShowDao extends BaseDao<ShowBo> {
 			criteria.orOperator(criterias);
 		}
 		query.addCriteria(criteria);
-		System.out.println("============================================");
-		Logger logger = Logger.getLogger(ShowDao.class);
-		logger.error(query.toString());
 		query.with(new Sort(Sort.Direction.DESC, "_id"));
 		page = page < 1 ? 1 : page;
 		query.skip((page - 1) * limit);
@@ -208,8 +204,7 @@ public class ShowDao extends BaseDao<ShowBo> {
 	 */
 	public List<ShowBo> findCircleRecoms(LinkedHashSet<String> showTypes) {
 		Query query = new Query();
-		Criteria criteria = new Criteria("deleted").is(Constant.ACTIVITY).and("status").is(0).and("showType")
-				.in(showTypes).and("type").is(ShowBo.NEED);
+		Criteria criteria = new Criteria("deleted").is(Constant.ACTIVITY).and("status").is(0).and("showType").in(showTypes).and("type").is(ShowBo.NEED);
 		query.addCriteria(criteria);
 		query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "_id")));
 		return getMongoTemplate().find(query, ShowBo.class);

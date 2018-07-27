@@ -15,10 +15,14 @@ import java.util.LinkedHashSet;
 @Getter
 @Document(collection = "expose")
 public class ExposeBo extends BaseBo {
-
+	//标题
     private String title;
-
+    //内容
     private String content;
+    //消息来源
+    private String source;
+    //来源链接
+    private String sourceUrl;
     //曝光类型
     private String exposeType;
     //上传图片或视频类型， pic/video

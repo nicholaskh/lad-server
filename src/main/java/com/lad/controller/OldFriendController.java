@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.beanutils.BeanComparator;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,6 +35,7 @@ import com.lad.util.CommonUtil;
 import com.lad.util.ERRORCODE;
 import com.lad.vo.OldFriendRequireVo;
 import com.lad.vo.ShowResultVo;
+import com.lad.vo.UserTasteVo;
 import com.mongodb.WriteResult;
 
 import net.sf.json.JSONObject;
@@ -51,6 +53,7 @@ public class OldFriendController extends BaseContorller {
 
 	/**
 	 * 匹配推荐
+	 * 
 	 * @param requireId
 	 * @param request
 	 * @param response
@@ -73,7 +76,6 @@ public class OldFriendController extends BaseContorller {
 
 		List<Map> recommend = oldFriendService.getRecommend(require);
 
-		
 		if (recommend.size() >= 1) {
 			List result = new ArrayList<>();
 			for (Map recMap : recommend) {
@@ -88,7 +90,7 @@ public class OldFriendController extends BaseContorller {
 				result.add(resultOne);
 			}
 			map.put("ret", 0);
-			
+
 			Comparator<? super Map> c = new BeanComparator("match").reversed();
 			result.sort(c);
 			map.put("recommend", result);
@@ -102,6 +104,7 @@ public class OldFriendController extends BaseContorller {
 
 	/**
 	 * 最新推荐
+	 * 
 	 * @param page
 	 * @param limit
 	 * @param request
@@ -125,32 +128,25 @@ public class OldFriendController extends BaseContorller {
 				UserBo user = userService.getUser(requireBo.getCreateuid());
 				ShowResultVo showResult = new ShowResultVo();
 
+				showResult.setMyself(user.getId().equals(userBo.getId()));
+
 				showResult.setId(requireBo.getId());
 
 				// 设置昵称
-				if (user.getUserName() != null) {
-					showResult.setNickName(user.getUserName());
-				} else {
-					showResult.setNickName("");
-				}
+				String userName = user.getUserName();
+				showResult.setNickName(StringUtils.isEmpty(userName) ? "用户" + user.getId() : userName);
 
 				// 设置头像
-				if (user.getHeadPictureName() != null) {
-					showResult.setHeadPicture(user.getHeadPictureName());
-				} else {
-					showResult.setHeadPicture("");
-				}
+				String headPictureName = user.getHeadPictureName();
+				showResult.setHeadPicture(StringUtils.isEmpty(headPictureName) ? "" : headPictureName);
 
 				// 设置兴趣
-				UserTasteBo hobbys = userService.findByUserId(user.getId());
-				if (hobbys != null) {
-					hobbys.setId(null);
-					hobbys.setUserid(null);
-					hobbys.setUpdateTime(null);
-					hobbys.setUpdateuid(null);
-					hobbys.setCreateTime(null);
-				}
-				showResult.setHobbys(JSON.toJSONString(hobbys));
+				UserTasteBo findByUserId = userService.findByUserId(user.getId());
+				UserTasteBo hobbysBo = StringUtils.isEmpty(findByUserId) ? new UserTasteBo() : findByUserId;
+				UserTasteVo hobbysVo = new UserTasteVo();
+				BeanUtils.copyProperties(hobbysBo, hobbysVo);
+				showResult.setHobbys(hobbysVo);
+				// 设置生日
 				if (user.getBirthDay() != null) {
 					String birthDay = user.getBirthDay();
 					DateFormat format = new SimpleDateFormat("yyyy年MM月dd日");
@@ -190,6 +186,7 @@ public class OldFriendController extends BaseContorller {
 
 	/**
 	 * 关键字搜索
+	 * 
 	 * @param keyWord
 	 * @param page
 	 * @param limit
@@ -206,69 +203,68 @@ public class OldFriendController extends BaseContorller {
 					ERRORCODE.ACCOUNT_OFF_LINE.getReason());
 		}
 
-//		System.out.println(keyWord);
-//		keyWord = "相师";
+		// System.out.println(keyWord);
+		// keyWord = "相师";
 		List<UserBo> list = oldFriendService.findListByKeyword(keyWord, page, limit, userBo.getId());
 
 		Map map = new HashMap<>();
-		if (list.size() >= 1) {
-			List resultList = new ArrayList();
-			for (UserBo user : list) {
-				// UserBo user = userService.getUser(requireBo.getCreateuid());
-				OldFriendRequireBo requireBo = oldFriendService.getRequireByCreateUid(user.getId());
-				ShowResultVo showResult = new ShowResultVo();
-				if (requireBo == null) {
-					continue;
-				}
-				showResult.setId(requireBo.getId());
 
-				// 设置昵称
-				if (user.getUserName() != null) {
-					showResult.setNickName(user.getUserName());
-				} else {
-					showResult.setNickName("");
-				}
-
-				// 设置头像
-				if (user.getHeadPictureName() != null) {
-					showResult.setHeadPicture(user.getHeadPictureName());
-				} else {
-					showResult.setHeadPicture("");
-				}
-
-				// 设置兴趣
-				UserTasteBo hobbys = userService.findByUserId(user.getId());
-				if (hobbys != null) {
-					hobbys.setId(null);
-					hobbys.setUserid(null);
-					hobbys.setUpdateTime(null);
-					hobbys.setUpdateuid(null);
-					hobbys.setCreateTime(null);
-				}
-				showResult.setHobbys(JSON.toJSONString(hobbys));
-				if (userBo.getBirthDay() != null) {
-					String birthDay = userBo.getBirthDay();
-					DateFormat format = new SimpleDateFormat("yyyy年MM月dd日");
-					try {
-						Date parse = format.parse(birthDay);
-						showResult.setAge(CommonUtil.getAge(parse));
-					} catch (Exception e) {
-						showResult.setAge(0);
-					}
-				}
-
-				if (user.getSex() != null) {
-					showResult.setSex(user.getSex());
-				} else {
-					showResult.setSex("");
-				}
-				if (user.getCity() != null) {
-					showResult.setAddress(user.getCity());
-				} else {
-					showResult.setAddress("");
-				}
-				resultList.add(showResult);
+		List resultList = new ArrayList();
+		for (UserBo user : list) {
+			// UserBo user = userService.getUser(requireBo.getCreateuid());
+			OldFriendRequireBo requireBo = oldFriendService.getRequireByCreateUid(user.getId());
+			ShowResultVo showResult = new ShowResultVo();
+			if (requireBo == null) {
+				continue;
 			}
+			showResult.setId(requireBo.getId());
+
+			// 设置昵称
+			if (user.getUserName() != null) {
+				showResult.setNickName(user.getUserName());
+			} else {
+				showResult.setNickName("");
+			}
+
+			// 设置头像
+			if (user.getHeadPictureName() != null) {
+				showResult.setHeadPicture(user.getHeadPictureName());
+			} else {
+				showResult.setHeadPicture("");
+			}
+
+			// 设置兴趣
+			UserTasteBo findByUserId = userService.findByUserId(user.getId());
+			UserTasteBo hobbysBo = StringUtils.isEmpty(findByUserId) ? new UserTasteBo() : findByUserId;
+			UserTasteVo hobbysVo = new UserTasteVo();
+			BeanUtils.copyProperties(hobbysBo, hobbysVo);
+			showResult.setHobbys(hobbysVo);
+
+			// 设置生日
+			if (userBo.getBirthDay() != null) {
+				String birthDay = userBo.getBirthDay();
+				DateFormat format = new SimpleDateFormat("yyyy年MM月dd日");
+				try {
+					Date parse = format.parse(birthDay);
+					showResult.setAge(CommonUtil.getAge(parse));
+				} catch (Exception e) {
+					showResult.setAge(0);
+				}
+			}
+
+			if (user.getSex() != null) {
+				showResult.setSex(user.getSex());
+			} else {
+				showResult.setSex("");
+			}
+			if (user.getCity() != null) {
+				showResult.setAddress(user.getCity());
+			} else {
+				showResult.setAddress("");
+			}
+			resultList.add(showResult);
+		}
+		if (resultList.size() >= 1) {
 			map.put("ret", 0);
 			map.put("result", resultList);
 		} else {
@@ -281,6 +277,7 @@ public class OldFriendController extends BaseContorller {
 
 	/**
 	 * 获取详情
+	 * 
 	 * @param requireId
 	 * @param request
 	 * @param response
@@ -336,6 +333,7 @@ public class OldFriendController extends BaseContorller {
 				result.setAddress("");
 			}
 			result.setUid(user.getId());
+			result.setAddress(user.getAddress());
 			if (!(user.getId().equals(userBo.getId()))) {
 				FriendsBo friendsBo = friendsService.getFriendByIdAndVisitorIdAgree(userBo.getId(), user.getId());
 				if (friendsBo != null) {
@@ -344,18 +342,12 @@ public class OldFriendController extends BaseContorller {
 					result.setFriend(false);
 				}
 			}
+			UserTasteBo findByUserId = userService.findByUserId(user.getId());
+			UserTasteBo hobbysBo = StringUtils.isEmpty(findByUserId) ? new UserTasteBo() : findByUserId;
+			UserTasteVo hobbysVo = new UserTasteVo();
+			BeanUtils.copyProperties(hobbysBo, hobbysVo);
+			result.setHobbys(hobbysVo);
 
-			UserTasteBo hobbys = userService.findByUserId(user.getId());
-			if (hobbys != null) {
-				hobbys.setCreateTime(null);
-				hobbys.setId(null);
-				hobbys.setUserid(null);
-				result.setHobbys(hobbys);
-			} else {
-				hobbys = new UserTasteBo();
-				hobbys.setCreateTime(null);
-				result.setHobbys(hobbys);
-			}
 			map.put("ret", 0);
 			map.put("baseData", result);
 		} else {
@@ -365,11 +357,28 @@ public class OldFriendController extends BaseContorller {
 
 		OldFriendRequireVo requireVo = new OldFriendRequireVo();
 		BeanUtils.copyProperties(requireBo, requireVo);
+		String age = requireVo.getAge();
+		if (age.equals("17岁-100岁")) {
+			age = "不限";
+		} else if (age.contains("-100岁")) {
+			age = age.replaceAll("-100岁", "") + "及以上";
+		} else if (age.contains("17岁-")) {
+			age = age.replaceAll("17岁-", "") + "及以下";
+		}
+		requireVo.setAge(age);
 		map.put("requireData", requireVo);
-
 		return JSON.toJSONString(map);
 	}
 
+	/**
+	 * 修改需求
+	 * 
+	 * @param requireData
+	 * @param requireId
+	 * @param request
+	 * @param response
+	 * @return
+	 */
 	@PostMapping("/updateRequire")
 	public String updateRequire(@RequestParam String requireData, String requireId, HttpServletRequest request,
 			HttpServletResponse response) {
@@ -394,10 +403,23 @@ public class OldFriendController extends BaseContorller {
 			if ("sex".equals(entity.getKey()) && !(entity.getValue().equals(oldRequireBo.getSex()))) {
 				params.put(entity.getKey(), entity.getValue());
 			}
-
-			if ("age".equals(entity.getKey()) && !(entity.getValue().equals(oldRequireBo.getAge()))) {
-
-				params.put(entity.getKey(), entity.getValue());
+			
+			if ("age".equals(entity.getKey()) && !(entity.getValue().equals(oldRequireBo.getAge()))) {				
+				// 处理生日以及年龄
+				String regex = "\\D+";
+				String age = (String) entity.getValue();
+				if (age.equals("不限")) {
+					params.put("age", "17岁-100岁");
+				}else if (age.contains("及以上")) {
+					age = age.replaceAll(regex, "岁") + "-100岁";
+					params.put("age", age);
+				}else if (age.contains("及以下")) {
+					age = "17岁-" + age.replaceAll(regex, "岁");
+					params.put("age", age);
+				}else{
+					params.put("age", age);
+				}
+				continue;
 			}
 			if ("address".equals(entity.getKey()) && !(entity.getValue().equals(oldRequireBo.getAddress()))) {
 				params.put(entity.getKey(), entity.getValue());
@@ -420,6 +442,7 @@ public class OldFriendController extends BaseContorller {
 			return CommonUtil.toErrorResult(ERRORCODE.UPDATE_NO_CHANGE.getIndex(),
 					ERRORCODE.UPDATE_NO_CHANGE.getReason());
 		}
+		System.out.println(params.get("age"));
 		WriteResult result = oldFriendService.updateByParams(params, requireId);
 
 		Map map = new HashMap<>();
@@ -429,6 +452,14 @@ public class OldFriendController extends BaseContorller {
 		return JSON.toJSONString(map);
 	}
 
+	/**
+	 * 获取需求详情
+	 * 
+	 * @param requireId
+	 * @param request
+	 * @param response
+	 * @return
+	 */
 	@GetMapping("/getRequire")
 	public String getRequire(String requireId, HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo = getUserLogin(request);
@@ -457,6 +488,14 @@ public class OldFriendController extends BaseContorller {
 		return JSON.toJSONString(map);
 	}
 
+	/**
+	 * 删除一条数据
+	 * 
+	 * @param requireId
+	 * @param request
+	 * @param response
+	 * @return
+	 */
 	@PostMapping("/delete")
 	public String delete(String requireId, HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo = getUserLogin(request);
@@ -471,7 +510,7 @@ public class OldFriendController extends BaseContorller {
 			map.put("ret", 0);
 			map.put("message", "删除成功");
 		} catch (Exception e) {
-		
+
 			map.put("ret", -1);
 			map.put("message", e.toString());
 		}
@@ -479,6 +518,14 @@ public class OldFriendController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
+	/**
+	 * 添加一条数据
+	 * 
+	 * @param requireData
+	 * @param request
+	 * @param response
+	 * @return
+	 */
 	@PostMapping("/add")
 	public String insert(@RequestParam String requireData, HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo = getUserLogin(request);
@@ -504,7 +551,20 @@ public class OldFriendController extends BaseContorller {
 		requireBo.setCreateuid(userBo.getId());
 		requireBo.setUpdateTime(new Date());
 		requireBo.setUpdateuid(userBo.getId());
-
+		// 处理生日以及年龄
+		String regex = "\\D+";
+		String age = requireBo.getAge();
+		if (age.contains("及以上")) {
+			age = age.replaceAll(regex, "岁") + "-100岁";
+			requireBo.setAge(age);
+		}
+		if (age.contains("及以下")) {
+			age = "17岁-" + age.replaceAll(regex, "岁");
+			requireBo.setAge(age);
+		}
+		if (age.equals("不限")) {
+			requireBo.setAge("17岁-100岁");
+		}
 		String requireId = oldFriendService.insert(requireBo);
 		Map map = new HashMap<>();
 		if (requireId != null) {
@@ -518,6 +578,13 @@ public class OldFriendController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
+	/**
+	 * 初始化
+	 * 
+	 * @param request
+	 * @param response
+	 * @return
+	 */
 	@GetMapping("/init")
 	public String init(HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo = getUserLogin(request);
@@ -541,6 +608,14 @@ public class OldFriendController extends BaseContorller {
 		return JSONObject.fromObject(map).toString();
 	}
 
+	/**
+	 * 获取基础资料
+	 * 
+	 * @param requireId
+	 * @param request
+	 * @param response
+	 * @return
+	 */
 	@GetMapping("/getBase")
 	public String getBase(String requireId, HttpServletRequest request, HttpServletResponse response) {
 		UserBo userBo = getUserLogin(request);
@@ -587,17 +662,11 @@ public class OldFriendController extends BaseContorller {
 			result.setAddress("");
 		}
 
-		UserTasteBo hobbys = userService.findByUserId(userBo.getId());
-		if (hobbys != null) {
-			hobbys.setCreateTime(null);
-			hobbys.setId(null);
-			hobbys.setUserid(null);
-			result.setHobbys(hobbys);
-		} else {
-			hobbys = new UserTasteBo();
-			hobbys.setCreateTime(null);
-			result.setHobbys(hobbys);
-		}
+		UserTasteBo findByUserId = userService.findByUserId(userBo.getId());
+		UserTasteBo hobbysBo = StringUtils.isEmpty(findByUserId) ? new UserTasteBo() : findByUserId;
+		UserTasteVo hobbysVo = new UserTasteVo();
+		BeanUtils.copyProperties(hobbysBo, hobbysVo);
+		result.setHobbys(hobbysVo);
 		if (requireBo.getImages() != null) {
 			result.setImages(requireBo.getImages());
 		} else {
@@ -614,6 +683,12 @@ public class OldFriendController extends BaseContorller {
 		return JSON.toJSONString(map);
 	}
 
+	/**
+	 * 当视图要求不符合返回实体是,将数据封装到不规则实体中
+	 * 
+	 * @param requireBo
+	 * @return
+	 */
 	private ShowResultVo getShowResultVo(OldFriendRequireBo requireBo) {
 		// 根据requireId
 		UserBo user = userService.getUser(requireBo.getCreateuid());
@@ -661,16 +736,11 @@ public class OldFriendController extends BaseContorller {
 		}
 
 		// 设置兴趣
-		UserTasteBo hobbys = userService.findByUserId(user.getId());
-		if (hobbys != null) {
-			hobbys.setId(null);
-			hobbys.setUserid(null);
-			hobbys.setUpdateTime(null);
-			hobbys.setUpdateuid(null);
-			hobbys.setCreateTime(null);
-			hobbys.setCreateuid(null);
-		}
-		showResult.setHobbys(JSON.toJSONString(hobbys));
+		UserTasteBo findByUserId = userService.findByUserId(user.getId());
+		UserTasteBo hobbysBo = StringUtils.isEmpty(findByUserId) ? new UserTasteBo() : findByUserId;
+		UserTasteVo hobbysVo = new UserTasteVo();
+		BeanUtils.copyProperties(hobbysBo, hobbysVo);
+		showResult.setHobbys(hobbysVo);
 		/*
 		 * 设置照片 List images = new ArrayList(); if(requireBo.getImages()!=null){
 		 * images = requireBo.getImages(); }

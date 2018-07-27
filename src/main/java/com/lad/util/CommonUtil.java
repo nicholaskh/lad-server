@@ -7,12 +7,15 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,10 +23,14 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.web.multipart.MultipartFile;
+
+import com.lad.bo.WaiterBo;
 
 import net.sf.json.JSONObject;
 
@@ -526,5 +533,33 @@ public class CommonUtil {
 			age = nowYear - birthYear - 1;
 		}
 		return age;
+	}
+
+	public static <T> List<T> randomQuery(MongoTemplate mongoTemplate, Query query, Class<T> clazz) {
+
+		org.slf4j.Logger logger = LoggerFactory.getLogger(CommonUtil.class);
+		logger.error(
+				"{此处随机从数据库获取数据}:{mongoTemplate:" + mongoTemplate + "},{query:" + query + "},{class:" + clazz + "}");
+		// 统计数据库长度
+		int count = (int) mongoTemplate.count(query, clazz);
+		List<T> find = new ArrayList<>();
+		if (count < 100) {
+			query.with(new Sort(Sort.Direction.DESC,"_id"));
+			find = mongoTemplate.find(query, clazz);
+		} else {
+			// 不允许开始数据定位到最后25条,所以逻辑上skip的范围是(长度-25)
+			int length = (count - 25) < 0 ? 1 : (count - 25);
+
+			Random r = new Random();
+			for (int i = 0; i < 4; i++) {
+				int skip = r.nextInt(length);
+				query.skip(skip);
+				query.limit(25);
+				List<T> find2 = mongoTemplate.find(query, clazz);
+				find.addAll(find2);
+			}
+		}
+
+		return find;
 	}
 }

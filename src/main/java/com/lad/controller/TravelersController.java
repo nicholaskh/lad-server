@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.beanutils.BeanComparator;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,6 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.alibaba.fastjson.JSON;
 import com.lad.bo.CareAndPassBo;
 import com.lad.bo.FriendsBo;
+import com.lad.bo.SpouseRequireBo;
 import com.lad.bo.TravelersRequireBo;
 import com.lad.bo.UserBo;
 import com.lad.bo.UserTasteBo;
@@ -288,6 +290,25 @@ public class TravelersController extends BaseContorller {
 					params.put("times", timesList);
 					continue;
 				}
+
+				if ("age".equals(next.getKey())) {
+					// 处理生日以及年龄
+					String regex = "\\D+";
+					String age = (String) next.getValue();
+					if (age.equals("不限")) {
+						params.put("age", "17岁-100岁");
+					}else if (age.contains("及以上")) {
+						age = age.replaceAll(regex, "岁") + "-100岁";
+						params.put("age", age);
+					}else if (age.contains("及以下")) {
+						age = "17岁-" + age.replaceAll(regex, "岁");
+						params.put("age", age);
+					}else{
+						params.put("age", age);
+					}
+					continue;
+				}
+
 				params.put(next.getKey(), next.getValue());
 			}
 
@@ -329,7 +350,9 @@ public class TravelersController extends BaseContorller {
 			UserBo user = userService.getUser(travelersRequireBo.getCreateuid());
 			ShowResultVo showResult = new ShowResultVo();
 			showResult.setId(travelersRequireBo.getId());
+
 			if (user != null) {
+				showResult.setMyself(user.getId().equals(userBo.getId()));
 				// 设置昵称
 				if (user.getUserName() != null) {
 					showResult.setNickName(user.getUserName());
@@ -435,6 +458,17 @@ public class TravelersController extends BaseContorller {
 				}
 			}
 			travelersRequireVo.setTimes(voDate);
+
+			String regex = "\\D+";
+			String age = travelersRequireVo.getAge();
+			if (age.equals("17岁-100岁")) {
+				age = "不限";
+			} else if (age.contains("-100岁")) {
+				age = age.replaceAll("-100岁", "") + "及以上";
+			} else if (age.contains("17岁-")) {
+				age = age.replaceAll("17岁-", "") + "及以下";
+			}
+			travelersRequireVo.setAge(age);
 
 			map.put("require", JSON.toJSONString(travelersRequireVo));
 		} else {
@@ -562,6 +596,20 @@ public class TravelersController extends BaseContorller {
 		if (requireBo.getImages() == null) {
 			requireBo.setImages(new ArrayList<String>());
 		}
+		// 处理年龄
+		String regex = "\\D+";
+		String age = requireBo.getAge();
+		if (age.contains("及以上")) {
+			age = age.replaceAll(regex, "岁") + "-100岁";
+			requireBo.setAge(age);
+		}
+		if (age.contains("及以下")) {
+			age = "17岁-" + age.replaceAll(regex, "岁");
+			requireBo.setAge(age);
+		}
+		if (age.equals("不限")) {
+			requireBo.setAge("17岁-100岁");
+		}
 
 		travelersService.insert(requireBo);
 
@@ -599,6 +647,8 @@ public class TravelersController extends BaseContorller {
 					showResult.setSex("");
 				}
 
+				showResult.setAddress(StringUtils.isEmpty(user.getAddress()) ? "未填写" : user.getAddress());
+
 				// 设置年龄
 				DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 				format = new SimpleDateFormat("yyyy年MM月dd日");
@@ -624,13 +674,6 @@ public class TravelersController extends BaseContorller {
 					} else {
 						showResult.setFriend(false);
 					}
-				}
-
-				// 设置居住地
-				if (user.getCity() != null) {
-					showResult.setAddress(user.getCity());
-				} else {
-					showResult.setAddress("");
 				}
 
 				// 设置兴趣

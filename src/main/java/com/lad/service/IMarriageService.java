@@ -4,9 +4,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.data.mongodb.core.query.Criteria;
+
 import com.lad.bo.BaseBo;
 import com.lad.bo.OptionBo;
 import com.lad.bo.RequireBo;
+import com.lad.bo.UserBo;
 import com.lad.bo.WaiterBo;
 import com.lad.vo.OptionVo;
 import com.mongodb.WriteResult;
@@ -22,7 +25,7 @@ public interface IMarriageService extends IBaseService {
 	public List<OptionBo> getOptions(OptionVo ov);
 
 	// 匹配推荐
-	public List<Map> getRecommend(String waiterId);
+	public List<Map> getRecommend(String waiterId, String uid);
 
 	// 更新
 	public WriteResult updateByParams(String id, Map<String, Object> params, Class class1);
@@ -56,5 +59,37 @@ public interface IMarriageService extends IBaseService {
 	public List<OptionBo> getHobbysSupOptions();
 
 	public List<OptionBo> getHobbysSonOptions(String id);
+
+	/**
+	 * 查询所有职位选项,添加伪数据时使用
+	 * 
+	 * @return
+	 */
+	public List<OptionBo> getJobOptions();
+
+	/**
+	 * 查询所有薪资选项,添加伪数据时使用
+	 * 
+	 * @return
+	 */
+	public List<OptionBo> getSalaryOptions();
+
+	/**
+	 * 根据条件查询,添加模拟数据是是用那个
+	 * 
+	 * @param criteria
+	 * @return
+	 */
+	public List<WaiterBo> findUserCriteria(Criteria criteria);
+
+	/**
+	 * 批量删除
+	 * 
+	 * @param list
+	 * @return
+	 */
+	public WriteResult deleteMany(Criteria criteria,Class clazz);
+
+	public WaiterBo findWaiterByNickName(String nickName, String uid);
 
 }

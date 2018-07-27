@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 @Service("noteService")
 public class NoteServiceImpl implements INoteService {
@@ -102,8 +103,8 @@ public class NoteServiceImpl implements INoteService {
 	}
 
 	@Override
-	public long finyNotesNum(String circleid) {
-		return noteDao.finyNotesNum(circleid);
+	public long findNotesNum(String circleid) {
+		return noteDao.findNotesNum(circleid);
 	}
 
 	@Override
@@ -179,5 +180,10 @@ public class NoteServiceImpl implements INoteService {
 	@Override
 	public List<NoteBo> dayHotNotes( int page, int limit) {
 		return noteDao.dayHotNotes(page, limit);
+	}
+
+	@Override
+	public List<NoteBo> dayHotNotes(Set<String> circleSet, int page, int limit) {
+		return noteDao.dayHotNotes(circleSet,page, limit);
 	}
 }

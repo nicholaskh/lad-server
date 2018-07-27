@@ -187,4 +187,6 @@ public interface IUserDao extends IBaseDao {
 	UserBo findUserById(String id);
 
 	WriteResult updateAddress(UserBo userBo);
+
+	List<UserBo> findAllUser();
 }

@@ -18,6 +18,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.util.StringUtils;
 
 import com.alibaba.fastjson.JSON;
 import com.lad.bo.ExposeBo;
@@ -78,6 +79,8 @@ public class InitProgram {
 										.is(healthBo.getTitle()).and("deleted").is(Constant.ACTIVITY)), ExposeBo.class);
 								if (find == null) {
 									BeanUtils.copyProperties(healthBo, exposeBo);
+									exposeBo.setSource(StringUtils.isEmpty(healthBo.getSource())?"":healthBo.getSource());
+									exposeBo.setSourceUrl(StringUtils.isEmpty(healthBo.getSourceUrl())?"":healthBo.getSourceUrl());
 									exposeBo.setContent(healthBo.getText());
 									exposeBo.setCreateuid("5b36f1a4c4f6aee431dba56f");
 									exposeBo.setImages(new LinkedHashSet(healthBo.getImageUrls()));

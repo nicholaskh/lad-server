@@ -124,7 +124,9 @@ public abstract class BaseContorller {
 	public void updateHistory(String userid, String circleid,
 							  ILocationService locationService, ICircleService circleService){
 		try {
+			// 获取个人的圈子操作历史
 			CircleHistoryBo circleHistoryBo = circleService.findByUserIdAndCircleId(userid,circleid);
+			// 获取个人的地址信息
 			LocationBo locationBo = locationService.getLocationBoByUserid(userid);
 			if (circleHistoryBo == null) {
 				circleHistoryBo = new CircleHistoryBo();

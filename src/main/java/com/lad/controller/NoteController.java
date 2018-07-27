@@ -8,11 +8,13 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.HttpServletRequest;
@@ -21,6 +23,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.redisson.api.RLock;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.geo.GeoResult;
@@ -32,6 +35,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.alibaba.fastjson.JSON;
 import com.lad.bo.CircleBo;
 import com.lad.bo.CircleShowBo;
 import com.lad.bo.CollectBo;
@@ -128,8 +132,7 @@ public class NoteController extends BaseContorller {
 	private IReadHistoryService readHistoryService;
 
 	private String pushTitle = "互动通知";
-	
-	
+
 	@ApiOperation("我圈子的新帖")
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
@@ -144,18 +147,21 @@ public class NoteController extends BaseContorller {
 		String userid = userBo.getId();
 		List<CircleBo> circleBos = circleService.selectByuserid(userid);
 		List<String> circleids = new LinkedList<>();
-		//获取圈子id 并保存到circleids
+		// 获取圈子id 并保存到circleids
 		circleBos.forEach(circleBo -> circleids.add(circleBo.getId()));
 		List<NoteBo> noteBos = noteService.dayNewNotes(circleids, page, limit);
 		List<NoteVo> noteVoList = new LinkedList<>();
-		for(NoteBo noteBo : noteBos) {
+		for (NoteBo noteBo : noteBos) {
 			NoteVo noteVo = new NoteVo();
-			boToVo(noteBo, noteVo, userBo, userid);
+			//获取创建者消息
+			String createuid = noteBo.getCreateuid()==null?"":noteBo.getCreateuid();
+			UserBo createUser = userService.getUser(createuid);
+			boToVo(noteBo, noteVo, createUser, userid);
+			ReadHistoryBo historyBo = readHistoryService.getHistoryByUseridAndNoteId(userid, noteBo.getId());
+			noteVo.setRead(historyBo != null);
 			noteVo.setMyThumbsup(hasThumbsup(userid, noteBo.getId()));
 			CircleBo circleBo = circleService.selectById(noteBo.getCircleId());
-			noteVo.setCirName(circleBo != null ? circleBo.getName() : "");
-			ReadHistoryBo historyBo = readHistoryService.getHistoryByUseridAndNoteId(userid,noteBo.getId());
-			noteVo.setRead(historyBo==null);
+			noteVo.setCirName(circleBo != null ? circleBo.getName() : "");			
 			noteVoList.add(noteVo);
 		}
 		Map<String, Object> map = new HashMap<>();
@@ -163,7 +169,6 @@ public class NoteController extends BaseContorller {
 		map.put("noteVoList", noteVoList);
 		return JSONObject.fromObject(map).toString();
 	}
-	
 
 	@ApiOperation("发表帖子")
 	@ApiImplicitParams({
@@ -1521,17 +1526,30 @@ public class NoteController extends BaseContorller {
 			@ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataType = "int"),
 			@ApiImplicitParam(name = "limit", value = "显示条数", required = true, paramType = "query", dataType = "int") })
 	@PostMapping("/day-hot-notes")
-	public String dayHotNotes(int page, int limit, HttpServletRequest request, HttpServletResponse response) {
+	public String dayHotNotes(String city, int page, int limit, HttpServletRequest request,
+			HttpServletResponse response) {
 		UserBo userBo = getUserLogin(request);
 		String userid = userBo == null ? "" : userBo.getId();
-		List<NoteBo> noteBos = noteService.dayHotNotes(page, limit);
+
+		List<CircleBo> circleBoList = circleService.findHotCircles(city, 1, 10240);
+		Set<String> circleSet = new HashSet<>();
+		for (CircleBo circleBo : circleBoList) {
+			circleSet.add(circleBo.getId());
+		}
+		List<NoteBo> noteBos = noteService.dayHotNotes(circleSet,page, limit);
 		List<NoteVo> noteVoList = new LinkedList<>();
 		for (NoteBo noteBo : noteBos) {
 			NoteVo noteVo = new NoteVo();
-			boToVo(noteBo, noteVo, userBo, userid);
+			//获取创建者消息
+			String createuid = noteBo.getCreateuid()==null?"":noteBo.getCreateuid();
+			UserBo createUser = userService.getUser(createuid);
+			boToVo(noteBo, noteVo, createUser, userid);
+			ReadHistoryBo historyBo = readHistoryService.getHistoryByUseridAndNoteId(userid, noteBo.getId());
+			noteVo.setRead(historyBo != null);
 			noteVo.setMyThumbsup(hasThumbsup(userid, noteBo.getId()));
 			CircleBo circleBo = circleService.selectById(noteBo.getCircleId());
 			noteVo.setCirName(circleBo != null ? circleBo.getName() : "");
+
 			noteVoList.add(noteVo);
 		}
 		Map<String, Object> map = new HashMap<>();

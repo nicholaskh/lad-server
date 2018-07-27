@@ -23,4 +23,6 @@ public class SpouseBaseVo extends BaseVo{
 	private String address;		// 居住地
 	private List<String> images = new ArrayList<>();// 照片地址
 	private Map<String,Set<String>> hobbys = new HashMap<>();// 兴趣,list
+	private boolean myself;
+	private String createuid;
 }

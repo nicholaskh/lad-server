@@ -1,5 +1,6 @@
 package com.lad.dao.impl;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -22,6 +23,7 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 import com.lad.bo.ChatroomBo;
+import com.lad.controller.ChatroomController;
 import com.lad.dao.IChatroomDao;
 import com.lad.util.Constant;
 import com.mongodb.BasicDBObject;
@@ -153,6 +155,8 @@ public class ChatroomDaoImpl implements IChatroomDao {
 
 	@Override
 	public ChatroomBo selectBySeqInTen(int seq, double[] position, int radius) {
+		org.slf4j.Logger logger2 = org.slf4j.LoggerFactory.getLogger(ChatroomController.class);
+		logger2.error("==========数据库层面传入的定位信息:"+Arrays.toString(position)+"===========");
 		//主键筛选条件
 		Query query = new Query();
 		query.addCriteria(new Criteria("seq").is(seq));
@@ -167,6 +171,7 @@ public class ChatroomDaoImpl implements IChatroomDao {
 		Criteria criteria1 = Criteria.where("position").nearSphere(location)
 				.maxDistance(radius/6378137.0);
 		query.addCriteria(criteria1);
+		logger2.error("==========query语句:"+query.toString()+"===========");
 		return mongoTemplate.findOne(query, ChatroomBo.class);
 	}
 
